@@ -130,7 +130,7 @@ export function HUDNotificationFeed() {
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, x: -20, scale: 0.9, filter: 'blur(4px)' }}
             transition={{ duration: reducedMotion ? 0.1 : 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="overflow-hidden mb-1.5 notification-feed-slide"
+            className={`overflow-hidden mb-1.5 notification-feed-slide${reducedMotion ? '' : ' hud-filmic-notification-slide-in'}`}
           >
             <div
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md tooltip-glass-enhanced toast-scanline"

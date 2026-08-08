@@ -559,7 +559,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           {/* ── Floor — Poly Haven wood parquet (canvas fallback while loading) ── */}
           <Suspense
             fallback={
-              <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1} material={mat_floor} />
+              <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
+                {/* WS23-C: PBR upgrade */}
+                <meshPhysicalMaterial map={floorTexture} color="#5c4a36" roughness={0.78} metalness={0.02} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} clearcoat={0.4} clearcoatRoughness={0.35} />
+              </mesh>
             }
           >
             <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
@@ -992,7 +995,20 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
               />
             </mesh>
           ) : (
-            <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42} material={mat_33} />
+            /* WS18-C: MeshPhysicalMaterial with clearcoat for wet glass reflection.
+               The usePhysicalGlass=true path already has transmission+clearcoat;
+               this fallback (low/mobile) gets a cheaper clearcoat-only wet sheen
+               so the right-wall window reads as rain-streaked glass on all presets. */
+            <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
+              <meshPhysicalMaterial
+                color="#0a0a30"
+                emissive="#4488ee"
+                emissiveIntensity={1.8}
+                toneMapped={false}
+                clearcoat={1.0}
+                clearcoatRoughness={0.05}
+              />
+            </mesh>
           )}
           {/* Window frame — Low only; Medium+ shutterWindow GLB owns the casing. */}
           {!useGltfFurniture ? (

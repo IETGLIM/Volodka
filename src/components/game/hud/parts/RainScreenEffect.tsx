@@ -160,7 +160,7 @@ export function RainScreenEffect() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1.5, ease: 'easeInOut' }}
-          className="fixed inset-0 pointer-events-none"
+          className="fixed inset-0 pointer-events-none hud-filmic-rain-sweep-in"
           style={{ zIndex: 2 }}
           aria-hidden="true"
         >

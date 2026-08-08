@@ -49,7 +49,7 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
     <group>
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.002} geometry={geo_pln_1}>
 
-        <meshStandardMaterial map={floorTexture} color="#7a6a58" roughness={0.88} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} />
+        <meshPhysicalMaterial map={floorTexture} color="#7a6a58" roughness={0.88} clearcoat={0.45} clearcoatRoughness={0.35} polygonOffset polygonOffsetFactor={2} polygonOffsetUnits={2} /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */ />
       </mesh>
 
       {/* Layered carpets */}

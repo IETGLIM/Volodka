@@ -124,7 +124,7 @@ export function AtmosphericEffects() {
   // Note: hooks must be called before any early returns
   const [cinematicBoost, setCinematicBoost] = useState(0);
   useEffect(() => {
-    const unsub = eventBus.on('cinematic:atmosphere_boost', ({ intensity }: any) => {
+    const unsub = eventBus.on('cinematic:atmosphere_boost' as any, ({ intensity }: any) => {
       setCinematicBoost(Math.min(1.2, intensity || 0.7));
     });
     return unsub;

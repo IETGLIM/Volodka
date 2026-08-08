@@ -348,15 +348,19 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
           hidden under the carpet. Moved to X=1.5 (bare floor, right of carpet). */}
       {spill && (
         <mesh rotation-x={-Math.PI / 2} position={[1.5, 0.006, 6.2]} renderOrder={2} geometry={getSharedCircleGeometry(1.35, 18)}>
-          <meshStandardMaterial
+          <meshPhysicalMaterial
             color="#2a3038"
             metalness={0.45}
             roughness={0.28}
+            clearcoat={1.0}
+            clearcoatRoughness={0.1}
+            ior={1.33}
             transparent
             opacity={spill.puddleOpacity}
             polygonOffset
             polygonOffsetFactor={1}
             polygonOffsetUnits={1}
+            /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */
           />
         </mesh>
       )}

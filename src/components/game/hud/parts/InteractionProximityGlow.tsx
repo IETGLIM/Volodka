@@ -53,7 +53,7 @@ export function InteractionProximityGlow() {
             )}
             {/* Inner glow aura */}
             <div
-              className="proximity-glow-aura flex items-center justify-center"
+              className="proximity-glow-aura hud-filmic-proximity-glow-breathe flex items-center justify-center"
               style={{
                 width: 48,
                 height: 48,

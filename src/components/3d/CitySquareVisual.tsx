@@ -410,6 +410,37 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
         </>
       )}
 
+      {/* WS18-C: MeshPhysicalMaterial with clearcoat for wet/rainy surface effect.
+          Thin transparent sheen disc above the plaza inlay adds Blade Runner rain
+          reflection without disturbing the PolyHaven concrete textures below.
+          (CitySquareVisual's ground is WetStreetGround — separate component — and
+          the plaza tiles use PolyHavenStandardMaterial, whose internal texture
+          maps cannot be preserved if swapped for a direct meshPhysicalMaterial.
+          This overlay is the cleanest way to add the wet clearcoat sheen to the
+          plaza tiles.) */}
+      {usePhysicalWet ? (
+        <mesh
+          rotation-x={-Math.PI / 2}
+          position={[0, 0.045, 0]}
+          geometry={getSharedCircleGeometry(5.2, 48)}
+          renderOrder={2}
+        >
+          <meshPhysicalMaterial
+            color="#1a2230"
+            roughness={0.22}
+            metalness={0.18}
+            clearcoat={0.5}
+            clearcoatRoughness={0.3}
+            transparent
+            opacity={0.18}
+            depthWrite={false}
+            polygonOffset
+            polygonOffsetFactor={1}
+            polygonOffsetUnits={1}
+          />
+        </mesh>
+      ) : null}
+
       {useAuthoredDressing ? (
         <Suspense fallback={null}>
           <AuthoredPlazaLandmark castShadow={preset.shadows} />

@@ -24,7 +24,7 @@ export function SectionHeader({ title }: { title: string }) {
     <div className="flex items-center gap-2 mb-2 mt-1">
       <div
         aria-hidden="true"
-        className="h-px flex-1"
+        className="h-px flex-1 hud-filmic-divider-glow"
         style={{
           background: `linear-gradient(90deg, ${PLAYER_STATS_COLORS.cyan}60, transparent)`,
         }}
@@ -37,7 +37,7 @@ export function SectionHeader({ title }: { title: string }) {
       </span>
       <div
         aria-hidden="true"
-        className="h-px flex-1"
+        className="h-px flex-1 hud-filmic-divider-glow"
         style={{
           background: `linear-gradient(270deg, ${PLAYER_STATS_COLORS.cyan}60, transparent)`,
         }}
@@ -76,7 +76,7 @@ export function StatBar({
       aria-valuemin={0}
       aria-valuemax={max}
       aria-label={label}
-      className="relative h-2 rounded-full overflow-hidden"
+      className={`relative h-2 rounded-full overflow-hidden ${isWarning ? 'hud-filmic-health-pulse' : ''}`}
       style={{ background: 'rgba(255,255,255,0.06)' }}
     >
       <motion.div

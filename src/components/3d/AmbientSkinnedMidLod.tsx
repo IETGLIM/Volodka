@@ -100,6 +100,20 @@ function AmbientSkinnedFigure({
         if (!m || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) return m;
         const std = (m as THREE.MeshStandardMaterial).clone();
         std.color.lerp(tint, 0.32 + slotIndex * 0.04);
+        // WS16-A: deplasticize organic surfaces on LOD NPCs — upgrade cloned MeshStandardMaterial
+        // to MeshPhysicalMaterial with sheen for skin/hair/cloth material names. Non-organic
+        // surfaces (eyes, metallics, plastic props) stay as MeshStandardMaterial.
+        const matName = (std.name || '').toLowerCase();
+        const isOrganic = /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth|hair|cloth|fabric|hoodie|jeans|shirt/.test(matName);
+        if (isOrganic && !(std as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) {
+          const physical = new THREE.MeshPhysicalMaterial();
+          physical.copy(std);
+          physical.sheen = 0.35;
+          physical.sheenRoughness = 0.5;
+          physical.name = std.name;
+          std.dispose();
+          return physical;
+        }
         return std;
       });
       mesh.material = nextMats.length === 1 ? nextMats[0]! : nextMats;

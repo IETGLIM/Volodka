@@ -42,7 +42,7 @@ export function deplasticizeCharacterMaterials(
 
       const name = `${std.name ?? ''} ${mesh.name ?? ''}`.toLowerCase();
       const isSkin =
-        /skin|face|body|head|hand|arm|leg|flesh|beard|stubble/.test(name);
+        /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth/.test(name);
       const isCloth =
         /cloth|shirt|hoodie|jacket|pant|jean|coat|fabric|dress|hat|hair/.test(name);
       const isMetalKit =

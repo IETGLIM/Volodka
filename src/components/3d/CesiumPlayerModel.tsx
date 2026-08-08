@@ -145,7 +145,8 @@ function CesiumPlayerModelInner({
     // HARDER NUCLEAR for хм, и: more extreme lean/sway/squash/arm/hip
     const hSpeed = currentHSpeedRef?.current ?? 0;
     const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
-    const bodyLean = -0.385 * leanT; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — ~22°+ lean — full cinematic + multiversal + infinite singularity devastation + planetary + cosmic + black hole commitment + world-shattering lean + event horizon pull + eternal void
+    // Session 13 (ramp-tame): forward body lean ~6.3° max (was 0.385rad / 22° — extreme).
+    const bodyLean = -0.11 * leanT;
     const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
     if (bodyGroup) {
       const targetLean = leanT > 0.05 ? bodyLean : 0;
@@ -153,12 +154,14 @@ function CesiumPlayerModelInner({
 
       // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
       const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
-      const sideSway = Math.sin(swayPhase) * 0.085 * leanT;
+      // Session 13 (ramp-tame): side sway ~2° max (was 0.085rad / 4.9°).
+      const sideSway = Math.sin(swayPhase) * 0.035 * leanT;
       bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
 
       // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
       // Gives delicious "grounded" feel — the body squats slightly into each stride.
-      const compression = 1 - (leanT * 0.275); // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — max ~27.5% squash — EVEN HARDER NUCLEAR + cosmic + multiversal + infinite crush + event horizon squash + black hole squash
+      // Session 13 (ramp-tame): vertical compression ~5% max (was 27.5% — avatar shrank to 72.5% height during sprint).
+      const compression = 1 - (leanT * 0.05);
       bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
       // Slight forward squash compensation so feet don't sink
       bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);
@@ -171,7 +174,8 @@ function CesiumPlayerModelInner({
       // AAA Phase B: dynamic arm swing + shoulder roll + head lean (very visible cinematic weight)
       // Scales perfectly with speed + matches footstep cadence. HARDER
       const swingPhase = (performance.now() / 165) % (Math.PI * 2);
-      const swingAmp = leanT * 1.45;
+      // Session 13 (ramp-tame): arm swing amplitude ~0.35rad / 20° (was 1.45rad / 83°).
+      const swingAmp = leanT * 0.35;
       const armSwing = Math.sin(swingPhase) * swingAmp;
       const shoulderRoll = Math.cos(swingPhase * 0.5) * swingAmp * 1.35;
 
@@ -179,16 +183,18 @@ function CesiumPlayerModelInner({
       const leftShoulder = bodyGroup.getObjectByName?.('mixamorigLeftShoulder') || bodyGroup.getObjectByName?.('LeftShoulder');
       const rightShoulder = bodyGroup.getObjectByName?.('mixamorigRightShoulder') || bodyGroup.getObjectByName?.('RightShoulder');
 
-      if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.55, 0.28);
-      if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.55, 0.28);
+      // Session 13 (ramp-tame): shoulder rotation multiplier 1.1 (was 1.55 → 129°).
+      if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.1, 0.28);
+      if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.1, 0.28);
 
-      // Overall shoulder roll for torso twist feeling
-      bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.68, 0.25);
+      // Session 13 (ramp-tame): torso twist multiplier 0.35 (was 0.68 → 18° twist).
+      bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.35, 0.25);
 
       // Head lean forward + slight bob on sprint (very filmic "looking into the run")
       const head = bodyGroup.getObjectByName?.('mixamorigHead') || bodyGroup.getObjectByName?.('Head') || bodyGroup.children.find(c => c.name.toLowerCase().includes('head'));
       if (head) {
-        const headLean = -0.31 * leanT;
+        // Session 13 (ramp-tame): head forward lean ~5° (was 0.31rad / 17.8°).
+        const headLean = -0.09 * leanT;
         const headBob = Math.sin(swingPhase * 1.8) * 0.055 * leanT;
         head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
       }
@@ -204,7 +210,8 @@ function CesiumPlayerModelInner({
       // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
       // Feels like the character is fighting momentum. Very satisfying.
       if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
-        const brakePitch = (window as any).__brakeRecovery * 0.48;
+        // Session 13 (ramp-tame): brake pitch ~7° max (was 0.48rad / 27.5°).
+        const brakePitch = (window as any).__brakeRecovery * 0.12;
         bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
         (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - (1/60) * 4.1);
       }
@@ -213,21 +220,27 @@ function CesiumPlayerModelInner({
 
   // Listen for hard brake to trigger torso pitch recovery
   useEffect(() => {
-    const unsub = eventBus.on('player:hard_brake', () => {
+    const unsub = eventBus.on('player:hard_brake' as any, () => {
       (window as any).__brakeRecovery = 1.0;
     });
     return unsub;
   }, []);
 
-  // Landing squash state (module level for the single player avatar)
-  let landingSquash = 0;
-  let landingSquashDecay = 0;
+  // Session 14 (closure-fix): landing squash state in refs so useEffect event
+  // handlers and useFrameTick share the same mutable values across renders.
+  // Previously `let` in component body — reset to 0 every render, so the frame
+  // tick always read 0 (reactive landing squash was dead code). Now alive at
+  // the sane Session 13 values (8% max squash).
+  const landingSquashRef = useRef(0);
+  const landingSquashDecayRef = useRef(0);
 
   useEffect(() => {
-    const unsub = eventBus.on('player:landed', ({ impact }: any) => {
+    const unsub = eventBus.on('player:landed' as any, ({ impact }: any) => {
       const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
-      landingSquash = str * 0.32;   // GOD x∞ x∞ APOCALYPSE RAMP м? — up to ~32% vertical squash — GOD x∞ HARDER for хм, и: + black hole impact squash
-      landingSquashDecay = 9.5;     // fast cinematic recovery
+      // Session 13 (ramp-tame): landing squash 8% max (was 32% — extreme).
+      // Session 14 (closure-fix): now stored in refs — this reactive squash is ALIVE.
+      landingSquashRef.current = str * 0.08;
+      landingSquashDecayRef.current = 9.5;     // fast cinematic recovery
     });
     return unsub;
   }, []);
@@ -238,8 +251,8 @@ function CesiumPlayerModelInner({
       const rw = Math.max(0, Math.min(1, runWeight ?? (speed > 5.5 ? 1 : 0.4)));
       // Small rhythmic squash per step — stronger on sprint
       const stepSquash = rw * 0.036;
-      landingSquash = Math.max(landingSquash, stepSquash);
-      landingSquashDecay = 18; // quick recovery between steps
+      landingSquashRef.current = Math.max(landingSquashRef.current, stepSquash);
+      landingSquashDecayRef.current = 18; // quick recovery between steps
     });
     return unsub;
   }, []);
@@ -250,6 +263,8 @@ function CesiumPlayerModelInner({
     if (!bodyGroup) return;
 
     // Apply decaying landing squash (adds delicious physical "thud" to the body)
+    const landingSquash = landingSquashRef.current;
+    const landingSquashDecay = landingSquashDecayRef.current;
     if (landingSquash > 0.001) {
       const currentY = bodyGroup.scale.y || 1;
       const targetY = 1 - landingSquash;
@@ -260,9 +275,9 @@ function CesiumPlayerModelInner({
       bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
       bodyGroup.scale.z = bodyGroup.scale.x;
 
-      landingSquash *= Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
-      if (landingSquash < 0.002) {
-        landingSquash = 0;
+      landingSquashRef.current = landingSquash * Math.exp(-landingSquashDecay * 0.016); // ~60fps decay
+      if (landingSquashRef.current < 0.002) {
+        landingSquashRef.current = 0;
         // gently restore scale
         bodyGroup.scale.set(1, 1, 1);
       }

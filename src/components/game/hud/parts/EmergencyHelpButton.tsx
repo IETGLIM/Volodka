@@ -135,10 +135,11 @@ export function EmergencyHelpButton() {
         <PopoverTrigger asChild>
           <button
             type="button"
-            className="relative flex items-center justify-center rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-stone-400/40"
+            className={`relative flex items-center justify-center rounded-sm focus:outline-none focus-visible:ring-1 focus-visible:ring-stone-400/40 ${isIdle && !open ? 'hud-filmic-emergency-pulse' : ''}`}
             style={{
-              width: 28,
-              height: 28,
+              // WS22: 44px min touch target for mobile a11y (was 28px)
+              width: 44,
+              height: 44,
               background: 'var(--hud-filmic-plate-strong)',
               border: '1px solid var(--hud-filmic-border)',
               boxShadow: 'var(--hud-filmic-shadow)',
@@ -148,7 +149,7 @@ export function EmergencyHelpButton() {
             aria-label="Что делать?"
             title="Что делать?"
           >
-            <CircleHelp className="size-4" />
+            <CircleHelp className="size-5" />
             {/* Idle pulse ring */}
             <AnimatePresence>
               {isIdle && !open && (

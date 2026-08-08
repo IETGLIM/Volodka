@@ -121,11 +121,14 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
 
       {/* ── Wooden pier deck (player area) ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={useAuthoredBackdrop ? 0.018 : 0.012} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        {/* WS22-C: PBR upgrade */}
+        <meshPhysicalMaterial
           map={plankTexture}
           color="#4a3e30"
           roughness={plankWet.roughness}
           metalness={plankWet.metalness}
+          clearcoat={0.3}
+          clearcoatRoughness={0.4}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

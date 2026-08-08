@@ -93,7 +93,7 @@ export function SceneAmbientVignette() {
       initial={reducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: reducedMotion ? 0 : 2, ease: 'easeOut' }}
-      className={`fixed inset-0 pointer-events-none ${vignetteClass}`}
+      className={`fixed inset-0 pointer-events-none hud-filmic-vignette-breathe ${vignetteClass}`}
       style={{ zIndex: 1, ...vignetteStyle }}
       aria-hidden="true"
     />

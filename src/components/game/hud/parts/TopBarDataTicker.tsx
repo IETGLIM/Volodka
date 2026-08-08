@@ -60,7 +60,7 @@ export function TopBarDataTicker() {
       aria-hidden="true"
     >
       <div
-        className="data-ticker-track font-mono hud-filmic-fade-edge"
+        className="data-ticker-track font-mono hud-filmic-fade-edge hud-filmic-ticker-scroll-glow"
         style={{ animation: reducedMotion ? 'none' : undefined }}
       >
         {items.map((item, i) => (

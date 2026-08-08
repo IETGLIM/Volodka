@@ -60,7 +60,7 @@ export function CombatDamageTimeline() {
   if (bars.length < 2) return null;
 
   return (
-    <div className="combat-damage-timeline flex flex-col items-center gap-1">
+    <div className="combat-damage-timeline flex flex-col items-center gap-1 hud-filmic-damage-stagger">
       <div className="text-[7px] text-slate-500 font-mono uppercase tracking-widest">УРОН</div>
       <svg
         viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}

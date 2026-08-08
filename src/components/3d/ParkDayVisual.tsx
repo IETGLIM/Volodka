@@ -59,11 +59,14 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
 
       {/* ── Ground — mist dew sheen ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        {/* WS22-C: PBR upgrade */}
+        <meshPhysicalMaterial
           map={groundTexture}
           color="#3a5a2a"
           roughness={damp?.roughness ?? 0.9}
           metalness={damp?.metalness ?? 0}
+          sheen={0.1}
+          sheenRoughness={0.7}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

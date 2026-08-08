@@ -11,6 +11,7 @@ import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import {
   applyPhotoPbrMapSetToRoot,
+  classifyShellSurfaceRole,
   polyHavenIdsForMood,
   type PhotoPbrMapSet,
 } from '@/engine/graphics/materials/applyPhotoPbrMaps';
@@ -46,6 +47,57 @@ function resolveShellModelId(
   const entry = Object.entries(INTERIOR_SHELL_MODELS).find(([, path]) => path === url);
   if (!entry) return null;
   return entry[0] as InteriorShellModelId;
+}
+
+/**
+ * WS18-C: Upgrade a MeshStandardMaterial to MeshPhysicalMaterial with clearcoat
+ * for wet/rainy surface effect. Preserves all standard PBR props (color, map,
+ * normalMap, roughnessMap, aoMap, roughness, metalness, emissive, etc.) and
+ * adds clearcoat + clearcoatRoughness. Used on floor-role shell meshes so
+ * interior floors read as damp/rain-spilled without altering wall/ceiling reads.
+ */
+function upgradeShellFloorToPhysicalWet(
+  std: THREE.MeshStandardMaterial,
+  clearcoat: number,
+  clearcoatRoughness: number,
+): THREE.MeshPhysicalMaterial {
+  const phys = new THREE.MeshPhysicalMaterial();
+  // Preserve common Material props
+  phys.name = std.name;
+  phys.transparent = std.transparent;
+  phys.opacity = std.opacity;
+  phys.depthWrite = std.depthWrite;
+  phys.depthTest = std.depthTest;
+  phys.side = std.side;
+  phys.blending = std.blending;
+  phys.toneMapped = std.toneMapped;
+  phys.visible = std.visible;
+  phys.alphaTest = std.alphaTest;
+  // Preserve MeshStandardMaterial props
+  phys.color.copy(std.color);
+  phys.map = std.map;
+  phys.normalMap = std.normalMap;
+  if (std.normalScale) phys.normalScale.copy(std.normalScale);
+  phys.roughnessMap = std.roughnessMap;
+  phys.aoMap = std.aoMap;
+  phys.aoMapIntensity = std.aoMapIntensity;
+  phys.roughness = std.roughness;
+  phys.metalness = std.metalness;
+  phys.emissive.copy(std.emissive);
+  phys.emissiveMap = std.emissiveMap;
+  phys.emissiveIntensity = std.emissiveIntensity;
+  phys.envMapIntensity = std.envMapIntensity;
+  phys.lightMap = std.lightMap;
+  phys.lightMapIntensity = std.lightMapIntensity;
+  // Preserve polygonOffset (set earlier in cloneInteriorShell)
+  phys.polygonOffset = std.polygonOffset;
+  phys.polygonOffsetFactor = std.polygonOffsetFactor;
+  phys.polygonOffsetUnits = std.polygonOffsetUnits;
+  // WS18-C: add clearcoat for wet/rainy surface effect
+  phys.clearcoat = clearcoat;
+  phys.clearcoatRoughness = clearcoatRoughness;
+  phys.needsUpdate = true;
+  return phys;
 }
 
 function cloneInteriorShell(
@@ -84,6 +136,35 @@ function cloneInteriorShell(
   if (photoMapSet) {
     applyPhotoPbrMapSetToRoot(clone, photoMapSet, 1);
   }
+  // WS18-C: upgrade floor-role shell materials to MeshPhysicalMaterial with
+  // clearcoat for wet/rainy surface effect. Only floor meshes (not walls/ceiling)
+  // get the wet sheen — keeps the read cohesive (damp floor near doorways/windows,
+  // dry walls/ceiling). AuthoredInteriorShell has no JSX material definitions
+  // (materials come from the GLB), so the upgrade is done imperatively in the
+  // clone traverse. Floor-role classification reuses classifyShellSurfaceRole
+  // (name heuristic + thin-horizontal-slab geometry heuristic).
+  clone.traverse((node) => {
+    if (!(node as THREE.Mesh).isMesh) return;
+    const mesh = node as THREE.Mesh;
+    if (classifyShellSurfaceRole(mesh) !== 'floor') return;
+    const sourceMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    let mutated = false;
+    const nextMats = sourceMats.map((material) => {
+      if (!material) return material;
+      // Skip if already MeshPhysicalMaterial (e.g. shell GLB authored with physical).
+      if ((material as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) return material;
+      if (!('envMapIntensity' in material)) return material;
+      mutated = true;
+      return upgradeShellFloorToPhysicalWet(
+        material as THREE.MeshStandardMaterial,
+        0.4,
+        0.35,
+      );
+    });
+    if (mutated) {
+      mesh.material = nextMats.length === 1 ? nextMats[0]! : nextMats;
+    }
+  });
   return clone;
 }
 

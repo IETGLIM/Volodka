@@ -71,7 +71,7 @@ export function FootstepPedometer() {
   return (
     <div
       ref={rootRef}
-      className="footstep-pedometer flex flex-col items-center gap-0.5 select-none pointer-events-none"
+      className="footstep-pedometer hud-filmic-pedometer-tick flex flex-col items-center gap-0.5 select-none pointer-events-none"
       style={quietStyle}
       aria-label="Шаги: 0"
     >
@@ -79,7 +79,10 @@ export function FootstepPedometer() {
         className="font-mono tracking-[0.12em] uppercase"
         style={{
           fontSize: '7px',
-          color: 'rgba(52, 211, 153, 0.4)',
+          /* WS14-A contrast fix: 0.4 → 0.78 so the label is legible against
+             dark scenes. Subtle warm shadow anchors the glyph. */
+          color: 'rgba(110, 231, 183, 0.78)',
+          textShadow: '0 1px 4px rgba(0, 0, 0, 0.7)',
           lineHeight: 1,
         }}
       >
@@ -89,14 +92,15 @@ export function FootstepPedometer() {
       <div className="flex items-center gap-1">
         <Footprints
           size={12}
-          style={{ color: 'rgba(52, 211, 153, 0.5)', flexShrink: 0 }}
+          style={{ color: 'rgba(110, 231, 183, 0.85)', flexShrink: 0 }}
         />
         <span
           ref={countElRef}
           style={{
             fontFamily: 'monospace',
             fontSize: '9px',
-            color: 'rgba(52, 211, 153, 0.6)',
+            color: 'rgba(167, 243, 208, 0.92)',
+            textShadow: '0 1px 4px rgba(0, 0, 0, 0.75)',
             fontVariantNumeric: 'tabular-nums',
             lineHeight: 1,
             display: 'inline-block',
@@ -112,7 +116,8 @@ export function FootstepPedometer() {
         hidden
         style={{
           fontSize: '7px',
-          color: 'rgba(52, 211, 153, 0.3)',
+          color: 'rgba(110, 231, 183, 0.65)',
+          textShadow: '0 1px 3px rgba(0, 0, 0, 0.7)',
           lineHeight: 1,
         }}
       />

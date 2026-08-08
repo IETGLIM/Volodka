@@ -44,7 +44,7 @@ export function KarmaTierBadge({ karma }: { karma: number }) {
 
   return (
     <motion.div
-      className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-mono font-medium tracking-wider uppercase karma-tier-badge-glow select-none"
+      className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[9px] font-mono font-medium tracking-wider uppercase karma-tier-badge-glow hud-filmic-badge-tier-settle select-none"
       style={{
         '--karma-tier-color': style.color,
         '--karma-tier-color-bright': style.brightColor,

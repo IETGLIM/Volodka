@@ -54,29 +54,37 @@ export function StreetWinterVisual({ livePlayerPositionRef }: StreetWinterVisual
       />
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.004}>
         <planeGeometry args={[W, D]} />
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           map={groundTexture}
           color="#d0d8e8"
           roughness={snowOverlayRoughness}
           metalness={snowOverlayMetalness}
+          clearcoat={0.9}
+          clearcoatRoughness={0.05}
+          ior={1.31}
           transparent
           opacity={0.92}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
+          /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */
         />
       </mesh>
 
       {/* ── Sidewalk — packed ice via getWinterIceSheenSettings ── */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.02, 0]} receiveShadow>
         <planeGeometry args={[5, 30]} />
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           color={iceSheen.groundColor}
           roughness={sidewalkRoughness}
           metalness={sidewalkMetalness}
+          clearcoat={0.9}
+          clearcoatRoughness={0.05}
+          ior={1.31}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
+          /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */
         />
       </mesh>
 

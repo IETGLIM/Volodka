@@ -285,8 +285,9 @@ export function AmbientSoundMixer() {
       <motion.button
         className={`pointer-events-auto relative flex items-center justify-center rounded-full ${isOpen ? 'mixer-btn-active' : ''}`}
         style={{
-          width: '36px',
-          height: '36px',
+          /* WS22: 44px min touch target for mobile a11y (was 36px) */
+          width: '44px',
+          height: '44px',
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           background: isOpen ? 'rgb(var(--cyber-cyan-rgb) / 0.12)' : 'rgba(8, 14, 24, 0.7)',

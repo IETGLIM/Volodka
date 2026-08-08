@@ -42,6 +42,17 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'Я знаю, кто следит. Я видел их маршрутизатор в логах — порт 443, нестандартный TLS-сертификат. Мы можем не только прятаться — мы можем смотреть.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 7 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'setFlag', flag: 'ws21b_zarema_counter_intel', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
+        ],
+      },
+      {
         text: 'Может, ты и есть повод? За тобой следят — а заодно и за всеми, кто рядом. Может, тебе лучше уйти. Совсем.',
         next: null,
         condition: { maxKarma: 15 },
@@ -107,6 +118,18 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'archive_zarema_poems', flagValue: true },
         ],
       },
+      {
+        text: 'Двести тридцать — это не библиотека. Это — распределённая база данных. Каждое стихотворение — реплика. Если один узел падает — остальные поднимают. Ты не одна, Зарема. Ты — master node.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 6 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_zarema_distributed_poetry', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 7 } },
+        ],
+      },
     ],
   },
 
@@ -131,6 +154,17 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'writing', value: 1 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
+        ],
+      },
+      {
+        text: 'Стены слушают, Зарема. Каждая царапина — улика. Гильдия прочтёт и узнает, кто был до тебя. Не царапай. Не оставляй следов.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_zarema_no_traces', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -6 } },
         ],
       },
       {
@@ -165,6 +199,17 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'persuasion', value: 2 },
           { type: 'setFlag', flag: 'guard_oleg_approached', flagValue: true },
           { type: 'addKarma', value: 5 },
+        ],
+      },
+      {
+        text: 'Олег шепчет — значит, канал открыт. Поэзия через охранника — это пассивный exfiltration. Мы не прорываемся — мы протекаем. Гильдия не заметит утечку в пять строк.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_poetry_exfiltration', flagValue: true },
         ],
       },
       {
@@ -253,6 +298,31 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'setFlag', flag: 'protect_oleg', flagValue: true },
+        ],
+      },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: 'Стихи — не только ключ. Они — генератор ключей. Каждый стих — новая скважина в стене камеры. Мы напишем так, что замки сами будут отпираться.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'ws20b_poetry_key_generator', flagValue: true },
+        ],
+      },
+      {
+        text: 'Стихи освободили тебя — но они же и посадили. Не стройте иллюзий: гильдия читает стихи лучше нас. Она знает, что слово — оружие. И обратное тоже верно.',
+        next: null,
+        condition: { maxKarma: 16 },
+        effects: [
+          { type: 'addKarma', value: -4 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -6 } },
+          { type: 'setFlag', flag: 'ws20b_poetry_double_edge', flagValue: true },
         ],
       },
     ],
@@ -438,6 +508,31 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'addKarma', value: 3 },
+        ],
+      },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: 'Александр, ты — мост. Ты — стоял — на — черте — и — не — давал — гильдии — перейти. Ты — не — по — ту — сторону. Ты — на — самой — черте. И — это — самое — важное — место. Без — тебя — черта — невидима. С — тобой — она — обозначена. Обозначенная — граница — уже — не — стена. Это — линия — переговоров.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: 18 } },
+          { type: 'setFlag', flag: 'ws20b_alexander_bridge_on_line', flagValue: true },
+        ],
+      },
+      {
+        text: 'Подписал — и — боишься? Ты — хочешь — и — то — и — другое. Гильдия — не — уважает — страх. Гильдия — уважает — решимость. Ты — подписал — будь — последовательным. Страх — без — решимости — — слабость. Решимость — без — страха — — глупость. Выбирай.',
+        next: null,
+        condition: { maxKarma: 12 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_alexander', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'ws20b_alexander_consistent_cruelty', flagValue: true },
         ],
       },
     ],
@@ -850,6 +945,422 @@ export const DIALOGUE_PART3_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'logic', value: 2 },
           { type: 'addStat', stat: 'stress', value: 5 },
+        ],
+      },
+      {
+        text: 'Я буду на крыше, когда ты дашь сигнал. Не как командир — как свидетель. Город должен знать, что его видят.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 16 } },
+          { type: 'setFlag', flag: 'broadcast_roof_vow', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста выдыхает — и ты впервые видишь, как у него дрожат руки. Не от страха — от облегчения. «Свидетель». Не герой, не лидер — свидетель. Ты сказал именно то, что ему нужно было услышать. Город — это не те, кто командует. Это — те, кто видит.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Три минуты — мало. Жирно надо пускать диффузно — по строке в час, чтобы гильдия не смогла отследить источник. Эффект — тот же. Риск — ноль.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'broadcast_restraint_plan', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста молчит. Ты говоришь «эффект — тот же». Вы оба знаете — нет, не тот же. Поэзия в три минуты — крик. Поэзия по строке в час — шёпот. Кричат — потому что не могут иначе. Ты только что предложил ему променять крик на расчёт. Он не простит. Не сейчас.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Я хочу, чтобы каждый стих шёл с подписью автора. Если нас будут удалять — пусть удаляют поимённо. Имена — первый шаг к памяти. Пусть хотя бы имена — увидят.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'broadcast_with_names', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста долго смотрит на тебя. «С подписью». Он повторяет — медленно. «Ты понимаешь, что это значит?» Ты понимаешь. Подпись — это не гордость. Подпись — это ответственность. Это — «вот — я. Удали — меня. Если — сможешь». Гильдия удаляет безымянное. Имен — она боится.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Я не стану прятаться на крыше. Я буду стоять в зале, когда это начнётся. Чтобы каждый, кто увидит стих на экране — посмотрел рядом — и увидел меня. И понял: это не сбой. Это — человек.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 14 } },
+          { type: 'setFlag', flag: 'broadcast_visible_in_hall', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста выдыхает — и качает головой. «Ты сумасшедший». Это звучит — как комплимент. Имя — на экране. Тело — рядом с экраном. Лицо — рядом со стихом. Так гильдия не сможет сказать: «сбой системы». Им придётся сказать: «человек». А людей — нельзя оптимизировать. Пока — нельзя.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Сначала протестируй на одном узле. На самом ненужном. Если выгорит — расширим. Если нет — пожертвуем одним. Не двадцатью. Это логика, не трусость.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -3 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'broadcast_sacrifice_one_node', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста молчит. «Самый ненужный узел». Ты сказал это легко. Как будто есть ненужные узлы. Как будто есть ненужные люди. Ты только что выбрал — кого — принести — в — жертву. Бариста это запомнит. И ты — тоже.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Пусть каждый узел запускается сам — в случайное время. Так труднее отследить центр. И меня — труднее приплести. Я не хочу быть ключом. Я хочу быть — никем.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -2 },
+          { type: 'addStat', stat: 'stress', value: 2 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: -6 } },
+          { type: 'setFlag', flag: 'broadcast_decentralized_runtime', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Бариста усмехается. «Быть — никем». Он повторяет — как диагноз. «Ты уже — кто-то, Володька. С тех пор, как вошёл в эту комнату. И гильдия это знает. Случайное время не спасёт — только задержит». Ты киваешь. Ты знаешь. Но «задержит» звучит — лучше, чем — «ничего».',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS17-B — +4 karma-gated dialogue choices (2 high, 2 low)
+     ═══════════════════════════════════════════════════════════ */
+
+  ws17b_zarema_memory_pact: {
+    id: 'ws17b_zarema_memory_pact',
+    speaker: 'Зарема',
+    text: 'Володька, я хочу тебе сказать кое-что, пока нас не слышат. Я нашла способ вшить стихи в служебные поля системы — в заголовки пакетов, в метки времени, в имена файлов. Они будут там всегда. Даже если нас удалят — стихи останутся в структуре. Как — ДНК. Как — отпечаток. Но это значит, что я несу ответственность за каждый байт. За каждую строку, которую гильдия найдёт и использует против нас.',
+    choices: [
+      {
+        text: 'Я разделю эту ответственность. Каждый стих — наш общий. Каждое поле — подписано обоими. Если удалят — удалят нас вместе. Я — не — оставлю — тебя — одну — с — этим.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'ws17b_shared_memory_pact', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема смотрит — и впервые за всё время — её глаза не ищут выхода. Она нашла не выход. Она нашла — партнёра. «Подписано обоими». Она повторяет — медленно. «Нас — нельзя — удалить — по — одному». Это — не храбрость. Это — архитектура. Двойное — резервирование. Не — серверное. Человеческое. Мы — redundant — друг — для — друга. И — это — самое — надёжное — резервирование — из — всех — возможных.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Если стихи в структуре — структура сама станет сопротивлением. Не мы — код. Код — будет — бороться. Код — не — устаёт. Код — не — боится. Мы — вшили — сопротивление — в — саму — ткань — системы.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'ws17b_structure_as_resistance', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема выдыхает — и в этом выдохе — облегчение целого квартала. «Код будет бороться». Она произносит — как читает. Как — констатирует. Не — метафора. Факт. Стихи — в заголовках — будут — проходить — через — каждый — маршрутизатор. Через — каждый — прокси. Через — каждый — фаервол. Гильдия — не — может — удалить — TCP-заголовки. Гильдия — не — может — запретить — метку — времени. Мы — уже — победили. Мы — просто — ещё — не — нажали — deploy.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: 'Если гильдия найдёт стихи в служебных полях — они удалят не только стихи. Они удалят систему. И нас. И всех, кто к ней подключён. Слишком — большой — радиус — поражения. Уйди. Удали. Пока — не — поздно.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'ws17b_purge_embedded_poems', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема молчит. Потом — тихо: «Удалить». Она произносит — как хоронит. «Ты — просишь — меня — удалить — то, что — я — только — что — вшила. Вшить — и — вынуть. Как — будто — ничего — не — было». Она уходит. Ты — остаёшься. С логикой, которая — права. И — с — тишиной, которая — хуже — ошибки.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Интересный подход. Но я не буду рисковать своей кармой за чужие стихи в заголовках. Если хочешь — шей. Но — моё — имя — не — в — полях. Я — не — подписываюсь. Я — только — наблюдаю.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws17b_observer_only_stance', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема кивает — коротко. «Наблюдаешь». Она не спорит. Она — записала. «Наблюдатель» — это — тоже — роль. Роль — без — ответственности. Роль — без — риска. Роль — без — чести. Ты — выбрал — наблюдение. Ты — увидишь, что — будет. Но — ты — не — будешь — частью — того, что — будет. Наблюдатель — не — участник. Наблюдатель — свидетель. Свидетелей — гильдия — не — трогает. Свидетелей — гильдия — не — замечает. Это — безопасно. Это — пусто.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      /* ── WS19-B: +4 karma-gated choices (2 high, 2 low) ── */
+      {
+        text: 'Стихи в структуре — это не только сопротивление. Это — документация. Будущие поколения прочитают заголовки — и узнают, что мы были. Что мы — думали. Что мы — чувствовали. Я — добавлю — свои — строки. К — твоим. Вместе — мы — README — человечества.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
+          { type: 'setFlag', flag: 'ws19b_readme_of_humanity', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — смеётся. Тихо. Редко. «README человечества». Она — повторяет — и — смеётся — громче. «Это — лучший — комментарий, который — я — слышала». README — — первая — вещь, которую — читают. Первая — вещь, которую — удаляют. Но — если — README — в — заголовках — — его — не — удалят. TCP — не — трогает — заголовки. Маршрутизатор — не — читает — comments. Но — кто-то — прочитает. Кто-то — всегда — читает. Мы — пишем — для — тех, кто — будет. Мы — документируем — не — код. Мы — документируем — нас.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: 'Каждый пакет с стихом — это бот, который не стреляет. Пакет — проходит. Гильдия — пропускает. А — внутри — — живое — слово. Мы — превратим — всю — сеть — в — контрабанду — смысла. Каждый — байт — — шепчет. Каждый — заголовок — — стих.',
+        next: null,
+        condition: { minKarma: 75 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 14 } },
+          { type: 'setFlag', flag: 'ws19b_network_of_whispers', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — замирает. «Контрабанда смысла». Она — произносит — каждое — слово — отдельно. Как — пробуют — на — зуб. «Каждый — байт — шепчет». Она — закрывает — глаза. «Сеть — была — создана — для — данных. Мы — превратим — её — в — сеть — для — слов. Гильдия — не — может — запретить — шёпот. Шёпот — тише — шума. Шёпот — внутри — пакета. Шёпот — — невидим. Но — слышим. Тем, кто — слушает. Я — слушаю. Ты — шепчешь. Сеть — несёт. Это — и — есть — победа. Тихая. Необратимая.',
+            thoughtDuration: 8500,
+          },
+        ],
+      },
+      {
+        text: 'Ты вшила стихи в систему. А — если — система — вшьёт — в — тебя — что-то — своё? Гильдия — тоже — умеет — шить. Только — вместо — стихов — — жучки. Ты — открыла — канал. Канал — работает — в — обе — стороны.',
+        next: null,
+        condition: { maxKarma: 12 },
+        effects: [
+          { type: 'addKarma', value: -7 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'ws19b_bidirectional_fear', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — бледнеет. «В обе стороны». Она — не — думала — об — этом. Или — думала — и — не — хотела — говорить. «Канал — двунаправленный», — говорю — я. «TCP — handshake. SYN. SYN-ACK. ACK. Ты — послала — SYN. Гильдия — может — послать — SYN-ACK. Ты — ответишь — ACK. И — тогда — канал — открыт. В — обе — стороны». Она — молчит. Она — поняла. Канал — не — только — наш. Канал — общий. Общее — — опасно.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Стихи в заголовках — это шум. Шум — ухудшает — сигнал. Сеть — и — так — перегружена. Не — надо — добавлять — мусор. Удали. Очисти. Пропускная — способность — священна.',
+        next: null,
+        condition: { maxKarma: 18 },
+        effects: [
+          { type: 'addKarma', value: -9 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -14 } },
+          { type: 'setFlag', flag: 'ws19b_sacred_bandwidth', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Зарема — отступает — на — шаг. «Мусор». Она — произносит — как — выплёвывает. «Стихи — мусор». Она — не — спорит. Она — уходит. Не — хлопнув — дверью. Тише. Хуже. Она — ушла — в — себя. А — я — остался — с — пропускной — способностью, которая — ничего — не — пропускает. Кроме — пакетов. Без — стихов. Чистых. Пустых. Эффективных. Мёртвых.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS22-B — +4 karma-gated dialogue choices (2 high, 2 low)
+     ═══════════════════════════════════════════════════════════ */
+
+  ws22b_alexander_confrontation_choice: {
+    id: 'ws22b_alexander_confrontation_choice',
+    speaker: 'Александр',
+    text: 'Володька, гильдия усиливает давление. Завтра — новые проверки. Нам нужно решить: закрыть Сеть на неделю — или продолжать despite. Я не могу решить за всех. Но я могу сказать, что думаю: если мы закроемся — гильдия решит, что мы испугались. Если продолжим — они найдут нас. Нет правильного ответа. Есть только выбор. И последствия.',
+    choices: [
+      {
+        text: 'Мы не закроемся. Страх — это тоже сигнал. Если гильдия боится нас — значит, мы — значим. Каждый день на воздухе — это день, когда город помнит, что стихи живы. Закрыться — умереть тихо. Остаться — жить громко. Я — за громко.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'ws22b_stay_open_vow', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Александр кивает — медленно, как будто взвешивает каждое слово на ладони. «Громко». Он повторяет. «Я боялся, что ты выберешь тихо. Тихо — безопаснее. Громко — честнее. Ладно. Громко». Он не улыбается. Но — выдыхает. И в этом выдохе — облегчение.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Страх — это не только сигнал. Это — данные. Гильдия усиливает давление — значит, мы — на верном пути. Давление — индикатор. Каждый новый дрон — плюс один к нашей значимости. Мы — не жертвы давления. Мы — его — причина.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 7 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: 8 } },
+          { type: 'setFlag', flag: 'ws22b_pressure_as_indicator', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закроемся. На неделю. Не из страха — из тактики. Отступить, перегруппироваться, обновить протоколы безопасности. Героизм — красивая смерть. Тактика — скучная жизнь. Я — за скучную.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws22b_tactical_retreat', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закрыть? Открыть? Какая разница. Гильдия всё равно найдёт. Мы — не система безопасности. Мы — группа людей с бумагами и стихами. Это не инфраструктура. Это — хобби с риском. Может, пора признать.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'alexander', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'ws22b_hobby_with_risk', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Александр молчит. Потом — тихо: «Хобби». Он произносит — как приговор. «Стихи — хобби». Он не спорит. Он — записал. И — ушел. Ты — остаёшься. С логикой, которая — права. И — с тишиной, которая — хуже — ошибки.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS23-B — +4 karma-gated dialogue choices for Act 3
+     ═══════════════════════════════════════════════════════════ */
+
+  ws23b_barista_secret_channel: {
+    id: 'ws23b_barista_secret_channel',
+    speaker: 'Бариста',
+    text: 'Володька, я нашёл кое-что странное в логах кофейни. Кто-то использует наш Wi-Fi как прокси. Трафик зашифрован, но я вижу размер пакетов — они совпадают с размером текстовых файлов. Стихотворный размер. Буквально. Кто-то гоняет стихи через мою кофемашину. Это либо гений, либо самоубийца. Либо и то, и другое.',
+    choices: [
+      {
+        text: 'Это не «кто-то». Это — мы. Я настроил этот канал. Кофермашина — лучший firewall: кто будет искать стихи в MAC-адресе кофеварки?',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_coffee_proxy_revealed', flagValue: true },
+          { type: 'npcChange', npcId: 'barista', npcChange: { relation: 10 } },
+        ],
+      },
+      {
+        text: 'Гений и самоубийца — не взаимоисключающие термины. В нашей профессии это синонимы. Давай усилим шифрование — и добавим ещё один слой.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_coffee_proxy_upgrade', flagValue: true },
+        ],
+      },
+      {
+        text: 'Закрой канал. Немедленно. Если гильдия найдёт прокси в кофейне — мы все в камере. Не стоит. Ни одно стихотворение не стоит семи лет.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'barista', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws23b_coffee_proxy_shut', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  ws23b_victoria_vault_key: {
+    id: 'ws23b_victoria_vault_key',
+    speaker: 'Виктория',
+    text: 'Володька, я знаю про Хранилище. Не всё — но достаточно. Гильдия хранит там не только удалённые стихи. Там — личности. Стерлинги людей. Не мёртвые — стёртые. Разница. Мёртвый — остаётся в памяти. Стёртый — не существовал. Я могу дать тебе ключ доступа. Но ключ — одноразовый. И если ты его используешь — гильдия узнает. Мгновенно. Выбор — за тобой.',
+    choices: [
+      {
+        text: 'Ключ — одноразовый? Тогда используем его не для чтения — для записи. Запишем в Хранилище имена стёртых. Вернём их. Не из мёртвых — из удалённых. Из null — в exist.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_vault_write_names', flagValue: true },
+          { type: 'npcChange', npcId: 'victoria', npcChange: { relation: 15 } },
+          {
+            type: 'showThought',
+            thought: 'Виктория смотрит так, будто ты только что предложил взорвать солнце. И — соглашается. «Из null — в exist», — повторяет она. «Ты — сумасшедший». «Я — знаю», — отвечаю. И мы оба знаем, что это не оскорбление. Это — квалификация.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Дай ключ. Я посмотрю. Только посмотрю. Иногда знать — уже достаточно. Иногда — недостаточно. Но — сначала — знать.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'ws23b_vault_read_only', flagValue: true },
+          { type: 'npcChange', npcId: 'victoria', npcChange: { relation: 5 } },
+        ],
+      },
+      {
+        text: 'Ключ — ловушка. Ты — двойной агент. Гильдия послала тебя проверить меня. «Одноразовый» — значит отследимый. Я не кусаю.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -4 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'npcChange', npcId: 'victoria', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'ws23b_victoria_mistrusted', flagValue: true },
         ],
       },
     ],

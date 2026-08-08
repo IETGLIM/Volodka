@@ -13,10 +13,13 @@
 
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 
-/** Max FOV dip (degrees) at full landing impact (|vel.y| = 12 m/s). */
-const LANDING_FOV_DIP_DEG = 9.85; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — bigger cinematic inward smash, apocalyptic weight + black hole crush + multiversal implosion + infinite singularity + eternal void crush
+/** Max FOV dip (degrees) at full landing impact (|vel.y| = 12 m/s).
+ *  Session 13 (ramp-tame): was 9.85° ("APOCALYPSE RAMP") — a ~10° inward FOV
+ *  pinch on every hard landing is nauseating. Now 2.8°: a perceptible cinematic
+ *  "thud" without motion sickness. */
+const LANDING_FOV_DIP_DEG = 2.8;
 /** Exponential recovery speed (1/s). ~0.25s to 37%, ~0.5s to 14%. */
-const LANDING_FOV_RECOVER_SPEED = 1.65; // slower recovery for even heavier cinematic feel, lingering god-crush + time dilation + quantum freeze + black hole linger
+const LANDING_FOV_RECOVER_SPEED = 2.6;
 
 let landingFovDip = 0;
 

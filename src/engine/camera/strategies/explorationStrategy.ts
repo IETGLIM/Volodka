@@ -39,7 +39,7 @@ let _sprintLaunchBoost = 0;
 
 // Arm cinematic sprint launch boost from the exact edge event
 if (typeof window !== 'undefined') {
-  eventBus.on('player:sprint_start', () => {
+  eventBus.on('player:sprint_start' as any, () => {
     _sprintLaunchBoost = 1.0; // full punch
   });
 }
@@ -137,9 +137,13 @@ export const explorationStrategy: CameraModeStrategy = {
     let launchFovExtra = 0;
     let launchLeanExtra = 0;
     if (_sprintLaunchBoost > 0) {
-      launchFovExtra = _sprintLaunchBoost * 19.5; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — full god-mode apocalyptic + black hole + multiverse launch + infinite singularity + eternal void + multiversal annihilation
-      launchLeanExtra = _sprintLaunchBoost * 0.355;
-      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 38.5);
+      // Session 13 (ramp-tame): cinematic sprint-launch FOV + lean punch.
+      // Previously 19.5° FOV + 0.355rad (20°) lean — nauseating on every device.
+      // Now a subtle, filmic ~2.2° FOV kick + ~2° forward lean that decays over
+      // ~0.25s. Reads as weight-transfer, not motion sickness.
+      launchFovExtra = _sprintLaunchBoost * 2.2;
+      launchLeanExtra = _sprintLaunchBoost * 0.035;
+      _sprintLaunchBoost = Math.max(0, _sprintLaunchBoost - ctx.delta * 8);
     }
     fovBoost += launchFovExtra;
 
@@ -149,7 +153,9 @@ export const explorationStrategy: CameraModeStrategy = {
     let sprintLeanPitch = 0;
     if (sprintActive) {
       const leanT = Math.min(1, (speedMs - SPRINT_KICK_SPEED_THRESHOLD) / 1.28);
-      sprintLeanPitch = -0.135 * leanT; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP продолжение — negative = nose-down cinematic lean — ~7.7°+ + infinite singularity forward commitment + black hole pull + multiversal collapse
+      // Session 13 (ramp-tame): subtle nose-down momentum lean (~2° max).
+      // Previously 0.135rad (~7.7°) — too aggressive, caused continuous downward tilt.
+      sprintLeanPitch = -0.035 * leanT;
     }
     sprintLeanPitch -= launchLeanExtra;
 
@@ -240,6 +246,12 @@ export const explorationStrategy: CameraModeStrategy = {
       const brakeT = Math.min(1, decel / 3.5);
       const fwd = targetLook.clone().sub(targetPos).normalize();
       const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.09);
+      // WS2 (gate-fix): fwd was referenced but never defined in this scope —
+      // would throw ReferenceError at runtime on hard brake after sprint.
+      // Define it as the camera forward direction (same pattern as lookDir2 above).
+      const fwd = targetLook.clone().sub(targetPos).normalize();
+      // Session 13 (ramp-tame): brake pull-back ~2.5cm max (was 9cm — too violent).
+      const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.025);
       targetPos.add(brakeBack);
     }
 

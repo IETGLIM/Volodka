@@ -3,14 +3,19 @@
  * OTS aids: quest bearing arrow, ambient vignette, NPC proximity whisper.
  */
 
+import { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Save } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
+import { useMiniMapState } from '@/store/selectors/explorationSelectors';
+import { useActiveQuests, getQuestMarker } from '@/store/questStore';
+import { SCENE_CONFIG } from '@/config/scenes';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { CrosshairInteractionPrompt } from '@/components/game/hud/parts/CrosshairInteractionPrompt';
@@ -31,6 +36,14 @@ import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
 import { AaaImmersiveGuide } from '@/components/game/hud/parts/AaaImmersiveGuide';
 import { AaaWorldMarkerSystem } from '@/components/game/hud/parts/AaaWorldMarkerSystem';
+import { ObjectiveBeacon } from '@/components/game/hud/parts/ObjectiveBeacon';
+import { InteractableSparkle } from '@/components/game/hud/parts/InteractableSparkle';
+import { SceneEntryNudge } from '@/components/game/hud/parts/SceneEntryNudge';
+import { CyberpunkMinimap } from '@/components/game/hud/parts/CyberpunkMinimap';
+import type { MinimapMarker } from '@/components/game/hud/parts/CyberpunkMinimap';
+import { QuestObjectiveCard } from '@/components/game/hud/parts/QuestObjectiveCard';
+import { useActiveQuestCardData } from '@/components/game/hud/parts/questObjectiveCardAdapter';
+import { useGamePhase } from '@/store/selectors/uiSelectors';
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -79,6 +92,45 @@ export function ExplorationHUD(props: HUDProps) {
   const proximityFxActive = useHudProximityFxActive();
   const { currentHint, dismissHint } = useContextualHints();
   const reducedMotion = useEffectiveReducedMotion();
+  const isMobile = useIsMobileVisual();
+  const gamePhase = useGamePhase();
+
+  /* ── QuestObjectiveCard data ──
+     Adapts the active quest (lowest spineOrder wins) into the rich
+     QuestData shape needed by QuestObjectiveCard. Hidden on mobile,
+     in combat, in cutscenes, or when there is no active quest. */
+  const activeQuestCardData = useActiveQuestCardData();
+  const showQuestObjectiveCard =
+    !isMobile
+    && gamePhase === 'exploration'
+    && activeQuestCardData !== null;
+
+  /* ── CyberpunkMinimap data ──
+     Derives player position, rotation, location name, and quest markers
+     from the exploration + quest stores. Gated on !isMobile (too small
+     on mobile viewports). */
+  const { playerPos, playerRotation, currentSceneId } = useMiniMapState();
+  const activeQuests = useActiveQuests();
+
+  const minimapMarkers: MinimapMarker[] = useMemo(() => {
+    if (isMobile) return [];
+    const result: MinimapMarker[] = [];
+    for (const q of activeQuests) {
+      const marker = getQuestMarker(q.questId);
+      if (!marker) continue;
+      result.push({
+        id: `quest-${q.questId}`,
+        type: 'quest',
+        worldPosition: [marker.position[0], marker.position[2]],
+        label: q.questId,
+        isActive: true,
+        priority: 10,
+      });
+    }
+    return result;
+  }, [activeQuests, isMobile]);
+
+  const minimapLocationName = SCENE_CONFIG[currentSceneId]?.name;
 
   const {
     photoModeOn,
@@ -114,6 +166,8 @@ export function ExplorationHUD(props: HUDProps) {
       <div className="hud-corner-accent hud-corner-accent-br" aria-hidden="true" />
 
       <SceneAmbientVignette />
+      {/* Scene entry nudge — brief directional vignette on first visit. */}
+      <SceneEntryNudge />
       <SceneTopBarHud />
       <AmbientParticles />
       <RainScreenEffect />
@@ -141,6 +195,9 @@ export function ExplorationHUD(props: HUDProps) {
           feedback that interactables are nearby. EventBus-driven
           (exploration:footstep). Decays between steps. */}
       <InteractionRadarPulse />
+      {/* Subtle sparkle on nearby interactables — show-don't-tell
+          affordance that draws the eye without a text prompt. */}
+      <InteractableSparkle />
       {proximityFxActive ? <CrosshairInteractionPrompt /> : null}
 
       <AnimatePresence>
@@ -174,9 +231,55 @@ export function ExplorationHUD(props: HUDProps) {
       <AaaImmersiveGuide />
       <AaaWorldMarkerSystem />
       <QuestDirectionArrow />
+      {/* Subtle amber chevron at screen edge pointing toward objective —
+          only shows after 15s of not finding the target. Show-don't-tell. */}
+      <ObjectiveBeacon />
       <NPCProximityIndicator />
       <LootProximityIndicator />
       <PhysicsDegradedDevBadge />
+
+      {/* CyberpunkMinimap — top-right minimap showing player position + quest markers.
+          Hidden on mobile (too small viewport) and in photo mode. */}
+      {!isMobile && (
+        <div
+          className="absolute top-4 right-4 pointer-events-auto hud-filmic-glow-breathe"
+          style={{ zIndex: UI_LAYERS.HUD + 1 }}
+        >
+          <CyberpunkMinimap
+            playerPosition={[playerPos[0], playerPos[2]]}
+            markers={minimapMarkers}
+            rotation={playerRotation}
+            locationName={minimapLocationName}
+            size={140}
+            position={{ top: 0, right: 0 }}
+          />
+        </div>
+      )}
+
+      {/* QuestObjectiveCard — orphan HUD mount. Surfaces the active quest
+          (lowest spineOrder wins) with a compact objective checklist and
+          progress bar. Desktop-only, hidden in combat/cutscene/photo mode
+          and when no active quest is available. AnimatePresence handles
+          the smooth fade + slide enter/exit. */}
+      <AnimatePresence>
+        {showQuestObjectiveCard && activeQuestCardData && (
+          <motion.div
+            key={`quest-objective-card-${activeQuestCardData.id}`}
+            initial={{ opacity: 0, x: 24 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: 18 }}
+            transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+            className="absolute right-4 pointer-events-auto hud-filmic-glow-breathe"
+            style={{ top: 'clamp(168px, 18vh, 196px)', zIndex: UI_LAYERS.HUD + 1, maxWidth: 300 }}
+          >
+            <QuestObjectiveCard
+              quest={activeQuestCardData}
+              compact={true}
+              showRewards={false}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence>
         {(isLowEnergy || isHighStress) && (

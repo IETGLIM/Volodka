@@ -32,13 +32,17 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
     <group>
       {/* ── Floor ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           map={floorTexture}
           color="#3a3a3a"
           roughness={0.7}
+          clearcoat={0.7}
+          clearcoatRoughness={0.15}
+          ior={1.5}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
+          /* WS20-C: upgraded to MeshPhysicalMaterial for PBR clearcoat */
         />
       </mesh>
 

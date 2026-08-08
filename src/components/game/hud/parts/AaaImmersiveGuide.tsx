@@ -135,7 +135,7 @@ export function AaaImmersiveGuide() {
           show('poem_power', INNER_VOICE_LINES.poem_power, 'poetic', 4600);
         }
       }),
-      eventBus.on('player:karma_change', ({ delta }: any) => {
+      eventBus.on('player:karma_change' as any, ({ delta }: any) => {
         if (Math.abs(delta || 0) > 8) {
           const line = (delta || 0) > 0 ? INNER_VOICE_LINES.karma_high : INNER_VOICE_LINES.karma_low;
           show(`karma_${Date.now()}`, line, 'thought', 3200);

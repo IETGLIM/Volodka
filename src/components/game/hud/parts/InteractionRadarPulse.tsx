@@ -96,7 +96,7 @@ export function InteractionRadarPulse() {
 
             {/* Radar sweep line */}
             <div
-              className="radar-sweep absolute"
+              className="radar-sweep hud-filmic-radar-sweep absolute"
               style={{
                 width: 1,
                 height: half - 2,

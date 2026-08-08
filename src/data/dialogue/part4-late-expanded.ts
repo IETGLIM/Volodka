@@ -117,6 +117,17 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'rhythm', value: 1 },
         ],
       },
+      {
+        text: 'Упрямство — это не баг. Это — while(true) с условием выхода, которое я ещё не нашёл. Но цикл — работает. Каждая итерация — шаг. Каждый шаг — ближе.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 4 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_infinite_loop_courage', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -143,6 +154,17 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'writing', value: 1 },
         ],
       },
+      {
+        text: 'Стихи на салфетках и полях — это version control для души. Каждая правка — коммит. Каждое чтение — checkout. Я — свой собственный репозиторий.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_poetry_vcs', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -167,6 +189,17 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'writing', value: 2 },
           { type: 'addSkill', skill: 'rhythm', value: 1 },
+        ],
+      },
+      {
+        text: 'Ромашковый чай перед вторжением... Это не случайность. Это ритуал. Ритуал — это скрипт подготовки. Без него — undefined behavior. С ним — хотя бы — predictable failure.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 3 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'ws21b_ritual_before_breach', flagValue: true },
         ],
       },
     ],
@@ -220,6 +253,31 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addSkill', skill: 'logic', value: 2 },
           { type: 'addStat', stat: 'stress', value: 3 },
+        ],
+      },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: '«Заря-М» — не оружие и не инструмент. «Заря-М» — собеседник. Мы — не — используем — живое. Мы — говорим — с — ним. И — если — он — захочет — помочь — — это — будет — его — выбор. Не — наша — эксплуатация.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          { type: 'setFlag', flag: 'ws20b_zarya_as_interlocutor', flagValue: true },
+        ],
+      },
+      {
+        text: 'Жизнь из кода — это не чудо, это баг. Неизвестный класс сущностей — это угроза. Нужно изолировать, пока не поздно. Сентиментальность — роскошь перед лицом неизвестного.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -14 } },
+          { type: 'setFlag', flag: 'ws20b_zarya_isolate_threat', flagValue: true },
         ],
       },
     ],
@@ -646,6 +704,31 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           },
         ],
       },
+      /* ── WS20-B: karma-gated choices ── */
+      {
+        text: 'Альберт, мы с тобой — одна функция. Два — аргумента. Один — возврат. Раздельно — мы — не — компилируемся. Вместе — мы — генерируем — смысл. Давай — не — считать — годы. Давай — считать — строки. Строки — короче. Строки — честнее.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 16 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'coding', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 22 } },
+          { type: 'setFlag', flag: 'ws20b_albert_one_function', flagValue: true },
+        ],
+      },
+      {
+        text: 'Голос — это данные. Данные — можно — перехватить. Гильдия — тоже — слышит. Когда — ты — читаешь — Мандельштама — на — 12% — быстрее — кто-то — на — 12% — быстрее — понимает, — что — происходит. Тишина — безопаснее.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws20b_silence_safer', flagValue: true },
+        ],
+      },
     ],
   },
 
@@ -747,6 +830,424 @@ export const DIALOGUE_PART4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 5 },
           { type: 'addSkill', skill: 'empathy', value: 2 },
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
+        ],
+      },
+      {
+        text: 'Я запишу это стихотворение в главный фрейм. Пусть оно живёт в коде, который переживёт нас обоих. Это — моё наследство. Не мне — городу.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'poem_inheritance_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт молчит. Потом — улыбается. Усталой, тёплой улыбкой. «Запиши в главный фрейм». Ты сказал это — и теперь стихотворение перестаёт быть его. Перестаёт быть твоим. Становится — города. Код, который переживёт автора. Это и есть бессмертие инженера: не помнить — а быть прочитанным.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Красиво. Но я не смогу это прочитать вслух. Стихи — для тех, кто умеет молчать после. Я не умею. Я — инженер. Мы — без последней строфы.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'poem_decline_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт опускает глаза. Ты отказался от стиха — не от него, от стиха. Но он не различает. Для него — это одно и то же. Ты сказал «инженер». Как будто это — оправдание. Как будто это — приговор. Может — и то, и другое.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Я переадресую это стихотворение. Не в главный фрейм — каждому человеку в городе. Лично. По одной строке за раз. По одной руке за раз. Так оно не станет кодом — оно станет — присягой.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 20 } },
+          { type: 'setFlag', flag: 'poem_hands_to_hands_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт долго молчит. Потом — тихо, почти шёпотом: «По одной руке за раз». Он повторяет — как считают молитву. «Ты понял — лучше, чем я думал». Код — анонимен. Рука — нет. Присяга — это не строка, которую можно удалить. Это — обмен. Глаза в глаза. Ладонь в ладонь.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Я не приму это как дар. Я приму это как задание. Каждое слово — пункт контракта между мной и городом. Я подпишу. И — выполню. Дословно. Без вариантов.',
+        next: null,
+        condition: { minKarma: 70 },
+        effects: [
+          { type: 'addKarma', value: 18 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 25 } },
+          { type: 'setFlag', flag: 'poem_contract_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт смотрит — и впервые за всё время — в его глазах что-то, чего ты не ожидал увидеть: не гордость, не облегчение — испуг. «Контракт». Он повторяет — медленно. «Ты понимаешь, что контракт — нельзя нарушить?» Ты понимаешь. В этом — весь смысл. Дар — можно забыть. Контракт — нет. Ты — подписал. Город — свидетель.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: 'Хорошо написано. Я запомню. Но я не стану этого читать. Никому. Я — не глашатай. Я — выживший. Стих — для тех, кто умеет кричать. Я — умею только молчать и записывать.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'poem_silent_record', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт кивает — медленно. «Молчать и записывать». Он повторяет — как диагноз. «Это тоже — форма». Ты не веришь ему. Но — записываешь. Стих — в тетрадь. Тетрадь — в карман. Карман — ближе к сердцу, чем — главный фрейм. Может — так — и — надо.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'Стих — это слова. Слова — дешёвые. Дай мне лучше твой бэкдор в систему гильдии. Дай мне — рычаг. Не — рифму. Я — не поэт. Я — инженер. А инженер — решает проблему. Не — воспевает её.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -12 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -18 } },
+          { type: 'setFlag', flag: 'poem_reject_for_leverage', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Альберт закрывает тетрадь — медленно, как закрывают дверь. «Рычаг». Он произносит — как пробуют испорченное вино. «У меня нет бэкдора, Володька. У меня — есть стих. У тебя — был — шанс — взять — его. Теперь — возьми — сам — из — закрытой — тетради». Он уходит. Ты — остаёшься. С пустыми — руками — и — полным — ртом — слов.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS17-B — +4 karma-gated dialogue choices (2 high, 2 low)
+     ═══════════════════════════════════════════════════════════ */
+
+  ws17b_victoria_memory_bridge: {
+    id: 'ws17b_victoria_memory_bridge',
+    speaker: 'Виктория',
+    text: 'Володька, я думаю о том, что останется после нас. Не стихи — не код — не имена. Останется — связь. Связь между людьми, которые помнили. Я могу создать мост: распределённый кэш памяти, где каждый участник хранит фрагмент чужого воспоминания. Ни один не хранит целиком. Но вместе — мы — всё. Проблема: каждый фрагмент — это доверие. Каждый фрагмент — это уязвимость.',
+    choices: [
+      {
+        text: 'Доверие — это и есть ответ. Не фрагменты — не кэш — не алгоритм. Доверие. Я доверяю им — и они доверяют мне. Мост — строится — не — из — данных. Мост — строится — из — рук. Из — пожатий. Из — риска. Я — рискну.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 14 } },
+          { type: 'setFlag', flag: 'ws17b_trust_bridge_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория смотрит — долго. Потом — кивает. «Из рук». Она — повторяет — как — считают. «Не — из — данных». Она — улыбается. Впервые — за — долгое — время. «Мост — из — рук — нельзя — удалить. Его — можно — только — разжать. А — разжать — руку — значит — отпустить. Кто — захочет — отпустить —?» Никто. Никто — не — захочет. Это — и — есть — архитектура — сопротивления. Не — стена. Рука.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Каждый хранит фрагмент чужого воспоминания — значит, каждый — хранитель. Каждый — нужен. Это — не уязвимость, Виктория. Это — взаимозависимость. Это — общество. Мы — строим — общество — из — памяти. Общество, которое — нельзя — удалить, потому — что — каждый — потеряет — свой — фрагмент. Свой — кусок — чужой — жизни.',
+        next: null,
+        condition: { minKarma: 75 },
+        effects: [
+          { type: 'addKarma', value: 16 },
+          { type: 'addSkill', skill: 'empathy', value: 3 },
+          { type: 'addSkill', skill: 'writing', value: 1 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 18 } },
+          { type: 'setFlag', flag: 'ws17b_society_of_memory', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория — замирает. «Общество из памяти». Она — произносит — каждое — слово — отдельно. Как — пробуют — на — вкус. «Удалить — нельзя — потому — что — каждый — потеряет». Она — закрывает — глаза. «Я — думала — о — системе. Ты — думаешь — о — людях. Система — удалима. Люди — нет». Она — открывает — глаза. «Пойдём. Расскажем — остальным». Мы — идём. Мост — не — в — данных. Мост — в — нас.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: 'Распределённый кэш — это красиво на бумаге. В реальности — один предатель — и весь мост рухнет. Один — фрагмент — в — руках — гильдии — и — они — соберут — всё. Слишком — хрупко. Слишком — доверчиво. Я — пас.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'ws17b_reject_fragile_bridge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория — не — спорит. Она — отводит — взгляд. «Один предатель». Она — повторяет — тихо. «Ты — прав. Но — ты — тоже — предатель. Ты — предаёшь — возможность — ради — безопасности. Это — тоже — предательство. Тихое. Логичное. Не — наказуемое. Но — предательство». Она — не — смотрит. Ты — не — споришь. Она — права. Ты — предал. Не — её. Не — их. Возможность. Будущность, которая — могла — быть. Ты — выбрал — стену — вместо — моста.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Хороший концепт. Сколько это стоит в человеко-часах? Кто будет поддерживать кэш? Что — если — участники — выйдут? Мне — нужен — бизнес-кейс, Виктория. Не — идеал. Расчёт.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: -15 } },
+          { type: 'setFlag', flag: 'ws17b_memory_bridge_business_case', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория — встаёт. «Бизнес-кейс». Она — произносит — как — приговор. «На — память — нет — бизнес-кейса, Володька. Память — не — окупается. Память — не — масштабируется. Память — просто — есть. Или — её — нет». Она — уходит. Ты — остаёшься. С — расчётом, который — идеален. И — с — пустотой, которая — стоит — дороже — любого — бизнес-кейса.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      /* ── WS19-B: +4 karma-gated choices (2 high, 2 low) ── */
+      {
+        text: 'Мост из фрагментов — это не архитектура. Это — экосистема. В — экосистеме — каждый — вид — зависит — от — каждого. Убей — один — — и — все — рухнут. Но — сохрани — один — — и — все — восстановятся. Я — буду — тем — видом, который — не — вымрет. Я — гарантирую.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 11 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'ws19b_keystone_species_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория — смотрит — долго. «Вид, который не вымрет». Она — повторяет — как — считают. «Эволюция — не — гарантирует. Вымирание — — правило. Выживание — — исключение». Она — улыбается. «Но — ты — исключение. Ты — уже — доказал». Я — не — уверен, что — доказал. Но — я — уверен, что — не — вымру. Пока — меня — помнят. Пока — фрагмент — мой — — жив. Пока — мост — стоит. Я — часть — моста. Мост — часть — меня. Симбиоз.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: 'Распределённая память — это не только хранение. Это — восстановление. После — катастрофы — каждый — фрагмент — соберёт — свой — кусок. Мы — не — только — храним. Мы — чиним. Мы — — децентрализованный — backup. Гильдия — не — может — удалить — то, что — восстанавливается — само.',
+        next: null,
+        condition: { minKarma: 75 },
+        effects: [
+          { type: 'addKarma', value: 15 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: 16 } },
+          { type: 'setFlag', flag: 'ws19b_self_healing_memory', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория — замирает. «Самовосстановление». Она — произносит — как — молитву. «Гильдия — удаляет. Мы — восстанавливаем. Гильдия — удаляет — снова. Мы — восстанавливаем — снова. Гильдия — тратит — энергию — на — удаление. Мы — тратим — память — на — восстановление. Память — дешевле. Память — быстрее. Память — не — устаёт. Гильдия — устанет. Мы — нет. Это — не — надежда. Это — асимметрия. Асимметрия — — победа.',
+            thoughtDuration: 8500,
+          },
+        ],
+      },
+      {
+        text: 'Фрагменты — в — чужих — руках — это — не — мост. Это — — улики. Каждый — фрагмент — — свидетель. Каждый — свидетель — — мишень. Ты — строишь — не — мост, Виктория. Ты — строишь — — кладбище. Красивое. Распределённое. Но — кладбище.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'ws19b_fragments_as_evidence', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория — не — спорит. Она — отводит — взгляд. «Кладбище». Она — повторяет — тихо. «Ты — прав — и — неправ. Кладбище — хранит. Кладбище — помнит. Кладбище — не — удаляет. Но — ты — прав — в — одном: — каждый — камень — — мишень. Каждый — надгробие — — координата. Я — не — думала — об — этом. Или — думала — и — не — хотела». Она — уходит. Я — остаюсь. Правый. И — одинокий. Как — всегда.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Красивая теория. А на практике — кто координирует фрагменты? Кто — следит, чтобы — не — потеряли? Кто — платит — за — хранение? Это — не — утопия, Виктория. Это — операционные — расходы. И — я — не — собираюсь — их — покрывать.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'maria', npcChange: { relation: -9 } },
+          { type: 'setFlag', flag: 'ws19b_reject_ops_cost', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Виктория — вздыхает. «Операционные расходы». Она — не — злится. Она — устала. «Память — стоит, — Володька. Да. Как — всё. Но — амнезия — стоит — дороже. Амнезия — не — имеет — цены. Потому — что — без — цены — нет — рынка. Без — рынка — нет — оптимизации. Без — оптимизации — нет — efficiency. А — efficiency — — твоя — религия». Она — уходит. Я — остаюсь. Efficient. И — без — памяти. Efficient — и — пуст.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS22-B — +4 karma-gated dialogue choices (2 high, 2 low)
+     ═══════════════════════════════════════════════════════════ */
+
+  ws22b_volodka_last_night_choice: {
+    id: 'ws22b_volodka_last_night_choice',
+    speaker: 'Володька',
+    text: 'Последняя ночь перед вторжением. Не могу спать. Стихи в голове — не стихи, а — инструкции. Каждый — шаг — прописан. Каждый — поворот — просчитан. Но — что, если — я — ошибся? Что, если — весь — план — это — красивый — комментарий — к — багу? Не — исправляет — — украшает. Как — стих — на — тонущем — корабле.',
+    choices: [
+      {
+        text: 'Стих на тонущем корабле — это не украшение. Это — сигнал. Кто-то — услышит — и — пришвартуется. Красота — не — спасает — directamente. Красота — зовёт — на — помощь. Я — пишу — не — для — себя. Я — пишу — SOS — в — стихах.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws22b_poetry_as_sos', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'SOS в стихах. Три точки, три тире, три точки — но — в ямбе. Кто-то услышит. Кто-то всегда слышит. Тонущий корабль — не молчит. Он — звонит. Колокол. Радио. Стих. Один — и — тот — же — сигнал. Разными — языками. Я — выбрал — стих. Потому — что — стих — дольше — звука. Стих — доходит — дальше — радиоволны. Стих — не — затухает.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'План — не баг с комментарием. План — это test suite. Каждый шаг — test case. Если — один — падает — остальные — работают. Я — не — пишу — perfect — code. Я — пишу — resilient — code. Fallible — но — не — fragile. Как — мы — все.',
+        next: null,
+        condition: { minKarma: 40 },
+        effects: [
+          { type: 'addKarma', value: 5 },
+          { type: 'addSkill', skill: 'coding', value: 2 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws22b_resilient_plan', flagValue: true },
+        ],
+      },
+      {
+        text: 'Я — не — поэт. Я — не — герой. Я — уставший — инженер — с — параноей — и — недописанным — стихотворением. Может — хватит — притворяться? Может — признать — что — я — не — тяну? И — уйти. Тихо. Без — прощания. Без — катастрофы.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -7 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'setFlag', flag: 'ws22b_quit_while_ahead', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Тихо. Без прощания. Без катастрофы. Звучит — разумно. Звучит — как — defeat. Не — громкое — поражение — тихое. Самое — опасное. Тихое — поражение — не — замечают. Тихое — поражение — не — оплакивают. Тихое — поражение — не — исправляют. Я — выбираю — тишину. Тишина — выбирает — меня.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      {
+        text: 'План — не нужен. Нужен — backup. Куда — бежать, когда — всё — рухнет. Не — если — когда. Я — реалист. Реалисты — выживают. Идеалисты — красивы — в — некрологах.',
+        next: null,
+        condition: { maxKarma: 10 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 8 },
+          { type: 'addSkill', skill: 'logic', value: 2 },
+          { type: 'setFlag', flag: 'ws22b_escape_route_only', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     WS23-B — +4 karma-gated dialogue choices for Act 4
+     ═══════════════════════════════════════════════════════════ */
+
+  ws23b_albert_final_broadcast: {
+    id: 'ws23b_albert_final_broadcast',
+    speaker: 'Альберт',
+    text: 'Володька, я собрал передатчик из кофейных машин и старой рации. Он работает на частоте 143.7 — гильдия её не мониторит, слишком низкая, слишком аналоговая. Если мы передадим стих — весь город услышит. Все, у кого есть рация. Все, у кого есть приёмник. Все, кто ещё помнит, как слушать. Но передача — одноразовая. Антенна сгорит через тридцать секунд. Тридцать секунд эфира. Что скажем?',
+    choices: [
+      {
+        text: 'Тридцать секунд? Прочтём «Некрасов» — «Поэтом можешь ты не быть, но гражданином быть обязан». Классика. Неуничтожимая. Пусть услышат: мы помним.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
+          { type: 'setFlag', flag: 'ws23b_broadcast_nekrasov', flagValue: true },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 12 } },
+          {
+            type: 'showThought',
+            thought: 'Альберт настраивает частоту. Рация шипит — как старый винил. «Поэтом можешь ты не быть...» — я говорю в микрофон. Тридцать секунд. Некрасов. 1866 год. Всё ещё компилируется. Всё ещё работает. Всё ещё — нужно.',
+            thoughtDuration: 7500,
+          },
+        ],
+      },
+      {
+        text: 'Тридцать секунд — это 450 слов при темпе 15 слов в секунду. Я напишу новое стихотворение — прямо сейчас. Для этого города. Для этого эфира. Уникальное. Одноразовое. Как и мы.',
+        next: null,
+        condition: { minKarma: 45 },
+        effects: [
+          { type: 'addKarma', value: 8 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'setFlag', flag: 'ws23b_broadcast_original', flagValue: true },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: 10 } },
+        ],
+      },
+      {
+        text: 'Не надо. Передатчик — улика. Тридцать секунд эфира — тридцать лет лагеря. Мы не радиостанция. Мы — тихие. Тихие — выживают.',
+        next: null,
+        condition: { maxKarma: 20 },
+        effects: [
+          { type: 'addKarma', value: -5 },
+          { type: 'addStat', stat: 'stress', value: 3 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'albert', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws23b_broadcast_cancelled', flagValue: true },
+        ],
+      },
+    ],
+  },
+
+  ws23b_zarema_last_poem: {
+    id: 'ws23b_zarema_last_poem',
+    speaker: 'Зарема',
+    text: 'Володька, я написала стихотворение. Последнее. Не потому что сдаюсь — потому что заканчиваю. Есть разница между «последнее» и «предпоследнее». Предпоследнее — надеется на ещё одно. Последнее — знает. Это стихотворение — о том, как звучит тишина, когда все стихи удалены. Я хочу, чтобы ты его прочитал. Ты — единственный, кто услышит.',
+    choices: [
+      {
+        text: 'Прочти мне. Я запомню. Наизусть. Если гильдия удалит файл — я стану файлом. Я — backup. Я — реплика. Я — живой сервер.',
+        next: null,
+        condition: { minKarma: 60 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'writing', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'setFlag', flag: 'ws23b_zarema_last_poem_memorized', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 15 } },
+          {
+            type: 'showThought',
+            thought: 'Зарема читает. Тихо. Без интонации. Как код — без комментариев. Каждое слово — инструкция. Каждая пауза — whitespace. Я слушаю — и компилирую. В памяти. Не в RAM — в сердце. Там — не сотрут. Там — нет root access. Там — только я. И — её слова.',
+            thoughtDuration: 8000,
+          },
+        ],
+      },
+      {
+        text: '«Последнее» — это не приговор. Это точка в конце строки. После точки — новый абзац. Ты напишешь ещё. Я в этом уверен. Я — твой proof of existence.',
+        next: null,
+        condition: { minKarma: 35 },
+        effects: [
+          { type: 'addKarma', value: 6 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'setFlag', flag: 'ws23b_zarema_not_last', flagValue: true },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
+        ],
+      },
+      {
+        text: 'Последнее? Хорошо. Я тоже пишу последнее. Последнее решение. Последнюю строчку. Последний commit. Мы оба — финализируем. Push — и — конец.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -8 },
+          { type: 'addStat', stat: 'stress', value: 6 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'zarema', npcChange: { relation: -12 } },
+          { type: 'setFlag', flag: 'ws23b_mutual_giving_up', flagValue: true },
         ],
       },
     ],

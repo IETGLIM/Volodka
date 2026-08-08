@@ -1799,3 +1799,1943 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS14-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Subtle / cinematic. Apply additively to existing HUD elements.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 7. Objective pulse ──
+   Subtle warm opacity pulse on the active quest objective text.
+   3s cycle, opacity 0.85 → 1 → 0.85. Apply via
+   className="hud-filmic-objective-pulse" on active objective text. */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-objective-pulse {
+    animation: hud-filmic-objective-pulse-cycle 3s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-objective-pulse-cycle {
+    0%, 100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-objective-pulse {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 8. Divider glow ──
+   Warm gradient glow on section dividers inside panels.
+   Pseudo-element sweeps a soft amber band across the divider line.
+   Apply via className="hud-filmic-divider-glow" on a divider
+   element (e.g. <div className="h-px hud-filmic-divider-glow" />). */
+.hud-filmic-divider-glow {
+  position: relative;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hud-filmic-rule-soft, rgba(220, 230, 240, 0.22)) 50%,
+    transparent 100%
+  );
+}
+
+.hud-filmic-divider-glow::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hud-filmic-glow-warm, rgba(196, 181, 160, 0.15)) 50%,
+    transparent 100%
+  );
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-divider-glow::after {
+    animation: hud-filmic-divider-glow-sweep 6s ease-in-out infinite;
+    background-size: 60% 100%;
+    background-repeat: no-repeat;
+  }
+
+  @keyframes hud-filmic-divider-glow-sweep {
+    0%, 100% {
+      background-position: -30% 0;
+      opacity: 0.55;
+    }
+    50% {
+      background-position: 130% 0;
+      opacity: 1;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-divider-glow::after {
+    animation: none;
+    opacity: 0.7;
+  }
+}
+
+/* ── 9. Tab underline ──
+   Animated underline that scales in from left when a tab becomes
+   active. scaleX 0 → 1, 0.3s ease-out. Apply via
+   className="hud-filmic-tab-underline" on the active tab element
+   (uses ::after pseudo so existing border-b styles are untouched). */
+.hud-filmic-tab-underline {
+  position: relative;
+}
+
+.hud-filmic-tab-underline::after {
+  content: '';
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--hud-filmic-accent, rgba(196, 181, 160, 0.75)) 50%,
+    transparent 100%
+  );
+  transform: scaleX(0);
+  transform-origin: left center;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-tab-underline::after {
+    animation: hud-filmic-tab-underline-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes hud-filmic-tab-underline-in {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-tab-underline::after {
+    transform: scaleX(1);
+    animation: none;
+  }
+}
+
+/* ── 10. Badge shimmer ──
+   Diagonal light shimmer sweep across badge elements. A faint
+   warm-white band translates -100% → 100% over 4s, infinite.
+   Apply via className="hud-filmic-badge-shimmer" on badge root.
+   Uses ::before so existing badge ::after decorations are preserved. */
+.hud-filmic-badge-shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-filmic-badge-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 248, 230, 0.18) 45%,
+    rgba(255, 248, 230, 0.28) 50%,
+    rgba(255, 248, 230, 0.18) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transform: translateX(-100%) rotate(0deg);
+}
+
+.hud-filmic-badge-shimmer > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-badge-shimmer::before {
+    animation: hud-filmic-badge-shimmer-sweep 4s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-badge-shimmer-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    60%, 100% {
+      transform: translateX(300%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-badge-shimmer::before {
+    display: none;
+  }
+}
+
+/* ── 11. Health pulse ──
+   Gentle red box-shadow pulse on low-health indicators.
+   1.2s cycle. Apply via className="hud-filmic-health-pulse"
+   on a low-energy / low-health element (e.g. StatBar container
+   when warning threshold is crossed). */
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-health-pulse {
+    animation: hud-filmic-health-pulse-cycle 1.2s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-health-pulse-cycle {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+    }
+    50% {
+      box-shadow: 0 0 8px 1px rgba(244, 63, 94, 0.28);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-health-pulse {
+    animation: none;
+    box-shadow: 0 0 4px 0 rgba(244, 63, 94, 0.2);
+  }
+}
+
+/* ── 12. Focus ring ──
+   Warm focus ring on keyboard-navigable HUD elements.
+   Visible only on :focus-visible (mouse users see no ring).
+   Apply via className="hud-filmic-focus-ring" on buttons / tabs. */
+.hud-filmic-focus-ring:focus {
+  outline: none;
+}
+
+.hud-filmic-focus-ring:focus-visible {
+  outline: 1px solid var(--hud-filmic-focus, rgba(214, 211, 209, 0.55));
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 2px var(--hud-filmic-focus-glow, rgba(214, 211, 209, 0.12)),
+    0 0 8px 1px var(--hud-filmic-focus-glow, rgba(214, 211, 209, 0.12));
+  border-radius: inherit;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-focus-ring:focus-visible {
+    transition: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WS15-B — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Cinematic polish: breathing glows, circuit traces, data flicker,
+   edge decay, scale breathe, text-shadow pulse.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 13. Glow breathe cycle ──
+   Slow breathing glow effect for important HUD elements (quest
+   indicators, key markers). 3s cycle, brightness 1→1.08→1 with
+   a subtle cyan drop-shadow pulse. Apply via
+   className="hud-filmic-glow-breathe" on important indicators. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-glow-breathe-cycle {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 2px rgba(0, 229, 255, 0.15)); }
+    50% { filter: brightness(1.08) drop-shadow(0 0 6px rgba(0, 229, 255, 0.35)); }
+  }
+
+  .hud-filmic-glow-breathe {
+    animation: hud-filmic-glow-breathe-cycle 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-glow-breathe {
+    animation: none;
+  }
+}
+
+/* ── 14. Circuit trace ──
+   Horizontal trace line that sweeps across tech panels like a
+   scanning circuit. 4s linear infinite, background-position
+   -200% → 200%. Apply via className="hud-filmic-circuit-trace"
+   on tech panel containers. Requires the element to have
+   background-size: 200% 100% (set in the class). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-circuit-trace {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .hud-filmic-circuit-trace {
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.08) 45%, rgba(0, 229, 255, 0.2) 50%, rgba(0, 229, 255, 0.08) 55%, transparent 100%);
+    background-size: 200% 100%;
+    animation: hud-filmic-circuit-trace 4s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-circuit-trace {
+    animation: none;
+    background: none;
+  }
+}
+
+/* ── 15. Data stream flicker ──
+   Subtle opacity flicker simulating data stream interference.
+   2.5s cycle with irregular opacity dips (0.92, 0.88, 0.95).
+   Apply via className="hud-filmic-data-stream-flicker" on
+   data readout or telemetry elements. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-data-stream-flicker {
+    0%, 100% { opacity: 1; }
+    10% { opacity: 0.92; }
+    20% { opacity: 1; }
+    35% { opacity: 0.88; }
+    40% { opacity: 1; }
+    65% { opacity: 0.95; }
+    80% { opacity: 1; }
+  }
+
+  .hud-filmic-data-stream-flicker {
+    animation: hud-filmic-data-stream-flicker 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-data-stream-flicker {
+    animation: none;
+  }
+}
+
+/* ── 16. Edge decay ──
+   Subtle border-color decay effect — edge glow fading in and out.
+   2.8s cycle, border-color rgba(0,229,255, 0.15) → 0.4 → 0.15.
+   Apply via className="hud-filmic-edge-decay" on bordered panels
+   that should pulse their edge glow. Element must have a border
+   for this to be visible. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-edge-decay {
+    0%, 100% { border-color: rgba(0, 229, 255, 0.15); }
+    50% { border-color: rgba(0, 229, 255, 0.4); }
+  }
+
+  .hud-filmic-edge-decay {
+    animation: hud-filmic-edge-decay 2.8s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-edge-decay {
+    animation: none;
+    border-color: rgba(0, 229, 255, 0.25);
+  }
+}
+
+/* ── 17. Scale breathe ──
+   Very subtle scale breathing for emphasis elements (quest markers,
+   important icons). 2s cycle, scale 1 → 1.03 → 1. Barely
+   perceptible but adds life. Apply via
+   className="hud-filmic-scale-breathe" on emphasis elements. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-scale-breathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+  }
+
+  .hud-filmic-scale-breathe {
+    animation: hud-filmic-scale-breathe 2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-scale-breathe {
+    animation: none;
+  }
+}
+
+/* ── 18. Text shadow pulse ──
+   Text-shadow pulse for important text labels. 2.2s cycle,
+   subtle cyan glow 4px → 8px+12px. Apply via
+   className="hud-filmic-text-shadow-pulse" on key text labels. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-text-shadow-pulse {
+    0%, 100% { text-shadow: 0 0 4px rgba(0, 229, 255, 0.1); }
+    50% { text-shadow: 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.1); }
+  }
+
+  .hud-filmic-text-shadow-pulse {
+    animation: hud-filmic-text-shadow-pulse 2.2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-text-shadow-pulse {
+    animation: none;
+  }
+}
+
+/* ── 6. Objective Beacon — breathing amber glow ──
+   Subtle pulsing glow for the screen-edge objective chevron.
+   Only active under prefers-reduced-motion: no-preference. */
+@media (prefers-reduced-motion: no-preference) {
+  .objective-beacon-breathe {
+    animation: objective-beacon-breathe 3s ease-in-out infinite;
+  }
+
+  @keyframes objective-beacon-breathe {
+    0%, 100% {
+      filter: drop-shadow(0 0 3px rgba(255, 179, 71, 0.12));
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.25));
+    }
+  }
+
+  .objective-beacon-ring-pulse {
+    animation: objective-beacon-ring-pulse 3s ease-in-out infinite;
+  }
+
+  @keyframes objective-beacon-ring-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0 0 rgba(255, 179, 71, 0.12);
+    }
+    50% {
+      box-shadow: 0 0 0 3px rgba(255, 179, 71, 0.08), 0 0 0 6px transparent;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .objective-beacon-breathe,
+  .objective-beacon-ring-pulse {
+    animation: none;
+  }
+}
+
+/* ── 7. Interactable Sparkle — CSS-only rotating star/cross ──
+   Subtle 4-pointed star rotation on nearby interactables.
+   Only active under prefers-reduced-motion: no-preference. */
+@media (prefers-reduced-motion: no-preference) {
+  .interactable-sparkle {
+    animation: interactable-sparkle-rotate 4s linear infinite;
+  }
+
+  @keyframes interactable-sparkle-rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .interactable-sparkle {
+    animation: none;
+  }
+}
+
+/* ── 8. Scene Entry Nudge — amber vignette overlay ──
+   A directional vignette that briefly highlights the edge
+   nearest the POI when entering a scene for the first time. */
+@media (prefers-reduced-motion: no-preference) {
+  .scene-entry-nudge-vignette {
+    animation: scene-entry-nudge-fade 1.5s ease-out forwards;
+  }
+
+  @keyframes scene-entry-nudge-fade {
+    0% { opacity: 0; }
+    15% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scene-entry-nudge-vignette {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WS16-B — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Cinematic polish: achievement burst, notification slide-in,
+   hint attention, combo ramp, compass needle settle, mood wave.
+   Palette: cyan #00d4e0, amber #FFB347, warm orange #ff6644.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 19. Achievement burst ──
+   Quick scale + amber glow burst for AchievementPopup on appearance.
+   1s one-shot. Scale 0.92 → 1.06 → 1 with drop-shadow pulse.
+   Apply via className="hud-filmic-achievement-burst" on the
+   achievement popup container (outer motion.div). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-achievement-burst-cycle {
+    0% {
+      transform: scale(0.92);
+      filter: drop-shadow(0 0 0 rgba(255, 179, 71, 0));
+    }
+    35% {
+      transform: scale(1.06);
+      filter: drop-shadow(0 0 16px rgba(255, 179, 71, 0.55));
+    }
+    100% {
+      transform: scale(1);
+      filter: drop-shadow(0 0 0 rgba(255, 179, 71, 0));
+    }
+  }
+
+  .hud-filmic-achievement-burst {
+    animation: hud-filmic-achievement-burst-cycle 1s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-achievement-burst {
+    animation: none;
+  }
+}
+
+/* ── 20. Notification slide-in ──
+   Eased slide-in + fade for new HUDNotificationFeed items.
+   0.4s one-shot. translateX(-14px) → 0, opacity 0 → 1.
+   Apply via className="hud-filmic-notification-slide-in" on each
+   notification item container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-notification-slide-in-cycle {
+    0% {
+      transform: translateX(-14px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-notification-slide-in {
+    animation: hud-filmic-notification-slide-in-cycle 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-notification-slide-in {
+    animation: none;
+  }
+}
+
+/* ── 21. Hint attention ──
+   Subtle amber hue shift + scale breathe for fresh ContextualHint.
+   2.5s infinite loop. Filter drop-shadow 4px → 8px, scale 1 → 1.02 → 1.
+   Apply via className="hud-filmic-hint-attention" on the hint
+   caption container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-hint-attention {
+    0%, 100% {
+      filter: drop-shadow(0 0 4px rgba(255, 179, 71, 0.12));
+      transform: scale(1);
+    }
+    50% {
+      filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.28));
+      transform: scale(1.02);
+    }
+  }
+
+  .hud-filmic-hint-attention {
+    animation: hud-filmic-hint-attention 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-hint-attention {
+    animation: none;
+  }
+}
+
+/* ── 22. Combo ramp ──
+   Graduated color shift + slight scale-up when ComboCounter grows.
+   0.6s one-shot. Filter brightness 1 → 1.12 → 1, saturate 1 → 1.15 → 1,
+   scale 1 → 1.04 → 1. Apply via className="hud-filmic-combo-ramp"
+   on the combo count span (re-mounts per combo tick). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-combo-ramp {
+    0% {
+      filter: brightness(1) saturate(1);
+      transform: scale(1);
+    }
+    40% {
+      filter: brightness(1.12) saturate(1.15);
+      transform: scale(1.04);
+    }
+    100% {
+      filter: brightness(1) saturate(1);
+      transform: scale(1);
+    }
+  }
+
+  .hud-filmic-combo-ramp {
+    animation: hud-filmic-combo-ramp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-combo-ramp {
+    animation: none;
+  }
+}
+
+/* ── 23. Compass needle settle ──
+   Damped oscillation for CompassIndicator needle on direction change.
+   0.5s one-shot. Scale 1 → 1.06 → 0.98 → 1.02 → 1.
+   Apply via className="hud-filmic-compass-needle-settle" on the
+   needle's inner gradient bar (which has no inline transform). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-compass-needle-settle {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.06); }
+    50% { transform: scale(0.98); }
+    75% { transform: scale(1.02); }
+    100% { transform: scale(1); }
+  }
+
+  .hud-filmic-compass-needle-settle {
+    animation: hud-filmic-compass-needle-settle 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-compass-needle-settle {
+    animation: none;
+  }
+}
+
+/* ── 24. Mood wave ──
+   Slow gradient hue wave for EnvironmentMoodIndicator background.
+   4s infinite loop. Animate background-position 0% → 100% → 0%.
+   Apply via className="hud-filmic-mood-wave" on the mood-bar-fill
+   element (which has background-size: 200% 100%). Selector
+   .mood-bar-fill.hud-filmic-mood-wave has higher specificity (0,2,0)
+   than .mood-bar-fill (0,1,0) so it overrides the pre-existing
+   mood-bar-shift 8s animation declared in hud-round9.css. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-mood-wave {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .mood-bar-fill.hud-filmic-mood-wave {
+    animation: hud-filmic-mood-wave 4s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mood-bar-fill.hud-filmic-mood-wave {
+    animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WS17-A — Six new filmic micro-animations for HUD parts polish
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 31. Quest pulse ──
+   2s subtle cyan border-pulse for ActiveQuestMiniTracker when quest is active.
+   Infinite loop. Box-shadow: 0 0 0px → 0 0 4px → 0 0 0px (cyan #00d4e0).
+   Apply via className="hud-filmic-quest-pulse" on the quest tracker's
+   collapsed row div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-quest-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0px rgba(0, 212, 224, 0);
+    }
+    50% {
+      box-shadow: 0 0 4px rgba(0, 212, 224, 0.35);
+    }
+  }
+
+  .hud-filmic-quest-pulse {
+    animation: hud-filmic-quest-pulse 2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-quest-pulse {
+    animation: none;
+  }
+}
+
+/* ── 32. Badge fill glow ──
+   1.5s amber fill glow for ExplorationProgressBadge when progress changes.
+   One-shot. Filter drop-shadow: 0 0 0px → 0 0 5px → 0 0 0px (amber #FFB347).
+   Apply via className="hud-filmic-badge-fill-glow" on the badge wrapper div.
+   Re-apply the class (key change or re-mount) to replay. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-badge-fill-glow {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+    40% {
+      filter: drop-shadow(0 0 5px rgba(255, 179, 71, 0.4));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+  }
+
+  .hud-filmic-badge-fill-glow {
+    animation: hud-filmic-badge-fill-glow 1.5s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-badge-fill-glow {
+    animation: none;
+  }
+}
+
+/* ── 33. Karma ring rotate ──
+   3s slow rotation hint for KarmaRing. Very subtle: rotate 0deg → 2deg → 0deg.
+   Infinite loop. Apply via className="hud-filmic-karma-ring-rotate" on the
+   karma-ring-outer wrapper div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-karma-ring-rotate {
+    0%, 100% {
+      transform: rotate(0deg);
+    }
+    50% {
+      transform: rotate(2deg);
+    }
+  }
+
+  .hud-filmic-karma-ring-rotate {
+    animation: hud-filmic-karma-ring-rotate 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-karma-ring-rotate {
+    animation: none;
+  }
+}
+
+/* ── 34. Chip slide-in ──
+   0.35s eased slide-from-right for SceneContextChip on scene change.
+   One-shot. translateX(8px) → translateX(0), opacity 0.6 → 1.
+   Apply via className="hud-filmic-chip-slide-in" on the chip wrapper div.
+   Re-mount or key change to replay on scene change. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-chip-slide-in {
+    0% {
+      transform: translateX(8px);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-chip-slide-in {
+    animation: hud-filmic-chip-slide-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-chip-slide-in {
+    animation: none;
+  }
+}
+
+/* ── 35. Discovery burst ──
+   1.2s scale + brightness burst for SceneDiscoveryCelebration on discovery.
+   One-shot. scale(0.96) → scale(1.05) → scale(1), brightness 1 → 1.1 → 1.
+   Apply via className="hud-filmic-discovery-burst" on the motion.div
+   caption container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-discovery-burst {
+    0% {
+      transform: scale(0.96);
+      filter: brightness(1);
+    }
+    30% {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+    100% {
+      transform: scale(1);
+      filter: brightness(1);
+    }
+  }
+
+  .hud-filmic-discovery-burst {
+    animation: hud-filmic-discovery-burst 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-discovery-burst {
+    animation: none;
+  }
+}
+
+/* ── 36. Float bob ──
+   2.5s gentle vertical bob for FloatingActionIndicator.
+   Infinite loop. translateY(0) → translateY(-3px) → translateY(0).
+   Apply via className="hud-filmic-float-bob" on the outer fixed-position
+   wrapper div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-float-bob {
+    0%, 100% {
+      transform: translateX(-50%) translateY(0);
+    }
+    50% {
+      transform: translateX(-50%) translateY(-3px);
+    }
+  }
+
+  .hud-filmic-float-bob {
+    animation: hud-filmic-float-bob 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-float-bob {
+    animation: none;
+  }
+}
+
+/* ── 25. Scene transition dissolve ──
+   Filmic dissolve-breathing for scene container transitions.
+   0.6s ease-in-out. Opacity 1 → 0.85 → 1 with subtle scale
+   1 → 0.998 → 1 (very gentle breathing). Apply via
+   className="hud-filmic-scene-dissolve" on scene wrapper elements
+   for smooth dissolves between scenes. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-scene-dissolve {
+    0%, 100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.85;
+      transform: scale(0.998);
+    }
+  }
+
+  .hud-filmic-scene-dissolve {
+    animation: hud-filmic-scene-dissolve 0.6s ease-in-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-scene-dissolve {
+    animation: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   WS18-A — Six new filmic micro-animations for HUD parts polish
+   (WeatherIcon, SkillRechargeHUD, QuickUseCooldownOverlay,
+    BuffDebuffTracker, DamageFloatSystem, EnemyWeaknessDisplay)
+   Color palette: cyan #00d4e0, amber #FFB347, warm orange #ff6644,
+   purple #cc66ff. No blue/indigo.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 37. Weather shift ──
+   2.5s gentle hue-rotation + opacity breathe for WeatherIcon when
+   weather changes. Infinite loop. hue-rotate 0deg → 12deg → 0deg,
+   opacity 0.85 → 1 → 0.85. Apply via className="hud-filmic-weather-shift"
+   on the WeatherIcon motion.div wrapper. The motion.div is keyed by
+   `type`, so re-mount on weather change replays the entry animation
+   and this CSS animation layers on top as a continuous hue breathe. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-weather-shift {
+    0%, 100% {
+      filter: hue-rotate(0deg);
+      opacity: 0.85;
+    }
+    50% {
+      filter: hue-rotate(12deg);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-weather-shift {
+    animation: hud-filmic-weather-shift 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-weather-shift {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 38. Skill recharge pulse ──
+   1.8s subtle cyan fill pulse for SkillRechargeHUD slots when a skill
+   is recharging (cooldown active). Infinite loop. Box-shadow:
+   0 0 0px rgba(0,212,224,0) → 0 0 6px rgba(0,212,224,0.4) → 0 0 0px.
+   Apply via className="hud-filmic-skill-recharge-pulse" on the slot
+   root when the skill is on cooldown. Stacks subtly with the existing
+   framer-motion glow-line + countdown animations. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-skill-recharge-pulse {
+    0%, 100% {
+      box-shadow: 0 0 0px rgba(0, 212, 224, 0);
+    }
+    50% {
+      box-shadow: 0 0 6px rgba(0, 212, 224, 0.4);
+    }
+  }
+
+  .hud-filmic-skill-recharge-pulse {
+    animation: hud-filmic-skill-recharge-pulse 1.8s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-skill-recharge-pulse {
+    animation: none;
+  }
+}
+
+/* ── 39. Quick-use ready glow ──
+   2s soft amber glow for QuickUseCooldownOverlay svg ring when an
+   item becomes ready (cooldown complete). One-shot. Filter
+   drop-shadow: 0 0 0px rgba(255,179,71,0) → 0 0 6px rgba(255,179,71,0.5)
+   → 0 0 0px. Apply via className="hud-filmic-quickuse-ready-glow" on
+   the cooldown-ring svg when progress >= 1. Re-mount via key change
+   or short window of ready state replays. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-quickuse-ready-glow {
+    0% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+    40% {
+      filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.5));
+    }
+    100% {
+      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+    }
+  }
+
+  .hud-filmic-quickuse-ready-glow {
+    animation: hud-filmic-quickuse-ready-glow 2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-quickuse-ready-glow {
+    animation: none;
+  }
+}
+
+/* ── 40. Buff shimmer ──
+   2.2s diagonal shimmer sweep for BuffDebuffTracker active buff
+   effect icons. Infinite loop. Uses ::before pseudo-element with a
+   warm-white light band that translateX sweeps -100% → 300% over 2.2s.
+   Apply via className="hud-filmic-buff-shimmer" on a buff icon's
+   inner content container. The container MUST already be a CSS
+   positioning context (position: absolute or relative) and have
+   overflow: hidden — both properties are NOT forced here so the
+   class is safe to add to elements that already use Tailwind's
+   `absolute` + `overflow-hidden` utilities.
+   Note: no `> *` z-index bump rule (unlike hud-filmic-badge-shimmer)
+   because the target container has absolutely-positioned children
+   (timer bar, warning flash overlay) whose Tailwind `absolute` class
+   would be overridden. Instead the shimmer renders above the icon
+   (positioned z-index:0 stacks above non-positioned content) — the
+   sweep is faint (alpha 0.16–0.24) so it reads as a soft light band
+   passing over the icon, which is the intended shimmer effect. */
+.hud-filmic-buff-shimmer::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -75%;
+  width: 50%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    rgba(255, 248, 230, 0.16) 45%,
+    rgba(255, 248, 230, 0.24) 50%,
+    rgba(255, 248, 230, 0.16) 55%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+  transform: translateX(-100%);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-buff-shimmer::before {
+    animation: hud-filmic-buff-shimmer-sweep 2.2s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-buff-shimmer-sweep {
+    0% {
+      transform: translateX(-100%);
+    }
+    60%, 100% {
+      transform: translateX(300%);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-buff-shimmer::before {
+    display: none;
+  }
+}
+
+/* ── 41. Damage rise-fade ──
+   1.2s upward rise + fade for DamageFloatSystem damage numbers.
+   One-shot. translateY(0) opacity 1 → translateY(-8px) opacity 0.4.
+   Apply via className="hud-filmic-damage-rise-fade" on the inner
+   display-text span. Layers on top of the existing framer-motion
+   outer-rise variant as a subtle inner-text "lift". */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-damage-rise-fade {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-8px);
+      opacity: 0.4;
+    }
+  }
+
+  .hud-filmic-damage-rise-fade {
+    animation: hud-filmic-damage-rise-fade 1.2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-damage-rise-fade {
+    animation: none;
+  }
+}
+
+/* ── 42. Weakness reveal ──
+   0.8s quick scale + outline pulse for EnemyWeaknessDisplay when a
+   weakness is revealed (card mounts). One-shot. scale(0.95) →
+   scale(1.05) → scale(1), outline-color rgba(204,102,255,0) →
+   rgba(204,102,255,0.55) → rgba(204,102,255,0). Apply via
+   className="hud-filmic-weakness-reveal" on the enemy-weakness-card
+   motion.div. Mount-triggered one-shot (AnimatePresence will replay
+   on each new enemy). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-weakness-reveal {
+    0% {
+      transform: scale(0.95);
+      outline-color: rgba(204, 102, 255, 0);
+    }
+    45% {
+      transform: scale(1.05);
+      outline-color: rgba(204, 102, 255, 0.55);
+    }
+    100% {
+      transform: scale(1);
+      outline-color: rgba(204, 102, 255, 0);
+    }
+  }
+
+  .hud-filmic-weakness-reveal {
+    outline: 1px solid transparent;
+    outline-offset: 1px;
+    animation: hud-filmic-weakness-reveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-weakness-reveal {
+    animation: none;
+    outline: none;
+  }
+}
+
+/* ── 43. Stat bar fill glow sweep ──
+   1s ease-out box-shadow glow pulse for CyberStatBar fill when
+   value changes. Cyan glow peeks then fades. One-shot.
+   Apply via className="hud-filmic-stat-bar-fill" on the fill
+   motion.div inside CyberStatBar. Layers over the existing
+   hud-filmic-status-pulse class. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-stat-bar-fill {
+    0% {
+      box-shadow: 0 0 0 rgba(0, 212, 224, 0);
+    }
+    40% {
+      box-shadow: 0 0 8px rgba(0, 212, 224, 0.5);
+    }
+    100% {
+      box-shadow: 0 0 0 rgba(0, 212, 224, 0);
+    }
+  }
+
+  .hud-filmic-stat-bar-fill {
+    animation: hud-filmic-stat-bar-fill 1s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-stat-bar-fill {
+    animation: none;
+  }
+}
+
+/* ── 44. Counter tick bounce ──
+   0.3s scale bounce (1→1.08→1) for AnimatedCounter when the
+   displayed value ticks. One-shot. Apply via
+   className="hud-filmic-counter-tick" on the inner motion.span
+   wrapping the spring-driven display value. Scale peak 1.08 < 1.15. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-counter-tick {
+    0% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .hud-filmic-counter-tick {
+    animation: hud-filmic-counter-tick 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-counter-tick {
+    animation: none;
+  }
+}
+
+/* ── 45. Emergency help pulse ──
+   1.5s urgent red border-color pulse for EmergencyHelpButton
+   when the player is idle. Repeating. Opacity swing 0.3→0.7
+   (Δ=0.4 ≤ 0.6). Period 1.5s = 0.67Hz < 3Hz. Apply via
+   className="hud-filmic-emergency-pulse" on the button element
+   when isIdle && !open. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-emergency-pulse {
+    0% {
+      border-color: rgba(255, 68, 68, 0.3);
+    }
+    50% {
+      border-color: rgba(255, 68, 68, 0.7);
+    }
+    100% {
+      border-color: rgba(255, 68, 68, 0.3);
+    }
+  }
+
+  .hud-filmic-emergency-pulse {
+    animation: hud-filmic-emergency-pulse 1.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-emergency-pulse {
+    animation: none;
+  }
+}
+
+/* ── 46. Combat warning amber flash ──
+   0.8s amber inset box-shadow flash for CombatPreEngagementWarning
+   vignette overlay. One-shot. Apply via
+   className="hud-filmic-combat-warning-flash" on the vignette div.
+   Uses amber #FFB347. Opacity peak 0.5 ≤ 0.6. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-combat-warning-flash {
+    0% {
+      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0);
+    }
+    40% {
+      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0.5);
+    }
+    100% {
+      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0);
+    }
+  }
+
+  .hud-filmic-combat-warning-flash {
+    animation: hud-filmic-combat-warning-flash 0.8s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-combat-warning-flash {
+    animation: none;
+  }
+}
+
+/* ── 47. Ticker scroll glow sweep ──
+   3s moving cyan highlight sweep for TopBarDataTicker track.
+   Uses background-position animation on a linear-gradient
+   highlight bar. Period 3s = 0.33Hz < 3Hz. Apply via
+   className="hud-filmic-ticker-scroll-glow" on the ticker
+   track div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-ticker-scroll-glow {
+    0% {
+      background-position: -100% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  .hud-filmic-ticker-scroll-glow {
+    background-image: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(0, 212, 224, 0.12) 45%,
+      rgba(0, 212, 224, 0.22) 50%,
+      rgba(0, 212, 224, 0.12) 55%,
+      transparent 100%
+    );
+    background-size: 50% 100%;
+    animation: hud-filmic-ticker-scroll-glow 3s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-ticker-scroll-glow {
+    animation: none;
+    background-image: none;
+  }
+}
+
+/* ── 48. Stat pulse ring ──
+   1.2s expanding ring fade for StatPulse on pulse. One-shot.
+   Scale 0.85→1.15 (max ≤ 1.15), opacity 0.5→0 (swing 0.5 ≤ 0.6).
+   Apply via className="hud-filmic-stat-pulse-ring" on the
+   motion.span inside StatPulse. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-stat-pulse-ring {
+    0% {
+      transform: scale(0.85);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1.15);
+      opacity: 0;
+    }
+  }
+
+  .hud-filmic-stat-pulse-ring {
+    animation: hud-filmic-stat-pulse-ring 1.2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-stat-pulse-ring {
+    animation: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WS20-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Cinematic polish for HUD part components.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 19. Vignette breathe ──
+   Slow opacity pulse for the ambient vignette overlay.
+   3s cycle, opacity 0.85 → 1 → 0.85. Apply via
+   className="hud-filmic-vignette-breathe" on SceneAmbientVignette root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-vignette-breathe {
+    0%, 100% {
+      opacity: 0.85;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-vignette-breathe {
+    animation: hud-filmic-vignette-breathe 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-vignette-breathe {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 20. Badge tier settle ──
+   Scale-down settle + fade-in for karma tier badge on mount.
+   scale 1.08 → 1 + opacity 0 → 1, 0.4s ease-out one-shot. Apply via
+   className="hud-filmic-badge-tier-settle" on KarmaTierBadge root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-badge-tier-settle {
+    0% {
+      transform: scale(1.08);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-badge-tier-settle {
+    animation: hud-filmic-badge-tier-settle 0.4s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-badge-tier-settle {
+    animation: none;
+  }
+}
+
+/* ── 21. Rain sweep in ──
+   Clip-path reveal from left for the rain screen effect on mount.
+   clipPath inset(0 100% 0 0) → inset(0), 0.5s ease-out one-shot. Apply via
+   className="hud-filmic-rain-sweep-in" on RainScreenEffect root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-rain-sweep-in {
+    0% {
+      clip-path: inset(0 100% 0 0);
+    }
+    100% {
+      clip-path: inset(0);
+    }
+  }
+
+  .hud-filmic-rain-sweep-in {
+    animation: hud-filmic-rain-sweep-in 0.5s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-rain-sweep-in {
+    animation: none;
+    clip-path: none;
+  }
+}
+
+/* ── 22. Damage stagger ──
+   Subtle translateY + fade-in stagger for combat damage timeline on mount.
+   translateY 4px → 0 + opacity 0 → 1, 0.25s ease-out one-shot. Apply via
+   className="hud-filmic-damage-stagger" on CombatDamageTimeline root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-damage-stagger {
+    0% {
+      transform: translateY(4px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-damage-stagger {
+    animation: hud-filmic-damage-stagger 0.25s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-damage-stagger {
+    animation: none;
+  }
+}
+
+/* ── 23. QTE urgency pulse ──
+   Pulsing red box-shadow for QTE overlay to convey urgency.
+   0.6s cycle, box-shadow 0 0 8px rgba(255,60,60,0.5) →
+   0 0 16px rgba(255,60,60,0.8) → 0 0 8px. Apply via
+   className="hud-filmic-qte-urgency-pulse" on QuickTimeEventOverlay root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-qte-urgency-pulse {
+    0%, 100% {
+      box-shadow: 0 0 8px rgba(255, 60, 60, 0.5);
+    }
+    50% {
+      box-shadow: 0 0 16px rgba(255, 60, 60, 0.8);
+    }
+  }
+
+  .hud-filmic-qte-urgency-pulse {
+    animation: hud-filmic-qte-urgency-pulse 0.6s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-qte-urgency-pulse {
+    animation: none;
+    box-shadow: 0 0 8px rgba(255, 60, 60, 0.5);
+  }
+}
+
+/* ── 24. Loot glow fade ──
+   Fade-in + scale-up for loot proximity indicator on mount.
+   opacity 0 → 0.9 + scale 0.9 → 1, 0.3s ease-out one-shot. Apply via
+   className="hud-filmic-loot-glow-fade" on LootProximityIndicator root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-loot-glow-fade {
+    0% {
+      opacity: 0;
+      transform: scale(0.9);
+    }
+    100% {
+      opacity: 0.9;
+      transform: scale(1);
+    }
+  }
+
+  .hud-filmic-loot-glow-fade {
+    animation: hud-filmic-loot-glow-fade 0.3s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-loot-glow-fade {
+    animation: none;
+  }
+}
+
+/* ── 25. HUD button press ──
+   Subtle scale squeeze on active-press for filmic HUDButton.
+   scale(1 → 0.95 → 1), 0.2s ease-out one-shot. Apply via
+   className="hud-filmic-hud-btn-press" on HUDButton filmic variant root. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-hud-btn-press {
+    0% { transform: scale(1); }
+    40% { transform: scale(0.95); }
+    100% { transform: scale(1); }
+  }
+
+  .hud-filmic-hud-btn-press {
+    animation: hud-filmic-hud-btn-press 0.2s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-hud-btn-press {
+    animation: none;
+  }
+}
+
+/* ── 26. Menu item slide-in ──
+   Subtle translateX + opacity slide-in for HUDMenuItem on mount.
+   translateX(-4px → 0) + opacity(0 → 1), 0.25s ease-out one-shot. Apply via
+   className="hud-filmic-menu-item-slide" on HUDMenuItem root button. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-menu-item-slide {
+    0% {
+      transform: translateX(-4px);
+      opacity: 0;
+    }
+    100% {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-menu-item-slide {
+    animation: hud-filmic-menu-item-slide 0.25s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-menu-item-slide {
+    animation: none;
+  }
+}
+
+/* ── 27. Combo hit flash ──
+   Quick brightness flash on combo count increment for ComboCounter.
+   filter brightness(1 → 1.3 → 1), 0.15s ease-out one-shot. Apply via
+   className="hud-filmic-combo-hit-flash" on ComboCounter count span. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-combo-hit-flash {
+    0% { filter: brightness(1); }
+    40% { filter: brightness(1.3); }
+    100% { filter: brightness(1); }
+  }
+
+  .hud-filmic-combo-hit-flash {
+    animation: hud-filmic-combo-hit-flash 0.15s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-combo-hit-flash {
+    animation: none;
+  }
+}
+
+/* ── 28. Compass dial glow ──
+   Subtle box-shadow glow pulse for CompassIndicator dial container.
+   3s infinite cycle, box-shadow warm accent 0.12 → 0.25 → 0.12 opacity. Apply via
+   className="hud-filmic-compass-dial-glow" on CompassIndicator outer wrapper div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-compass-dial-glow {
+    0%, 100% {
+      box-shadow: 0 1px 10px rgba(0, 0, 0, 0.45), 0 0 6px rgba(196, 181, 160, 0.12);
+    }
+    50% {
+      box-shadow: 0 1px 10px rgba(0, 0, 0, 0.45), 0 0 10px rgba(196, 181, 160, 0.25);
+    }
+  }
+
+  .hud-filmic-compass-dial-glow {
+    animation: hud-filmic-compass-dial-glow 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-compass-dial-glow {
+    animation: none;
+  }
+}
+
+/* ── 29. Level badge glow ──
+   Subtle border glow cycle for LevelBadge when justLeveled is true.
+   box-shadow warm amber 0.15 → 0.4 → 0.15 opacity, 1.5s infinite. Apply via
+   className="hud-filmic-level-badge-glow" on LevelBadge outer div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-level-badge-glow {
+    0%, 100% {
+      box-shadow: 0 0 6px rgba(251, 191, 36, 0.15);
+    }
+    50% {
+      box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
+    }
+  }
+
+  .hud-filmic-level-badge-glow {
+    animation: hud-filmic-level-badge-glow 1.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-level-badge-glow {
+    animation: none;
+  }
+}
+
+/* ── 30. QTE pulse ring ──
+   Expanding ring with fade for QuickTimeEventOverlay urgency indicator.
+   scale(0.85 → 1.1) + opacity(0.6 → 0), 0.8s ease-out infinite. Apply via
+   className="hud-filmic-qte-pulse-ring" on an inner ring element inside
+   QuickTimeEventOverlay (alongside the existing hud-filmic-qte-urgency-pulse
+   on the background overlay). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-qte-pulse-ring {
+    0% {
+      transform: scale(0.85);
+      opacity: 0.6;
+    }
+    100% {
+      transform: scale(1.1);
+      opacity: 0;
+    }
+  }
+
+  .hud-filmic-qte-pulse-ring {
+    animation: hud-filmic-qte-pulse-ring 0.8s ease-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-qte-pulse-ring {
+    animation: none;
+    opacity: 0;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WS22-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   FootstepPedometer, NPCProximityIndicator, ObjectiveBeacon,
+   QuestDirectionArrow, SceneContextChip, SessionPlayTimer.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 31. Pedometer tick ──
+   Subtle translateY + opacity pulse on FootstepPedometer step count.
+   translateY(2px → 0) + opacity(0.6 → 1), 0.3s ease-out one-shot.
+   Apply via className="hud-filmic-pedometer-tick" on the pedometer
+   count span or root div (plays once on mount / class add). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-pedometer-tick {
+    0% {
+      transform: translateY(2px);
+      opacity: 0.6;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-pedometer-tick {
+    animation: hud-filmic-pedometer-tick 0.3s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-pedometer-tick {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 32. NPC proximity scan ──
+   Radial scan-line sweep across NPCProximityIndicator card.
+   A faint warm band (background-position) sweeps left→right on a
+   4s infinite cycle. Apply via className="hud-filmic-npc-proximity-scan"
+   on the npc-proximity-card div. */
+.hud-filmic-npc-proximity-scan {
+  position: relative;
+  overflow: hidden;
+}
+
+.hud-filmic-npc-proximity-scan::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(196, 181, 160, 0.06) 50%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.hud-filmic-npc-proximity-scan > * {
+  position: relative;
+  z-index: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hud-filmic-npc-proximity-scan::before {
+    animation: hud-filmic-npc-scan-sweep 4s ease-in-out infinite;
+  }
+
+  @keyframes hud-filmic-npc-scan-sweep {
+    0%, 100% {
+      background-position: -100% 0;
+    }
+    50% {
+      background-position: 200% 0;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-npc-proximity-scan::before {
+    display: none;
+  }
+}
+
+/* ── 33. Beacon pulse ──
+   Subtle scale pulse on ObjectiveBeacon chevron to draw the eye.
+   scale(1 → 1.08 → 1), 3s ease-in-out infinite. Apply via
+   className="hud-filmic-beacon-pulse" on the beacon inner container. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-beacon-pulse {
+    0%, 100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.08);
+    }
+  }
+
+  .hud-filmic-beacon-pulse {
+    animation: hud-filmic-beacon-pulse 3s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-beacon-pulse {
+    animation: none;
+  }
+}
+
+/* ── 34. Direction arrow bob ──
+   Gentle vertical float on QuestDirectionArrow inner arrow.
+   translateY(-2px → 0 → -2px), 2.5s ease-in-out infinite. Apply via
+   className="hud-filmic-direction-arrow-bob" on the arrow container div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-direction-arrow-bob {
+    0%, 100% {
+      transform: translateY(-2px);
+    }
+    50% {
+      transform: translateY(0);
+    }
+  }
+
+  .hud-filmic-direction-arrow-bob {
+    animation: hud-filmic-direction-arrow-bob 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-direction-arrow-bob {
+    animation: none;
+  }
+}
+
+/* ── 35. Context chip fade ──
+   Smooth opacity fade-in on SceneContextChip when scene changes.
+   opacity(0 → 1), 0.4s ease-out one-shot. Apply via
+   className="hud-filmic-context-chip-fade" on the chip root div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-context-chip-fade {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  .hud-filmic-context-chip-fade {
+    animation: hud-filmic-context-chip-fade 0.4s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-context-chip-fade {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 36. Timer colon blink ──
+   Classic colon blink on SessionPlayTimer separator.
+   opacity(1 → 0.2 → 1), 1s step-end infinite. Apply via
+   className="hud-filmic-timer-colon-blink" on the colon span. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-timer-colon-blink {
+    0%, 49% {
+      opacity: 1;
+    }
+    50%, 100% {
+      opacity: 0.2;
+    }
+  }
+
+  .hud-filmic-timer-colon-blink {
+    animation: hud-filmic-timer-colon-blink 1s step-end infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-timer-colon-blink {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   WS23-A — 6 NEW filmic micro-animations (all reduced-motion-gated)
+   Subtle cinematic polish for HUD components with no/minimal filmic wiring:
+   TurnPhaseIndicator, SceneEntryNudge, InteractionCooldownRing,
+   InteractionRadarPulse, InteractableSparkle, InteractionProximityGlow.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── 37. Turn phase swap ──
+   Subtle rotateX flip on TurnPhaseIndicator status text when the
+   active turn changes. rotateX(0 → -8deg → 0), 0.35s ease-out
+   one-shot. Apply via className="hud-filmic-turn-phase-swap" on
+   the status-text motion.div (the one keyed by isPlayerTurn). */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-turn-phase-swap {
+    0% {
+      transform: perspective(200px) rotateX(0deg);
+    }
+    40% {
+      transform: perspective(200px) rotateX(-8deg);
+    }
+    100% {
+      transform: perspective(200px) rotateX(0deg);
+    }
+  }
+
+  .hud-filmic-turn-phase-swap {
+    animation: hud-filmic-turn-phase-swap 0.35s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-turn-phase-swap {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ── 38. Scene entry nudge ──
+   Slide-up + fade-in entrance for SceneEntryNudge vignette overlay.
+   translateY(5px → 0) + opacity(0 → 1), 0.5s ease-out one-shot.
+   Apply via className="hud-filmic-scene-entry-nudge" on the
+   motion.div that wraps the vignette gradient. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-scene-entry-nudge {
+    0% {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .hud-filmic-scene-entry-nudge {
+    animation: hud-filmic-scene-entry-nudge 0.5s ease-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-scene-entry-nudge {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ── 39. Cooldown tick ──
+   Subtle opacity pulse on InteractionCooldownRing SVG on each tick.
+   opacity(1 → 0.7 → 1), 0.8s ease-in-out one-shot matching the
+   cooldown duration. Apply via className="hud-filmic-cooldown-tick"
+   on the motion.svg root of the cooldown ring. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-cooldown-tick {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+
+  .hud-filmic-cooldown-tick {
+    animation: hud-filmic-cooldown-tick 0.8s ease-in-out both;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-cooldown-tick {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── 40. Radar sweep ──
+   Slow rotating sweep for InteractionRadarPulse — a subtle
+   background rotation on the sweep line container.
+   rotate(0deg → 360deg), 3s linear infinite. Apply via
+   className="hud-filmic-radar-sweep" on the sweep line div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-radar-sweep {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .hud-filmic-radar-sweep {
+    animation: hud-filmic-radar-sweep 3s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-radar-sweep {
+    animation: none;
+    transform: none;
+  }
+}
+
+/* ── 41. Sparkle twinkle ──
+   Scale + opacity twinkle on InteractableSparkle inner star.
+   scale(0.8 → 1.1 → 1) + opacity(0 → 1 → 0.7),
+   1.2s ease-in-out infinite. Apply via
+   className="hud-filmic-sparkle-twinkle" on the
+   interactable-sparkle inner div that holds the star arms. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-sparkle-twinkle {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.7;
+    }
+  }
+
+  .hud-filmic-sparkle-twinkle {
+    animation: hud-filmic-sparkle-twinkle 1.2s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-sparkle-twinkle {
+    animation: none;
+    transform: none;
+    opacity: 0.7;
+  }
+}
+
+/* ── 42. Proximity glow breathe ──
+   box-shadow expansion/contraction cycle on InteractionProximityGlow
+   inner aura. 2.5s ease-in-out infinite, gentle cyan glow pulse.
+   Apply via className="hud-filmic-proximity-glow-breathe" on the
+   proximity-glow-aura div. */
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes hud-filmic-proximity-glow-breathe {
+    0%, 100% {
+      box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0);
+    }
+    50% {
+      box-shadow: 0 0 12px 4px rgba(0, 229, 255, 0.15);
+    }
+  }
+
+  .hud-filmic-proximity-glow-breathe {
+    animation: hud-filmic-proximity-glow-breathe 2.5s ease-in-out infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-filmic-proximity-glow-breathe {
+    animation: none;
+    box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0.08);
+  }
+}

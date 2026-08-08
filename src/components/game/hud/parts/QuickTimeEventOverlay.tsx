@@ -777,7 +777,7 @@ export function QuickTimeEventOverlay({
       <AnimatePresence mode="wait">
         {(isActive || showResult) && (
           <motion.div
-            className="fixed inset-0 flex items-center justify-center"
+            className="fixed inset-0 flex items-center justify-center hud-filmic-qte-urgency-pulse"
             style={{
               zIndex: UI_LAYERS.MINIGAME,
               background: 'radial-gradient(circle at center, rgba(0,0,0,0.85), rgba(0,0,0,0.95))',
@@ -811,7 +811,7 @@ export function QuickTimeEventOverlay({
 
             {/* ── Основной контейнер QTE / Main QTE container ── */}
             <motion.div
-              className="relative flex flex-col items-center"
+              className="relative flex flex-col items-center hud-filmic-qte-pulse-ring"
               initial={reducedMotion ? {} : { scale: 0.5, opacity: 0 }}
               animate={isSuccess || isFailure ? { scale: 1.1, opacity: 1 } : { scale: 1, opacity: 1 }}
               transition={{

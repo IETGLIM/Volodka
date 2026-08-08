@@ -905,6 +905,110 @@ export const DIALOGUE_PART2_EXPANDED: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'thermos_smuggling_known', flagValue: true },
         ],
       },
+      {
+        text: 'Я хочу, чтобы ты учил других. Не только термос — всю сеть. Ты — не один контрабандист, ты — узел. Узел должен расти.',
+        next: null,
+        condition: { minKarma: 50 },
+        effects: [
+          { type: 'addKarma', value: 12 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 18 } },
+          { type: 'setFlag', flag: 'colleague_smuggling_pact', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега смотрит на тебя — и впервые не как на начальника, не как на угрозу, а как на равного. «Узел должен расти». Ты сказал это вслух. Теперь сеть — не его тайна. Теперь сеть — общая. Тяжесть — на двоих. Тяжесть — переносимая.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Дай мне копию всего. Я решу, что пускать в Сеть, а что — придержать. Контроль важнее скорости.',
+        next: null,
+        condition: { maxKarma: 15 },
+        effects: [
+          { type: 'addKarma', value: -6 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: -10 } },
+          { type: 'setFlag', flag: 'colleague_smuggler_oath', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега кивает медленно. Слишком медленно. Ты только что превратил его канал в свой. Революция через контроль — тоже революция. Только — чья? Уже не его. Уже — не ваша.',
+            thoughtDuration: 6000,
+          },
+        ],
+      },
+      // WS18-B — +2 HIGH-karma gated choices (compassionate / insightful)
+      {
+        text: 'Сделай этот канал открытым для тех, кто ещё молчит. Не для славы — чтобы каждый знал: он не один.',
+        next: null,
+        condition: { minKarma: 55 },
+        effects: [
+          { type: 'addKarma', value: 10 },
+          { type: 'addSkill', skill: 'persuasion', value: 2 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 12 } },
+          { type: 'setFlag', flag: 'ws18b_open_channel_pledge', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега смотрит на термос — и впервые — не как на оружие. Как на дверь. «Открытый канал». Ты сказал это вслух. Теперь контрабанда — не его тайна. Теперь — приглашение. Тяжесть — на двоих. Тяжесть — переносимая. Тяжесть — уже не тяжесть.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Я хочу, чтобы ты написал об этом. Не манифест — исповедь. Чтобы тот, кто найдёт твой термос через двадцать лет, нашёл в нём ещё и слова.',
+        next: null,
+        condition: { minKarma: 65 },
+        effects: [
+          { type: 'addKarma', value: 14 },
+          { type: 'addSkill', skill: 'writing', value: 3 },
+          { type: 'addSkill', skill: 'empathy', value: 2 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: 16 } },
+          { type: 'setFlag', flag: 'ws18b_thermos_manifesto', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега открывает термос — и долго смотрит внутрь, как в колодец. «Двадцать лет». Он повторяет это — как человек, которому впервые дали право думать о будущем. Контрабанда данных — это Present. Контрабанда смысла — это Future. Термос — теперь — капсула времени.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
+      // WS18-B — +2 LOW-karma gated choices (ruthless / cynical)
+      {
+        text: 'Ты слишком рискуешь. Я не хочу быть соучастником. Закрой канал. Я ничего не видел.',
+        next: null,
+        condition: { maxKarma: 25 },
+        effects: [
+          { type: 'addKarma', value: -3 },
+          { type: 'addStat', stat: 'stress', value: 4 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: -8 } },
+          { type: 'setFlag', flag: 'ws18b_colleague_distancing', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега молчит. Долго. Потом кивает — слишком ровно, как по протоколу. «Ничего не видел». Ты сказал это — и стал невидимым. Для него. Для себя. Термос — закрыт. Но — у тебя в горле — теперь — свой термос. Со — своим — ромашковым — чаем. Со — своим — молчанием.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Хочешь, я расскажу гильдии? Они заплатят. Не много — но хватит на месяц. Молчание — тоже товар.',
+        next: null,
+        condition: { maxKarma: 18 },
+        effects: [
+          { type: 'addKarma', value: -10 },
+          { type: 'addStat', stat: 'stress', value: 5 },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+          { type: 'npcChange', npcId: 'office_colleague', npcChange: { relation: -20 } },
+          { type: 'setFlag', flag: 'ws18b_smuggling_betrayal', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Коллега поднимает глаза. Не злые — пустые. Он уже посчитал цену. И — твою. И — свою. «Товар». Ты сказал это вслух — и теперь между вами — не термос, а чек. Сума — на месяц. Молчание — на месяц. Душа — навсегда — в — рассрочку.',
+            thoughtDuration: 7000,
+          },
+        ],
+      },
     ],
   },
 };

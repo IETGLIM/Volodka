@@ -303,7 +303,13 @@ const EffectIcon = memo(function EffectIcon({ effect, size, showTimer }: EffectI
 
       {/* Inner content area */}
       <div
-        className="absolute inset-[2px] rounded-lg overflow-hidden flex flex-col items-center justify-center"
+        className={`absolute inset-[2px] rounded-lg overflow-hidden flex flex-col items-center justify-center${
+          /* WS18-A: subtle warm-white shimmer sweep on active (non-warning)
+             buff icons. Class is reduced-motion gated (::before hidden
+             under prefers-reduced-motion: reduce). Debuffs and buffs in
+             warning state skip the shimmer to keep warning-flash emphasis. */
+          isBuff && !isWarningState ? ' hud-filmic-buff-shimmer' : ''
+        }`}
         style={{ background: 'rgba(8, 12, 20, 0.88)' }}
       >
         {/* Timer progress bar at bottom */}

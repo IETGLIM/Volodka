@@ -27,7 +27,7 @@ const LS_MUTED = 'volodka_muted';
 function lsGetPercent(key: string, fallback: number): number {
   try {
     const raw = localStorage.getItem(key);
-    if (raw == null) return fallback;
+    if (raw == null) return fallback / 100;
     const n = Number(raw);
     return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) / 100 : fallback / 100;
   } catch {

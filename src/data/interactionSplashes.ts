@@ -343,6 +343,119 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
       },
     ],
   },
+
+  /* ─── WS18-D — Prop interaction splash flavors (7 new presets)
+       Short Russian flavor text shown when the player interacts with
+       specific prop types. Reuses existing camera waypoints for visual
+       consistency — the differentiation is in the textOverlay/subtitle.
+       ─────────────────────────────────────────────────────────── */
+
+  broken_terminal_prop: {
+    id: 'broken_terminal_prop',
+    kind: 'examine_close_up',
+    durationMs: 1300,
+    letterboxStyle: 'thin',
+    textOverlay: 'Сломанный терминал',
+    subtitle: 'Экран мигает последней ошибкой — код 0xDEADBEEF. Системе нечего сказать.',
+    textAccentColor: '#cc2020',
+    waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
+  },
+
+  dusty_book: {
+    id: 'dusty_book',
+    kind: 'read_focus',
+    durationMs: 1400,
+    letterboxStyle: 'thin',
+    textOverlay: 'Пыльная книга',
+    subtitle: 'Пыль — это память вещей. Эта помнит слишком много.',
+    textAccentColor: '#d4920a',
+    waypoints: [
+      { position: [0.35, 1.45, 1.9], lookAt: [0, 0.72, 0], fov: 46, duration: 0 },
+      {
+        position: [0.12, 1.05, 1.05],
+        lookAt: [0, 0.68, 0],
+        fov: 38,
+        duration: 0.85,
+        controlPoint: [0.22, 1.2, 1.45],
+      },
+      {
+        position: [0.02, 0.92, 0.82],
+        lookAt: [0, 0.64, 0],
+        fov: 34,
+        duration: 0.55,
+      },
+    ],
+  },
+
+  rusty_locker: {
+    id: 'rusty_locker',
+    kind: 'prop_push_in',
+    durationMs: 1100,
+    letterboxStyle: 'thin',
+    textOverlay: 'Ржавый шкафчик',
+    subtitle: 'Замок заклинило. Внутри — кто-то ждал, когда его забудут.',
+    textAccentColor: '#8a8a98',
+    waypoints: SPLASH_PROP_PUSH_IN.waypoints,
+  },
+
+  flickering_neon_sign: {
+    id: 'flickering_neon_sign',
+    kind: 'examine_close_up',
+    durationMs: 1600,
+    letterboxStyle: 'thin',
+    textOverlay: 'Мигающая вывеска',
+    subtitle: 'Неон гудит на 50 Гц и пишет имя того, кого уже нет.',
+    textAccentColor: '#00ff41',
+    waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
+  },
+
+  abandoned_mug: {
+    id: 'abandoned_mug',
+    kind: 'examine_close_up',
+    durationMs: 1200,
+    letterboxStyle: 'thin',
+    textOverlay: 'Забытая кружка',
+    subtitle: 'Кофе остыл семь лет назад. Кофейная гуща сложилась в строку.',
+    textAccentColor: '#d4a060',
+    waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
+  },
+
+  server_screen_log: {
+    id: 'server_screen_log',
+    kind: 'read_focus',
+    durationMs: 1700,
+    letterboxStyle: 'thin',
+    textOverlay: 'Лог сервера',
+    subtitle: 'Бесконечный поток ошибок. На 312-й строке — твоё имя.',
+    textAccentColor: '#40d0e0',
+    waypoints: [
+      { position: [0.3, 1.5, 1.95], lookAt: [0, 0.85, 0], fov: 50, duration: 0 },
+      {
+        position: [0.1, 1.15, 1.1],
+        lookAt: [0, 0.78, 0],
+        fov: 38,
+        duration: 0.9,
+        controlPoint: [0.18, 1.3, 1.5],
+      },
+      {
+        position: [0, 1.0, 0.85],
+        lookAt: [0, 0.72, 0],
+        fov: 32,
+        duration: 0.8,
+      },
+    ],
+  },
+
+  wet_graffiti: {
+    id: 'wet_graffiti',
+    kind: 'examine_close_up',
+    durationMs: 1400,
+    letterboxStyle: 'thin',
+    textOverlay: 'Мокрое граффити',
+    subtitle: 'Краска ещё не высохла. Кто-то был здесь минуту назад. Или семнадцать лет.',
+    textAccentColor: '#ec4899',
+    waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
+  },
 };
 
 /** Default preset by interaction verb when no explicit catalog entry exists */

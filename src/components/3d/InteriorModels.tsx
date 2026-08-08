@@ -206,11 +206,13 @@ export function Couch({ position = [0, 0, 0], rotation = [0, 0, 0], scale = [1, 
     <group position={position} rotation={rotation} scale={scale}>
       {/* Main seat */}
       <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_12}>
-                <meshStandardMaterial color={color} roughness={0.9} />
+                {/* WS23-C: PBR upgrade */}
+                <meshPhysicalMaterial color={color} roughness={0.9} sheen={0.2} sheenRoughness={0.5} />
       </mesh>
       {/* Back */}
       <mesh position={[0, 0.6, -0.4]} castShadow geometry={geo_box_13}>
-                <meshStandardMaterial color={color} roughness={0.9} />
+                {/* WS23-C: PBR upgrade */}
+                <meshPhysicalMaterial color={color} roughness={0.9} sheen={0.2} sheenRoughness={0.5} />
       </mesh>
       {/* Armrests */}
       <mesh position={[-0.95, 0.5, 0]} castShadow geometry={geo_box_14}>

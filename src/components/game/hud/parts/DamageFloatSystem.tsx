@@ -569,7 +569,10 @@ const DamageFloatItem = memo(function DamageFloatItem({
       aria-atomic="true"
     >
       {/* Main text */}
-      <span className="inline-block" style={textStyle}>
+      <span
+        className="inline-block hud-filmic-damage-rise-fade"
+        style={textStyle}
+      >
         {displayText}
       </span>
       

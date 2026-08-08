@@ -124,7 +124,8 @@ function UniqueBuilding({ spec }: { spec: UniqueBuildingSpec }) {
   return (
     <group position={spec.position} rotation={[0, spec.rotationY, 0]} scale={scale}>
       <mesh geometry={geo} castShadow receiveShadow>
-        <meshStandardMaterial
+        {/* WS23-C: PBR upgrade */}
+        <meshPhysicalMaterial
           color="#4a4a58"
           map={weather}
           normalMap={detail.normalMap}
@@ -133,6 +134,8 @@ function UniqueBuilding({ spec }: { spec: UniqueBuildingSpec }) {
           roughness={0.92}
           metalness={0.08}
           aoMapIntensity={0.7}
+          clearcoat={0.15}
+          clearcoatRoughness={0.6}
         />
       </mesh>
 

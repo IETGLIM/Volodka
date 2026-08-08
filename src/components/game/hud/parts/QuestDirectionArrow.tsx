@@ -148,7 +148,7 @@ export function QuestDirectionArrow() {
           aria-hidden="true"
         >
           <div
-            className="relative flex items-center justify-center quest-arrow-bob"
+            className="relative flex items-center justify-center quest-arrow-bob hud-filmic-direction-arrow-bob"
             style={{
               width: ARROW_SIZE,
               height: ARROW_SIZE,

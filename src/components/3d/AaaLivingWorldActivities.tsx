@@ -16,6 +16,8 @@
 import { useEffect } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { getGameSnapshot, dispatchGameAction } from '@/engine/GameActionDispatcher';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge';
 
 const ACTIVITY_LINES: Record<string, string> = {
   // Room / Home
@@ -129,6 +131,8 @@ export function AaaLivingWorldActivities() {
         else if (lower.includes('guitar')) key = 'guitar';
         else if (lower.includes('bookshelf') || lower.includes('book')) key = 'bookshelf';
         else if (lower.includes('bench')) key = 'bench';
+        else if (lower.includes('terminal')) key = 'terminal';
+
         else if (lower.includes('terminal') || lower.includes('server')) key = 'terminal';
         else if (lower.includes('mirror')) key = 'mirror';
         else if (lower.includes('lamp') || lower.includes('light')) key = 'desk_lamp';
@@ -176,6 +180,9 @@ export function AaaLivingWorldActivities() {
                 dispatchGameAction({
                   type: 'player/addEnergy',
                   amount: 2 + Math.floor(Math.random() * 2),
+                dispatchGameAction({ 
+                  type: 'player/addEnergy',
+                  amount: 2 + Math.floor(Math.random() * 2)
                 });
               }
               // Gentle karma nudge for contemplative acts
@@ -183,6 +190,9 @@ export function AaaLivingWorldActivities() {
                 dispatchGameAction({
                   type: 'player/addKarma',
                   amount: 1,
+                dispatchGameAction({ 
+                  type: 'player/addKarma',
+                  amount: 1
                 });
               }
             } catch {}
@@ -192,12 +202,14 @@ export function AaaLivingWorldActivities() {
           if (key.includes('lamp') || key === 'terminal' || key === 'control_panel') {
             eventBus.emit('world:ambient_event', {
               type: 'light_flicker',
+            eventBus.emit('world:ambient_event' as any, { 
+              type: 'light_flicker', 
               intensity: 0.6 + Math.random() * 0.3,
               duration: 800,
             });
           }
           if (key === 'radio' || key === 'jukebox') {
-            eventBus.emit('audio:ambient_stinger', { cue: 'static' });
+            eventBus.emit('audio:ambient_stinger' as any, { cue: 'static' } as any);
           }
         }
       }),

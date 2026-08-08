@@ -48,12 +48,12 @@ export function CinematicNarrativeFrame({
   const { accentColor, type } = presentation;
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="sync">
       <motion.div
         key={nodeKey}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
         transition={{ duration: reducedMotion ? 0 : 0.45, ease: 'easeInOut' }}
         className="fixed inset-0 flex items-center justify-center pointer-events-none"
         style={{ zIndex: UI_LAYERS.DIALOGUE }}

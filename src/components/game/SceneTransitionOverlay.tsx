@@ -114,16 +114,25 @@ export function SceneTransitionOverlay() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.3, ease: 'easeInOut' } }}
         >
+        <AnimatePresence mode="sync">
           {/* Black backdrop during hold/reveal/wipe-out phases */}
           {(phase === 'hold' || phase === 'wipe-out' || phase === 'reveal') && (
-            <div className="absolute inset-0 bg-black" />
+            <motion.div
+              key="backdrop"
+              className="absolute inset-0 bg-black"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            />
           )}
 
           {/* ═══════════════════════════════════════════════════════════
               WIPE STYLE: Glitch Phase
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'glitch' && (
-            <div className="absolute inset-0 overflow-hidden">
+            <motion.div
+              key="glitch"
+              className="absolute inset-0 overflow-hidden"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               {reducedMotion ? (
                 <motion.div
                   className="absolute inset-0 bg-black/90"
@@ -146,14 +155,18 @@ export function SceneTransitionOverlay() {
               }} />
                 </>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
               FLASH STYLE: Bright white flash for indoor→outdoor
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'flash' && (
-            <div className="absolute inset-0">
+            <motion.div
+              key="flash"
+              className="absolute inset-0"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               {/* White flash overlay with amber tint */}
               <motion.div
                 className="absolute inset-0"
@@ -174,7 +187,7 @@ export function SceneTransitionOverlay() {
                 animate={{ scaleX: 1, opacity: 0.5 }}
                 transition={{ duration: FLASH_DURATION / 1000, ease: SMOOTH_EASE }}
               />
-            </div>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
@@ -182,9 +195,11 @@ export function SceneTransitionOverlay() {
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'darken' && (
             <motion.div
+              key="darken"
               className="absolute inset-0 bg-black"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
               transition={{ duration: DARKEN_DURATION / 1000, ease: 'easeInOut' }}
             >
               {/* Subtle blue vignette */}
@@ -203,9 +218,11 @@ export function SceneTransitionOverlay() {
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'ripple-in' && (
             <motion.div
+              key="ripple-in"
               className="absolute inset-0 bg-black"
               initial={{ clipPath: 'circle(0% at 50% 50%)' }}
               animate={{ clipPath: 'circle(75% at 50% 50%)' }}
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
               transition={{ duration: RIPPLE_DURATION / 1000, ease: SMOOTH_EASE }}
             >
               {/* Purple glow ring at the edge of the ripple */}
@@ -238,9 +255,11 @@ export function SceneTransitionOverlay() {
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'dissolve-in' && (
             <motion.div
+              key="dissolve-in"
               className="absolute inset-0 bg-black"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
               transition={{ duration: DISSOLVE_DURATION / 1000, ease: 'easeInOut' }}
             >
               {/* Blur-like noise overlay */}
@@ -271,7 +290,11 @@ export function SceneTransitionOverlay() {
               FILM_BURN STYLE: Red-orange overlay with noise burn
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'film-burn-in' && (
-            <div className="absolute inset-0">
+            <motion.div
+              key="film-burn-in"
+              className="absolute inset-0"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               {/* Base red-orange burn gradient that intensifies from bottom-right */}
               <motion.div
                 className="absolute inset-0"
@@ -313,14 +336,18 @@ export function SceneTransitionOverlay() {
                 animate={{ opacity: [0, 0.6, 0.2] }}
                 transition={{ duration: FILM_BURN_DURATION / 1000, delay: 0.05 }}
               />
-            </div>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
               GLITCH_CUT STYLE: Horizontal slice displacement + RGB split
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'glitch-cut-in' && (
-            <div className="absolute inset-0 overflow-hidden">
+            <motion.div
+              key="glitch-cut-in"
+              className="absolute inset-0 overflow-hidden"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               {/* Red channel slice — shifted up */}
               <motion.div
                 className="absolute inset-0"
@@ -392,14 +419,18 @@ export function SceneTransitionOverlay() {
                   }}
                 />
               ))}
-            </div>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
               BREATHE STYLE: Smooth scale 0.98→1.02 with opacity fade
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'breathe-in' && (
-            <div className="absolute inset-0 overflow-hidden">
+            <motion.div
+              key="breathe-in"
+              className="absolute inset-0 overflow-hidden"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               {/* Full-screen overlay that scales + fades */}
               <motion.div
                 className="absolute inset-0 bg-black"
@@ -446,7 +477,7 @@ export function SceneTransitionOverlay() {
                   />
                 </motion.div>
               </motion.div>
-            </div>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
@@ -456,9 +487,11 @@ export function SceneTransitionOverlay() {
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'crossfade-in' && (
             <motion.div
+              key="crossfade-in"
               className="absolute inset-0 bg-black"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
               transition={{ duration: CROSSFADE_DURATION / 1000, ease: SMOOTH_EASE }}
             >
               {/* Soft accent-colored vignette glow — reads as a graded fade, not a flat cut. */}
@@ -479,7 +512,11 @@ export function SceneTransitionOverlay() {
               WIPE-IN Phase (original wipe style only)
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'wipe-in' && (
-            <>
+            <motion.div
+              key="wipe-in"
+              className="absolute inset-0"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               <motion.div
                 className="absolute inset-0 bg-black"
                 initial={{ clipPath: 'polygon(100% 0%, 100% 0%, 100% 100%, 100% 100%)' }}
@@ -502,25 +539,33 @@ export function SceneTransitionOverlay() {
                 animate={{ left: '-30px' }}
                 transition={{ duration: WIPE_IN_DURATION / 1000, ease: WIPE_EASE }}
               />
-            </>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
               HOLD Phase: Black screen with scene name
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'hold' && (
-            <div className="absolute inset-0 bg-black">
+            <motion.div
+              key="hold"
+              className="absolute inset-0 bg-black"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(0,255,255,0.015) 1px, rgba(0,255,255,0.015) 2px)' }} />
               <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 80%)' }} />
               {SceneNameDisplay}
-            </div>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
               WIPE-OUT Phase (original wipe style)
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'wipe-out' && (
-            <>
+            <motion.div
+              key="wipe-out"
+              className="absolute inset-0"
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
+            >
               <motion.div
                 className="absolute inset-0 bg-black"
                 initial={{ clipPath: `polygon(0% 0%, 100% 0%, ${100 + DIAGONAL_OFFSET}% 100%, 0% 100%)` }}
@@ -543,7 +588,7 @@ export function SceneTransitionOverlay() {
                 animate={{ left: 'calc(100% - 30px)' }}
                 transition={{ duration: WIPE_OUT_DURATION / 1000, ease: WIPE_EASE }}
               />
-            </>
+            </motion.div>
           )}
 
           {/* ═══════════════════════════════════════════════════════════
@@ -552,9 +597,11 @@ export function SceneTransitionOverlay() {
               ═══════════════════════════════════════════════════════════ */}
           {phase === 'reveal' && (
             <motion.div
+              key="reveal"
               className="absolute inset-0 bg-black"
               initial={{ opacity: 1 }}
               animate={{ opacity: 0 }}
+              exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
               transition={{ duration: REVEAL_DURATION / 1000, ease: 'easeInOut' }}
             >
               {/* Brief accent-colored edge glow during reveal */}
@@ -569,6 +616,7 @@ export function SceneTransitionOverlay() {
               />
             </motion.div>
           )}
+        </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>

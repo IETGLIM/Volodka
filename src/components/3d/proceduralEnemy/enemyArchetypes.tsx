@@ -16,7 +16,7 @@ export interface CreepBodyProps {
   enemyType: EnemyType;
   color: string;
   animStateRef: React.MutableRefObject<CreepBodyAnimState>;
-  bodyMatRef: React.MutableRefObject<THREE.MeshStandardMaterial | null>;
+  bodyMatRef: React.MutableRefObject<THREE.MeshPhysicalMaterial | null>;
 }
 
 function useCreepBodyAnimation(
@@ -61,14 +61,17 @@ function useCreepBodyAnimation(
 }
 
 function EtherealCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: CreepBodyProps['bodyMatRef'] }) {
+  // WS16-A: MeshPhysicalMaterial with subtle spectral sheen — pearlescent energy body, not flat plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshPhysicalMaterial({
         color: '#0a0a12',
         emissive: color,
         emissiveIntensity: 1.6,
         roughness: 0.3,
         metalness: 0.5,
+        sheen: 0.3,
+        sheenRoughness: 0.4,
       }),
     [color],
   );
@@ -99,14 +102,17 @@ function EtherealCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: C
 }
 
 function GolemCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: CreepBodyProps['bodyMatRef'] }) {
+  // WS16-A: MeshPhysicalMaterial with earthy organic sheen — stone/golem body reads as weathered rock, not plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshPhysicalMaterial({
         color: '#14141c',
         emissive: color,
         emissiveIntensity: 1.4,
         roughness: 0.85,
         metalness: 0.2,
+        sheen: 0.4,
+        sheenRoughness: 0.6,
       }),
     [color],
   );
@@ -149,14 +155,17 @@ function GolemCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cree
 }
 
 function AgentCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: CreepBodyProps['bodyMatRef'] }) {
+  // WS16-A: MeshPhysicalMaterial with subtle fabric-like sheen — synthetic agent body reads as layered cloth, not flat plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshPhysicalMaterial({
         color: '#0c0c14',
         emissive: color,
         emissiveIntensity: 1.5,
         roughness: 0.35,
         metalness: 0.55,
+        sheen: 0.25,
+        sheenRoughness: 0.5,
       }),
     [color],
   );
@@ -199,14 +208,17 @@ function AgentCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cree
 }
 
 function CensorCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: CreepBodyProps['bodyMatRef'] }) {
+  // WS16-A: MeshPhysicalMaterial with subtle energy pearlescence — censor body reads as flowing energy, not plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new THREE.MeshPhysicalMaterial({
         color: '#080810',
         emissive: color,
         emissiveIntensity: 1.7,
         roughness: 0.25,
         metalness: 0.6,
+        sheen: 0.2,
+        sheenRoughness: 0.4,
       }),
     [color],
   );

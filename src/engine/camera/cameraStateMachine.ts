@@ -788,7 +788,13 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
   unsubs.push(eventBus.on('camera:poem_reading_end', () => {
     releaseCameraOwnership('cinematicFreeze');
     setCinematicHoldActive(false);
-    setCinematicPresentationMode('third_person');
+    // WS2: ease the camera back from the close-up poem-reading pose to the
+    // exploration pose over 600ms (same pattern as completeCinematicTimeline /
+    // stopCinematicTimeline). Without easeMs, setCinematicPresentationMode emits
+    // no `camera:ease_back`, the subsequent `camera:recenter` runs with
+    // preserveSpring=false, and applyExplorationSnap hard-snaps the spring from
+    // POEM_READING_END_DISTANCE to DEFAULT_DISTANCE — a visible camera jump.
+    setCinematicPresentationMode('third_person', { easeMs: 600 });
     dispatchCameraState(runtime, { type: 'poem_reading_complete' }, sceneId);
     eventBus.emit('camera:recenter', {});
   }));

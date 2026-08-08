@@ -93,7 +93,7 @@ export function EnvironmentMoodIndicator() {
       <div className="flex flex-col gap-0.5 flex-1 min-w-[48px]">
         <div className="mood-bar-container">
           <div
-            className="mood-bar-fill"
+            className={`mood-bar-fill${reducedMotion ? '' : ' hud-filmic-mood-wave'}`}
             style={{
               width: `${mood.intensity * 100}%`,
               background: `linear-gradient(90deg, ${mood.hue}40, ${mood.hue}, ${mood.hue}40)`,

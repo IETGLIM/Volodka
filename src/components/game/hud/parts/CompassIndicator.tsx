@@ -66,7 +66,7 @@ export function CompassIndicator() {
 
   return (
     <div
-      className="relative shrink-0 pointer-events-none select-none flex flex-col items-center"
+      className="relative shrink-0 pointer-events-none select-none flex flex-col items-center hud-filmic-compass-dial-glow"
       style={{ width: 50 }}
       aria-label="Компас"
       role="img"
@@ -109,7 +109,7 @@ export function CompassIndicator() {
         {/* Compass needle — pointing North (up) */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full" style={{ height: '40%', width: 2 }}>
           <div
-            className="w-0.5 h-full mx-auto rounded-t-full"
+            className="w-0.5 h-full mx-auto rounded-t-full hud-filmic-compass-needle-settle"
             style={{
               background: 'linear-gradient(180deg, rgba(231,229,228,0.95) 0%, transparent 100%)',
               boxShadow: 'none',
@@ -119,7 +119,7 @@ export function CompassIndicator() {
         {/* South needle (dimmer) */}
         <div className="absolute left-1/2 top-1/2 -translate-x-1/2" style={{ height: '30%', width: 2 }}>
           <div
-            className="w-0.5 h-full mx-auto rounded-b-full"
+            className="w-0.5 h-full mx-auto rounded-b-full hud-filmic-compass-needle-settle"
             style={{
               background: 'linear-gradient(180deg, transparent 0%, rgba(168,162,158,0.45) 100%)',
             }}

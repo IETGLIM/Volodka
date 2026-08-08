@@ -58,8 +58,11 @@ export const VARIABLE_JUMP_FALL_MULT = 2.2;
 export const RUN_FOV_BOOST = 4.0;
 /** Player speed (m/s) at which FOV boost is at full intensity. */
 export const RUN_FOV_SPEED_FULL = 5.1;
-/** Player speed (m/s) at which FOV boost begins. */
-export const RUN_FOV_SPEED_MIN = 2.25;
+/** Player speed (m/s) at which FOV boost begins.
+ *  Session 13 (ramp-tame): was 2.25 (below WALK_SPEED=4) so even slow walking
+ *  widened the FOV by ~2.5°. Now 4.5 — the boost only engages above a brisk
+ *  walk, reserving the speed-FOV effect for actual sprinting. */
+export const RUN_FOV_SPEED_MIN = 4.5;
 /** Cap KCC controller recreates per incident to avoid WASM churn loops. */
 export const MAX_KCC_RECREATE_ATTEMPTS_PER_INCIDENT = 5;
 /** Max horizontal direct-translation step when KCC is unavailable (prevents wall teleport). */

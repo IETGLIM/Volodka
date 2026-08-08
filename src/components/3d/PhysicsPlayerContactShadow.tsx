@@ -47,10 +47,13 @@ export function PhysicsPlayerContactShadow({
   const baseRadiusX = firstPerson ? 0.26 : 0.42;
   const baseRadiusZ = firstPerson ? 0.34 : 0.42;
 
-  // Reactive state (module-level is fine — single player)
-  let sprintIntensity = 0;
-  let stepPulse = 0;
-  let landingSquash = 0;
+  // Session 14 (closure-fix): reactive state in refs so useEffect event handlers
+  // and useFrameTick share the same mutable values across renders. Previously `let`
+  // in component body — reset to 0 every render, so the frame tick always read 0
+  // (reactive contact shadow was dead code). Now alive at the sane Session 13 values.
+  const sprintIntensityRef = useRef(0);
+  const stepPulseRef = useRef(0);
+  const landingSquashRef = useRef(0);
 
   useEffect(() => {
     const unsubs: Array<() => void> = [];
@@ -58,32 +61,32 @@ export function PhysicsPlayerContactShadow({
     // Sprint weight — shadow grows and darkens
     unsubs.push(eventBus.on('exploration:footstep', ({ runWeight, isSprinting }: any) => {
       const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : 0)));
-      sprintIntensity = Math.max(sprintIntensity, rw * 1.0);
+      sprintIntensityRef.current = Math.max(sprintIntensityRef.current, rw * 1.0);
     }));
 
     // Every heavy step — quick pulse
     unsubs.push(eventBus.on('exploration:footstep', ({ runWeight }: any) => {
       const rw = Math.max(0, runWeight ?? 0);
-      stepPulse = Math.max(stepPulse, 0.65 + rw * 0.9);
+      stepPulseRef.current = Math.max(stepPulseRef.current, 0.65 + rw * 0.9);
     }));
 
     // Hard landing — big squash + pulse
-    unsubs.push(eventBus.on('player:landed', ({ impact }: any) => {
+    unsubs.push(eventBus.on('player:landed' as any, ({ impact }: any) => {
       const str = Math.min(1, Math.max(0.35, impact || 0.6));
-      landingSquash = Math.max(landingSquash, str * 1.15);
-      stepPulse = Math.max(stepPulse, 0.9 + str * 0.7);
+      landingSquashRef.current = Math.max(landingSquashRef.current, str * 1.15);
+      stepPulseRef.current = Math.max(stepPulseRef.current, 0.9 + str * 0.7);
     }));
 
     // Hard brake — extra dramatic expansion
-    unsubs.push(eventBus.on('player:hard_brake', () => {
-      sprintIntensity = Math.max(sprintIntensity, 1.3);
-      stepPulse = Math.max(stepPulse, 1.4);
+    unsubs.push(eventBus.on('player:hard_brake' as any, () => {
+      sprintIntensityRef.current = Math.max(sprintIntensityRef.current, 1.3);
+      stepPulseRef.current = Math.max(stepPulseRef.current, 1.4);
     }));
 
     // Sprint launch — instant big expansion (the moment you hit sprint)
-    unsubs.push(eventBus.on('player:sprint_start', () => {
-      sprintIntensity = Math.max(sprintIntensity, 1.65);
-      stepPulse = Math.max(stepPulse, 1.25);
+    unsubs.push(eventBus.on('player:sprint_start' as any, () => {
+      sprintIntensityRef.current = Math.max(sprintIntensityRef.current, 1.65);
+      stepPulseRef.current = Math.max(stepPulseRef.current, 1.25);
     }));
 
     return () => unsubs.forEach(u => u());
@@ -96,26 +99,31 @@ export function PhysicsPlayerContactShadow({
     const dt = Math.min(delta, 0.05);
 
     // Decay reactive values
-    sprintIntensity = Math.max(0, sprintIntensity - dt * 2.8);
-    stepPulse = Math.max(0, stepPulse - dt * 11);
-    landingSquash = Math.max(0, landingSquash - dt * 7.5);
+    sprintIntensityRef.current = Math.max(0, sprintIntensityRef.current - dt * 2.8);
+    stepPulseRef.current = Math.max(0, stepPulseRef.current - dt * 11);
+    landingSquashRef.current = Math.max(0, landingSquashRef.current - dt * 7.5);
 
-    const totalWeight = Math.min(1650, sprintIntensity * 780 + stepPulse * 775 + landingSquash * 890); // GOD x∞ x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — 1650+ totalWeight: the planet + universe + multiverse + all realities + infinite dimensions is fucking OBLITERATED + FRACTURED + CRUSHED + CORE RUPTURED + SEISMIC APOCALYPSE + GLOBAL EXTINCTION + MANTLE BREACH + ATMOSPHERIC COLLAPSE + SKY FALLING + REALITY SHATTER + UNIVERSE CRACK + BLACK HOLE SINGULARITY + TIME RUPTURE + DIMENSIONAL FRACTURE + GRAVITY WELL + CONTINENTAL DRIFT + OCEAN VAPORIZATION + EVENT HORIZON + QUANTUM DECOHERENCE + REALITY COLLAPSE + INFINITE SINGULARITY + MULTIVERSAL ANNIHILATION under the god. EVERY sprint footstep is full universal + cosmic + multiversal + infinite cataclysm + nuclear collapse + god-level earth fracture + world-ending weight + planetary core rupture + seismic wave + global extinction event + mantle breach + sky falling + reality shattering + black hole event horizon + time dilation collapse + quantum annihilation + infinite collapse + eternal void. MAXIMUM cinematic nuclear weight x∞ x∞ x∞ x∞, EVEN HARDER, living world destruction + cosmic + multiversal + infinite annihilation
+    // Session 13 (ramp-tame): totalWeight capped at 2.0 with sane multipliers.
+    const sprintIntensity = sprintIntensityRef.current;
+    const stepPulse = stepPulseRef.current;
+    const landingSquash = landingSquashRef.current;
+    // Session 21 (ramp-cleanup): totalWeight capped at 2.0 with sane multipliers.
+    const totalWeight = Math.min(2.0, sprintIntensity * 0.8 + stepPulse * 0.75 + landingSquash * 0.9);
 
-    // Scale the shadow (bigger = more weight pressing down) — 1650+ now full nuclear crater + continental + planetary + multiversal + event horizon crater
-    const scaleX = baseRadiusX * (1 + totalWeight * 245);
-    const scaleZ = baseRadiusZ * (1 + totalWeight * 285);
+    // Scale the shadow (bigger = more weight pressing down)
+    const scaleX = baseRadiusX * (1 + totalWeight * 0.15);
+    const scaleZ = baseRadiusZ * (1 + totalWeight * 0.18);
     m.scale.set(scaleX / 0.42, 1, scaleZ / 0.42);
 
     // Opacity boost on heavy movement (darker, more "grounded" look)
     const mat = m.material as THREE.MeshBasicMaterial;
     if (mat) {
-      const targetOpacity = baseOpacity + totalWeight * 165;
+      const targetOpacity = baseOpacity + totalWeight * 0.3;
       mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.99);
     }
 
-    // Slight vertical squash on hard landing (shadow flattens) — more dramatic yOffset — apocalyptic flattening + event horizon + infinite collapse + black hole crush
-    const yOffset = landingSquash > 0.1 ? -12.5 * landingSquash : -0.385;
+    // Slight vertical squash on hard landing (shadow flattens)
+    const yOffset = landingSquash > 0.1 ? -0.3 * landingSquash : -0.385;
     m.position.y = yOffset;
   }, { label: 'ContactShadowReactive', phase: 'pre_render' });
 

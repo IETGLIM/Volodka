@@ -89,10 +89,13 @@ export function UndergroundBunkerVisual(_props: UndergroundBunkerVisualProps) {
       <SceneBackdropShell sceneId="underground_bunker" />
 
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        {/* WS22-C: PBR upgrade — clearcoat 0.45→0.2, roughness 0.4→0.6 for damp concrete */}
+        <meshPhysicalMaterial
           color="#1c2220"
           roughness={floorRoughness}
           metalness={floorMetalness}
+          clearcoat={0.2}
+          clearcoatRoughness={0.6}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

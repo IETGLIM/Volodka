@@ -812,3 +812,79 @@ if (import.meta.env?.DEV) {
     console.warn('[ambientSounds] validation issues:', devIssues);
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   WS18-D — AMBIENT SCENE FLAVOR CATALOG
+   Living-world flavor metadata for under-served scenes.
+   Purely additive: each entry is a short Russian description of the
+   procedural bed for a scene, keyed by sceneId + soundType.
+   This catalog does NOT extend the AmbientSoundType union — it reuses
+   existing procedural sound types and adds scene-specific flavor text
+   that can be displayed in the audio/ambience debug HUD or lore codex.
+   ══════════════════════════════════════════════════════════════ */
+
+export interface AmbientSceneFlavorEntry {
+  /** Unique catalog id (prefixed `ambient_flavor_*`) */
+  id: string;
+  /** Scene this flavor text applies to */
+  sceneId: SceneId;
+  /** Reused procedural sound type from the AmbientSoundType union */
+  soundType: AmbientSoundType;
+  /** Russian flavor description for HUD / codex display */
+  description: string;
+}
+
+export const AMBIENT_SCENE_FLAVOR_CATALOG: AmbientSceneFlavorEntry[] = [
+  {
+    id: 'ambient_flavor_underground_bunker',
+    sceneId: 'underground_bunker',
+    soundType: 'basement',
+    description:
+      'Низкий гул 50 Гц от реликвии «Заря-М» вибрирует сквозь бетон. Где-то капает вода — раз в 9 секунд, как метроном забытого протокола. Вентиляция не работает, но воздух всё равно движется — его тянет машина, которая дышит вместо комнаты.',
+  },
+  {
+    id: 'ambient_flavor_library_basement',
+    sceneId: 'library_basement',
+    soundType: 'library',
+    description:
+      'Тишина такая плотная, что слышно, как пыль ложится на страницы. Раз в тридцать секунд — шорох перелистываемой книги, но в подвале никого нет. Это картотека перечитывает себя сама, чтобы не забыть.',
+  },
+  {
+    id: 'ambient_flavor_guild_mainframe',
+    sceneId: 'guild_mainframe',
+    soundType: 'office',
+    description:
+      'Серверный гул гильдии «Кодекс» — три октавы: 60 Гц фундамент, 120 Гц флуоресцентный buzz, и тонкий свист охлаждающего вентилятора на 4 кГц. Машина холодная снаружи и горячая внутри, как бог, который забыл, зачем пришёл.',
+  },
+  {
+    id: 'ambient_flavor_pier_evening',
+    sceneId: 'pier_evening',
+    soundType: 'pier',
+    description:
+      'Волны бьют в сваи с ритмом медленного пульса — 52 удара в минуту, как у спящего кита. Далёкий туманный рог парома «Агидель» — два коротких, один длинный, раз в четыре минуты. Гирлянда тёплых лампочек гудит на 50 Гц, как памятуя о заводе, который больше не работает.',
+  },
+  {
+    id: 'ambient_flavor_factory_roof',
+    sceneId: 'factory_roof',
+    soundType: 'rooftop',
+    description:
+      'Ветер на крыше «Зари-М» свистит сквозь ржавую антенну — то выше, то ниже, в зависимости от того, с какой стороны подошёл. Внизу, в цеху №3, гудит оставленный конвейер: его никто не выключал, потому что никто не помнит, кто последний держал рубильник. Скрип металла раз в 47 секунд. Кто-то считает — и забывает.',
+  },
+  {
+    id: 'ambient_flavor_forest_clearing',
+    sceneId: 'forest_clearing',
+    soundType: 'park',
+    description:
+      'Лесная поляна на Зорге дышит: ветер в кронах — долгий вдох, тишина — выдох. Где-то далеко стучит дятел, как будто проверяет пинг. Кусты шуршат — то ёж, то сталкер, то просто лес решает, что ему сказать.',
+  },
+];
+
+/** Lookup helper — get flavor entry by sceneId (first match) */
+export function getAmbientFlavorForScene(sceneId: SceneId): AmbientSceneFlavorEntry | undefined {
+  return AMBIENT_SCENE_FLAVOR_CATALOG.find((entry) => entry.sceneId === sceneId);
+}
+
+/** Lookup helper — get flavor entry by catalog id */
+export function getAmbientFlavorById(id: string): AmbientSceneFlavorEntry | undefined {
+  return AMBIENT_SCENE_FLAVOR_CATALOG.find((entry) => entry.id === id);
+}

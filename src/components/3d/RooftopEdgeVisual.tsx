@@ -104,12 +104,16 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
       />
 
       {/* ── Rooftop surface ── */}
+      {/* WS21-C: PBR upgrade — wet rooftop after rain with clearcoat + ior */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={getSharedPlaneGeometry(W, D)}>
-        <meshStandardMaterial
+        <meshPhysicalMaterial
           map={floorTexture}
           color="#3a3a3a"
           roughness={Math.max(0.35, 0.85 - rainIntensity * 0.4)}
           metalness={0.05 + rainIntensity * 0.2}
+          clearcoat={0.7}
+          clearcoatRoughness={0.15}
+          ior={1.5}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

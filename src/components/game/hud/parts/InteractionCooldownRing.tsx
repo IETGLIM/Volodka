@@ -57,7 +57,7 @@ export function InteractionCooldownRing() {
             animate={{ opacity: 0.8, scale: 1 }}
             exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 1.2 }}
             transition={{ duration: 0.15 }}
-            className="-rotate-90"
+            className="hud-filmic-cooldown-tick -rotate-90"
           >
             {/* Background ring (dim) */}
             <circle

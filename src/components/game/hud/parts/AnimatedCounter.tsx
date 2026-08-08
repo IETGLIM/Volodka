@@ -14,7 +14,7 @@ export function AnimatedCounter({ value, className, style }: AnimatedCounterProp
 
   return (
     <motion.span className={className} style={style}>
-      <motion.span>{display}</motion.span>
+      <motion.span className="hud-filmic-counter-tick">{display}</motion.span>
     </motion.span>
   );
 }

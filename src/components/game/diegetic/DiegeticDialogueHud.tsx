@@ -331,7 +331,7 @@ export function DiegeticDialogueHud() {
   });
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="sync">
       <motion.div
         key={nodeId || 'diegetic-dialogue-hud'}
         id="diegetic-dialogue-hud"
@@ -341,7 +341,7 @@ export function DiegeticDialogueHud() {
         aria-label={speaker}
         initial={reducedMotion ? false : { opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
+        exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: 16, transition: { duration: 0.2, ease: [0.16, 1, 0.3, 1] } }}
         transition={{ duration: reducedMotion ? 0 : 0.22, ease: [0.16, 1, 0.3, 1] }}
         className="fixed left-0 right-0 bottom-0 pointer-events-auto px-3 sm:px-6"
         style={{

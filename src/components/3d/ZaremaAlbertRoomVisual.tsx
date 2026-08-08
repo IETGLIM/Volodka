@@ -93,11 +93,13 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
     <group>
       {/* ── Floor ── */}
       <mesh rotation-x={-Math.PI / 2} receiveShadow position-y={0.001} geometry={geo_pln_1}>
-
-        <meshStandardMaterial
+        {/* WS22-C: PBR upgrade */}
+        <meshPhysicalMaterial
           map={floorTexture}
           color="#8a7a60"
           roughness={0.85}
+          clearcoat={0.45}
+          clearcoatRoughness={0.3}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}

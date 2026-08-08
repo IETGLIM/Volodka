@@ -39,7 +39,7 @@ export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
           role="status"
           aria-live="polite"
         >
-          <div className="hud-filmic-caption max-w-[88vw] sm:max-w-md px-3">
+          <div className="hud-filmic-caption hud-filmic-hint-attention max-w-[88vw] sm:max-w-md px-3">
             <div
               className="h-px w-16"
               style={{ background: `linear-gradient(90deg, transparent, ${CATEGORY_RULE[hint.category]}, transparent)` }}

@@ -62,7 +62,7 @@ export function CombatPreEngagementWarning() {
           aria-hidden="true"
         >
           {/* Red edge vignette */}
-          <div className="combat-preengagement-vignette" />
+          <div className="combat-preengagement-vignette hud-filmic-combat-warning-flash" />
 
           {/* Warning text — top center */}
           <div className="absolute top-[18%] left-1/2 -translate-x-1/2 flex flex-col items-center">

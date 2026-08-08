@@ -149,7 +149,9 @@ export function applyCameraFrame(
       const bobIntensity = 1 - Math.exp(-WALK_BOB_BLEND_SPEED * speedNorm);
       // AAA Phase B: amplitude also scales with speed for satisfying cinematic weight
       // at sprint (heavier footfalls read in camera) — NUCLEAR APOCALYPTIC GOD x∞ x3 (max ~45mm pounding) EVEN HARDER for хм, и:
-    const ampScale = 5.85 + 13.5 * speedNorm; // GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — 5.85x → 19.35x at sprint — DEVASTATING PLANETARY + MULTIVERSAL + INFINITE POUNDING x∞ x∞ x∞ x∞ — world shaking bob + cosmic quake + event horizon rumble + black hole crush
+    // Session 13 (ramp-tame): bob amplitude scales 1× → 2.5× with speed (6mm → 15mm at sprint).
+      // Previously 5.85× → 19.35× (up to 11.6cm vertical bob — nauseating).
+    const ampScale = 1.0 + 1.5 * speedNorm;
     const bobOffset = Math.sin(_walkBobPhase) * WALK_BOB_AMPLITUDE * bobIntensity * ampScale;
       targetPos.y += bobOffset;
 
@@ -281,26 +283,21 @@ export function applyCameraFrame(
     ctx.yaw += yawDiff * (1 - Math.exp(-1.0 * delta));
   }
 
-    // AAA Phase B: cinematic sprint forward "thrust" / momentum push on camera
-  // When sprinting hard, camera feels like it's being carried forward — delicious weight.
+    // AAA Phase B: cinematic sprint forward "thrust" / momentum push on camera.
+    // Session 13 (ramp-tame): values brought to sane cinematic levels + reduced-motion gate.
+    // (Note: this block runs after the spring consumed targetPos/targetLook, so the
+    // position pushes are largely inert this frame; the FOV breathing is the live effect.)
   const speed = playerVelocity.length();
-  if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration) {
-    const thrust = (speed - 5.2) / 1.42; // 0..1.0+ at full sprint — GOD x∞ x∞ x∞ APOCALYPSE RAMP продолжение — stronger pull, more momentum, multiversal pull + event horizon
+  if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration && !isEffectiveReducedMotion()) {
+    const thrust = Math.min(1, (speed - 5.2) / 1.8);
     const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
-    // Strong forward push on position (feels like being PULLED into the run) — FULL APOCALYPTIC
-    targetPos.addScaledVector(fwd, thrust * 0.145);
-    // Also pull the look target harder for forward commitment
-    targetLook.addScaledVector(fwd, thrust * 0.078);
-
-    // Cinematic "air rush" breathing on camera — subtle rhythmic FOV + position float
-    // Feels like wind in your face. Perfectly synced with body bob.
+    targetPos.addScaledVector(fwd, thrust * 0.03);
+    targetLook.addScaledVector(fwd, thrust * 0.02);
+    // Subtle "air rush" FOV breathing — wind-in-face feel, synced with body bob.
     const rushPhase = (ctx.time * 5.8) % (Math.PI * 2);
-    const rush = Math.sin(rushPhase) * 0.028 * Math.min(1, thrust * 2.85);
-    targetPos.addScaledVector(fwd, rush * 1.35); // stronger forward float
-    // Very subtle FOV breathing (adds life without nausea) — bigger
-    const fovBreath = rush * 1.42;
+    const rush = Math.sin(rushPhase) * 0.012 * thrust;
     (targets as any).targetFov = (targets as any).targetFov || targetFov;
-    (targets as any).targetFov += fovBreath;
+    (targets as any).targetFov += rush;
   }
 
   _rollForward.subVectors(spring.lookAt, cam.position);

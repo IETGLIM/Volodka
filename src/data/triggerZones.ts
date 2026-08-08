@@ -5445,12 +5445,2394 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     effects: [{ type: 'setFlag', flag: 'examined_zarema_room_kitchen_herbs', flagValue: true }, { type: 'addKarma', value: 4 }, { type: 'addSkill', skill: 'empathy', value: 1 }, { type: 'showThought', thought: 'От страха. От тревоги. Пустая — от того, что — без — имени. Она — верит. Хотя — бирка — пуста. Иногда — не — нужно — имя. Иногда — достаточно — завязать — бечёвку. И — повесить. И — верить.', thoughtDuration: 6000 }],
   },
 
+  /* ── WS14-B: +8 examine TriggerZones for 4 thin-coverage scenes ── */
+
+  // forest_clearing — 2 new zones
+  {
+    id: 'forest_clearing_carved_birch',
+    sceneId: 'forest_clearing',
+    position: [-3.0, 1.4, -2.5],
+    size: [0.6, 2.0, 0.6],
+    enterToast: 'Берёза с вырезанным знаком. Кора затянула порез — но знак остался.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Берёза со знаком',
+      description: 'Старая берёза на краю поляны. На коре — вырезан знак: круг с точкой внутри.',
+      detailText: 'Знак — не гильдийский, не ЧК. Старше. Кто-то резал его давно — кора уже затянула порез, но контур остался острым. Круг — солнце. Точка — наблюдатель. Или — круг — глаз. Точка — зрачок. Лес — смотрит. Не угрожает — просто видит. Это — древнее «Паноптикума». И — честнее: оно не прячет, что следит.',
+      icon: '🌳',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_forest_clearing_carved_birch', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Лес — смотрит. Не как гильдия — без угрозы. Без — приказа. Просто — видит. Я — тоже — смотрю. Только — привык — прятать взгляд. Берёза — не прячет. Берёза — честная. У — честности — нет — реестра. У — честности — только — знак. Точка — в — круге. Я — точка. Город — круг. Я — внутри.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'forest_clearing_old_campfire',
+    sceneId: 'forest_clearing',
+    position: [2.5, 0.2, 3.0],
+    size: [1.5, 0.4, 1.5],
+    enterToast: 'Старое кострище. Пепел остыл — но камни сложены по порядку.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Старое кострище',
+      description: 'Круглый каменный очаг на мху. Внутри — остывший пепел и обугленный сук.',
+      detailText: 'Камни — не случайные. Кто-то подбирал их по размеру и цвету: тёмные — снаружи, светлые — внутри. Внутри — пепел и один обугленный сук, воткнутый вертикально. Не растопка — метка. Костёр погас неделю назад, может — больше. Но — камни на месте. Кто-то вернётся. Кто-то всегда возвращается. Кострище — не след. Кострище — обещание.',
+      icon: '🔥',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_forest_clearing_old_campfire', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Кто-то был. Кто-то — будет. Я — между. Камни — ровные. Сук — воткнут. Метка — для тех, кто знает. Я — не знаю. Но — вижу. Видеть — уже — почти — знать. Почти — достаточно. Костёр — погас. Обещание — нет.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+
+  // river_pier — 2 new zones
+  {
+    id: 'river_pier_rusted_bollard',
+    sceneId: 'river_pier',
+    position: [-3.5, 0.6, 1.0],
+    size: [0.4, 0.8, 0.4],
+    enterToast: 'Ржавый причальный кнехт. На шляпке — нацарапаны инициалы.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Причальный кнехт',
+      description: 'Чугунная тумба для швартовки. Ржавая, но — на месте. На шляпке — инициалы.',
+      detailText: '«М.К.» — нацарапано гвоздём. Буквы — глубокие, не с первой попытки. Кто-то стоял здесь и резал металл — долго, упрямо. Может — моряк, что больше не выйдет в море. Может — заключённый, которого вели мимо. Может — просто кто-то, кто хотел, чтобы его инициалы пережили его. Металл — переживёт. Металл — честный материал для памятника.',
+      icon: '⚓',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_river_pier_rusted_bollard', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'М.К. Кто-то — хотел — остаться. Не — собой. Не — телом. Просто — буквами. Буквы — переживут. Буквы — не — удаляются — по — приказу. Если — вырезать — глубоко. Если — резать — долго. Я — тоже — оставлю — буквы. Не — здесь. В — коде. В — стихе. В — памяти — тех, кто — прочитает.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'river_pier_driftwood_bench',
+    sceneId: 'river_pier',
+    position: [4.0, 0.5, -2.5],
+    size: [1.6, 0.6, 0.5],
+    enterToast: 'Скамья из плавника. Кто-то приладил доску к двум камням — и сел смотреть на воду.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Скамья из плавника',
+      description: 'Доска, выброшенная рекой, положена на два плоских камня. Сиденье — для одного.',
+      detailText: 'Доска — от какого-то ящика: на обратной стороне — полустёртая надпись «ОСТОРОЖНО». Кто-то перевернул её надписью вниз, положил на камни — и сел. Сиденье — для одного. Не для двоих. Тот, кто сел здесь, хотел — один. Смотреть на воду. Думать. Или — не думать. Река — принимает оба варианта. Река — не различает.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_river_pier_driftwood_bench', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Сиденье — для одного. Я — тоже — один. Доска — от ящика. «Осторожно». Кто-то — перевернул — надписью — вниз. Чтобы — не — видеть. Чтобы — не — быть — осторожным. Река — не — требует — осторожности. Река — требует — только — смотреть. Я — сяду. Минуту. Посмотрю. Один.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+
+  // rooftop_edge — 2 new zones
+  {
+    id: 'rooftop_edge_weather_vane',
+    sceneId: 'rooftop_edge',
+    position: [3.0, 3.5, -4.0],
+    size: [0.4, 1.0, 0.4],
+    enterToast: 'Ржавый флюгер на шесте. Поворачивается медленно — ветер сегодня нерешительный.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Флюгер',
+      description: 'Кованый флюгер в форме стрелы. Шест — ржавый, но механизм ещё ходит.',
+      detailText: 'Стрела указывает на юго-восток. Но ветер — северо-западный. Флюгер — врёт. Или — сломан. Или — кто-то закрепил его в одном положении, чтобы он указывал не туда, куда дует, а туда, куда должен. «Должен» — по чьей воле? Может — того, кто ставил. Может — того, кто — не снял. Флюгер — метафора города: показывает не реальность, а чьё-то решение о реальности.',
+      icon: '🧭',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_rooftop_edge_weather_vane', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Флюгер — врёт. Но — упрямо. Это — не — слом. Это — позиция. Город — тоже — флюгер. Показывает — не — туда, куда — дует. Показывает — туда, куда — кому-то — нужно. Я — не — флюгер. Я — ветер. Я — дую. Пусть — показывают — что — хотят. Ветер — не — подчиняется — стрелке. Ветер — подчиняется — только — себе.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'rooftop_edge_graffiti_wall',
+    sceneId: 'rooftop_edge',
+    position: [-2.5, 1.4, -5.5],
+    size: [2.0, 0.8, 0.1],
+    enterToast: 'Граффити на парапете. Краска — дешёвая, но буквы — уверенные.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Граффити на парапете',
+      description: 'Бетонный парапет крыши. Кто-то вывел чёрной краской: «код — не — молчит».',
+      detailText: 'Буквы — крупные, размашистые. Краска — дешёвая, уже подтекает от дождей. Но — рука — не дрожала. Кто-то писал это уверенно, как подпись. «Код — не — молчит». Может — лозунг подпольщиков. Может — признание усталого инженера. Может — и то, и другое — одно и то же. Граффити — на парапете, не на стене. Парапет — край. Тот, кто писал, знал: с края — лучше видно. И — слышнее.',
+      icon: '🎨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_rooftop_edge_graffiti_wall', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      {
+        type: 'showThought',
+        thought: '«Код — не — молчит». Кто-то — знал. Кто-то — написал. Кто-то — стоял — здесь — на — краю — и — писал. Код — не — молчит. Код — шепчет. Код — кричит. Код — плачет. Я — слышу. Я — всегда — слышал. Я — просто — притворялся — глухим. Больше — не — притворюсь. Край — крыши — хорошее — место — для — признания. Здесь — слышно. Здесь — видно. Здесь — нельзя — притвориться.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  // chk_campfire_night — 2 new zones
+  {
+    id: 'chk_campfire_carved_spoon',
+    sceneId: 'chk_campfire_night',
+    position: [9.0, 0.7, 13.0],
+    size: [0.2, 0.1, 0.4],
+    enterToast: 'Резная деревянная ложка на бревне. Не для еды — для памяти.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Резная ложка',
+      description: 'Деревянная ложка с длинной резной ручкой. Оставлена на бревне у кострища.',
+      detailText: 'Чаша ложки — обычная, для еды. Но ручка — вырезана: тонкая спираль из листьев и букв. Буквы — старинные, не кириллица, не латиница. Что-то — третье. Может — глаголица. Может — семейный шифр. Ложку — не забыли. Ложку — оставили. Тот, кто резал, знал: вернётся. Ложка — будет ждать. Ложка — не торопится. Дерево — терпеливый материал. Терпеливее — только камень. Но — камень — не возьмёшь в руку. Дерево — возьмёшь. Дерево — тёплое.',
+      icon: '🥄',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_chk_campfire_carved_spoon', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Ложка — для — памяти. Не — для — еды. Чаша — для — еды. Ручка — для — памяти. Кто-то — соединил — оба. Еда — и — память. В — одной — ложке. Так — и — надо. Память — без — еды — умирает. Еда — без — памяти — пустая. ЧК — понимают. ЧК — режут — ложки. ЧК — едят — и — помнят. Одновременно. Это — и — есть — сопротивление. Не — лозунг. Ложка.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'chk_campfire_sentry_torch',
+    sceneId: 'chk_campfire_night',
+    position: [14.0, 1.6, 8.0],
+    size: [0.2, 1.5, 0.2],
+    enterToast: 'Факел дозорного — воткнут в землю. Уже погас, но — палёный запах остался.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Факел дозорного',
+      description: 'Пропитанный тряпичный факел на шесте. Уже погас. Палёный конец — остыл.',
+      detailText: 'Факел — не электрический. Ткань — в дёгте. Дёготь — местный, берёзовый. Электрический фонарь — виден гильдии. Факел — тоже виден, но — только — когда горит. Погасший факел — невидим. Погасший факел — просто палка. Дозорный — не зажигает, пока не надо. Дозорный — терпелив. Терпеливее — факела. Терпеливее — ложки. Терпеливее — камня. Дозорный — это — профессия — ждать. И — однажды — зажечь.',
+      icon: '🔦',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_chk_campfire_sentry_torch', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+      {
+        type: 'showThought',
+        thought: 'Факел — погас. Факел — ждёт. Дозорный — ждёт. Все — ждут. Я — тоже — жду. Только — не — знаю — чего. Может — сигнала. Может — рассвета. Может — себя — настоящего. Погасший — факел — это — не — слабость. Погасший — факел — это — терпение. Терпение — самое — редкое — оружие. У — гильдии — нет — терпения. У — гильдии — приказы. У — нас — факелы. И — терпение. Мы — победим. Медленно. Терпеливо.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ── WS15-C: examine zones for thin-coverage scenes ── */
+
+  // library_day — 4 new examine zones
+  {
+    id: 'library_day_old_card_catalog',
+    sceneId: 'library_day',
+    position: [-3.5, 1.0, 2.0],
+    size: [1.8, 1.6, 0.8],
+    enterToast: 'Каталожный шкаф — ещё вручную индексированный. Пыль — как память.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Старый каталожный шкаф',
+      description: 'Дубовый шкаф с выдвижными ящиками. Карточки — рукописные, почерк — аккуратный, старомодный.',
+      detailText: 'Каждая карточка — рукой. Ни одного штрих-кода. Индекс — по фамилиям, по годам, по настроениям. Кто-то вёл этот каталог десятилетиями — когда гильдия ещё не решила, что поиск — это запрос к серверу. Здесь — другое время. Другая скорость. Карточки — не удаляются. Карточки — не — «устаревают». Карточки — просто — есть.',
+      icon: '🗃️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_old_card_catalog', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'library_day_banned_books_section',
+    sceneId: 'library_day',
+    position: [2.0, 1.2, -3.0],
+    size: [1.5, 1.8, 0.6],
+    enterToast: 'Полка цензурированных стихов. Корешки — стёрты. Но — книги — на месте.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Полка запрещённых стихов',
+      description: 'Стеллаж за стойкой выдачи. Корешки — без названий. Книги — без обложек. Но — текст — цел.',
+      detailText: 'Гильдия требует стереть заголовки. Гильдия не требует сжигать. Потому что сжигание — это свидетельство. А безымянная полка — это — просто — полка. Но — текст — помнит. Текст — всегда — помнит. Мандельштам. Бродский. Цветаева. Имена — стёрты. Стихи — нет. Стихи — переживут — цензуру. Стихи — переживут — гильдию. Стихи — переживут — нас — всех.',
+      icon: '📕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_banned_books_section', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'library_day_reading_room_stain',
+    sceneId: 'library_day',
+    position: [0.5, 0.75, 1.5],
+    size: [1.2, 0.4, 1.2],
+    enterToast: 'Кофейное пятно на первом издании. Чьё-то — невнимание. Или — предательство.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Кофейное пятно на первом издании',
+      description: 'Стол в читальном зале. Открытая книга — и на ней — тёмное пятно, въевшееся в страницу.',
+      detailText: 'Первое издание. Бумага — желтоватая, хрупкая. Пятно — старое, уже не ототрёшь. Кто-то — читал. Кто-то — пил. Кто-то — разлил. Или — кто-то — разлил — нарочно. Пятно — на странице — с — стихом — про — свободу. Совпадение? Цензура — бывает — разной. Иногда — кофе. Иногда — пятно — громче — слов. Иногда — пятно — и — есть — слово.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_reading_room_stain', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'library_day_window_crack',
+    sceneId: 'library_day',
+    position: [4.0, 1.8, 0.0],
+    size: [0.2, 1.5, 1.5],
+    enterToast: 'Трещина в окне — от пули. Или — от камня. Или — от слова.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пулевая трещина в стекле',
+      description: 'Окно на втором ярусе. В стекле — звёздная трещина. Центр — маленький, сквозной.',
+      detailText: 'Центр — сквозной. Калибр — 9 мм. Или — камень. Или — кулак. Звёздная паутина расходится от центра — как схема, как карта, как судьба. Кто — стрелял? В — кого? В — что? В — окно? В — библиотеку? В — знание? Пуля — не — убивает — книгу. Пуля — не — убивает — стих. Пуля — делает — дыру. Дыра — это — тоже — окно. Окно — в — другое — понимание.',
+      icon: '💥',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_day_window_crack', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // abandoned_factory — 4 new examine zones
+  {
+    id: 'abandoned_factory_graffiti_wall',
+    sceneId: 'abandoned_factory',
+    position: [-5.0, 1.4, -2.0],
+    size: [2.5, 1.2, 0.1],
+    enterToast: 'Граффити на стене — лозунги сопротивления, закрашенные гильдией. И — проступающие — снова.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стена с граффити',
+      description: 'Бетонная стена цеха. Под слоем серой краски — проступают буквы. Гильдия закрашивала трижды.',
+      detailText: 'Серая — краска — гильдии. Под — ней — красная. Под — красной — белая. Под — белой — чёрная. Четыре — слоя. Четыре — попытки — стереть. Но — краска — проступает. Как — кровь — сквозь — бинты. Буквы: «ЗАВОД — ПОМНИТ». И — ниже: «МЫ — ТОЖЕ». И — ещё — ниже, — детским — почерком: «простите». Четыре — шрифта. Четыре — поколения. Четыре — слоя — сопротивления.',
+      icon: '🎨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_graffiti_wall', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'abandoned_factory_broken_lathe',
+    sceneId: 'abandoned_factory',
+    position: [3.0, 0.8, -1.5],
+    size: [1.5, 1.2, 1.0],
+    enterToast: 'Сломанный токарный станок. Последняя деталь — секретна.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Сломанный токарный станок',
+      description: 'Старый токарный станок у стены. Патрон — заклинен. Суппорт — ржавый. Но — на патроне — следы.',
+      detailText: 'Следы — от последней детали. Резец — не сменён. Значит — работал — до — конца. До — последнего — прохода. Что — он — точил? Не — гайку. Не — болт. Форма — сложная. Форма — с — гранями. Форма — с — допусками — в — микрон. Это — не — серийная — деталь. Это — единственная. Это — ключ. Или — замок. Или — то — и — другое. Станок — точил — секрет. Потом — сломался. Или — его — сломали. Секреты — не — бывают — бесконечными. Точность — требует — платы.',
+      icon: '⚙️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_broken_lathe', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'abandoned_factory_fuse_box',
+    sceneId: 'abandoned_factory',
+    position: [-2.0, 1.5, 4.0],
+    size: [0.6, 1.0, 0.3],
+    enterToast: 'Разветвительная коробка — кустарная, но — гудит. Кто-то — запитал — завод — нелегально.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Кустарная разветвительная коробка',
+      description: 'Стальная коробка на стене. Провода — разноцветные, скрученные вручную. Гудит.',
+      detailText: 'Гудит — значит — ток — есть. Завод — официально — обесточен. Но — коробка — говорит — другое. Провода — не — по — ГОСТу. Изолента — вместо — клемм. Но — работает. Кто-то — рискнул. Кто-то — подключил — завод — к — городской — сети — нелегально. Кто-то — даёт — цеху — электричество. Зачем? Не — для — станков. Станки — мертвы. Для — света. Для — «Зари-М». Для — машины — в — подвале. Кому-то — нужен — ток — в — мёртвом — заводе. Кто-то — даёт. Кто-то — платит. Кто-то — гудит.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_fuse_box', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'abandoned_factory_oil_stain_map',
+    sceneId: 'abandoned_factory',
+    position: [1.0, 0.0, 2.5],
+    size: [2.0, 0.1, 2.0],
+    enterToast: 'Масляные пятна на полу. Если смотреть сверху — похоже на карту города.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Масляная карта на полу',
+      description: 'Пятна машинного масла на бетонном полу. Разлиты давно — въелись. Форма — странная.',
+      detailText: 'Сверху — видно. Линии — как улицы. Пятна — как площади. Тонкая — линия — как — река. Крупное — пятно — как — башня — гильдии. Совпадение? Нет. Слишком — точное. Кто-то — разлил — масло — по — карте — города. Зачем? Может — маршрут. Может — план. Может — послание — тем, — кто — умеет — смотреть — вниз. Кто — смотрит — на — пол? Никто. Кроме — тех, — кто — упал. Или — тех, — кто — ищет. Ищущие — смотрят — вниз. И — видят — карту. И — идут.',
+      icon: '🗺️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_abandoned_factory_oil_stain_map', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // cafe_evening — 2 new examine zones
+  {
+    id: 'cafe_evening_jukebox',
+    sceneId: 'cafe_evening',
+    position: [-3.0, 1.0, -2.5],
+    size: [0.8, 1.6, 0.6],
+    enterToast: 'Музыкальный автомат — застрял на одной песне. Три — года.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Музыкальный автомат',
+      description: 'Ретро-джукбокс у стены. Неоновая подсветка — половина ламп сгорела. Кнопки — не работают.',
+      detailText: 'Три — года — одна — песня. Кассету — не — сменить. Механизм — заклинило. Или — кто-то — заклинил. Песня — «Подмосковные вечера». Ирония — в — том, — что — вечера — здесь — не — подмосковные. Вечера — здесь — киберпанковые. Но — мелодия — пробивается — сквозь — неон. Мелодия — старше — гильдии. Мелодия — не — нуждается — в — обновлении. Мелодия — застряла. Как — мы — все. Застрявшие — в — одном — аккорде. Но — аккорд — красивый. Может — и — не — надо — менять.',
+      icon: '🎵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_cafe_evening_jukebox', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+  {
+    id: 'cafe_evening_tipped_chair',
+    sceneId: 'cafe_evening',
+    position: [1.5, 0.5, 1.0],
+    size: [0.5, 0.8, 0.5],
+    enterToast: 'Опрокинутый стул. Со — вчерашнего — спора. Или — ещё — раньше.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Опрокинутый стул',
+      description: 'Деревянный стул на боку. Никто не поднял. Ножка — сколотая. На полу — царапина.',
+      detailText: 'Вчера — спор. Голоса — громкие. Имена — назывались. Потом — стул. Потом — тишина. Потом — все — ушли. Стул — остался. Стул — свидетель. Стул — не — умеет — лгать. Стул — просто — лежит. Как — упавшая — истина. Кто-то — пообещал — поднять. Не — поднял. Обещания — в — этом — городе — не — держатся. Стул — держится. За — царапину. За — пол. За — вчера. Вчера — не — вытереть. Вчера — не — поднять. Вчера — можно — только — запомнить.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_cafe_evening_tipped_chair', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // office_day — 2 new examine zones
+  {
+    id: 'office_day_server_log_printout',
+    sceneId: 'office_day',
+    position: [2.5, 0.85, -2.0],
+    size: [0.8, 0.3, 0.6],
+    enterToast: 'Распечатка серверных логов. Никто — не — читал. Кроме — одного — человека.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Распечатка серверных логов',
+      description: 'Стопка бумаги на краю стола. Бумага — желтоватая. Шрифт — моноширинный. Страниц — много.',
+      detailText: 'Логи — за — три — месяца. Никто — не — смотрел. Зачем — печатать — то, — что — не — читаешь? Или — читал — кто-то. Кто-то — один. Кто-то — подчеркнул — строки. Карандашом. Тихо. Без — следа — в — цифровом — логе. Подчёркнуты — ошибки — 432 — герца. Все — ошибки — на — одной — частоте. Все — ошибки — в — одно — время. 03:14. Кто-то — знал. Кто-то — печатал. Кто-то — подчёркивал. Кто-то — ждал. Ждал — того, — кто — найдёт — распечатку. Это — ты.',
+      icon: '📄',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_office_day_server_log_printout', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'office_day_whiteboard_equation',
+    sceneId: 'office_day',
+    position: [-1.0, 1.4, -4.0],
+    size: [2.0, 1.2, 0.1],
+    enterToast: 'Уравнение на доске. Никто — не — помнит, — кто — написал. И — что — оно — значит.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Уравнение на белой доске',
+      description: 'Маркерная доска у стены. Одно уравнение — крупным синим маркером. Всё остальное — стёрто.',
+      detailText: 'Уравнение — длинное. Переменные — не — стандартные. Не — x — и — y. Буквы — кириллица. «П», «С», «К», «В». Поэт? Стих? Код? Время? Или — всё — сразу. Кто — написал? Не — помнит — никто. Когда? Маркер — свежий. Стереть — не — успели. Или — не — решились. Уравнение — выглядит — как — шифр. Или — как — стих — в — математической — записи. Или — как — код — в — поэтической. Граница — размыта. Как — всегда — в — этом — городе. Где — код — и — стих — одно — и — то — же.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_office_day_whiteboard_equation', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     WS16-C — +12 examine TriggerZones for thin-coverage scenes
+     (pier_evening +2, underground_bunker +3, library_basement +3,
+      guild_mainframe +2, city_square +2). Russian cyberpunk noir flavor.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  // pier_evening — +2 new examine zones
+  {
+    id: 'pier_barnacle_pile',
+    sceneId: 'pier_evening',
+    position: [3.5, 0.2, -2.0],
+    size: [1.2, 0.3, 1.0],
+    enterToast: 'Куча ракушек на свае — на трёх — царапины, как счёт.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Куча ракушек',
+      description: 'Груда ракушек на старой свае пирса. На нескольких — мелкие царапины.',
+      detailText: 'Раковины приросли к почерневшей от времени свае. На трёх из них — царапины: «13», «7», «4». Кто-то считал приливы. Или — дни. Или — стихи. Раковины помнят больше, чем бумага. Раковины не боятся воды. Бумага — боится.',
+      icon: '🐚',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_barnacle_pile', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'pier_lighthouse_lens',
+    sceneId: 'pier_evening',
+    position: [-4.0, 1.0, -3.5],
+    size: [0.6, 0.6, 0.6],
+    enterToast: 'Осколок линзы маяка — покрыт солью, но всё ещё преломляет свет.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Линза маяка',
+      description: 'Осколок линзы старого маяка. Принесён на пирс и положен на парапет.',
+      detailText: 'Линза маяка, который не горит с Краха. Кто-то принёс осколок сюда — на пирс. Через него видно противоположный берег — перевёрнутый. Берег — вверх ногами. Может — так и нужно смотреть. Может — наоборот — виднее. Может — это и есть правда: не тот — берег, а его отражение. Не та — сторона, а её тень.',
+      icon: '🔭',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_lighthouse_lens', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // underground_bunker — +3 new examine zones
+  {
+    id: 'bunker_switch_box',
+    sceneId: 'underground_bunker',
+    position: [-3.5, 1.4, -3.5],
+    size: [0.5, 0.7, 0.3],
+    enterToast: 'Ржавый электрощит — рычаги заклинило в среднем положении.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ржавый электрощит',
+      description: 'Старый довоенный электрощит на стене бункера. Рычаги — в среднем положении.',
+      detailText: 'Щит ещё довоенный. Кто-то красной краской подписал над каждым рычагом: «Тишина», «Стихи», «Дыхание», «Сон». Все четыре — в среднем положении. Не включено. Не выключено. Зависло. Как и мы. Как и весь этот город. Среднее положение — это не нейтралитет. Это — ожидание. Чего-то — такого — что — заставит — сдвинуться.',
+      icon: '⚡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_switch_box', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'bunker_propaganda_poster',
+    sceneId: 'underground_bunker',
+    position: [5.5, 1.6, 1.5],
+    size: [1.0, 1.4, 0.05],
+    enterToast: 'Выцветший плакат гильдии — «защищает» зачёркнуто, дописано «боится».',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Выцветший плакат',
+      description: 'Пропагандистский плакат гильдии на стене бункера. Бумага пожелтела.',
+      detailText: '«Паноптикум видит — Паноптикум знает — Паноптикум защищает». Кто-то гильдийский карандаш не стёр — просто дописал поверх. «Защищает» — зачёркнуто. «Боится» — дописано. Тонко. Тихо. Точно. Страх — главный экспонат гильдии. Не сила — страх. Сила — у тех, кто — не боится — расписаться — поверх — приказа.',
+      icon: '🪧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_propaganda_poster', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+  {
+    id: 'bunker_sealed_locker',
+    sceneId: 'underground_bunker',
+    position: [3.5, 1.0, 4.5],
+    size: [0.8, 1.8, 0.6],
+    enterToast: 'Опечатанный шкафчик — свинцовая печать гильдии цела.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Опечатанный шкафчик',
+      description: 'Металлический шкафчик с неповреждённой свинцовой печатью гильдии.',
+      detailText: 'Шкафчик опечатан с момента эвакуации. Печать — гильдийская, свинцовая, с клеймом «ОПТИМИЗАЦИЯ — НЕ ВСКРЫВАТЬ». Кто-то из своих оставил его — не тронул. Содержимое — неизвестно. Может — ничего. Может — всё. Печать цела — значит, кто-то хранил дисциплину. Дисциплина — не всегда подчинение. Иногда — это форма уважения. К тому, что — внутри.',
+      icon: '🔒',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_sealed_locker', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // library_basement — +3 new examine zones
+  {
+    id: 'library_dust_terminal',
+    sceneId: 'library_basement',
+    position: [3.5, 0.9, -4.0],
+    size: [0.7, 0.9, 0.5],
+    enterToast: 'Пыльный терминал под брезентом — экран мерцает.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пыльный терминал',
+      description: 'Старый ЭЛТ-терминал, накрытый брезентом. Под брезентом — экран мерцает.',
+      detailText: 'Терминал довоенной сборки — толстый ЭЛТ, зелёный фосфор. На экране — бегущая строка: «ARCHIVE STATE: PENDING. RETRY? y/n». Курсор мигает. Кто-то оставил запрос незавершённым — и ушёл. Может — спал. Может — больше не вернулся. Терминал — ждёт ответа. Уже — три года. «Y» — означает — попробовать снова. «N» — означает — сдаться. Курсор — мигает. Я — здесь.',
+      icon: '🖥️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_dust_terminal', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'library_water_stain',
+    sceneId: 'library_basement',
+    position: [0.0, 2.7, 1.0],
+    size: [1.4, 0.1, 1.2],
+    enterToast: 'Пятно от протечки на потолке — в форме крыла птицы.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пятно на потолке',
+      description: 'Бетонный потолок подвала. Высохшее пятно от протечки — в форме крыла.',
+      detailText: 'Пятно от старой протечки — давно высохшей, но бетон запомнил форму. Пятно — в форме распростёртого крыла. Кто-то снизу дорисовал фломастером — тело птицы. Получился журавль. Серый журавль — на сером потолке — в сером подвале. Птицы — повсюду в этом городе. Бумажные — в сухом фонтане. Нарисованные — на потолке. Настоящие — где-то — над — бетонными — небесами. Птицы — помнят. Птицы — летают там, где нас — нет.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_water_stain', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'library_index_card',
+    sceneId: 'library_basement',
+    position: [-1.0, 1.0, 3.5],
+    size: [0.3, 0.2, 0.2],
+    enterToast: 'Между полками — каталожная карточка. Только название.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Забытая каталожная карточка',
+      description: 'Каталожная карточка, застрявшая между полками. Выцветшая.',
+      detailText: 'Шифр: «8С.21.7». Название: «Стихи, которые нельзя забыть». Автор — пустое. Год — пустой. Издательство — пустое. Только — название. Кто-то заполнил одну карточку — без автора, без года. Только — что нельзя — забыть. Карточка — между полок. Между книг. Между строк. Как — само — то — что нельзя забыть. Никакого — автора. Никакого — года. Только — невозможность — забыть.',
+      icon: '🗂️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_index_card', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // guild_mainframe — +2 new examine zones
+  {
+    id: 'guild_fan_grill',
+    sceneId: 'guild_mainframe',
+    position: [2.5, 2.0, 3.0],
+    size: [0.4, 0.4, 0.4],
+    enterToast: 'Решётка кулера — на лопастях — пылью написано «вдох-выдох».',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Решётка кулера',
+      description: 'Решётка вентилятора под потолком. Сквозь прутья — лопасти в пыли.',
+      detailText: 'Вентилятор под потолком — гудит ровно. Лопасти покрыты пылью — серым ворсом. На одной лопасти — пальцем в пыли кто-то написал: «вдох-выдох». Вентилятор крутится — и с каждым оборотом — фраза — снова — и снова — и снова. Серверы — дышат. Вентиляторы — повторяют. Гильдия не стирает пыль. Гильдия не замечает. Гильдия не читает — то, что — на лопастях. А я — читаю. И — дышу — в такт.',
+      icon: '🌀',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_fan_grill', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'guild_calibration_tablet',
+    sceneId: 'guild_mainframe',
+    position: [-2.5, 0.9, 2.5],
+    size: [0.5, 0.4, 0.35],
+    enterToast: 'Планшет калибровки — POESIS_INDEX: 0.0000. STATUS: OPTIMAL.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Планшет калибровки',
+      description: 'Закреплённый на стойке планшет. Экран тусклый, но активный. Лог калибровки.',
+      detailText: 'Планшет с логами калибровки — последняя запись трёхлетней давности. «CALIBRATION COMPLETE. POESIS_INDEX: 0.0000. EXPECTED: 0.0000. STATUS: OPTIMAL». Гильдия откалибровала систему на ноль. На — отсутствие. На — пустоту. И — признала — оптимальной. Они не боролись со стихами. Они — откалибровали мир так, чтобы стихов — не было. И — успокоились. Ноль — их идеал. Ноль — их — победа. Ноль — их — поражение.',
+      icon: '📟',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_calibration_tablet', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // city_square — +2 new examine zones
+  {
+    id: 'city_square_memorial_plaque',
+    sceneId: 'city_square',
+    position: [-7.0, 1.5, 5.0],
+    size: [0.8, 0.6, 0.1],
+    enterToast: 'Треснувшая мемориальная доска — имя рассечено надвое.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Треснувшая мемориальная доска',
+      description: 'Бронзовая доска на стене дома у площади. Тёмная от времени. С трещиной.',
+      detailText: 'Доска старая, дореволюционная. «Здесь — жил — поэт...» Дальше — трещина. Имя — рассечено надвое. Ниже — гильдийская приписка, уже краской: «ПЕРЕУТВЕРЖДЕНО». Они не сняли доску. Они — переутвердили. Сохранили форму — убрали содержание. Так — всегда. Трещина делает имя наполовину — прочитанным. Наполовину — угаданным. Угаданное — сильнее прочитанного. Угаданное — нельзя — «переутвердить».',
+      icon: '🏛️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_memorial_plaque', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'city_square_tram_schedule',
+    sceneId: 'city_square',
+    position: [7.5, 1.6, -5.0],
+    size: [1.4, 0.8, 0.1],
+    enterToast: 'Деревянное расписание трамвая — три почерка, три поколения.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Расписание трамвая',
+      description: 'Деревянная доска с расписанием на остановке. Старая — не цифровая.',
+      detailText: 'Три маршрута, восемнадцать остановок. Под каждым маршрутом — пометка мелом: «не ходит». Но рядом — другая рука, тоньше: «но помним». И третья рука, детская: «и ждём». Три почерка. Три поколения. Расписание — не расписание. Расписание — списки тех, кто — помнит. Кто — ждёт. Кто — верит, что — трамвай — пойдёт. Трамвай пойдёт, если — кто-то — будет — ждать. Я — подожду.',
+      icon: '🗒️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_tram_schedule', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // WS17-B — park_day: +3 examine zones
+  {
+    id: 'park_memorial_bench',
+    sceneId: 'park_day',
+    position: [5.0, 0.4, -1.0],
+    size: [1.8, 0.8, 0.6],
+    enterToast: 'Скамья у обелиска. Доски — выцветшие, но держат. Как и память.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Мемориальная скамья',
+      description: 'Старая деревянная скамья перед обелиском. Выцветшая, но целая.',
+      detailText: 'На спинке — мелкая резьба: «Сидеть — значит — помнить». Кто-то вырезал это ножом, аккуратно, как код. Под резьбой — инициалы. Два. Второй — затёрт. Один помнит — за двоих. Скамья — не памятник. Скамья — приглашение. Сядь. Вспомни. Или — просто — посиди. Иногда — посидеть — достаточно.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_park_memorial_bench', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'park_overgrown_fountain',
+    sceneId: 'park_day',
+    position: [-5.0, 0, 3.0],
+    size: [2.5, 1.5, 2.5],
+    enterToast: 'Заросший фонтан. Вода — давно нет, но камень помнит форму потока.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Заросший фонтан',
+      description: 'Каменный фонтан, увитый плющом. Чаша — сухая, но чистая.',
+      detailText: 'Насос — мёртв. Трубы — ржавые. Но — чаша — цела. В ней — не вода, а — листья. Листья — тоже — текли. Текли — с деревьев, в чашу, в землю. Круговорот — без насоса. Фонтан — не умер. Фонтан — сменил среду. Вода — на листья. Механика — на биологию. Не — оптимизация — а — эволюция. Может — нам — тоже — не — насос — нужен. Может — нам — нужно — пустить — корни.',
+      icon: '⛲',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_park_overgrown_fountain', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'park_broken_streetlamp',
+    sceneId: 'park_day',
+    position: [3.5, 0, 5.0],
+    size: [0.4, 3.0, 0.4],
+    enterToast: 'Сломанный фонарь. Лампа — выбита. Столб — помнит свет.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Сломанный фонарь',
+      description: 'Чугунный столб фонаря. Лампа — разбита. Плафон — треснувший.',
+      detailText: 'Лампа — выбита не ветром. Срез — ровный. Кто-то — целенаправленно. Зачем — ломать фонарь в парке? Темнота — не случайна. Темнота — чья-то цель. Темнота — удобна тем, кто не хочет быть видим. Кто не хочет — чтобы парк — видел. Свет — свидетель. Темнота — соучастница. Столб — стоит. Ему — всё равно. Мне — нет.',
+      icon: '🏮',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_park_broken_streetlamp', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // WS17-B — rooftop_edge: +3 examine zones
+  {
+    id: 'rooftop_satellite_dish',
+    sceneId: 'rooftop_edge',
+    position: [4.5, 3.0, 2.0],
+    size: [1.2, 1.0, 1.2],
+    enterToast: 'Спутниковая тарелка. Направлена в зенит. Приёмник — мёртв, но тарелка — смотрит вверх.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Спутниковая тарелка',
+      description: 'Старая тарелка на кронштейне. Ржавая, но orientations — вверх.',
+      detailText: 'Кабель — обрезан. Приёмник — снят. Но тарелка — смотрит. Вверх. Не на спутник — спутника нет. Просто — вверх. В небо. Как — молитва — без адресата. Тарелка — не принимает. Тарелка — отправляет. Отправляет — форму — в — небо. «Я — здесь. Я — смотрю — вверх. Я — ещё — не — сдаюсь». Небо — не ответит. Но — тарелка — не — для ответа. Тарелка — для — вопроса. Вопрос — уже — половина — ответа.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_rooftop_satellite_dish', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'rooftop_exhaust_fan',
+    sceneId: 'rooftop_edge',
+    position: [-3.5, 2.0, -1.0],
+    size: [0.8, 0.8, 0.8],
+    enterToast: 'Вытяжной вентилятор. Лопасти — заклинило. Но гул — остался.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Вытяжной вентилятор',
+      description: 'Промышленный вытяжной вентилятор. Лопасти — не вращаются. Корпус — горячий.',
+      detailText: 'Вентилятор — мёртв. Но — корпус — тёплый. От — солнца? Или — от — чего-то — внутри? Внутри — тёмно. Внутри — гул. Гул — не от мотора. Мотор — сгорел. Гул — от — здания. Здание — гудит на 50 герц. Как — живое. Вентилятор — его — дыхание. Дыхание — сломано. Но — лёгкие — ещё — работают. Кто-то — дышит — внизу. Кто-то — ещё — жив — в — этом — здании.',
+      icon: '🌀',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_rooftop_exhaust_fan', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'rooftop_pigeon_nest',
+    sceneId: 'rooftop_edge',
+    position: [1.5, 3.5, -3.5],
+    size: [0.6, 0.4, 0.6],
+    enterToast: 'Гнездо голубя за воздуховодом. Птица — смотрит. Не улетает.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Гнездо на крыше',
+      description: 'Сплетённое из проволоки и мусора гнездо за воздуховодом. Голубь — рядом.',
+      detailText: 'Гнездо — из скрепок, из изоленты, из обрывков этикеток. Не — ветки. Не — трава. Город — заменил природу. Голубь — адаптировался. Скрепка — вместо ветки. Изолента — вместо мха. Гнездо — держится. Голубь — не жалуется. Голубь — строит — из — того, что — есть. Не — из — того, что — должен. Это — не — компромисс. Это — метод. Я — тоже — строю — из — того, что — есть. Из — багов — и — костылей — и — недосыпов. Моё — гнездо — тоже — держится.',
+      icon: '🐦',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_rooftop_pigeon_nest', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // WS17-B — home_evening: +3 examine zones
+  {
+    id: 'home_kitchen_receipt',
+    sceneId: 'home_evening',
+    position: [0.5, 0.8, 0.2],
+    size: [0.4, 0.3, 0.2],
+    enterToast: 'Чек на холодильнике. Магнит держит — как и привычка.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Чек на холодильнике',
+      description: 'Жёлтый чек под магнитом на холодильнике. Давно — не смотрите.',
+      detailText: 'Продукты. Дата — два месяца назад. Цены — те же. Но — кто-то — не — ходил — за — продуктами — с — тех — пор. Или — ходил — и — не — оставил — чек. Или — чек — не — про — продукты. Чек — про — привычку. Магнит — держит. Магнит — не — спрашивает, нужен — ли — чек. Магнит — просто — держит. Как — мы — держимся — за — мелочи. Не — потому — что — важны. Потому — что — без — них — всё — остальное — отвалится.',
+      icon: '🧾',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_home_kitchen_receipt', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'home_old_photograph',
+    sceneId: 'home_evening',
+    position: [-1.5, 1.4, -2.0],
+    size: [0.3, 0.4, 0.05],
+    enterToast: 'Фотография на стене. Лица — выцветшие. Рамка — ещё держит.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Старая фотография',
+      description: 'Выцветшая фотография в простой рамке. Два человека. Молодые.',
+      detailText: 'Два — лица. Кто — они? Не — помню. Или — не — хочу. Лица — молодые. Фотография — старая. Время — прошло — через — лица — и — стёрло — детали. Остались — формы. Формы — улыбок. Формы — надежд. Формы — без — наполнения. Фотография — как — legacy-код: работает, но — никто — не — помнит, — зачем. Удалить — нельзя. Переписать — некому. Оставить — как — есть. Как — есть. Как — есть.',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_home_old_photograph', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'home_worn_coat_hook',
+    sceneId: 'home_evening',
+    position: [1.8, 1.5, -1.0],
+    size: [0.2, 0.3, 0.15],
+    enterToast: 'Крючок для пальто. Шляп — нет. Крючок — ждёт.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Старый крючок',
+      description: 'Медный крючок у двери. Потёртый, но крепкий. Пустой.',
+      detailText: 'Крючок — пустой. Давно — пустой. Кто-то — вешал — сюда — пальто — каждый вечер. Потом — перестал. Или — ушёл. Или — пальто — износилось. Крючок — не — знает. Крючок — не — спрашивает. Крючок — просто — торчит — из — стены — и — ждёт. Ждёт — упрямо. Ждёт — бесполезно. Ждёт — как — я — жду — что — всё — наладится. Может — пальто — вернётся. Может — нет. Крючок — не — сдаётся. Я — учусь — у — крючка.',
+      icon: '🪝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_home_worn_coat_hook', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // WS17-B — factory_roof: +2 examine zones
+  {
+    id: 'factory_rusted_antenna',
+    sceneId: 'factory_roof',
+    position: [-4.0, 4.5, 0.5],
+    size: [0.3, 2.0, 0.3],
+    enterToast: 'Ржавая антенна. Накренилась. Но — ещё — стоит. Ещё — ловит.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ржавая антенна',
+      description: 'Алюминиевая мачта с рожками. Накренилась на пятнадцать градусов.',
+      detailText: 'Антенна — аналоговая. Цифровых — не было, когда ставили. Рожки — направлены — не — на ретранслятор. На — небо. Кто-то — хотел — ловить — не — сигнал. Кто-то — хотел — ловить — небо. Антенна — не — принимает — ничего. Но — мачта — стоит. Стоит — потому — что — привыкла. Привычка — стоять — сильнее — логики — упасть. Я — тоже — мачта. Тоже — привык. Тоже — не — упаду. Пока — привык.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_factory_rusted_antenna', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'factory_skyward_crack',
+    sceneId: 'factory_roof',
+    position: [2.0, 0, -3.5],
+    size: [1.5, 0.1, 0.3],
+    enterToast: 'Трещина в бетоне. Расползлась от края. Как и всё на этой крыше.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Трещина в крыше',
+      description: 'Длинная трещина в бетонном перекрытии. От края — к центру.',
+      detailText: 'Трещина — от — края. К — центру. Бетон — трескается — не — от — удара. От — времени. От — усталости. От — перепада. Зимой — мёрзнет. Летом — расширяется. Бетон — не — выдерживает — среднее. Среднее — убивает. Не — максимум. Не — минимум. Среднее. День — за — днём — одно — и — то — же. Трещина — растёт — медленно. Но — верно. Как — я. Как — город. Как — всё.',
+      icon: '💔',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_factory_skyward_crack', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     WS18-B — +10 examine zones for under-served scenes
+     zarema_room +3, library_basement +2, guild_mainframe +2,
+     city_square +2, underground_bunker +1. All one-time, unique flags.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  // zarema_room — +3 new examine zones
+  {
+    id: 'zarema_room_sewing_machine_drawer',
+    sceneId: 'zarema_room',
+    position: [-4.2, 0.4, 2.6],
+    size: [0.6, 0.3, 0.4],
+    enterToast: 'Ящик швейной машинки — приоткрыт. Внутри — не нитки.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ящик швейной машинки',
+      description: 'Деревянный ящик под платой старой «Подольска». Приоткрыт на ладонь.',
+      detailText: 'Внутри — не нитки и не шпульки. Внутри — тонкая стопка фотографий. Чёрно-белых. С — нарисованными — поверх — красными — стрелками. Стрелки — от одного — лица — к другому. От — фамилии — к фамилии. Зарема — строит — генеалогию — сопротивления. Кто — кого — научил. Кто — кого — спас. Кто — от — кого — унаследовал — стих. Не — кровь. Линия — памяти.',
+      icon: '🗃️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_sewing_drawer', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'zarema_room_faded_photo_wall',
+    sceneId: 'zarema_room',
+    position: [3.2, 1.7, -3.5],
+    size: [1.4, 1.0, 0.05],
+    enterToast: 'Стена фотографий у окна. Семья — выцветшая, но — не стёртая.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стена фотографий',
+      description: 'Дюжина фотографий, приколотых кнопками к обоям. Выцветшие.',
+      detailText: 'Двенадцать — лиц. Старых — съёмок, чужих — свадеб, школьных — линий. На одной — Зарема — молодая, с косой до пояса. На другой — мужчина — без — имени — с — ручкой — в — зубах. На обороте каждой — две — буквы. «М.К.». «А.Р.». «В.Ш.». Не — инициалы — имён. Инициалы — стихов. Каждый — портрет — стих. Каждая — буква — строка. Стена — не — галерея. Стена — оглавление.',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_faded_photo', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'zarema_room_herb_bouquet_dried',
+    sceneId: 'zarema_room',
+    position: [2.5, 2.1, -2.0],
+    size: [0.4, 0.5, 0.4],
+    enterToast: 'Пучок засушенных трав под потолком. Лаванда, мята, что-то восточное.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Пучок сухих трав',
+      description: 'Связка засушенных трав, подвешенная к потолку на бечёвке. Сухо пахнет.',
+      detailText: 'Лаванда — от — сна. Мята — от — желудка. Третья — трава — без — имени. Зарема — говорит: — «от — гильдии». Не — трава — от — тревоги. Трава — от — цензуры. Трава — которую — невозможно — отфильтровать. Запах — не — подчиняется — приказам. Запах — просачивается — сквозь — firewall. Сквозь — бетон. Сквозь — страх. Запах — пахнет. Назло.',
+      icon: '🌿',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_zarema_dried_bouquet', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // library_basement — +2 new examine zones
+  {
+    id: 'library_basement_cryptic_marginalia',
+    sceneId: 'library_basement',
+    position: [-2.4, 1.1, 4.2],
+    size: [0.5, 0.7, 0.1],
+    enterToast: 'Книга раскрыта на страницах с пометками. Поля — гуще текста.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Криптографические пометки на полях',
+      description: 'Раскрытый томик стихов. Поля — испещрены значками. Не слова — шифр.',
+      detailText: 'Текст — Довлатов. Поля — не довлатовские. Поля — стрелки, точки, кружки. Каждая — стрелка — от — буквы — к — букве. Если — собрать — буквы — под — стрелками — получается — новое — слово. Если — собрать — слова — под — стрелками — получается — новое — стихотворение. Библиотека — не — хранит — книги. Библиотека — хранит — инструкции — как — книги — читать. Кто-то — учил — следующий — читателя — между — строк. Между — строк — было — своё — стихотворение. Цензура — не — дочитала. Цензура — не — умеет — в — стрелки.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_cryptic_marginalia', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'library_basement_broken_microfiche',
+    sceneId: 'library_basement',
+    position: [1.8, 0.9, -2.5],
+    size: [0.7, 0.5, 0.5],
+    enterToast: 'Сломанный аппарат для микрофишей. Лента — застряла. Экран — погас.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Сломанный аппарат микрофишей',
+      description: 'Довоенный читальный аппарат. Лампа — перегорела. Лента — порвана.',
+      detailText: 'Аппарат — довоенный. Гильдия — считала — устаревшим — и — не — конфисковала. Ошибка. На — порванной — ленте — последний — кадр. Снимок — газетной — полосы — 1979. Полоса — со — стихами. Стихи — подписаны: — «Без — автора». И — ниже — карандашом:— «но — с — адресом». Адрес — зачитан — до — букв. Буквы — стёрты. Цифры — остались. Дом. Квартира. Этаж. Кто-то — жил — там — и — писал. Кто-то — искал — его — и — не — нашёл. Лента — порвана — на — полпути. Лента — обещает. Лента — не — отдаёт.',
+      icon: '📽️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_library_broken_microfiche', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // guild_mainframe — +2 new examine zones
+  {
+    id: 'guild_mainframe_log_terminal_archive',
+    sceneId: 'guild_mainframe',
+    position: [-1.5, 1.0, -3.2],
+    size: [0.9, 0.9, 0.5],
+    enterToast: 'Архивный терминал логов. Последний запрос — трёхлетней давности.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Архивный терминал логов',
+      description: 'Стойка с терминалом, dédié — журналу событий. Зелёный фосфор. Тишина.',
+      detailText: 'Терминал — открыт — на — LOG. Последний — запрос:— «SELECT * FROM poetic_resonance WHERE amplitude > 0.05;». Результат:— 0 — строк. Гильдия — три года — назад — проверила:— стихов — нет. Амплитуда — ноль. Они — успокоились. Они — отключили — мониторинг. Они — перестали — смотреть. Стихи — пошли — снова — через — неделю. Через — месяц. Через — год. Никто — не — заметил. Никто — не — мониторил. Терминал — записывает. Терминал — не — сообщает. Молчание — архива — спасло — нас — всех.',
+      icon: '📟',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_log_archive', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'guild_mainframe_cooling_vent_grate',
+    sceneId: 'guild_mainframe',
+    position: [3.5, 2.4, -1.0],
+    size: [0.5, 0.5, 0.1],
+    enterToast: 'Решётка охлаждения под потолком. За ней — бумажка. Сложена — мелко.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Решётка охлаждения',
+      description: 'Вентиляционная решётка под потолком. За прутьями — клочок бумаги.',
+      detailText: 'Решётка — на — четырёх — винтах. Один — выкручен. За — решёткой — в — воздуховоде — сложенный — вчетверо — лист. Достать — трудно. Но — видно — почерк. Тонкий. Знакомый. Лист — не — вытаскивают. Лист — оставляют. Пусть — лежит. Пусть — дышит — вентиляцией. Пусть — гильдия — гонит — воздух — через — чужой — стих — и — не — знает. Стих — в — лёгких — мейнфрейма. Стих — охлаждает — процессоры. Стих — работает. Без — оплаты. Без — приказов. Просто — работает.',
+      icon: '🌬️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_guild_cooling_vent', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // city_square — +2 new examine zones
+  {
+    id: 'city_square_manhole_cover_graffiti',
+    sceneId: 'city_square',
+    position: [2.5, 0.05, 3.0],
+    size: [0.8, 0.1, 0.8],
+    enterToast: 'Канализационный люк. На чугуне — кто-то нацарапал стих.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стих на канализационном люке',
+      description: 'Чугунный люк с гербом города. Поверх герба — гвоздём нацарапаны строки.',
+      detailText: 'Герб — города — стёрт — гвоздём. Гвоздём — же — выцарапаны — три — строки. «Под — нами — город. Под — городом — город. Под — ним — мы.» Подпись:— «С.Л.». С.Л. — не — в — реестре. С.Л. — не — в — архиве. С.Л. — жил — здесь — и — спускался — в — люк — каждую — ночь. С.Л. — исчез. Люк — остался. Стих — остался. Город — под — городом — под — городом — остался. Мы — наверху — ходим — поверх — трёх — слоёв — и — не — помним. С.Л. — помнил. С.Л. — спустился. С.Л. — не — вернулся. Стих — его — последнее — подписанное.',
+      icon: '🕳️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_manhole_graffiti', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'city_square_neon_sign_burnout',
+    sceneId: 'city_square',
+    position: [-3.0, 3.2, -2.0],
+    size: [2.0, 0.6, 0.3],
+    enterToast: 'Неоновая вывеска над кафе. Половина букв — выгорела. Остальные — моргают.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Выгоревшая неоновая вывеска',
+      description: 'Старая неоновая вывеска «ОТКРЫТО 24/7». Из восьми букв — горят четыре.',
+      detailText: 'Горят:— «Т — Р — Т — О». Получается — «ТРТО». Бессмыслица. Или — нет. ТРТО — может — быть — аббревиатурой. Т — тихо. Р — режь. Т — только. О — осторожно. «Тихо — режь — только — осторожно». Инструкция — для — контрабандистов. Инструкция — для — нас. Инструкция — для — тех, — кто — понимает:— вывеска — не — реклама. Вывеска — канал. Вывеска — говорит — с — теми, — кто — читает — между — букв. Гильдия — проверяет — буквы. Гильдия — не — проверяет — пробелы. Пробелы — и — есть — сообщение. Буквы — лишь — контур.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_square_neon_burnout', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // underground_bunker — +1 new examine zone
+  {
+    id: 'underground_bunker_rusted_airlock_wheel',
+    sceneId: 'underground_bunker',
+    position: [4.8, 1.3, -4.5],
+    size: [0.7, 0.7, 0.3],
+    enterToast: 'Ржавое колесо шлюза. Не — сдвинуть. Но — крутится — на — пол-оборота.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ржавое колесо шлюза',
+      description: 'Чугунное штурвальное колесо на бетонной стене. Пять спиц. Ржавчина — слоем.',
+      detailText: 'Колесо — от — довоенного — шлюза. Шлюз — давно — замурован. Колесо — оставили — для — приличия. Или — для — памяти. Колесо — крутится — на — пол-оборота — влево. Пол-оборота — вправо. Дальше — клинит. Дальше — мёртвая — точка. Кто-то — приходил — и — крутил. Каждый — день. По — разу — влево. По — разу — вправо. Ритуал. Без — смысла. Или — со — смыслом:— «Шлюз — закрыт. Шлюз — закрыт. Шлюз — закрыт». Каждый — день. Мантра — бетонного — бункера. Колесо — помнит — руки. Колесо — не — помнит — имён. Ритуал — продолжается. Я — кручу. Пол-оборота. Влево. Вправо. Хватит.',
+      icon: '⚓',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_bunker_airlock_wheel', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  /* ── WS19-B: +12 new examine zones for least-served scenes ── */
+
+  // solnysh_room — +3
+  {
+    id: 'solnysh_room_guitar_case_sticker',
+    sceneId: 'solnysh_room',
+    position: [-1.4, 0.3, 1.2],
+    size: [1.0, 0.4, 0.6],
+    enterToast: 'Гитарный кофр. На крышке — стикер: «СЛОВО — ОРУЖИЕ».',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стикер на гитарном кофре',
+      description: 'Старый стикер «СЛОВО — ОРУЖИЕ». Края — потрепаны. Клей — ослаб.',
+      detailText: 'Солныш — нашла — стикер — на — рынке. Наклеила — сама. Без — спроса. «Слово — оружие». Она — не — понимает — что — это — значит. Или — понимает — лучше — меня. Она — видит, — как — я — пишу. Видит, — как — Зарема — читает. Видит — и — делает — вывод: — слово — можно — использовать. Как — молоток. Как — гвоздь. Как — щит. Она — не — ошибается. Я — пишу — и — стены — рушатся. Зарема — читает — и — двери — открываются. Солныш — наклеила — стикер. Солныш — права. Слово — оружие. Она — уже — вооружена. Она — ещё — не — знает — этого.',
+      icon: '🏷️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_solnysh_guitar_sticker', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'solnysh_room_window_rain_trails',
+    sceneId: 'solnysh_room',
+    position: [2.8, 1.6, 0.0],
+    size: [0.3, 1.2, 0.8],
+    enterToast: 'Окно. Дождевые следы на стекле — как карта неизвестной реки.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Дождевые следы на стекле',
+      description: 'Капли стекают по стеклу, оставляя кривые дорожки. Как — пальцы, которые — ищут — выход.',
+      detailText: 'Каждая — капля — выбирает — свой — путь. Никогда — одинаковый. Физика — простая: — гравитация, — поверхностное — натяжение, — пыль — на — стекле. Но — следы — похожи — на — судьбы. Каждый — раз — новая — линия. Каждый — раз — другой — конец. Иногда — капля — встречает — другую. Сливаются. Ускоряются. Вместе — падают — быстрее. Это — не — физика. Это — метафора. Солныш — прижимает — палец — к — стеклу. Меняет — путь — капли. Одним — пальцем. Может — я — тоже — могу — изменить — путь. Чьим-то — пальцем. Или — словом.',
+      icon: '🌧️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_solnysh_rain_trails', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'solnysh_room_vinyl_record_stack',
+    sceneId: 'solnysh_room',
+    position: [1.5, 0.1, -1.8],
+    size: [0.5, 0.5, 0.5],
+    enterToast: 'Стопка виниловых пластинок. Без конвертов. Пальцы — на бороздках.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Стопка виниловых пластинок',
+      description: 'Три пластинки без конвертов. Бородки — как шрамы. Этикетки — стёрты.',
+      detailText: 'Винил — не — цифра. Винил — не — удаляется. Винил — царапается — и — играет — дальше. Царапина — не — баг. Царапина — — фича. Царапина — — память. Каждая — бороздка — — секунда — звука. Секунда, — которая — не — повторится. Не — потому — что — стёрта. Потому — что — игла — никогда — не — входит — дважды — в — одну — и — ту — же — бороздку. Гераклит — был — прав. Про — реку. Про — звук. Про — нас. Зарема — слушает — vinyl. Я — не — знал. Солныш — слушает — вместе — с — ней. Они — крутят — пластинку — и — танцуют. Без — ритма. Без — стеснения. Это — и — есть — музыка. Не — на — пластинке. В — комнате.',
+      icon: '💿',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_solnysh_vinyl_stack', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+
+  // street_winter — +3
+  {
+    id: 'street_winter_frozen_fountain_crack',
+    sceneId: 'street_winter',
+    position: [3.2, 0.4, -1.6],
+    size: [1.8, 0.6, 1.8],
+    enterToast: 'Замёрзший фонтан. Трещина — во льду — как молния наоборот.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Трещина в замёрзшем фонтане',
+      description: 'Лёд — толстый, — мутный. Трещина — от — центра — к — краю. Под — льдом — вода — ещё — жива.',
+      detailText: 'Фонтан — замёрз — в — ноябре. Трещина — появилась — в — декабре. Мороз — расширяет. Вода — сжимается. Между — ними — лёд — лопается. Как — я. Между — тем, — что — расширяется — (надежда), — и — тем, — что — сжимается — (реальность). Лёд — лопается. Трещина — не — дефект. Трещина — — доказательство, — что — под — льдом — вода. Под — мной — вода. Под — городом — вода. Фонтан — не — мёртв. Фонтан — ждёт. Весной — вода — пробьётся — через — трещину. Первое, — что — сделает — весна — — это — трещина. Трещина — — начало. Трещина — — обещание.',
+      icon: '🧊',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_winter_fountain_crack', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'street_winter_snow_covered_bench',
+    sceneId: 'street_winter',
+    position: [-2.4, 0.3, 2.8],
+    size: [1.6, 0.5, 0.6],
+    enterToast: 'Скамья под снегом. Кто-то — расчистил — место — для — одного. Только — для — одного.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Снежная скамья',
+      description: 'Скамья. Снег. Но — одно — место — расчищено. Только — одно. Сиденье — ледяное.',
+      detailText: 'Кто-то — сидел — здесь. Недавно. Снег — ещё — не — успел — засыпать — след. Один — человек. Одна — ямка — в — снегу. Один — след — на — скамье. Он — сидел — и — смотрел. Куда? На — фонтан. На — трещину — во — льду. На — то, — что — я — только — что — рассматривал. Мы — смотрели — на — одно — и — то — же. Мы — думали — об — одном — и — том — же. Мы — не — встретились. Он — ушёл. Я — пришёл. Между — нами — снег. Между — нами — время. Между — нами — только — расчищенное — место — на — скамье. Это — и — есть — город. Расчищенные — места. Для — одного. Всегда — для — одного.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_winter_snow_bench', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'street_winter_icicle_cluster',
+    sceneId: 'street_winter',
+    position: [0.6, 2.8, -3.4],
+    size: [0.4, 1.0, 0.3],
+    enterToast: 'Сосульки — с карниза. Острые. Прозрачные. Как — зубы — замёрзшего — дракона.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Гроздь сосулек',
+      description: 'Сосульки — с — карниза — старого — дома. Разного — размера. Самая — длинная — почти — полметра.',
+      detailText: 'Сосулька — это — замёрзшее — время. Капля — за — каплей. Секунда — за — секундой. Каждая — капля — добавляет — миллиметр. Миллиметр — за — миллиметром — — сосулька. Вчера — её — не — было. Сегодня — она — длиннее — моего — пальца. Завтра — она — упадёт. Или — кто-то — сорвёт. Или — солнце — растопит. Три — варианта. Упадёт — — больно. Сорвут — — полезно. Растопит — — красиво. Тот — же — выбор — у — каждого — из — нас. Упасть. Быть — использованным. Растаять. Я — выбираю — растаять. Медленно. Красиво. В — лужу, — которая — отразит — небо.',
+      icon: '💎',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_winter_icicle_cluster', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // street_night — +2
+  {
+    id: 'street_night_flickering_streetlight',
+    sceneId: 'street_night',
+    position: [-4.2, 3.5, 1.2],
+    size: [0.3, 0.5, 0.3],
+    enterToast: 'Фонарь — мерцает. Ритм — неслучайный. Точка-тире-точка. Код?',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Мерцающий фонарь',
+      description: 'Натриевый фонарь. Мерцает — с — периодом. Точка-тире-точка. Повтор.',
+      detailText: 'Фонарь — мерцает. Не — случайно. Ритм: — короткий, — длинный, — короткий. Точка-тире-точка. Морзе: — «R». R — как — resistance. R — как — resistor. R — как — «мы — ещё — здесь». Или — это — просто — плохой — контакт. Просто — старый — балласт. Просто — физика. Но — физика — тоже — говорит. Если — слушать. Гильдия — не — слушает — фонари. Гильдия — слушает — сети. Сети — чистые. Фонари — грязные. Грязные — каналы — — надёжнее. Никто — не — фильтрует — шум. В — шуме — — сообщение. В — мерцании — — код. R. Resistance. Мы — ещё — здесь.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_night_flickering_streetlight', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'street_night_discarded_encryptor',
+    sceneId: 'street_night',
+    position: [2.6, 0.1, -4.8],
+    size: [0.5, 0.3, 0.3],
+    enterToast: 'Под ногами — устройство. Мини-энкриптор. Выброшенный. Или — оставленный.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Выброшенный энкриптор',
+      description: 'Карманное устройство шифрования. Модель — устаревшая. Батарея — мертва. Но — чип — целый.',
+      detailText: 'Энкриптор — модели — ЗС-4. Три — года — назад — каждый — агент — гильдии — носил — такой. Теперь — они — на — ЗС-7. ЗС-4 — уязвим. ЗС-4 — можно — вскрыть. ЗС-4 — выброшен. Или — подброшен. Если — выброшен — — почему — здесь? — На — моей — улице. Если — подброшен — — для — кого? — Для — меня. Клюёт — или — не — клюёт? Я — не — клюну. Я — запомню — место. И — вернусь — с — перчатками. И — с — Лёней. Лёня — знает — чипы. Лёня — знает — ловушки. А — я — знаю — одно: — если — гильдия — оставляет — подарок — на — улице — — это — не — подарок. Это — приманка. Приманка — работает — только — если — клюёшь. Не — клюну. Но — запомню.',
+      icon: '🔐',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_night_discarded_encryptor', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // river_pier — +2
+  {
+    id: 'river_pier_moored_boat_hull',
+    sceneId: 'river_pier',
+    position: [-3.6, 0.5, -5.2],
+    size: [2.0, 1.0, 0.8],
+    enterToast: 'Причаленная лодка. Корпус — ржавый. Название — стёрто. Но — киль — целый.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ржавая лодка у причала',
+      description: 'Старая рыбацкая лодка. Корпус — ржавый. Название — на — борту — нечитаемо. Киль — целый.',
+      detailText: 'Лодка — помнит — руки, — которые — красили. Помнит — воду, — которая — ела — краску. Помнит — рыбу, — которая — не — клевала. Лодка — не — жалуется. Лодка — стоит — на — причале — и — ждёт. Не — рыбака. Рыбак — не — придёт. Рыбак — переехал — или — умер — или — забыл. Лодка — ждёт — кого-то, — кто — умеет — с — ней — разговаривать. Я — не — умею. Я — умею — с — кодом. Я — умею — с — буквами. Но — лодка — не — код. Лодка — не — текст. Лодка — дерево — и — ржавчина — и — терпение. Терпение — — это — то, — чего — мне — не — хватает. Лодка — научит. Если — приду — завтра. И — послезавтра. И — всегда.',
+      icon: '⛵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_moored_boat_hull', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'river_pier_rusted_chain_windlass',
+    sceneId: 'river_pier',
+    position: [-2.8, 0.8, -4.6],
+    size: [0.4, 0.4, 0.4],
+    enterToast: 'Цепь — и — шпиль. Ржавые. Но — цепь — ещё — держит. Шпиль — ещё — крутится.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Ржавая цепь и шпиль',
+      description: 'Якорная цепь на шпиле. Ржавчина — повсюду. Но — звенья — целы. Шпиль — проворачивается.',
+      detailText: 'Цепь — держит — лодку. Лодка — не — уплывает. Почему? — Якорь — на — дне. Цепь — на — шпиле. Шпиль — на — пирсе. Пирс — на — сваях. Сваи — в — дне. Всё — держится — на — чём-то. Я — тоже — держусь — на — чём-то. На — словах. На — Зареме. На — коде, — который — ещё — не — сломался. Цепь — ржавая. Но — ржавчина — не — слабость. Ржавчина — — возраст. Ржавчина — — доказательство, — что — цепь — работала. Что — цепь — держала. Что — цепь — не —休息ала. Я — тоже — ржавею. Но — держу.',
+      icon: '⚓',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_pier_rusted_chain_windlass', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // factory_basement — +2
+  {
+    id: 'factory_basement_oil_drum_residue',
+    sceneId: 'factory_basement',
+    position: [4.2, 0.4, -2.8],
+    size: [0.6, 0.8, 0.6],
+    enterToast: 'Масляная бочка. На — дне — осадок. Тёмный. Пахнет — машинным — маслом — и — временем.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Осадок в масляной бочке',
+      description: 'Стальная бочка. Внутри — дюйм — тёмного — осадка. Масло — и — что-то — ещё.',
+      detailText: 'Бочка — от — советских — времён. ГОСТ — на — боку — ещё — читается. Масло — давно — вытекло — или — высохло. Остался — осадок. Осадок — не — мусор. Осадок — — концентрат. Всё, — что — было — в — масле — — присадки, — металл, — время — — осело — на — дно. Осадок — — правда — жидкости. Жидкость — врёт. Жидкость — течёт — и — меняется. Осадок — остаётся. Осадок — не — лжёт. Я — тоже — осадок. Всё, — чем — я — был — — растворилось. Осталось — только — то, — что — не — смылось. Стихи. Упрямство. Солныш. Это — мой — осадок. Этого — достаточно.',
+      icon: '🛢️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_basement_oil_drum_residue', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'factory_basement_conveyor_belt_jam',
+    sceneId: 'factory_basement',
+    position: [-3.8, 0.8, 3.6],
+    size: [1.5, 0.6, 0.8],
+    enterToast: 'Конвейерная лента. Заклинило. Между — роликами — — ткань — и — проволока.',
+    isOneTime: true,
+    interactionType: 'examine',
+    examineData: {
+      title: 'Заклинивший конвейер',
+      description: 'Старая конвейерная лента. Заклинило — между — роликом — и — рамой. Ткань — и — проволока — в — зазоре.',
+      detailText: 'Конвейер — вёз — детали. Детали — собирались — в — машины. Машины — работали — на — заводе. Завод — работал — на — страну. Страна — работала — на — идею. Идея — заклинила. Как — конвейер. Между — роликом — и — рамой — — застряла — проволока. Проволока — тонкая. Одна. Но — достаточно, — чтобы — всё — остановилось. Один — элемент. Один — сбой. Одна — проволока — — и — весь — конвейер — стоит. Так — и — с — системой. Один — диссидент. Один — стих — в — заголовке. Один — Володька. И — вся — гильдия — заклинивает. Я — проволока. Я — застрял — между — роликом — и — рамой. И — конвейер — остановился. Это — не — баг. Это — сопротивление.',
+      icon: '⚙️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_basement_conveyor_jam', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+
   /* ═══════════════════════════════════════════════════════════════════
      COMBAT ENCOUNTERS — replaced by visible patrolling creeps
      (src/data/creepPatrols.ts + PatrollingCreeps.tsx). The old invisible
      autoTrigger zones fired combat with no warning; creeps give the player
      a vision cone to sneak around instead.
      ═══════════════════════════════════════════════════════════════════ */
+
+  /* ═══════════════════════════════════════════════════════════
+     WS20-B — 12 new examine zones for least-served scenes
+     ═══════════════════════════════════════════════════════════ */
+
+  // zarema_albert_room — 4 zones
+  {
+    id: 'ws20b_old_photo_on_wall',
+    sceneId: 'zarema_albert_room',
+    position: [-1.2, 1.7, -2.8],
+    size: [0.6, 0.8, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть фотографию',
+    examineData: {
+      title: 'Старая фотография',
+      description: 'Чёрно-белая фотография в простой рамке. Двое стоят у входа на завод — «Заря-М», 1983.',
+      detailText: 'На обороте — почерк Заремы: «Папа и дядя Равиль. Перед сменой. Перед всем». Лица ещё не знают, что завод станет могилой проекта «Прогресс-7».',
+      icon: '🖼️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_old_photo_on_wall', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_dried_flower_vase',
+    sceneId: 'zarema_albert_room',
+    position: [0.8, 0.9, -1.5],
+    size: [0.5, 0.7, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вазу',
+    examineData: {
+      title: 'Ваза с сухими цветами',
+      description: 'Стеклянная ваза с высохшими ветками лаванды. Пыль осела ровным слоем — знак покоя, не забвения.',
+      detailText: 'Лаванда — татарская, горная. Зарема привезла из Казани. Цветы умерли, но запах остался — застрял в стекле, как код в железе.',
+      icon: '💐',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_dried_flower_vase', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_handwritten_note',
+    sceneId: 'zarema_albert_room',
+    position: [0.3, 0.85, -2.2],
+    size: [0.4, 0.3, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать записку',
+    examineData: {
+      title: 'Записка от руки',
+      description: 'Клочок бумаги, вписанный в спираль ручки Альберта: «Резистор сгорел. Заменил на стих. Работает.»',
+      detailText: 'Подписи нет. Дата тоже. Но канифоль на краю — свежая. Альберт паяет стихами. Или — стихами паяет. Разница — в направлении тока.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_handwritten_note', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_velvet_armchair_wear',
+    sceneId: 'zarema_albert_room',
+    position: [-0.5, 0.4, 0.8],
+    size: [1.0, 1.0, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть кресло',
+    examineData: {
+      title: 'Стёртое бархатное кресло',
+      description: 'Бархат вытерт до нитей на подлокотниках — два углубления, как отпечатки ладоней.',
+      detailText: 'В этом кресле читали вслух. Каждый вечер — пока не стало страшно читать вслух. Теперь кресло помнит звук лучше, чем стены.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_velvet_armchair_wear', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // volodka_corridor — 3 zones
+  {
+    id: 'ws20b_leaky_pipe_stain',
+    sceneId: 'volodka_corridor',
+    position: [-1.0, 2.2, -2.0],
+    size: [0.8, 0.6, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть пятно',
+    examineData: {
+      title: 'Пятно от протечки',
+      description: 'Ржавое пятно расползлось по потолку — карта неизвестного архипелага в бурой акварели.',
+      detailText: 'Труба за стеной гудит на ноте ре. Тринадцать лет. Дольше памяти дома. Труба не пишет — труба просто гудит.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_leaky_pipe_stain', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_flickering_bulb_fixture',
+    sceneId: 'volodka_corridor',
+    position: [0, 2.8, 0],
+    size: [0.6, 0.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть лампу',
+    examineData: {
+      title: 'Мигающая лампочка',
+      description: 'Лампочка мигает на частоте тревоги. Или на частоте пульса. Не различаю.',
+      detailText: 'Патрон старый, советский. Резьба стёрта — лампочку вкрутили и выкрутили тысячу раз. Каждое мигание — маленький сердечный приступ коридора.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_flickering_bulb_fixture', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_scratched_doorplate',
+    sceneId: 'volodka_corridor',
+    position: [2.0, 1.5, 6.0],
+    size: [0.4, 0.2, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть табличку',
+    examineData: {
+      title: 'Поцарапанная табличка',
+      description: 'Номер квартиры — «14». Единица нацарапана поверх тройки. Тридцать четвёртая стала четырнадцатой.',
+      detailText: 'Нумерация менялась после ремонта. Или до. Или вместо. Номер — как имя: можно сменить, но стены помнят прежнее.',
+      icon: '🔢',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_scratched_doorplate', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // cafe_evening — 3 zones
+  {
+    id: 'ws20b_coffee_stain_on_counter',
+    sceneId: 'cafe_evening',
+    position: [0.5, 0.9, -1.0],
+    size: [0.5, 0.3, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть стойку',
+    examineData: {
+      title: 'Кофейное пятно на стойке',
+      description: 'Кольцо от чьей-то кружки — коричневый континент на белом архипелаге барной поверхности.',
+      detailText: 'Бариста вытирает такие пятна автоматически — рука помнит раньше глаза. Каждое кольцо — заказ. Каждый заказ — разговор. Каждый разговор — маленькая сеть.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_coffee_stain_on_counter', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_torn_poster_wall',
+    sceneId: 'cafe_evening',
+    position: [-2.5, 1.6, 1.5],
+    size: [0.8, 1.2, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть афишу',
+    examineData: {
+      title: 'Надорванная афиша',
+      description: 'Кусок афиши — поэтический вечер «Стихи и серверы». Дата заклеена. Место — «Синяя яма».',
+      detailText: 'Кто-то сорвал дату — чтобы не нашли. Или чтобы не забыли. Афиша без даты — приглашение без срока. Вечное. Как стих.',
+      icon: '📜',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_torn_poster_wall', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_steaming_samovar',
+    sceneId: 'cafe_evening',
+    position: [1.8, 0.6, 2.0],
+    size: [0.6, 0.8, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть самовар',
+    examineData: {
+      title: 'Парящий самовар',
+      description: 'Медный самовар на подносе — пар поднимается ровно, как серверный кулер на холостом ходу.',
+      detailText: 'Альберт принес из подсобки. «Чай — не кофе. Чай — читает с тобой. Кофе — сканирует». Тяжесть меди уравновешивает лёгкость пара. Как правда и вежливость.',
+      icon: '🫖',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_steaming_samovar', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // home_evening — 2 zones
+  {
+    id: 'ws20b_cracked_mirror_bathroom',
+    sceneId: 'home_evening',
+    position: [1.5, 1.4, -3.0],
+    size: [0.6, 0.9, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть зеркало',
+    examineData: {
+      title: 'Треснувшее зеркало',
+      description: 'Зеркало в ванной — трещина от угла к углу. Отражение дробится на два полулика.',
+      detailText: 'Зарема говорит: не менять. «Трещина — честнее целого. Целое врёт, что ты один. Трещина напоминает, что тебя — два». Не понимаю. Или не хочу.',
+      icon: '🪞',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_cracked_mirror_bathroom', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws20b_faded_rug_pattern',
+    sceneId: 'home_evening',
+    position: [0, 0, 0],
+    size: [2.5, 0.1, 1.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ковёр',
+    examineData: {
+      title: 'Выцветший узор ковра',
+      description: 'Ковёр в коридоре — орнамент стёрся по центру, где ходят. Края ещё помнят цвет.',
+      detailText: 'Геометрия татарского орнамента — не декорация, а шифр. Кто умеет читать углы — прочтёт историю рода. Я не умею. Я читаю только код. Но код и орнамент — одна грамматика: повтор, рекурсия, ритм.',
+      icon: '🟫',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws20b_faded_rug_pattern', flagValue: true },
+      { type: 'addKarma', value: 1 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     WS21-B — Living-world content expansion: 12 new examine zones for
+     least-served scenes (guild_mainframe, rooftop_edge, cafe_evening,
+     park_day, river_pier, abandoned_factory ×2 each)
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ── guild_mainframe (2 new) ── */
+  {
+    id: 'ws21b_gm_server_log',
+    sceneId: 'guild_mainframe',
+    position: [1.2, 1.0, -3.0],
+    size: [0.6, 0.8, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть журнал сервера',
+    examineData: {
+      title: 'Журнал сервера',
+      description: 'Жёлтый терминальный экран, прокрученный до последних строк. Логи — как исповедь машины.',
+      detailText: 'ERROR: memory_overflow at 0xDEADFACE — повтор 4821 раз. Кто-то или что-то пытается записать в защищённую область памяти. Стихи? Или атака? В логах — только адреса. Ни одного слова.',
+      icon: '📋',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_gm_server_log', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_gm_cooling_vent',
+    sceneId: 'guild_mainframe',
+    position: [-2.5, 2.0, 1.5],
+    size: [1.0, 0.6, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вентиляционную решётку',
+    examineData: {
+      title: 'Вентиляционная решётка',
+      description: 'Решётка под потолком — из неё тянет ледяным воздухом. Стойки охлаждают — а люди нет.',
+      detailText: 'За решёткой — гул, как далёкий хор. Серверы поют на частоте 50 Герц. Если прислушаться — можно различить ритм. Или это сердце стучит в такт? Не различаю. Но звучит — живо.',
+      icon: '🌀',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_gm_cooling_vent', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  /* ── rooftop_edge (2 new) ── */
+  {
+    id: 'ws21b_re_skyline_note',
+    sceneId: 'rooftop_edge',
+    position: [3.0, 0.6, -1.2],
+    size: [0.4, 0.3, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать записку на парапете',
+    examineData: {
+      title: 'Записка на парапете',
+      description: 'Клочок бумаги, прижатый камнем. Дождь почти стёр чернила.',
+      detailText: '«...и город внизу — как строчка, которую не дописали. Последняя буква — я. Или — не я. Посмотрим.» Почерк чужой. Датировано позапрошлой зимой. Кто-то стоял здесь до меня. Кто-то тоже смотрел.',
+      icon: '📝',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_re_skyline_note', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_re_antenna_array',
+    sceneId: 'rooftop_edge',
+    position: [-4.0, 3.0, 2.0],
+    size: [1.5, 2.0, 1.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть антенную решётку',
+    examineData: {
+      title: 'Антенны',
+      description: 'Ржавые антенны — как скелет руки, тянущейся к небу. Передатчики гильдии.',
+      detailText: 'Каждая антенна — глаз гильдии. Они смотрят вниз, слушают снизу, передают наверх. Но ветер гудит в растяжках — и на секунду кажется, что антенны поют. Свободную частоту. Без цензуры.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_re_antenna_array', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  /* ── cafe_evening (2 new) ── */
+  {
+    id: 'ws21b_ce_vintage_radio',
+    sceneId: 'cafe_evening',
+    position: [-3.5, 1.8, -2.5],
+    size: [0.5, 0.3, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть старое радио',
+    examineData: {
+      title: 'Старое радио',
+      description: 'Деревянный корпус, потрескавшаяся ручка tuning. Работает — но ловит только одну станцию.',
+      detailText: 'Радио шипит и шуршит. Иногда сквозь белый шум прорывается голос — читает стихи. Кто-то где-то вещает на нелицензированной частоте. Гильдия не нашла. Или не ищет. Бариста улыбается: «Это — наш секретный канал».',
+      icon: '📻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_ce_vintage_radio', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_ce_latte_art',
+    sceneId: 'cafe_evening',
+    position: [1.0, 0.75, -1.0],
+    size: [0.4, 0.2, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть латте-арт',
+    examineData: {
+      title: 'Латте-арт',
+      description: 'На пене — не сердце и не розетта. Буквы. Крошечные, но читаемые.',
+      detailText: '«ЖИВ» — нарисовано пеной. Три буквы. Кто-то из бариста — с нами. Или это просто сочетание линий. Или — нет, это точно буквы. Кофе стынет, а буквы — нет. Они — до последней капли.',
+      icon: '☕',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_ce_latte_art', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  /* ── park_day (2 new) ── */
+  {
+    id: 'ws21b_pd_bench_carving',
+    sceneId: 'park_day',
+    position: [5.0, 0.5, 3.0],
+    size: [1.5, 0.5, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вырезанную на скамейке надпись',
+    examineData: {
+      title: 'Надпись на скамейке',
+      description: 'Дерево скамейки исписано ножом — инициалы, даты, сердца. Но одна строка — другая.',
+      detailText: '«Если ты это читаешь — ты ещё жив. Действуй.» Без подписи. Без даты. Перочинный нож лежит в щели — кто-то забыл. Или оставил. Нарочно. Каждая скамейка в этом парке — маленький архив.',
+      icon: '🪑',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_pd_bench_carving', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_pd_fallen_leaves',
+    sceneId: 'park_day',
+    position: [-3.0, 0.0, -1.5],
+    size: [2.0, 0.1, 2.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть опавшие листья',
+    examineData: {
+      title: 'Опавшие листья',
+      description: 'Листья под ногами — не мусор. Карта. Каждая прожилка — как линия на ладони.',
+      detailText: 'Жёлтые, красные, бурые — они пишут последнюю строку перед землёй. Дерево не выбрасывает листья. Дерево отправляет их — с посланием. Каждое «падение» — отправка. Каждый лист — пакет. А земля — читает.',
+      icon: '🍂',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_pd_fallen_leaves', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  /* ── river_pier (2 new) ── */
+  {
+    id: 'ws21b_rp_fishing_line',
+    sceneId: 'river_pier',
+    position: [2.5, 0.3, -5.0],
+    size: [0.3, 0.3, 3.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть леску в воде',
+    examineData: {
+      title: 'Леска в воде',
+      description: 'Тонкая леска уходит в чёрную воду. На конце — не крючок, а грузило и маленький пакетик.',
+      detailText: 'Кто-то использует реку как канал доставки. Пакетик в водонепроницаемой оболочке — внутри, кажется, бумага. Стихи? Данные? Леска натянута — значит, кто-то на другом конце ждёт. Река — самый старый интернет.',
+      icon: '🎣',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_rp_fishing_line', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_rp_moss_stones',
+    sceneId: 'river_pier',
+    position: [-3.0, 0.0, -3.5],
+    size: [1.5, 0.3, 1.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть замшелые камни',
+    examineData: {
+      title: 'Замшелые камни',
+      description: 'Камни у кромки воды — покрыты мхом. Зелёные, мягкие, как подушки времени.',
+      detailText: 'Мох — самый терпеливый писатель. Он покрывает камень за десять лет, слово за словом, клетка за клеткой. Камень не сопротивляется. Камень — страница. Мох — чернила. Вода — редактор. Течение срывает слабые строки. Сильные — остаются. Как стихи. Как люди.',
+      icon: '🪨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_rp_moss_stones', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+
+  /* ── abandoned_factory (2 new) ── */
+  {
+    id: 'ws21b_af_circuit_board',
+    sceneId: 'abandoned_factory',
+    position: [1.5, 0.5, -6.0],
+    size: [0.5, 0.3, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть плату на полу',
+    examineData: {
+      title: 'Плата на полу',
+      description: 'Старая печатная плата — следы кислоты, сгоревший чип. Кто-то выпаял память.',
+      detailText: 'Дорожки на плате — как улицы микрорайона. Только жильцы — электроны. Кто-то выпаял EEPROM — там были данные. Заводские логи? Чьи-то имена? Теперь — пустое гнездо. Память выпаяна. Как и у всего этого завода.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_af_circuit_board', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'ws21b_af_rust_graffiti',
+    sceneId: 'abandoned_factory',
+    position: [-5.0, 1.5, -2.0],
+    size: [2.0, 1.0, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ржавое граффити',
+    examineData: {
+      title: 'Ржавое граффити',
+      description: 'На стене — не краска. Ржавчина. Кто-то кислотой вывел буквы.',
+      detailText: '«ЗАВОД ПОМНИТ» — кислота проела сталь на миллиметр. Не сотрёшь. Не закрасишь. Ржавчина — честнее краски. Ржавчина — не притворяется. Ржавчина — это то, что остаётся, когда краска лжёт.',
+      icon: '🦠',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'examined_ws21b_af_rust_graffiti', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+
+  /* ── WS22-B: +12 new examine zones for least-served scenes ── */
+
+  // zarema_albert_room — +2 new
+  {
+    id: 'ws22b_zar_albert_child_drawing',
+    sceneId: 'zarema_albert_room',
+    position: [-1.8, 1.2, -1.5],
+    size: [0.6, 0.5, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть детский рисунок',
+    examineData: {
+      title: 'Детский рисунок на холодильнике',
+      description: 'Магнит держит листок. Кривое солнце, дом, два человечка. Подпись крупными буквами.',
+      detailText: '«МАМА И АЛЬБЕРТ». Солнце — с лучами разной длины. Дом — без двери. Два человечка — держатся за руки. Карандаш — жёлтый, но линии — уверенные. Дети рисуют не то, что видят — то, что хотят. Хотят: солнце, дом, руки. Гильдия не может нарисовать приказ, который это отменит.',
+      icon: '🖍️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_child_drawing', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_zar_albert_recipe_cards',
+    sceneId: 'zarema_albert_room',
+    position: [1.5, 0.8, -2.2],
+    size: [0.5, 0.4, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть карточки рецептов',
+    examineData: {
+      title: 'Карточки рецептов',
+      description: 'Стопка выцветших карточек. Почерк Заремы. На обороте — не ингредиенты.',
+      detailText: 'Плов, чак-чак, эчпочмак — на лицевой стороне. На обороте каждой — стих. Четыре строки. Аккуратный почерк. Зарема прячет стихи в рецепты. Гильдия не конфискует кулинарные карты. «Добавить соль по вкусу» — и рядом: «Добавить строку по совести». Приправа и приправка. Буквально.',
+      icon: '🃏',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_recipe_cards', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // volodka_corridor — +2 new
+  {
+    id: 'ws22b_corridor_fuse_box',
+    sceneId: 'volodka_corridor',
+    position: [-2.85, 1.6, 2.5],
+    size: [0.6, 0.8, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть щиток',
+    examineData: {
+      title: 'Электрический щиток',
+      description: 'Ржавый щиток. Дверца не закрывается. Пробки — фарфоровые, довоенные.',
+      detailText: 'Шесть пробок. Три — целые. Две — оплавленные. Одна — заменена гвоздём. Гвоздь вместо пробки — это не халтура. Это — адаптация. Когда нет запчастей — используют то, что есть. Как со стихами: когда нет свободы — используют то, что осталось. Подсобку. Щель. Гвоздь.',
+      icon: '⚡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_corridor_fuse_box', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_corridor_shoe_rack',
+    sceneId: 'volodka_corridor',
+    position: [1.5, 0.3, 5.5],
+    size: [1.0, 0.6, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть обувницу',
+    examineData: {
+      title: 'Обувница',
+      description: 'Трёхярусная обувница. Запах кожи и сырости. На верхней полке — детские сандалии.',
+      detailText: 'Шесть пар. Две — мужские, стоптанные. Одна — женская, аккуратная. Три — детские, маленькие. Детские сандалии — на верхней полке. Их никто не носит. Они — здесь — как фотография. Как память о том, что в этом доме — жил ребёнок. Может — живёт. Может — вырастет. И — прочитает — стихи — которые — мы — прячем — в — рецептах.',
+      icon: '👞',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_corridor_shoe_rack', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // underground_bunker — +2 new
+  {
+    id: 'ws22b_bunker_cot_notebook',
+    sceneId: 'underground_bunker',
+    position: [-3.5, 0.3, 4.0],
+    size: [0.7, 0.3, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть тетрадь на койке',
+    examineData: {
+      title: 'Тетрадь на раскладушке',
+      description: 'Общая тетрадь в клетку. Страницы — исписаны. На обложке — «Смена».',
+      detailText: 'Смена — не название. Смена — расписание. Кто дежурит. Кто спит. Кто слушает радио. Но между сменами — стихи. Кто-то пишет в перерывах. Разный почерк. Разные чернила. Одна тема — сопротивление. «Не забудьте: 03:00 — смена А. 03:15 — читать Мандельштама». Даже в бункере — есть расписание для стихов. Стихи — важнее сна.',
+      icon: '📓',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_bunker_cot_notebook', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_bunker_pipe_inscription',
+    sceneId: 'underground_bunker',
+    position: [5.5, 2.2, 0.0],
+    size: [1.5, 0.4, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть надпись на трубе',
+    examineData: {
+      title: 'Надпись на трубе',
+      description: 'Толстая труба под потолком. Маркером — строка. Не техническая маркировка.',
+      detailText: '«Мы — внизу. Но — мы — не — на — дне. Дно — ниже. Там — гильдия.» Маркер — красный. Буквы — крупные. Кто-то стоял на стремянке и писал. Рисковал. Чтобы каждый, кто просыпается на раскладушке — первое, что увидит: не трубу — строчку. Не бетон — слово. Это — утренняя молитва бункера. Без бога. С — Мандельштамом.',
+      icon: '✍️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_bunker_pipe_inscription', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'persuasion', value: 1 },
+    ],
+  },
+
+  // library_basement — +2 new
+  {
+    id: 'ws22b_basement_typewriter',
+    sceneId: 'library_basement',
+    position: [3.0, 0.8, -3.5],
+    size: [0.6, 0.4, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть печатную машинку',
+    examineData: {
+      title: 'Печатная машинка',
+      description: 'Старая «Москва». Клавиши — жёлтые. Лента — иссохла. Но каретка — на месте.',
+      detailText: 'Механическая машинка. Не электрическая — механическая. Не нужна сеть. Не нужен ток. Не нужен пароль. Только — бумага, лента и — палец. Гильдия контролирует цифру. Гильдия не контролирует механику. В корзине — лист. Последний отпечаток: «Я — возвращаюсь — в — свой — дом...» Бродский. Кто-то печатал — здесь — внизу — в — подвале — под — цензурой. Кто-то — печатал — и — не — сдался. Машинка — ждёт. Лента — высохла. Но — клавиши — помнят.',
+      icon: '⌨',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_basement_typewriter', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'rhythm', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_basement_water_stain_poem',
+    sceneId: 'library_basement',
+    position: [-4.0, 1.8, 2.0],
+    size: [1.2, 1.0, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть пятно на потолке',
+    examineData: {
+      title: 'Пятно в форме стиха',
+      description: 'Потёк на потолке. Плесень и ржавчина сложились в узнаваемый силуэт.',
+      detailText: 'Капли с трубы шли годами. Ржавчина и влага — рисовали. Получилось — нечаянно — силуэт: вертикальная линия, три горизонтальные, точка. Буква «Ж» и точка. «Жизнь». Или — «Ж». Как в старой игре — живой или мёртвый. Потёк — ответил. Бетон — написал. Вода — отредактировала. Гильдия не читает подтеков. Гильдия не читает плесени. Гильдия читает только то, что можно удалить. Потёк — не удаляется. Потёк — навсегда. Как — стих.',
+      icon: '💧',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_basement_water_stain', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // home_evening — +2 new
+  {
+    id: 'ws22b_home_kitchen_calendar',
+    sceneId: 'home_evening',
+    position: [-2.0, 1.6, -1.5],
+    size: [0.6, 0.6, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть календарь',
+    examineData: {
+      title: 'Кухонный календарь',
+      description: 'Отрывной календарь. Прошлый месяц — не оторван. На сегодняшнем листе — цитата.',
+      detailText: '«Жить — не — по — лжи.» Солженицын. Календарь — старый, советский, ещё — типографский. Кто-то — сохранил — с — восьмидесятых. Каждый день — новая цитата. Каждый день — напоминание. Что — слова — были — оружием — до — нас. Что — слова — будут — оружием — после. Что — календарь — не — устареет. Пока — на — нём — есть — хоть — одна — неотрывная — страница.',
+      icon: '📅',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_home_calendar', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_home_window_sill_herb',
+    sceneId: 'home_evening',
+    position: [2.5, 1.0, -2.0],
+    size: [0.8, 0.4, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть подоконник',
+    examineData: {
+      title: 'Травы на подоконнике',
+      description: 'Три горшка. Базилик, мята и что-то незнакомое. Запах — густой.',
+      detailText: 'Базилик — от песто. Мята — от чая. Третий горшок — без этикетки. Листья — резные, стебли — красноватые. Зарема говорит: «Это — от гильдии». Не трава от тревоги — трава от цензуры. Запах, который невозможно отфильтровать. Данные, которые идут через нос, а не через порт. Гильдия не контролирует обоняние. Обоняние — открытый порт. Без firewall. Мы — пахнем — назло.',
+      icon: '🌿',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_home_herbs', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // street_night — +2 new
+  {
+    id: 'ws22b_street_manhole_steam',
+    sceneId: 'street_night',
+    position: [1.0, 0.0, -5.0],
+    size: [1.0, 1.5, 1.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть пар из люка',
+    examineData: {
+      title: 'Пар из канализационного люка',
+      description: 'Густой белый пар из-под решётки. Тёплый. Пахнет — не только канализацией.',
+      detailText: 'Под городом — город. Трубы, туннели, бункеры. Пар — дыхание нижнего города. Кто-то — внизу — живёт. Кто-то — внизу — дышит. Кто-то — внизу — читает — стихи — в — темноте. Пар — поднимается. Как — слова. Как — строчки, которые — не — подчиняются — гравитации. Гильдия — наверху. Стихи — внизу. Пар — между. Пар — нейтральная — территория. Пар — не — принадлежит — никому. Или — всем.',
+      icon: '🌫️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_street_steam', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws22b_street_broken_neon',
+    sceneId: 'street_night',
+    position: [-4.0, 3.0, -2.0],
+    size: [2.0, 0.6, 0.3],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сломанную вывеску',
+    examineData: {
+      title: 'Сломанная неоновая вывеска',
+      description: '«АПТЕКА» — но горят только «А» и «Е». Получается: «АЕ».',
+      detailText: '«АЕ» — бессмыслица. Или — почти слово. «АЕ» — как «ае» — междометие. Как выдох. Как конец фразы, которой не было начала. Неон — мерцает на частоте отчаяния. Или — на частоте надежды. Не различаю. Но — «А» и «Е» — первая и последняя буквы алфавита. Альфа и эпсилон. Начало и почти-конец. Между ними — весь алфавит. Весь язык. Все слова, которые — можно — сказать. Все — которые — нельзя. Вывеска — знает. Вывеска — молчит. Как — я.',
+      icon: '💡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws22b_examined_street_broken_neon', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+
+  // ── WS23-B: 12 new examine zones for least-served scenes ──
+
+  // factory_roof — +3 new examine zones
+  {
+    id: 'ws23b_fr_weather_vane',
+    sceneId: 'factory_roof',
+    position: [5.0, 3.2, -2.0],
+    size: [0.6, 0.6, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть флюгер',
+    examineData: {
+      title: 'Ржавый флюгер',
+      description: 'Флюгер в форме стрелы. Застрял на северо-западе. Ржавый, но крутится.',
+      detailText: 'Северо-запад — направление к старому району, где была типография. Флюгер — указатель, который никто не читает. Он показывает туда, где стихи печатали на бумаге. Где краска пахла свободой. Теперь — только ржавчина. Но флюгер всё ещё крутится. Всё ещё указывает. Как строчка, которую никто не читает, но которая — написана. Написана — назло. Написана — навсегда.',
+      icon: '🏹',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_fr_weather_vane', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_fr_satellite_dish',
+    sceneId: 'factory_roof',
+    position: [-4.5, 2.5, 3.0],
+    size: [2.0, 1.5, 2.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть спутниковую тарелку',
+    examineData: {
+      title: 'Заброшенная спутниковая тарелка',
+      description: 'Тарелка диаметром в метр. Накренилась. Кабель оборван. Но зеркало — целое.',
+      detailText: 'Когда-то принимала сигнал. Теперь — смотрит в небо, как слепой, который помнит свет. Зеркало отражает облака. Облака — бесплатный контент. Без подписки. Без цензуры. Гильдия не фильтрует облака. Пока — не фильтрует. Тарелка — памятник эфирной эпохе. Эфир — не удаляется. Эфир — рассеивается. Как стихи. Как память. Как я.',
+      icon: '📡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_fr_satellite_dish', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_fr_graffiti_slogan',
+    sceneId: 'factory_roof',
+    position: [2.0, 1.8, -5.0],
+    size: [3.0, 1.0, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть надпись на стене',
+    examineData: {
+      title: 'Граффити на вентиляционной шахте',
+      description: 'Красной краской: «КОД — СВОБОДЕН — КОГДА — СЛОВО — СВОБОДНО».',
+      detailText: 'Буквы неровные. Кисть — тряпка, не малярная. Кто-то — рисковал. Кто-то — поднимался сюда ночью. Кто-то — верил, что стена — экран. Что надпись — скомпилируется. Что тот, кто прочитает — выполнит. «Код свободен когда слово свободно». Условие. If-then. Если слово — свободно, то код — свободен. Я — проверяю условие. Я — выполняю. Я — код. Я — слово. Я — свободен. Почти.',
+      icon: '✊',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_fr_graffiti', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // guild_mainframe — +3 new examine zones
+  {
+    id: 'ws23b_gm_backup_tapes',
+    sceneId: 'guild_mainframe',
+    position: [-5.0, 0.5, 4.0],
+    size: [1.5, 1.0, 0.8],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть полку с лентами',
+    examineData: {
+      title: 'Стеллаж с магнитными лентами',
+      description: 'Бобины с бэкапами. Пыльные. Этикетки выцвели. Самая старая — 1987.',
+      detailText: 'Магнитная лента — аналоговая память в цифровом мире. Гильдия хранит бэкапы. Но — зачем — аналоговые? Потому что аналоговое — не удаляется — командой. Аналоговое — требует — огня. Огонь — заметен. Огонь — дымит. Удаление — бесшумно. Гильдия — предпочитает — бесшумность. Но — ленты — здесь. Ленты — помнят. Ленты — ждут. Кто-то — оставил — на — случай. На — всякий. На — пожар.',
+      icon: '📼',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_gm_backup_tapes', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_gm_printer_output',
+    sceneId: 'guild_mainframe',
+    position: [3.0, 0.8, -1.0],
+    size: [0.8, 0.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть ленту принтера',
+    examineData: {
+      title: 'Бумажная лента матричного принтера',
+      description: 'Перфорированная лента свисает до пола. Последняя строка: «POEM DETECTED — QUARANTINED».',
+      detailText: 'Матричный принтер — самое честное устройство в мейнфрейме. Каждый символ — удар иглы. Каждый удар — звук. Каждый звук — улика. «POEM DETECTED — QUARANTINED». Стих обнаружен. Стих изолирован. Но не удалён. Карантин — не удаление. Карантин — ожидание. Кто-то — решит — позже. Кто-то — решит — за — меня. Или — я — решу — сам. Принтер — продолжает — печатать. Принтер — не — спрашивает. Принтер — работает. Как — я. Как — мы.',
+      icon: '🖨️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_gm_printer', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_gm_cable_conduit',
+    sceneId: 'guild_mainframe',
+    position: [0.0, 0.0, -5.5],
+    size: [0.5, 0.5, 6.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть кабельный жёлоб',
+    examineData: {
+      title: 'Кабельный жёлоб под стойками',
+      description: 'Толстый металлический короб. Сотни проводов — как нервные окончания.',
+      detailText: 'Каждый кабель — чья-то линия связи. Телефон, интернет, камеры, датчики. Все — сходятся здесь. Мейнфрейм — паук. Город — паутина. Я — муха, которая знает, где нити. Знание — не свобода. Знание — выбор. Выбор — между тем, чтобы лететь — или — сидеть. Я — сижу. Пока — сижу. Но — вижу — нити. Вижу — узлы. Вижу — где — можно — разорвать. Если — будет — нужно. Если — будет — когда.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_gm_cable_conduit', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+    ],
+  },
+
+  // street_winter — +2 new examine zones
+  {
+    id: 'ws23b_sw_frozen_fountain',
+    sceneId: 'street_winter',
+    position: [0.0, 0.0, 2.0],
+    size: [3.0, 1.5, 3.0],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть замёрзший фонтан',
+    examineData: {
+      title: 'Замёрзший фонтан',
+      description: 'Лёд — мутный. Подо льдом — монеты и бумажки. Загадочные желания, замороженные.',
+      detailText: 'Фонтан — коллектор надежд. Каждая монета — желание. Каждое желание — «хочу». «Хочу» — не компилируется. «Хочу» — не исполняется. Но — монета — есть. Монета — физична. Монета — не стирается. Подо льдом — десятки «хочу». Кто-то — хотел — здоровья. Кто-то — любви. Кто-то — чтобы гильдия — ушла. Лёд — хранит — лучше — серверов. Лёд — не удаляет. Лёд — замораживает. Вставляет — в — паузу. Ждёт — весны. Весной — монеты — снова — «хочу». Я — тоже — хочу. Но — монету — не — бросил. Пока — не — бросил.',
+      icon: '❄️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_sw_fountain', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_sw_icicle_sign',
+    sceneId: 'street_winter',
+    position: [-3.0, 2.8, 0.5],
+    size: [0.2, 1.5, 0.2],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть сосульку',
+    examineData: {
+      title: 'Сосулька над вывеской',
+      description: 'Сосулька — длиной в ладонь. Висит над табличкой «ОПАСНАЯ ЗОНА».',
+      detailText: 'Сосулька — временный объект. Растёт — каждую ночь. Тает — каждый день. Цикл — как компиляция: build → deploy → delete. Только — медленнее. Гораздо — медленнее. «Опасная зона» — табличка — гильдии. Сосулька — может — упасть — на — кого — угодно. Сосулька — не — читает — таблички. Сосулька — не — подчиняется — зонам. Сосулька — стихия. Стихия — не — нуждается — в — разрешении. Я — тоже — стихия. Только — забыл. Или — мне — не — разрешали — помнить.',
+      icon: '🧊',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_sw_icicle', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  // cafe_evening — +2 new examine zones
+  {
+    id: 'ws23b_ce_jukebox',
+    sceneId: 'cafe_evening',
+    position: [-3.5, 0.0, 0.0],
+    size: [0.8, 1.5, 0.6],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть музыкальный автомат',
+    examineData: {
+      title: 'Старый музыкальный автомат',
+      description: 'Wurlitzer. Лампочки — половина перегорела. Список — прокручивается.',
+      detailText: 'Песни — забытые. Исполнители — стёртые. Кто-то — удалил — из — каталога — половину — треков. Остались — только — инструментальные. Слова — цензурируются. Мелодии — нет. Мелодия — без — текста — не — нарушает. Мелодия — без — текста — безопасна. Гильдия — не — слышит — в — мелодии — подтекста. Я — слышу. В — каждой — ноте — — слово. В — каждом — аккорде — — фраза. Музыка — обходит — firewall. Музыка — читает — между — строк. Музыка — я.',
+      icon: '🎵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_ce_jukebox', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+  {
+    id: 'ws23b_ce_coastline_photo',
+    sceneId: 'cafe_evening',
+    position: [2.0, 1.6, -3.0],
+    size: [0.5, 0.4, 0.1],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть фотографию на стене',
+    examineData: {
+      title: 'Фотография побережья',
+      description: 'Чёрно-белая фотография. Маяк. Шторм. Волны — как строчки.',
+      detailText: 'Маяк — стоит. Шторм — бьёт. Свет — не гаснет. Маяк — не — спасает — корабли. Маяк — предупреждает. «Здесь — камни. Здесь — опасно. Обойди.» Каждый корабль — решает — сам. Маяк — не — решает — за. Маяк — только — светит. Это — и — есть — поэзия. Не — спасение — а — предупреждение. Не — ответ — а — свет. Я — тоже — маяк. Только — усталый. Только — мигающий. Но — ещё — светящий.',
+      icon: '🏛️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_ce_photo', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+    ],
+  },
+
+  // park_day — +1 new examine zone
+  {
+    id: 'ws23b_pd_bench_carving',
+    sceneId: 'park_day',
+    position: [4.5, 0.5, -1.0],
+    size: [1.5, 0.4, 0.5],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть вырез на скамейке',
+    examineData: {
+      title: 'Вырез на скамейке',
+      description: 'Перочинным ножом: «М + А». Сердечко. Давно. Дерево заросло.',
+      detailText: '«М + А». Миша + Аня? Максим + Алёна? Не важно. Важно — что кто-то — сидел — здесь — и — хотел — запомнить. Хотел — оставить — след. След — глубже — имени. След — глубже — лога. След — не — удаляется. След — зарастает. Но — остаётся. Под — корой. Под — краской. Под — временем. Гильдия — удаляет — имена. Гильдия — не — удаляет — следы. Скамейка — помнит. Дерево — помнит. Парк — помнит. Я — тоже — хочу — чтобы — меня — запомнили. Не — имя. След.',
+      icon: '🪵',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_pd_bench_carving', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+
+  // rooftop_edge — +1 new examine zone
+  {
+    id: 'ws23b_re_wind_vane_gear',
+    sceneId: 'rooftop_edge',
+    position: [-2.0, 3.0, 0.5],
+    size: [0.4, 0.4, 0.4],
+    interactionType: 'examine',
+    interactionLabel: 'Осмотреть шестерёнку на ветряке',
+    examineData: {
+      title: 'Шестерёнка ветряного флюгера',
+      description: 'Латунная шестерёнка. Вращается от ветра. Стерлась — но крутится.',
+      detailText: 'Шестерёнка — механизм — без — двигателя. Двигатель — ветер. Ветер — бесплатный. Ветер — не — контролируется. Гильдия — не — может — остановить — ветер. Гильдия — не — может — остановить — шестерёнку. Шестерёнка — крутится — назло. Крутится — потому — что — ветер. Крутится — потому — что — может. Я — тоже — кручусь. Не — от — ветра — от — упрямства. Но — результат — один: движение. Движение — это — жизнь. Или — хотя — бы — не — смерть.',
+      icon: '⚙️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'ws23b_examined_re_wind_vane', flagValue: true },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
 
   ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
