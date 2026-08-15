@@ -45,6 +45,41 @@ export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
     discuss_move: 'solnysh',
     support_move: 'solnysh',
   },
+  // ── Act 3 side quests ──
+  factory_lost_engineer: {
+    accept_factory_search: 'boris',
+    enter_factory: 'boris',
+    find_grigory_notes: 'grisha',
+    descend_basement: 'grisha',
+    rescue_grigory: 'grisha',
+  },
+  library_banned_book: {
+    hear_banned_book_rumor: 'tamara',
+    find_basement_entrance: 'tamara',
+    bypass_security_lock: 'tamara',
+    retrieve_banned_book: 'tamara',
+    return_book_to_tamara: 'tamara',
+  },
+  factory_secret_blueprint: {
+    find_blueprint_cache: 'boris',
+    retrieve_blueprint: 'boris',
+    decide_blueprint_fate: 'boris',
+  },
+  // ── Act 5 side quests ──
+  dreamworld_lost_child: {
+    meet_dream_child: 'maria',
+    recover_first_memory: 'maria',
+    recover_second_memory: 'maria',
+    recover_third_memory: 'maria',
+    guide_child_home: 'maria',
+  },
+  void_echo_poem: {
+    hear_first_echo: 'street_poet',
+    hear_second_echo: 'street_poet',
+    hear_third_echo: 'street_poet',
+    confront_void_poet: 'street_poet',
+    claim_void_poem: 'street_poet',
+  },
 };
 
 /** Scene waypoints for StoryGuidanceHUD / minimap when objective has no location_visited target. */
@@ -101,6 +136,41 @@ export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
   solnysh_relocation: {
     discuss_move: { sceneId: 'solnysh_room', position: [1.0, 0, -1.0] },
     support_move: { sceneId: 'solnysh_room', position: [1.0, 0, -1.0] },
+  },
+  // ── Act 3 side quests ──
+  factory_lost_engineer: {
+    accept_factory_search: { sceneId: 'office_day', position: [1.5, 0, -0.5] },
+    enter_factory: { sceneId: 'abandoned_factory', position: [0, 0, 2.0] },
+    find_grigory_notes: { sceneId: 'abandoned_factory', position: [-3.0, 0, -2.5] },
+    descend_basement: { sceneId: 'factory_basement', position: [0, 0, 1.5] },
+    rescue_grigory: { sceneId: 'factory_basement', position: [2.5, 0, -3.0] },
+  },
+  library_banned_book: {
+    hear_banned_book_rumor: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
+    find_basement_entrance: { sceneId: 'library_basement', position: [0, 0, 2.0] },
+    bypass_security_lock: { sceneId: 'library_basement', position: [-2.0, 0, -1.5] },
+    retrieve_banned_book: { sceneId: 'library_basement', position: [3.0, 0, -2.5] },
+    return_book_to_tamara: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
+  },
+  factory_secret_blueprint: {
+    find_blueprint_cache: { sceneId: 'abandoned_factory', position: [4.0, 0, -4.5] },
+    retrieve_blueprint: { sceneId: 'abandoned_factory', position: [4.0, 0, -4.5] },
+    decide_blueprint_fate: { sceneId: 'abandoned_factory', position: [4.0, 0, -4.5] },
+  },
+  // ── Act 5 side quests ──
+  dreamworld_lost_child: {
+    meet_dream_child: { sceneId: 'sleep_dream', position: [0, 0, 3.0] },
+    recover_first_memory: { sceneId: 'sleep_dream', position: [-3.0, 0, 2.0] },
+    recover_second_memory: { sceneId: 'sleep_dream', position: [3.0, 0, 2.0] },
+    recover_third_memory: { sceneId: 'sleep_dream', position: [0, 0, -3.0] },
+    guide_child_home: { sceneId: 'sleep_dream', position: [0, 0, 5.0] },
+  },
+  void_echo_poem: {
+    hear_first_echo: { sceneId: 'river_pier', position: [-1.8, 0, -2.9] },
+    hear_second_echo: { sceneId: 'rooftop_edge', position: [0, 0.01, 0] },
+    hear_third_echo: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
+    confront_void_poet: { sceneId: 'sleep_dream', position: [0, 0, -5.0] },
+    claim_void_poem: { sceneId: 'sleep_dream', position: [0, 0, -5.0] },
   },
 };
 
