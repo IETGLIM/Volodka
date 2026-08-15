@@ -54,16 +54,21 @@ export const volodka_room_def: SceneDefinition = {
     // treats `size` as HALF-EXTENTS (documented in shared/types/sceneDefinition.ts:73-89).
     // Desk: visual CraftedDeskShell / PH table ~1.85×0.75×0.82 → half [0.925, 0.375, 0.41]
     { type: 'cuboidObstacle', size: [0.925, 0.375, 0.41], position: [0, 0.375, -2.5], footstepMaterial: 'wood' },
-    // Bookshelf — right of right monitor (matches VolodkaRoomVisual PH shelf)
-    { type: 'cuboidObstacle', size: [0.28, 1.0, 0.45], position: [1.65, 1.0, -2.55], footstepMaterial: 'wood' },
-    // Yellow two-door wardrobe + top cabinet — left of left monitor
-    { type: 'cuboidObstacle', size: [0.35, 1.05, 0.4], position: [-1.7, 1.05, -2.45], footstepMaterial: 'wood' },
-    // Bed — already correct (half-extents). Untouched.
-    { type: 'cuboidObstacle', size: [0.5, 0.175, 1.0], position: [1.8, 0.175, 2.0], footstepMaterial: 'wood' },
-    // Nightstand by bed — moved from [2.08, 0.25, 2.1] (was INSIDE bed:
-    // bed X=[1.3,2.3], nightstand X=[1.83,2.33] overlapped). Now at foot of
-    // bed, clear of bed geometry. Bed Z=[1.0,3.0], nightstand at Z=3.2 (past foot).
-    { type: 'cuboidObstacle', size: [0.25, 0.25, 0.25], position: [2.08, 0.25, 3.2], footstepMaterial: 'wood' },
+    // Bookshelf — matches visual geo_box_36 (0.8×2×0.35) at [1.65, 1.0, -2.55].
+    // Was [0.28, 1.0, 0.45] — X too narrow (12cm gap each side), Z too deep.
+    { type: 'cuboidObstacle', size: [0.4, 1.0, 0.2], position: [1.65, 1.0, -2.55], footstepMaterial: 'wood' },
+    // Wardrobe — matches visual (scale 0.95, X span [-2.27, -1.13] → half-width 0.57).
+    // Was [0.35, 1.05, 0.4] — 22cm gap each side let player walk through the cabinet.
+    { type: 'cuboidObstacle', size: [0.57, 1.05, 0.4], position: [-1.7, 1.05, -2.45], footstepMaterial: 'wood' },
+    // Bed — matches gothicBed visual [1.78, 0, 2.05] scale 0.92 (half-width ~0.74).
+    // Was [0.5, 0.175, 1.0] at [1.8, 0.175, 2.0] — 32% too narrow (24cm gap each
+    // side) and Y too low (collider [0, 0.35] vs mattress top ~0.55). Now matches
+    // visual position exactly with full width and proper height.
+    { type: 'cuboidObstacle', size: [0.7, 0.3, 1.0], position: [1.78, 0.3, 2.05], footstepMaterial: 'wood' },
+    // Nightstand removed — only 45cm between bed (Z=3.05) and wall (Z=3.5),
+    // nightstand (depth 50cm) cannot fit without overlapping bed or wall.
+    // Visual nightstand was already removed (FIX S13-5 comment in VolodkaRoomVisual).
+    // Bedside lighting handled by accent light at [1.98, 1.6, 2.16] + window spill.
     // Armchair — collider moved to match visual (FIX S15-CHAIR-CLIP moved
     // visual to [0, 0, -1.7], but collider stayed at [0.35, 0.4, 2.55]).
     // Now both at [0, 0.4, -1.7] — player collides where the chair actually is.
