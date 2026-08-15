@@ -1,9 +1,9 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Group, ShaderMaterial } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
-// ─── 11. Radiator Steam (THREE.Points — single draw call, no per-particle Mesh) ───
+// ─── 11. Radiator Steam (Points — single draw call, no per-particle Mesh) ───
 
 interface SteamPuffData {
   x: number; y: number; z: number;
@@ -15,7 +15,7 @@ export function RadiatorSteamAnim({ anim }: { anim: EnvAnimation }) {
   const maxPuffsConfig = anim.config.maxPuffs ?? 10;
   // Allocate buffer for a few more than maxPuffs to avoid constant recycling
   const bufferMax = maxPuffsConfig + 5;
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const timeRef = useRef(0);
   const spawnAccumRef = useRef(0);
   const puffsRef = useRef<SteamPuffData[]>([]);
@@ -38,22 +38,22 @@ export function RadiatorSteamAnim({ anim }: { anim: EnvAnimation }) {
       sizes[i] = 0;
     }
 
-    const positionAttr = new THREE.BufferAttribute(positions, 3);
-    const opacityAttr = new THREE.BufferAttribute(opacities, 1);
-    const sizeAttr = new THREE.BufferAttribute(sizes, 1);
+    const positionAttr = new BufferAttribute(positions, 3);
+    const opacityAttr = new BufferAttribute(opacities, 1);
+    const sizeAttr = new BufferAttribute(sizes, 1);
 
-    const geo = new THREE.BufferGeometry();
+    const geo = new BufferGeometry();
     geo.setAttribute('position', positionAttr);
     geo.setAttribute('aOpacity', opacityAttr);
     geo.setAttribute('aSize', sizeAttr);
     geo.setDrawRange(0, 0); // nothing visible until first spawn
 
-    const mat = new THREE.ShaderMaterial({
+    const mat = new ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       uniforms: {
-        uColor: { value: new THREE.Color('#cccccc') },
+        uColor: { value: new Color('#cccccc') },
       },
       vertexShader: `
         attribute float aOpacity;

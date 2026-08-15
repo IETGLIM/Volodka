@@ -5,7 +5,7 @@
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import * as THREE from 'three';
+import { AnimationAction, AnimationClip, AnimationMixer, Color, Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Vector3 } from 'three';
 import type { QuaterniusRigRef } from '@/config/npcComposer/types';
 import { NPC_GLTF_TARGET_HEIGHT_M } from '@/config/metricScaleCoherence';
 import { resolveQuaterniusStagedRigUrl } from '@/config/quaterniusRigCatalog';
@@ -45,17 +45,17 @@ export interface AmbientCrowdLiveSlot {
 
 interface AmbientSkinnedMidLodProps {
   slotsRef: React.MutableRefObject<AmbientCrowdLiveSlot[]>;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   tintHex: string;
   maxSkinned?: number;
 }
 
 interface FigureActions {
-  idle: THREE.AnimationAction | null;
-  walk: THREE.AnimationAction | null;
+  idle: AnimationAction | null;
+  walk: AnimationAction | null;
 }
 
-function pickClip(clips: THREE.AnimationClip[], pattern: RegExp): THREE.AnimationClip | undefined {
+function pickClip(clips: AnimationClip[], pattern: RegExp): AnimationClip | undefined {
   return clips.find((c) => pattern.test(c.name));
 }
 
@@ -70,17 +70,17 @@ function AmbientSkinnedFigure({
   rig: QuaterniusRigRef;
   slotIndex: number;
   slotsRef: React.MutableRefObject<AmbientCrowdLiveSlot[]>;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   tintHex: string;
   nearDistance: number;
 }) {
   const url = resolveQuaterniusStagedRigUrl(rig);
   const gltf = useGLTF(url, true, true, extendLoader);
-  const rootRef = useRef<THREE.Group>(null);
+  const rootRef = useRef<Group>(null);
   const mixWeightRef = useRef(0);
 
   const { scene, mixer, actions } = useMemo(() => {
-    const clone = cloneSkinnedScene(gltf.scene) as THREE.Group;
+    const clone = cloneSkinnedScene(gltf.scene) as Group;
     deplasticizeCharacterMaterials(clone, {
       envMapIntensity: 0.52,
       minRoughness: 0.6,
@@ -88,25 +88,25 @@ function AmbientSkinnedFigure({
       maxMetalness: 0.14,
       maxEmissiveIntensity: 0.35,
     });
-    const tint = new THREE.Color(tintHex);
+    const tint = new Color(tintHex);
     clone.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
+      const mesh = obj as Mesh;
       if (!mesh.isMesh) return;
       mesh.castShadow = false;
       mesh.receiveShadow = true;
       mesh.frustumCulled = true;
       const sourceMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       const nextMats = sourceMats.map((m) => {
-        if (!m || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) return m;
-        const std = (m as THREE.MeshStandardMaterial).clone();
+        if (!m || !(m as MeshStandardMaterial).isMeshStandardMaterial) return m;
+        const std = (m as MeshStandardMaterial).clone();
         std.color.lerp(tint, 0.32 + slotIndex * 0.04);
         // WS16-A: deplasticize organic surfaces on LOD NPCs — upgrade cloned MeshStandardMaterial
         // to MeshPhysicalMaterial with sheen for skin/hair/cloth material names. Non-organic
         // surfaces (eyes, metallics, plastic props) stay as MeshStandardMaterial.
         const matName = (std.name || '').toLowerCase();
         const isOrganic = /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth|hair|cloth|fabric|hoodie|jeans|shirt/.test(matName);
-        if (isOrganic && !(std as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) {
-          const physical = new THREE.MeshPhysicalMaterial();
+        if (isOrganic && !(std as MeshPhysicalMaterial).isMeshPhysicalMaterial) {
+          const physical = new MeshPhysicalMaterial();
           physical.copy(std);
           physical.sheen = 0.35;
           physical.sheenRoughness = 0.5;
@@ -129,7 +129,7 @@ function AmbientSkinnedFigure({
     clone.rotation.x = fit.rotX;
     clone.position.y = fit.footY;
 
-    const nextMixer = new THREE.AnimationMixer(clone);
+    const nextMixer = new AnimationMixer(clone);
     const idleClip =
       pickClip(gltf.animations, /idle|stand|breath|neutral/i) ?? gltf.animations[0];
     const walkClip =

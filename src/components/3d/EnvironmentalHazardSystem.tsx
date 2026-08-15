@@ -9,7 +9,7 @@
  * но высокий stress даёт дебаффы в следующем бою — тактическая глубина.
  */
 import { useRef } from 'react';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { usePlayerStore } from '@/store/stores/playerStore';
@@ -23,7 +23,7 @@ const HAZARD_TICK_INTERVAL = 1.5; // seconds
 export function EnvironmentalHazardSystem({
   livePlayerPositionRef,
 }: {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }) {
   const mode = useGamePhase();
   const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);

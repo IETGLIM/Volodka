@@ -3,7 +3,7 @@
  * Does not tear down engine singletons (EventBus, audio) — GPU caches and pools only.
  */
 
-import * as THREE from 'three';
+import { Cache } from 'three';
 import { resetGltfPipeline } from '@/engine/assets/gltfPipeline';
 import { resetGltfPreloadQueue } from '@/engine/assets/gltfPreloadScheduler';
 import {
@@ -69,7 +69,7 @@ export function disposeAllEngineGpuResources(reason: GpuDisposeReason = 'engine'
   disposeProceduralLutCache();
   resetGpuResourceBudgetTracker();
   evictQualityDependentGpuCache();
-  THREE.Cache.clear();
+  Cache.clear();
   resetGltfPipeline();
   resetGltfPreloadQueue();
 

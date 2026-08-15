@@ -2,7 +2,7 @@
  * Wake-up intro timing, camera paths, and easing — shared by 3D sequence + overlay.
  */
 
-import * as THREE from 'three';
+import { PerspectiveCamera, Vector3 } from 'three';
 import { PLAYER_METRIC } from '@/config/metricScaleCoherence';
 
 export const WAKEUP_PHASE = {
@@ -33,91 +33,91 @@ export const WAKEUP_FALLBACK_MS = (WAKEUP_TOTAL + 2) * 1000;
 // y=0.55 — сидит на матрасе, не внутри. Ранее 0.35 было внутри текстуры — Володька появлялся
 // стоя внутри кровати. Теперь лежа с rotation 1.2 rad (~69deg) — глаза открываются лежа.
 // y=0.55 + footY коррекция = визуально на матрасе.
-export const BED_POSITION = new THREE.Vector3(1.78, 0.55, 2.05);
+export const BED_POSITION = new Vector3(1.78, 0.55, 2.05);
 // Поза сидя на краю кровати — для естественного вставания, а не телепорта стоя
-export const BED_SIT_EDGE = new THREE.Vector3(1.15, 0.55, 2.05);
+export const BED_SIT_EDGE = new Vector3(1.15, 0.55, 2.05);
 // STAND_POSITION — центр комнаты, 1.5м от двери (z=3.5), 1.13м от кровати.
 // Оставлен [0.0,0.01,1.5] но добавлен safe margin от кресла.
-export const STAND_POSITION = new THREE.Vector3(0.0, 0.01, 1.2);
+export const STAND_POSITION = new Vector3(0.0, 0.01, 1.2);
 // DESK_POSITION — у стола, чуть дальше от кресла чтобы не проходить сквозь
-export const DESK_POSITION = new THREE.Vector3(0.0, 0.01, -0.85);
+export const DESK_POSITION = new Vector3(0.0, 0.01, -0.85);
 // CHAIR_POSITION — кресло теперь в [0,0,-1.7], персонаж садится в [0,0.01,-1.15]
 // чтобы не клиповать сквозь спинку кресла. Ранее [0,0.01,-1.3] был внутри.
-export const CHAIR_POSITION = new THREE.Vector3(0.0, 0.01, -1.15);
+export const CHAIR_POSITION = new Vector3(0.0, 0.01, -1.15);
 /** Third-person handoff behind the desk — matches exploration orbit framing. */
 export const DESK_EXPLORATION_CAM = {
-  position: new THREE.Vector3(0.0, PLAYER_METRIC.eyeHeightM - 0.05, 1.15),
-  lookAt: new THREE.Vector3(0, PLAYER_METRIC.seatedEyeHeightM + 0.02, -1.0),
+  position: new Vector3(0.0, PLAYER_METRIC.eyeHeightM - 0.05, 1.15),
+  lookAt: new Vector3(0, PLAYER_METRIC.seatedEyeHeightM + 0.02, -1.0),
   fov: 54,
 };
 
-const FAR_CORNER = new THREE.Vector3(-2.2, 2.6, -3.0);
+const FAR_CORNER = new Vector3(-2.2, 2.6, -3.0);
 
 export interface WakeCameraWaypoint {
-  position: THREE.Vector3;
-  lookAt: THREE.Vector3;
+  position: Vector3;
+  lookAt: Vector3;
   fov: number;
   duration: number;
-  controlPoint?: THREE.Vector3;
+  controlPoint?: Vector3;
 }
 
 export const WAKEUP_CAMERA_WAYPOINTS: WakeCameraWaypoint[] = [
   {
-    position: new THREE.Vector3(0.15, 1.08, -2.15),
-    lookAt: new THREE.Vector3(0, 1.02, -2.48),
+    position: new Vector3(0.15, 1.08, -2.15),
+    lookAt: new Vector3(0, 1.02, -2.48),
     fov: 36,
     duration: WAKEUP_PHASE.terminal,
-    controlPoint: new THREE.Vector3(-1.35, 2.35, -2.95),
+    controlPoint: new Vector3(-1.35, 2.35, -2.95),
   },
   {
-    position: new THREE.Vector3(1.42, 1.22, 2.72),
+    position: new Vector3(1.42, 1.22, 2.72),
     // FIX S12-A1: rise-phase lookAt now frames the new BED_POSITION [1.78, 0.35, 2.05]
     // (was [0.48, 0.78, 2.32] which framed the OLD bed at [0.5, 0.01, 2.4]).
     // y=0.55 looks slightly above the mattress surface so the avatar's torso
     // is centered in frame as it rises.
-    lookAt: new THREE.Vector3(1.78, 0.55, 2.05),
+    lookAt: new Vector3(1.78, 0.55, 2.05),
     fov: 46,
     duration: WAKEUP_PHASE.rise,
-    controlPoint: new THREE.Vector3(1.05, 1.58, 0.85),
+    controlPoint: new Vector3(1.05, 1.58, 0.85),
   },
   {
-    position: new THREE.Vector3(-1.42, 1.48, 1.68),
+    position: new Vector3(-1.42, 1.48, 1.68),
     // FIX S13-11: standing-phase lookAt now frames the new STAND_POSITION
     // [0.0, 0.01, 1.5] (center of room, between bed and desk).
-    lookAt: new THREE.Vector3(0.0, PLAYER_METRIC.eyeHeightM - 0.08, 1.5),
+    lookAt: new Vector3(0.0, PLAYER_METRIC.eyeHeightM - 0.08, 1.5),
     fov: 50,
     duration: WAKEUP_PHASE.standing,
-    controlPoint: new THREE.Vector3(-0.25, 1.72, 2.18),
+    controlPoint: new Vector3(-0.25, 1.72, 2.18),
   },
   {
-    position: new THREE.Vector3(1.32, 1.58, 0.52),
-    lookAt: new THREE.Vector3(0.05, PLAYER_METRIC.eyeHeightM - 0.12, -0.6),
+    position: new Vector3(1.32, 1.58, 0.52),
+    lookAt: new Vector3(0.05, PLAYER_METRIC.eyeHeightM - 0.12, -0.6),
     fov: 54,
     duration: WAKEUP_PHASE.walking,
-    controlPoint: new THREE.Vector3(0.62, 1.78, 1.36),
+    controlPoint: new Vector3(0.62, 1.78, 1.36),
   },
   {
-    position: new THREE.Vector3(1.62, 1.32, -0.38),
-    lookAt: new THREE.Vector3(0, PLAYER_METRIC.seatedEyeHeightM - 0.05, -1.34),
+    position: new Vector3(1.62, 1.32, -0.38),
+    lookAt: new Vector3(0, PLAYER_METRIC.seatedEyeHeightM - 0.05, -1.34),
     fov: 48,
     duration: WAKEUP_PHASE.sitting,
-    controlPoint: new THREE.Vector3(1.18, 1.22, -0.92),
+    controlPoint: new Vector3(1.18, 1.22, -0.92),
   },
   {
-    position: new THREE.Vector3(0.32, 1.58, -0.22),
-    lookAt: new THREE.Vector3(0, PLAYER_METRIC.seatedEyeHeightM, -2.2),
+    position: new Vector3(0.32, 1.58, -0.22),
+    lookAt: new Vector3(0, PLAYER_METRIC.seatedEyeHeightM, -2.2),
     fov: 52,
     duration: WAKEUP_PHASE.settle,
-    controlPoint: new THREE.Vector3(0.82, 1.48, -0.82),
+    controlPoint: new Vector3(0.82, 1.48, -0.82),
   },
   // Phase: monitor — camera pushes in close to the screen, showing poem lines
   // and the "sync soon" notification. Tight fov for a cinematic close-up.
   {
-    position: new THREE.Vector3(0.0, 1.14, -0.84),
-    lookAt: new THREE.Vector3(0, 1.1, -2.5),
+    position: new Vector3(0.0, 1.14, -0.84),
+    lookAt: new Vector3(0, 1.1, -2.5),
     fov: 28,
     duration: WAKEUP_PHASE.monitor,
-    controlPoint: new THREE.Vector3(0.12, 1.28, -1.55),
+    controlPoint: new Vector3(0.12, 1.28, -1.55),
   },
 ];
 
@@ -146,20 +146,20 @@ export function facingYFromDirection(dx: number, dz: number): number {
   return Math.atan2(dx, dz);
 }
 
-export function facingYBetween(from: THREE.Vector3, to: THREE.Vector3): number {
+export function facingYBetween(from: Vector3, to: Vector3): number {
   return facingYFromDirection(to.x - from.x, to.z - from.z);
 }
 
-export function clampToVolodkaRoom(v: THREE.Vector3): THREE.Vector3 {
+export function clampToVolodkaRoom(v: Vector3): Vector3 {
   v.x = Math.max(-2.3, Math.min(2.3, v.x));
   v.z = Math.max(-3.3, Math.min(3.3, v.z));
   v.y = Math.max(0.5, Math.min(2.8, v.y));
   return v;
 }
 
-function quadraticBezier(a: THREE.Vector3, c: THREE.Vector3, b: THREE.Vector3, t: number): THREE.Vector3 {
+function quadraticBezier(a: Vector3, c: Vector3, b: Vector3, t: number): Vector3 {
   const u = 1 - t;
-  return new THREE.Vector3(
+  return new Vector3(
     u * u * a.x + 2 * u * t * c.x + t * t * b.x,
     u * u * a.y + 2 * u * t * c.y + t * t * b.y,
     u * u * a.z + 2 * u * t * c.z + t * t * b.z,
@@ -167,19 +167,19 @@ function quadraticBezier(a: THREE.Vector3, c: THREE.Vector3, b: THREE.Vector3, t
 }
 
 export function lerpWakeCamera(
-  fromPos: THREE.Vector3,
-  fromLook: THREE.Vector3,
+  fromPos: Vector3,
+  fromLook: Vector3,
   fromFov: number,
   wp: WakeCameraWaypoint,
   t: number,
-  outPos: THREE.Vector3,
-  outLook: THREE.Vector3,
+  outPos: Vector3,
+  outLook: Vector3,
   clampRoom?: boolean,
 ): number {
   const e = easeInOutCubic(t);
   if (wp.controlPoint) {
     outPos.copy(quadraticBezier(fromPos, wp.controlPoint, wp.position, e));
-    const lookCtrl = new THREE.Vector3().lerpVectors(fromLook, wp.lookAt, 0.45);
+    const lookCtrl = new Vector3().lerpVectors(fromLook, wp.lookAt, 0.45);
     outLook.copy(quadraticBezier(fromLook, lookCtrl, wp.lookAt, e));
   } else {
     outPos.lerpVectors(fromPos, wp.position, e);
@@ -194,18 +194,18 @@ export function lerpWakeCamera(
  *  to the default desk exploration camera. */
 export function applyHandoffCamera(
   t: number,
-  fromPos: THREE.Vector3,
-  fromLook: THREE.Vector3,
+  fromPos: Vector3,
+  fromLook: Vector3,
   fromFov: number,
-  camera: THREE.PerspectiveCamera,
-  targetCam?: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number },
+  camera: PerspectiveCamera,
+  targetCam?: { position: Vector3; lookAt: Vector3; fov: number },
   clampRoom?: boolean,
 ): void {
   const dest = targetCam ?? DESK_EXPLORATION_CAM;
   const e = easeInOutCubic(t);
   camera.position.lerpVectors(fromPos, dest.position, e);
   if (clampRoom) clampToVolodkaRoom(camera.position);
-  const look = new THREE.Vector3().lerpVectors(fromLook, dest.lookAt, e);
+  const look = new Vector3().lerpVectors(fromLook, dest.lookAt, e);
   camera.lookAt(look);
   camera.fov = fromFov + (dest.fov - fromFov) * e;
   camera.updateProjectionMatrix();

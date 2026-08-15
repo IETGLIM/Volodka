@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { Color, Mesh, MeshStandardMaterial, Object3D } from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import {
@@ -48,14 +48,14 @@ const AUTHORED_STREET_FACADES: Array<{
 ];
 
 function clonePreparedScene(
-  source: THREE.Object3D,
+  source: Object3D,
   castShadow: boolean,
   variant?: GltfMaterialVariant,
-): THREE.Object3D {
+): Object3D {
   const clone = source.clone(true);
   clone.traverse((obj) => {
-    if ((obj as THREE.Mesh).isMesh) {
-      const mesh = obj as THREE.Mesh;
+    if ((obj as Mesh).isMesh) {
+      const mesh = obj as Mesh;
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
       if (Array.isArray(mesh.material)) {
@@ -66,10 +66,10 @@ function clonePreparedScene(
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const m of mats) {
         if (m && 'envMapIntensity' in m) {
-          const std = m as THREE.MeshStandardMaterial;
+          const std = m as MeshStandardMaterial;
           std.envMapIntensity = variant?.envMapIntensity ?? 0.55;
           if (variant?.tint && std.color) {
-            std.color.multiply(new THREE.Color(variant.tint));
+            std.color.multiply(new Color(variant.tint));
           }
           if (typeof std.roughness === 'number') {
             std.roughness = Math.min(1, Math.max(variant?.roughnessFloor ?? 0.58, std.roughness * 1.18));
@@ -104,8 +104,8 @@ function GltfProp({
   variant?: GltfMaterialVariant;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const [scene, setScene] = useState<THREE.Object3D | null>(null);
-  const cloneRef = useRef<THREE.Object3D | null>(null);
+  const [scene, setScene] = useState<Object3D | null>(null);
+  const cloneRef = useRef<Object3D | null>(null);
 
   useEffect(() => {
     const next = clonePreparedScene(gltf.scene, castShadow, variant);

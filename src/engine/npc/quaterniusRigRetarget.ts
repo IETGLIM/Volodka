@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Bone, Group, Object3D } from 'three';
 
 export interface QuaterniusRetargetBinding {
   bonePatterns: readonly string[];
@@ -18,7 +18,7 @@ export const QUATERNIUS_PROCEDURAL_BINDINGS: readonly QuaterniusRetargetBinding[
 
 interface RetargetCache {
   rigRootUuid: string | null;
-  bones: Map<string, THREE.Bone | null>;
+  bones: Map<string, Bone | null>;
 }
 
 const retargetCaches = new Map<string, RetargetCache>();
@@ -36,11 +36,11 @@ function matchesPattern(name: string, patterns: readonly string[]): boolean {
   return patterns.some((pattern) => name === pattern || name.includes(pattern));
 }
 
-function findBone(rigRoot: THREE.Object3D, patterns: readonly string[]): THREE.Bone | null {
-  let found: THREE.Bone | null = null;
+function findBone(rigRoot: Object3D, patterns: readonly string[]): Bone | null {
+  let found: Bone | null = null;
   rigRoot.traverse((child) => {
     if (found) return;
-    if (child instanceof THREE.Bone && matchesPattern(child.name, patterns)) {
+    if (child instanceof Bone && matchesPattern(child.name, patterns)) {
       found = child;
     }
   });
@@ -49,9 +49,9 @@ function findBone(rigRoot: THREE.Object3D, patterns: readonly string[]): THREE.B
 
 function resolveBindingBone(
   cacheKey: string,
-  rigRoot: THREE.Object3D,
+  rigRoot: Object3D,
   binding: QuaterniusRetargetBinding,
-): THREE.Bone | null {
+): Bone | null {
   const cache = getRetargetCache(cacheKey);
   if (cache.rigRootUuid !== rigRoot.uuid) {
     cache.rigRootUuid = rigRoot.uuid;
@@ -74,15 +74,15 @@ function resolveBindingBone(
  */
 export function applyQuaterniusRigToComposer(
   cacheKey: string,
-  rigRoot: THREE.Object3D,
-  composerRoot: THREE.Group,
+  rigRoot: Object3D,
+  composerRoot: Group,
   torsoBaseY: number,
 ): boolean {
   let applied = false;
 
   for (const binding of QUATERNIUS_PROCEDURAL_BINDINGS) {
     const bone = resolveBindingBone(cacheKey, rigRoot, binding);
-    const part = composerRoot.getObjectByName(binding.partName) as THREE.Group | null;
+    const part = composerRoot.getObjectByName(binding.partName) as Group | null;
     if (!bone || !part) continue;
 
     part.quaternion.copy(bone.quaternion);

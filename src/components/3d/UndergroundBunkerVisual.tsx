@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   getSharedBoxGeometry,
@@ -23,7 +23,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { SceneBackdropShell } from './SceneBackdropShell';
 
 interface UndergroundBunkerVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const W = 18;
@@ -60,9 +60,9 @@ export function UndergroundBunkerVisual(_props: UndergroundBunkerVisualProps) {
     coarsePointer,
   });
   const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
-  const rootRef = useRef<THREE.Group>(null);
-  const screenRef = useRef<THREE.Mesh>(null);
-  const radioRef = useRef<THREE.Mesh>(null);
+  const rootRef = useRef<Group>(null);
+  const screenRef = useRef<Mesh>(null);
+  const radioRef = useRef<Mesh>(null);
   const tRef = useRef(0);
   const damp = useMemo(() => getIndustrialDampFloorSettings('underground_bunker'), []);
   const floorRoughness = damp?.roughness ?? 0.88;
@@ -74,10 +74,10 @@ export function UndergroundBunkerVisual(_props: UndergroundBunkerVisualProps) {
       tRef.current += delta;
       const flicker = 1.2 + Math.sin(tRef.current * 7.5) * 0.15 + Math.sin(tRef.current * 19) * 0.08;
       if (screenRef.current) {
-        (screenRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = flicker;
+        (screenRef.current.material as MeshStandardMaterial).emissiveIntensity = flicker;
       }
       if (radioRef.current) {
-        (radioRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+        (radioRef.current.material as MeshStandardMaterial).emissiveIntensity =
           0.55 + Math.sin(tRef.current * 3.4) * 0.25;
       }
     },

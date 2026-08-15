@@ -2,55 +2,55 @@
      Module-level singletons — one GPU buffer / shader per unique asset,
      reused across all NPC instances (matches ProceduralPlayerModel pattern). ─── */
 
-import * as THREE from 'three';
+import { BoxGeometry, BufferGeometry, CapsuleGeometry, CircleGeometry, Color, CylinderGeometry, Euler, FrontSide, Material, Matrix4, MeshPhysicalMaterial, MeshStandardMaterial, Quaternion, Side, SphereGeometry, TorusGeometry, Vector3 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 /* ─── Geometry cache — one GPU buffer per unique size ─── */
-const geoCache = new Map<string, THREE.BufferGeometry>();
+const geoCache = new Map<string, BufferGeometry>();
 
 function geoKey(type: string, args: number[]): string {
   return `${type}|${args.join('|')}`;
 }
 
-export function boxGeo(w: number, h: number, d: number): THREE.BufferGeometry {
+export function boxGeo(w: number, h: number, d: number): BufferGeometry {
   const key = geoKey('box', [w, h, d]);
   let g = geoCache.get(key);
-  if (!g) { g = new THREE.BoxGeometry(w, h, d); geoCache.set(key, g); }
+  if (!g) { g = new BoxGeometry(w, h, d); geoCache.set(key, g); }
   return g;
 }
 
-export function sphereGeo(r: number, ws = 8, hs = 8, phiStart = 0, phiLen = Math.PI * 2, thetaStart = 0, thetaLen = Math.PI): THREE.BufferGeometry {
+export function sphereGeo(r: number, ws = 8, hs = 8, phiStart = 0, phiLen = Math.PI * 2, thetaStart = 0, thetaLen = Math.PI): BufferGeometry {
   const key = geoKey('sphere', [r, ws, hs, phiStart, phiLen, thetaStart, thetaLen]);
   let g = geoCache.get(key);
-  if (!g) { g = new THREE.SphereGeometry(r, ws, hs, phiStart, phiLen, thetaStart, thetaLen); geoCache.set(key, g); }
+  if (!g) { g = new SphereGeometry(r, ws, hs, phiStart, phiLen, thetaStart, thetaLen); geoCache.set(key, g); }
   return g;
 }
 
-export function cylinderGeo(rt: number, rb: number, h: number, seg = 8): THREE.BufferGeometry {
+export function cylinderGeo(rt: number, rb: number, h: number, seg = 8): BufferGeometry {
   const key = geoKey('cylinder', [rt, rb, h, seg]);
   let g = geoCache.get(key);
-  if (!g) { g = new THREE.CylinderGeometry(rt, rb, h, seg); geoCache.set(key, g); }
+  if (!g) { g = new CylinderGeometry(rt, rb, h, seg); geoCache.set(key, g); }
   return g;
 }
 
-export function capsuleGeo(r: number, len: number, capSeg = 4, radSeg = 6): THREE.BufferGeometry {
+export function capsuleGeo(r: number, len: number, capSeg = 4, radSeg = 6): BufferGeometry {
   const key = geoKey('capsule', [r, len, capSeg, radSeg]);
   let g = geoCache.get(key);
-  if (!g) { g = new THREE.CapsuleGeometry(r, len, capSeg, radSeg); geoCache.set(key, g); }
+  if (!g) { g = new CapsuleGeometry(r, len, capSeg, radSeg); geoCache.set(key, g); }
   return g;
 }
 
-export function torusGeo(r: number, tube: number, rs = 6, ts = 12, arc = Math.PI * 2): THREE.BufferGeometry {
+export function torusGeo(r: number, tube: number, rs = 6, ts = 12, arc = Math.PI * 2): BufferGeometry {
   const key = geoKey('torus', [r, tube, rs, ts, arc]);
   let g = geoCache.get(key);
-  if (!g) { g = new THREE.TorusGeometry(r, tube, rs, ts, arc); geoCache.set(key, g); }
+  if (!g) { g = new TorusGeometry(r, tube, rs, ts, arc); geoCache.set(key, g); }
   return g;
 }
 
-export function circleGeo(r: number, seg = 8): THREE.BufferGeometry {
+export function circleGeo(r: number, seg = 8): BufferGeometry {
   const key = geoKey('circle', [r, seg]);
   let g = geoCache.get(key);
-  if (!g) { g = new THREE.CircleGeometry(r, seg); geoCache.set(key, g); }
+  if (!g) { g = new CircleGeometry(r, seg); geoCache.set(key, g); }
   return g;
 }
 
@@ -147,55 +147,55 @@ export const sharedGeo = {
 
 /* ─── Static materials (fixed palette) ─── */
 export const sharedMat = {
-  eyeWhite: new THREE.MeshStandardMaterial({ color: '#f0eeea', roughness: 0.3, metalness: 0.1 }),
-  pupil: new THREE.MeshStandardMaterial({ color: '#1e100a', roughness: 0.2, metalness: 0.3 }),
-  brow: new THREE.MeshStandardMaterial({ color: '#2a1e12', roughness: 0.8 }),
-  mouth: new THREE.MeshPhysicalMaterial({ color: '#8a6a52', roughness: 0.8, sheen: 0.15, sheenRoughness: 0.4 }),
-  skinLight: new THREE.MeshPhysicalMaterial({ color: '#c4a882', roughness: 0.7, metalness: 0.05, sheen: 0.35, sheenRoughness: 0.5 }),
-  skinMedium: new THREE.MeshPhysicalMaterial({ color: '#b09070', roughness: 0.7, metalness: 0.05, sheen: 0.35, sheenRoughness: 0.5 }),
-  skinDark: new THREE.MeshPhysicalMaterial({ color: '#8a6a50', roughness: 0.7, metalness: 0.05, sheen: 0.35, sheenRoughness: 0.5 }),
-  skinShadowLight: new THREE.MeshPhysicalMaterial({ color: '#b89a72', roughness: 0.7, sheen: 0.25, sheenRoughness: 0.5 }),
-  skinShadowMed: new THREE.MeshPhysicalMaterial({ color: '#9a7a60', roughness: 0.7, sheen: 0.25, sheenRoughness: 0.5 }),
-  hairDark: new THREE.MeshPhysicalMaterial({ color: '#2a1e12', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
-  hairBrown: new THREE.MeshPhysicalMaterial({ color: '#4a3020', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
-  hairGray: new THREE.MeshPhysicalMaterial({ color: '#888890', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
-  hairBlack: new THREE.MeshPhysicalMaterial({ color: '#0e0a08', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
-  sneaker: new THREE.MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.9, metalness: 0.05 }),
-  sole: new THREE.MeshStandardMaterial({ color: '#e8e0d8', roughness: 0.95 }),
-  metalGray: new THREE.MeshStandardMaterial({ color: '#888', roughness: 0.3, metalness: 0.8 }),
-  metalDark: new THREE.MeshStandardMaterial({ color: '#555', roughness: 0.3, metalness: 0.8 }),
-  earbuds: new THREE.MeshStandardMaterial({ color: '#e8e8e8', roughness: 0.3, metalness: 0.2 }),
-  cord: new THREE.MeshStandardMaterial({ color: '#e8e8e8', roughness: 0.5 }),
-  drawstring: new THREE.MeshStandardMaterial({ color: '#ccc', roughness: 0.6 }),
-  bookPages: new THREE.MeshStandardMaterial({ color: '#f0ece0', roughness: 0.9 }),
-  nameTag: new THREE.MeshStandardMaterial({ color: '#ffffff', emissive: '#f0c040', emissiveIntensity: 0.3, roughness: 0.3, transparent: true, opacity: 0.8 }),
+  eyeWhite: new MeshStandardMaterial({ color: '#f0eeea', roughness: 0.3, metalness: 0.1 }),
+  pupil: new MeshStandardMaterial({ color: '#1e100a', roughness: 0.2, metalness: 0.3 }),
+  brow: new MeshStandardMaterial({ color: '#2a1e12', roughness: 0.8 }),
+  mouth: new MeshPhysicalMaterial({ color: '#8a6a52', roughness: 0.8, sheen: 0.15, sheenRoughness: 0.4 }),
+  skinLight: new MeshPhysicalMaterial({ color: '#c4a882', roughness: 0.7, metalness: 0.05, sheen: 0.35, sheenRoughness: 0.5 }),
+  skinMedium: new MeshPhysicalMaterial({ color: '#b09070', roughness: 0.7, metalness: 0.05, sheen: 0.35, sheenRoughness: 0.5 }),
+  skinDark: new MeshPhysicalMaterial({ color: '#8a6a50', roughness: 0.7, metalness: 0.05, sheen: 0.35, sheenRoughness: 0.5 }),
+  skinShadowLight: new MeshPhysicalMaterial({ color: '#b89a72', roughness: 0.7, sheen: 0.25, sheenRoughness: 0.5 }),
+  skinShadowMed: new MeshPhysicalMaterial({ color: '#9a7a60', roughness: 0.7, sheen: 0.25, sheenRoughness: 0.5 }),
+  hairDark: new MeshPhysicalMaterial({ color: '#2a1e12', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
+  hairBrown: new MeshPhysicalMaterial({ color: '#4a3020', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
+  hairGray: new MeshPhysicalMaterial({ color: '#888890', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
+  hairBlack: new MeshPhysicalMaterial({ color: '#0e0a08', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
+  sneaker: new MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.9, metalness: 0.05 }),
+  sole: new MeshStandardMaterial({ color: '#e8e0d8', roughness: 0.95 }),
+  metalGray: new MeshStandardMaterial({ color: '#888', roughness: 0.3, metalness: 0.8 }),
+  metalDark: new MeshStandardMaterial({ color: '#555', roughness: 0.3, metalness: 0.8 }),
+  earbuds: new MeshStandardMaterial({ color: '#e8e8e8', roughness: 0.3, metalness: 0.2 }),
+  cord: new MeshStandardMaterial({ color: '#e8e8e8', roughness: 0.5 }),
+  drawstring: new MeshStandardMaterial({ color: '#ccc', roughness: 0.6 }),
+  bookPages: new MeshStandardMaterial({ color: '#f0ece0', roughness: 0.9 }),
+  nameTag: new MeshStandardMaterial({ color: '#ffffff', emissive: '#f0c040', emissiveIntensity: 0.3, roughness: 0.3, transparent: true, opacity: 0.8 }),
 };
 
 /* ─── Merged geometries (same material → fewer draw calls) ─── */
 function mergeWithTransform(
-  geo: THREE.BufferGeometry,
+  geo: BufferGeometry,
   position: [number, number, number],
   rotation?: [number, number, number],
   scale?: [number, number, number],
-): THREE.BufferGeometry {
+): BufferGeometry {
   const clone = geo.clone();
-  const m = new THREE.Matrix4().compose(
-    new THREE.Vector3(...position),
-    new THREE.Quaternion().setFromEuler(new THREE.Euler(...(rotation ?? [0, 0, 0]))),
-    new THREE.Vector3(...(scale ?? [1, 1, 1])),
+  const m = new Matrix4().compose(
+    new Vector3(...position),
+    new Quaternion().setFromEuler(new Euler(...(rotation ?? [0, 0, 0]))),
+    new Vector3(...(scale ?? [1, 1, 1])),
   );
   clone.applyMatrix4(m);
   return clone;
 }
 
 export type MergePart = {
-  geo: THREE.BufferGeometry;
+  geo: BufferGeometry;
   position: [number, number, number];
   rotation?: [number, number, number];
   scale?: [number, number, number];
 };
 
-export function buildMerged(parts: MergePart[]): THREE.BufferGeometry {
+export function buildMerged(parts: MergePart[]): BufferGeometry {
   const geos = parts.map(p => mergeWithTransform(p.geo, p.position, p.rotation, p.scale));
   const result = mergeGeometries(geos);
   geos.forEach(g => g.dispose());
@@ -342,12 +342,12 @@ export type NpcMatOpts = {
   emissiveIntensity?: number;
   transparent?: boolean;
   opacity?: number;
-  side?: THREE.Side;
+  side?: Side;
 };
 
-const matCache = new Map<string, THREE.MeshStandardMaterial>();
+const matCache = new Map<string, MeshStandardMaterial>();
 
-export function npcMat(opts: NpcMatOpts): THREE.MeshStandardMaterial {
+export function npcMat(opts: NpcMatOpts): MeshStandardMaterial {
   const key = [
     opts.color,
     opts.roughness ?? 0.7,
@@ -356,17 +356,17 @@ export function npcMat(opts: NpcMatOpts): THREE.MeshStandardMaterial {
     opts.emissiveIntensity ?? 0,
     opts.transparent ? 1 : 0,
     opts.opacity ?? 1,
-    opts.side ?? THREE.FrontSide,
+    opts.side ?? FrontSide,
   ].join('|');
 
   let mat = matCache.get(key);
   if (!mat) {
-    mat = new THREE.MeshStandardMaterial({
+    mat = new MeshStandardMaterial({
       color: opts.color,
       roughness: opts.roughness ?? 0.7,
       metalness: opts.metalness ?? 0.05,
       ...(opts.emissive
-        ? { emissive: new THREE.Color(opts.emissive), emissiveIntensity: opts.emissiveIntensity ?? 0 }
+        ? { emissive: new Color(opts.emissive), emissiveIntensity: opts.emissiveIntensity ?? 0 }
         : {}),
       ...(opts.transparent ? { transparent: true, opacity: opts.opacity ?? 1 } : {}),
       ...(opts.side !== undefined ? { side: opts.side } : {}),
@@ -377,7 +377,7 @@ export function npcMat(opts: NpcMatOpts): THREE.MeshStandardMaterial {
 }
 
 /** Resolve a skin-tone string to a cached shared material */
-export function skinMat(color: string): THREE.MeshStandardMaterial {
+export function skinMat(color: string): MeshStandardMaterial {
   switch (color) {
     case '#c4a882':
       return sharedMat.skinLight;
@@ -393,7 +393,7 @@ export function skinMat(color: string): THREE.MeshStandardMaterial {
   }
 }
 
-export function skinShadowMat(color: string): THREE.MeshStandardMaterial {
+export function skinShadowMat(color: string): MeshStandardMaterial {
   switch (color) {
     case '#b89a72':
     case '#b89468':
@@ -413,7 +413,7 @@ export function clothingMat(
   glowColor?: string,
   emissiveIntensity = 0.06,
   roughness = 0.85,
-): THREE.MeshStandardMaterial {
+): MeshStandardMaterial {
   if (glowColor) {
     return npcMat({ color, emissive: glowColor, emissiveIntensity, roughness, metalness: 0.05 });
   }
@@ -421,7 +421,7 @@ export function clothingMat(
 }
 
 /** Hair material — cached per color */
-export function hairMat(color: string): THREE.MeshStandardMaterial {
+export function hairMat(color: string): MeshStandardMaterial {
   switch (color) {
     case '#2a1e12': return sharedMat.hairDark;
     case '#4a3020': return sharedMat.hairBrown;
@@ -434,24 +434,24 @@ export function hairMat(color: string): THREE.MeshStandardMaterial {
 }
 
 /** Metal accent — gray or dark */
-export function metalMat(color = '#888', metalness = 0.8, roughness = 0.3): THREE.MeshStandardMaterial {
+export function metalMat(color = '#888', metalness = 0.8, roughness = 0.3): MeshStandardMaterial {
   if (color === '#888' && metalness === 0.8) return sharedMat.metalGray;
   if (color === '#555') return sharedMat.metalDark;
   return npcMat({ color, roughness, metalness });
 }
 
 /** Glowing screen / holographic display */
-export function glowScreenMat(color: string, intensity = 0.5, opacity = 0.6): THREE.MeshStandardMaterial {
+export function glowScreenMat(color: string, intensity = 0.5, opacity = 0.6): MeshStandardMaterial {
   return npcMat({ color, emissive: color, emissiveIntensity: intensity, roughness: 0.1, transparent: true, opacity });
 }
 
 /** Stubble overlay */
-export function stubbleMat(color: string, opacity = 0.2): THREE.MeshStandardMaterial {
+export function stubbleMat(color: string, opacity = 0.2): MeshStandardMaterial {
   return npcMat({ color, roughness: 0.9, transparent: true, opacity });
 }
 
 /** Emissive accent glow */
-export function emissiveMat(color: string, glow: string, intensity: number, roughness = 0.2, metalness = 0.8): THREE.MeshStandardMaterial {
+export function emissiveMat(color: string, glow: string, intensity: number, roughness = 0.2, metalness = 0.8): MeshStandardMaterial {
   return npcMat({ color, emissive: glow, emissiveIntensity: intensity, roughness, metalness });
 }
 
@@ -462,22 +462,22 @@ export const DEFAULT_LEG_WIDTH = 0.058;
 export const DEFAULT_LOWER_LEG_WIDTH = 0.05;
 
 let sharedResourceSets: {
-  geometries: Set<THREE.BufferGeometry>;
-  materials: Set<THREE.Material>;
+  geometries: Set<BufferGeometry>;
+  materials: Set<Material>;
 } | null = null;
 
 /** Module-level procedural NPC assets — exclude from per-instance GPU dispose. */
 export function getProceduralNpcSharedResourceSets(): {
-  geometries: ReadonlySet<THREE.BufferGeometry>;
-  materials: ReadonlySet<THREE.Material>;
+  geometries: ReadonlySet<BufferGeometry>;
+  materials: ReadonlySet<Material>;
 } {
   if (!sharedResourceSets) {
-    const geometries = new Set<THREE.BufferGeometry>();
+    const geometries = new Set<BufferGeometry>();
     for (const geo of geoCache.values()) geometries.add(geo);
     for (const geo of Object.values(sharedGeo)) geometries.add(geo);
     for (const geo of Object.values(mergedGeo)) geometries.add(geo);
 
-    const materials = new Set<THREE.Material>();
+    const materials = new Set<Material>();
     for (const mat of matCache.values()) materials.add(mat);
     for (const mat of Object.values(sharedMat)) materials.add(mat);
 

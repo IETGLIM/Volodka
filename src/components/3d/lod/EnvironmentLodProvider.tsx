@@ -8,7 +8,7 @@ import {
   type MutableRefObject,
   type ReactNode,
 } from 'react';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { useCurrentSceneId } from '@/store/selectors';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import {
@@ -18,7 +18,7 @@ import {
 } from '@/engine/lod/distanceLod';
 
 export interface EnvironmentLodContextValue {
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3> | null;
+  livePlayerPositionRef: MutableRefObject<Vector3> | null;
   thresholds: EnvironmentLodThresholds;
 }
 
@@ -37,7 +37,7 @@ export function useEnvironmentLod(): EnvironmentLodContextValue {
 }
 
 interface EnvironmentLodProviderProps {
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: MutableRefObject<Vector3>;
   children: ReactNode;
 }
 

@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – NPC Animation State Hook ─── */
 
 import { useRef, useEffect, useCallback } from 'react';
-import * as THREE from 'three';
+import { AnimationAction } from 'three';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 import {
   resolveNpcClipAction,
@@ -24,16 +24,16 @@ export interface UseNPCAnimationOptions {
  */
 export function useNPCAnimation(
   _npcId: string,
-  actions: Record<string, THREE.AnimationAction> | null | undefined,
+  actions: Record<string, AnimationAction> | null | undefined,
   clipOverrides?: NpcAnimationClipOverrides,
   options?: UseNPCAnimationOptions,
 ) {
   const currentAnimRef = useRef<NPCAnimationState>('idle');
-  const previousActionRef = useRef<THREE.AnimationAction | null>(null);
+  const previousActionRef = useRef<AnimationAction | null>(null);
   const crossfadeDuration = 0.42;
 
   const findAction = useCallback(
-    (state: NPCAnimationState): THREE.AnimationAction | null =>
+    (state: NPCAnimationState): AnimationAction | null =>
       resolveNpcClipAction(state, actions, clipOverrides),
     [actions, clipOverrides],
   );

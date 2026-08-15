@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { CanvasTexture, ClampToEdgeWrapping, SRGBColorSpace } from 'three';
 
 function seededSeries(count: number, seed: number, min: number, max: number): number[] {
   const out: number[] = [];
@@ -59,7 +59,7 @@ function makeScreenCanvas(): { canvas: HTMLCanvasElement; ctx: CanvasRenderingCo
   return { canvas, ctx };
 }
 
-export function createGrafanaTexture(): THREE.CanvasTexture {
+export function createGrafanaTexture(): CanvasTexture {
   const { canvas, ctx } = makeScreenCanvas();
   ctx.fillStyle = '#0b0e14';
   ctx.fillRect(0, 0, 256, 176);
@@ -91,12 +91,12 @@ export function createGrafanaTexture(): THREE.CanvasTexture {
   ctx.fillStyle = '#34d399';
   ctx.font = '8px monospace';
   ctx.fillText('● live · refresh 5s', 8, 172);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
   return tex;
 }
 
-export function createZabbixTexture(): THREE.CanvasTexture {
+export function createZabbixTexture(): CanvasTexture {
   const { canvas, ctx } = makeScreenCanvas();
   ctx.fillStyle = '#0a0f0a';
   ctx.fillRect(0, 0, 256, 176);
@@ -130,12 +130,12 @@ export function createZabbixTexture(): THREE.CanvasTexture {
     ctx.font = 'bold 8px monospace';
     ctx.fillText(status, 200, y + 10);
   });
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
   return tex;
 }
 
-export function createTerminalScreenTexture(): THREE.CanvasTexture {
+export function createTerminalScreenTexture(): CanvasTexture {
   const canvas = document.createElement('canvas');
   canvas.width = 256;
   canvas.height = 320;
@@ -164,9 +164,9 @@ export function createTerminalScreenTexture(): THREE.CanvasTexture {
   ];
   lines.forEach((line, i) => ctx.fillText(line, 6, 16 + i * 19));
   ctx.fillRect(6, 16 + lines.length * 19, 8, 11);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }

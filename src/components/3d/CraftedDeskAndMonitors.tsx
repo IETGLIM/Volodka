@@ -1,7 +1,7 @@
 /* Non-box desk / thin monitor slabs for Volodka room — kills cube kitbash interactables. */
 
 import { Suspense, useMemo, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { CircleGeometry, Color, Group, Material, Texture } from 'three';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 import {
   getSharedBoxGeometry,
@@ -15,14 +15,14 @@ import {
   getWetGlassPhysicalParams,
 } from '@/engine/graphics/wetStreetScenes';
 
-const MONITOR_EMISSIVE = new THREE.Color('#5a9a88');
+const MONITOR_EMISSIVE = new Color('#5a9a88');
 
 /** Extruded-feel desk fallback (Low): thick top + tapered cylinder legs — not four box posts.
  *  Medium+ wake room mounts Poly Haven paintedWoodenTable instead (VolodkaRoomVisual). */
 export function CraftedDeskShell({
   matFallback,
 }: {
-  matFallback: THREE.Material;
+  matFallback: Material;
 }) {
   return (
     <>
@@ -49,13 +49,13 @@ export function CraftedDeskShell({
 
 interface ThinMonitorProps {
   id: string;
-  tex: THREE.Texture;
+  tex: Texture;
   x: number;
   rotY: number;
   /** Desk surface height — monitor stand foot rests just above this. */
   surfaceY?: number;
-  groupRef?: MutableRefObject<THREE.Group | null>;
-  alertLed?: THREE.Material;
+  groupRef?: MutableRefObject<Group | null>;
+  alertLed?: Material;
 }
 
 /** Thin bezel + plane screen with photo-PBR metal housing (not a cube monitor). */
@@ -123,7 +123,7 @@ export function ThinMonitor({
         )}
       </mesh>
       {alertLed ? (
-        <mesh position={[0.21, 0.12, 0.014]} geometry={new THREE.CircleGeometry(0.01, 8)} material={alertLed} />
+        <mesh position={[0.21, 0.12, 0.014]} geometry={new CircleGeometry(0.01, 8)} material={alertLed} />
       ) : null}
       {/* Neck + disc foot — cylinder language, not box stand */}
       <mesh position={[0, -0.2, -0.01]} geometry={getSharedCylinderGeometry(0.016, 0.022, 0.16, 10)}>

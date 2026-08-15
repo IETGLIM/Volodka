@@ -3,7 +3,7 @@
 
 import { useMemo, useRef, useEffect, Suspense, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, DoubleSide, Mesh, MeshBasicMaterial, Points, PointsMaterial, RepeatWrapping, Vector3 } from 'three';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { FloorLamp, PastryCase, Window, Plant } from './lazyInteriorModels';
@@ -31,7 +31,7 @@ import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/interiorShellScale';
 
 interface CafeVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 /** Blue Pit cafe – cozy interior with bar counter, tables, warm lighting */
@@ -62,12 +62,12 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const envProfile = useMemo(() => getEnvironmentLodProfile('cafe_evening'), []);
 
   // ── Animated element refs ──
-  const coffeeSteamRef = useRef<THREE.Points>(null);
-  const coffeeSteamMaterialRef = useRef<THREE.PointsMaterial>(null);
+  const coffeeSteamRef = useRef<Points>(null);
+  const coffeeSteamMaterialRef = useRef<PointsMaterial>(null);
   const coffeeSteamTimeRef = useRef(0);
-  const shimmerRef = useRef<THREE.Mesh>(null);
-  const shimmerMaterialRef = useRef<THREE.MeshBasicMaterial>(null);
-  const shimmerLayer2MaterialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const shimmerRef = useRef<Mesh>(null);
+  const shimmerMaterialRef = useRef<MeshBasicMaterial>(null);
+  const shimmerLayer2MaterialRef = useRef<MeshBasicMaterial>(null);
   const shimmerTimeRef = useRef(0);
 
   const W = 10;
@@ -105,8 +105,8 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
   const steamVelocitiesRef = useRef(steamData.velocities);
 
   const steamGeometry = useOwnedBufferGeometry(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(steamData.positions.slice(), 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(steamData.positions.slice(), 3));
     return geo;
   }, [steamData.positions]);
 
@@ -129,7 +129,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
 
     // Coffee machine steam particle update
     if (coffeeSteamRef.current) {
-      const posAttr = coffeeSteamRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
+      const posAttr = coffeeSteamRef.current.geometry.getAttribute('position') as BufferAttribute;
       const posArray = posAttr.array as Float32Array;
       const count = 30;
       for (let i = 0; i < count; i++) {
@@ -640,7 +640,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       {/* ── Newspaper on table near entrance ── */}
       <mesh position={[0.1, 0.73, 2.5]} rotation={[0, 0.3, 0]}>
         <planeGeometry args={[0.3, 0.2]} />
-        <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={DoubleSide} />
       </mesh>
 
       {/* ── Crumbs on table surface (center-right) ── */}
@@ -695,7 +695,7 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
           opacity={0.25}
           depthWrite={false}
           sizeAttenuation
-          blending={THREE.AdditiveBlending}
+          blending={AdditiveBlending}
         />
       </points>
 
@@ -708,8 +708,8 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
           transparent
           opacity={0.03}
           depthWrite={false}
-          side={THREE.DoubleSide}
-          blending={THREE.AdditiveBlending}
+          side={DoubleSide}
+          blending={AdditiveBlending}
         />
       </mesh>
 
@@ -722,8 +722,8 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
           transparent
           opacity={0.02}
           depthWrite={false}
-          side={THREE.DoubleSide}
-          blending={THREE.AdditiveBlending}
+          side={DoubleSide}
+          blending={AdditiveBlending}
         />
       </mesh>
 
@@ -788,7 +788,7 @@ function CafeTable({ position }: { position: [number, number, number] }) {
   );
 }
 
-function createCafeFloorTexture(): THREE.CanvasTexture {
+function createCafeFloorTexture(): CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -808,14 +808,14 @@ function createCafeFloorTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(5, 5);
   return tex;
 }
 
-function createCafeWallTexture(): THREE.CanvasTexture {
+function createCafeWallTexture(): CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -836,9 +836,9 @@ function createCafeWallTexture(): THREE.CanvasTexture {
     offset = offset === 0 ? 25 : 0;
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(3, 2);
   return tex;
 }

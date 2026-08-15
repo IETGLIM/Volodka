@@ -14,15 +14,15 @@
 'use client';
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { Color } from 'three';
 
 /** Time-of-day keyframe */
 interface TimeKeyframe {
   hour: number;
-  /** THREE.Color for ambient light */
+  /** Color for ambient light */
   ambientColor: [number, number, number];
   ambientIntensity: number;
-  /** THREE.Color for directional light */
+  /** Color for directional light */
   dirColor: [number, number, number];
   dirIntensity: number;
   /** CSS color for screen-space ambient wash overlay */
@@ -99,11 +99,11 @@ function findBracket(hour: number): [TimeKeyframe, TimeKeyframe, number] {
 }
 
 export interface TimeOfDayLightingState {
-  /** Pre-built THREE.Color for the ambient light */
-  ambientColor: THREE.Color;
+  /** Pre-built Color for the ambient light */
+  ambientColor: Color;
   ambientIntensity: number;
-  /** Pre-built THREE.Color for the directional light */
-  dirColor: THREE.Color;
+  /** Pre-built Color for the directional light */
+  dirColor: Color;
   dirIntensity: number;
   /** CSS class name for the screen-space ambient wash overlay */
   cssWashClass: string;
@@ -152,9 +152,9 @@ export function useTimeOfDayLighting(timeOfDay: number): TimeOfDayLightingState 
     const cssWashClass = `tod-wash-${periodName.toLowerCase()}`;
 
     return {
-      ambientColor: new THREE.Color(ambientRgb[0], ambientRgb[1], ambientRgb[2]),
+      ambientColor: new Color(ambientRgb[0], ambientRgb[1], ambientRgb[2]),
       ambientIntensity,
-      dirColor: new THREE.Color(dirRgb[0], dirRgb[1], dirRgb[2]),
+      dirColor: new Color(dirRgb[0], dirRgb[1], dirRgb[2]),
       dirIntensity,
       cssWashClass,
       cssWashColor,

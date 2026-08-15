@@ -2,7 +2,7 @@
 /* Mirrors Rapier cuboid colliders on CAMERA_COLLISION_LAYER (layer 5). */
 
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { Mesh } from 'three';
 import { getSceneConfig } from '@/config/scenes';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
 import {
@@ -50,7 +50,7 @@ function buildStructuralCollisionDefs(sceneId: SceneId): ColliderDef[] {
 }
 
 function CameraCollisionBox({ def }: { def: ColliderDef }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
   const rotationY = def.rotation ?? 0;
   const [hx, hy, hz] = def.size;
 

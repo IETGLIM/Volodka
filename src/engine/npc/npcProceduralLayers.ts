@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – procedural animation layers on top of Mixamo / limb poses ─── */
 
-import * as THREE from 'three';
+import { Bone, Group, MathUtils, Object3D, Vector3 } from 'three';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 import {
   applyLayeredHeadTracking,
@@ -21,21 +21,21 @@ const RIGHT_EYE_NAMES = ['rightEye', 'RightEye', 'Eye_R', 'eye_r'];
 
 export interface NpcProceduralLayerInput {
   npcId: string;
-  root: THREE.Group;
+  root: Group;
   animState: NPCAnimationState;
-  playerPosition: THREE.Vector3 | null;
+  playerPosition: Vector3 | null;
   delta: number;
   headTrackingEnabled?: boolean;
   headTrackingDistance?: number;
 }
 
 export interface NpcLayerParts {
-  chest: THREE.Bone | THREE.Group | null;
-  head: THREE.Bone | THREE.Group | null;
-  leftEye: THREE.Object3D | null;
-  rightEye: THREE.Object3D | null;
-  leftArm: THREE.Bone | THREE.Group | null;
-  rightArm: THREE.Bone | THREE.Group | null;
+  chest: Bone | Group | null;
+  head: Bone | Group | null;
+  leftEye: Object3D | null;
+  rightEye: Object3D | null;
+  leftArm: Bone | Group | null;
+  rightArm: Bone | Group | null;
 }
 
 interface NpcLayerState {
@@ -98,42 +98,42 @@ function matchesPattern(name: string, patterns: readonly string[]): boolean {
 }
 
 function findBoneOrNamedGroup(
-  root: THREE.Object3D,
+  root: Object3D,
   patterns: readonly string[],
   exactGroupNames: readonly string[] = [],
-): THREE.Bone | THREE.Group | null {
-  let found: THREE.Bone | THREE.Group | null = null;
+): Bone | Group | null {
+  let found: Bone | Group | null = null;
   root.traverse((child) => {
     if (found) return;
-    if (child instanceof THREE.Bone) {
+    if (child instanceof Bone) {
       if (matchesPattern(child.name, patterns)) {
         found = child;
       }
       return;
     }
-    if (child instanceof THREE.Group && exactGroupNames.includes(child.name)) {
+    if (child instanceof Group && exactGroupNames.includes(child.name)) {
       found = child;
     }
   });
   return found;
 }
 
-function findEye(root: THREE.Object3D, names: readonly string[]): THREE.Object3D | null {
-  let found: THREE.Object3D | null = null;
+function findEye(root: Object3D, names: readonly string[]): Object3D | null {
+  let found: Object3D | null = null;
   root.traverse((child) => {
     if (found) return;
     if (names.includes(child.name)) {
       found = child;
       return;
     }
-    if (child instanceof THREE.Bone && matchesPattern(child.name, names)) {
+    if (child instanceof Bone && matchesPattern(child.name, names)) {
       found = child;
     }
   });
   return found;
 }
 
-function resolveLayerParts(root: THREE.Group, state: NpcLayerState): NpcLayerParts {
+function resolveLayerParts(root: Group, state: NpcLayerState): NpcLayerParts {
   if (state.partsRootUuid === root.uuid && state.parts.head) {
     return state.parts;
   }
@@ -161,7 +161,7 @@ function resolveLayerParts(root: THREE.Group, state: NpcLayerState): NpcLayerPar
 }
 
 function applyBreathing(
-  chest: THREE.Bone | THREE.Group,
+  chest: Bone | Group,
   t: number,
   isProceduralTorso: boolean,
 ): void {
@@ -175,7 +175,7 @@ function applyBreathing(
     return;
   }
 
-  if (chest instanceof THREE.Bone) {
+  if (chest instanceof Bone) {
     chest.rotation.x += chestExpand;
     chest.scale.y = 1 + chestLift * 0.35;
   }
@@ -200,7 +200,7 @@ function applyBlink(state: NpcLayerState, parts: NpcLayerParts, delta: number): 
 
   if (state.blinkPhase === 'closing') {
     const progress = Math.min(1, state.blinkTimer / closeDuration);
-    const scale = THREE.MathUtils.lerp(state.leftEyeBaseScaleY, 0.06, progress);
+    const scale = MathUtils.lerp(state.leftEyeBaseScaleY, 0.06, progress);
     setEyeScale(parts.leftEye, scale);
     setEyeScale(parts.rightEye, scale);
     if (progress >= 1) {
@@ -221,7 +221,7 @@ function applyBlink(state: NpcLayerState, parts: NpcLayerParts, delta: number): 
   }
 
   const progress = Math.min(1, state.blinkTimer / openDuration);
-  const scale = THREE.MathUtils.lerp(0.06, state.leftEyeBaseScaleY, progress);
+  const scale = MathUtils.lerp(0.06, state.leftEyeBaseScaleY, progress);
   setEyeScale(parts.leftEye, scale);
   setEyeScale(parts.rightEye, scale);
   if (progress >= 1) {
@@ -232,19 +232,19 @@ function applyBlink(state: NpcLayerState, parts: NpcLayerParts, delta: number): 
   }
 }
 
-function setEyeScale(eye: THREE.Object3D | null, scaleY: number): void {
+function setEyeScale(eye: Object3D | null, scaleY: number): void {
   if (!eye) return;
   eye.scale.y = scaleY;
 }
 
-function applySway(root: THREE.Group, t: number): void {
+function applySway(root: Group, t: number): void {
   root.rotation.z = Math.sin(t * 0.65) * 0.008;
   root.rotation.x = Math.sin(t * 0.45 + 0.6) * 0.004;
   root.position.x = Math.sin(t * 0.5) * 0.003;
 }
 
 function applyTalkGesture(
-  rightArm: THREE.Bone | THREE.Group,
+  rightArm: Bone | Group,
   t: number,
   boost: number,
 ): void {
@@ -252,7 +252,7 @@ function applyTalkGesture(
   const lift = -0.35 + Math.sin(t * 2.2) * 0.12 * boost;
   rightArm.rotation.x += lift;
   rightArm.rotation.z += wave;
-  if (rightArm instanceof THREE.Group) {
+  if (rightArm instanceof Group) {
     rightArm.rotation.y += Math.sin(t * 1.6) * 0.05 * boost;
   }
 }
@@ -279,7 +279,7 @@ export function updateNpcProceduralLayers(input: NpcProceduralLayerInput): void 
   const parts = resolveLayerParts(root, state);
 
   if (BREATHING_STATES.has(animState) && parts.chest) {
-    const isProceduralTorso = parts.chest instanceof THREE.Group && parts.chest.name === 'torso';
+    const isProceduralTorso = parts.chest instanceof Group && parts.chest.name === 'torso';
     applyBreathing(parts.chest, t, isProceduralTorso);
   }
 
@@ -301,14 +301,14 @@ export function updateNpcProceduralLayers(input: NpcProceduralLayerInput): void 
   }
 
   if (TALK_GESTURE_STATES.has(animState) && parts.rightArm) {
-    const isProcedural = parts.chest instanceof THREE.Group && parts.chest.name === 'torso';
+    const isProcedural = parts.chest instanceof Group && parts.chest.name === 'torso';
     const boost = (animState === 'gesture' ? 1.35 : 1) * (isProcedural ? 0.45 : 1);
     state.talkGesturePhase += dt;
     applyTalkGesture(parts.rightArm, state.talkGesturePhase, boost);
   }
 }
 
-const _worldPos = new THREE.Vector3();
+const _worldPos = new Vector3();
 
 export function invalidateNpcProceduralLayers(npcId: string): void {
   const state = layerStates.get(npcId);

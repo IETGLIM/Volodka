@@ -3,7 +3,7 @@
  * Registered once inside Canvas via GltfPipelineInit.
  */
 
-import * as THREE from 'three';
+import { Cache } from 'three';
 import { useGLTF } from '@react-three/drei';
 import { ASSET_MANIFEST } from '@/config/assetManifest';
 import { FPS_ARMS_URL } from '@/config/fpsArmsUrl';
@@ -37,7 +37,7 @@ function collectQualityDependentGltfUrls(): string[] {
 export function evictQualityDependentGpuCache(): void {
   for (const url of collectQualityDependentGltfUrls()) {
     useGLTF.clear(url);
-    THREE.Cache.remove(url);
+    Cache.remove(url);
   }
   evictCanvasTextureCache();
   clearSkyTextureCache();

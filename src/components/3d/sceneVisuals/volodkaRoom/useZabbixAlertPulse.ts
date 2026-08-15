@@ -1,12 +1,12 @@
 import { useRef, type RefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Color, MeshStandardMaterial, PointLight } from 'three';
 
 const PULSE_INTENSITY = 1.8;
 const PULSE_DURATION = 0.1; // 100ms
 const ALERT_THRESHOLD = 2.0; // zabbix emissiveIntensity above this = "alert on"
-const BASE_COLOR = new THREE.Color('#ffe8cc');
-const ALERT_COLOR = new THREE.Color('#ff6644');
+const BASE_COLOR = new Color('#ffe8cc');
+const ALERT_COLOR = new Color('#ff6644');
 
 /**
  * Watches the Zabbix alert LED material. When it transitions to bright (alert on),
@@ -15,13 +15,13 @@ const ALERT_COLOR = new THREE.Color('#ff6644');
  * Pure-refs — no React re-renders.
  */
 export function useZabbixAlertPulse(
-  zabbixAlertRef: RefObject<THREE.MeshStandardMaterial | null>,
-  ambientLightRef: RefObject<THREE.PointLight | null>,
+  zabbixAlertRef: RefObject<MeshStandardMaterial | null>,
+  ambientLightRef: RefObject<PointLight | null>,
 ): void {
   const wasAlertRef = useRef(false);
   const pulseTimerRef = useRef(0);
   const isPulsingRef = useRef(false);
-  const tmpColor = useRef(new THREE.Color());
+  const tmpColor = useRef(new Color());
 
   useFrameTick('misc', ({ delta }) => {
     const light = ambientLightRef.current;

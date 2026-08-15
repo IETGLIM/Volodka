@@ -5,10 +5,10 @@ import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup, getRegisteredNPCIds } from '@/engine/interaction/npcRegistry';
 import { NPC_INTERACTION_QUERY_RANGE } from '@/engine/player/playerConstants';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 
-const _player = new THREE.Vector3();
-const _npc = new THREE.Vector3();
+const _player = new Vector3();
+const _npc = new Vector3();
 
 export type StuckRecoveryRingFocus = {
   npcId: string;

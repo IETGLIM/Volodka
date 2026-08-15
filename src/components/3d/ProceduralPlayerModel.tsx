@@ -19,7 +19,7 @@
  */
 
 import { useRef, useEffect, useMemo, memo } from 'react';
-import * as THREE from 'three';
+import { BoxGeometry, CapsuleGeometry, Color, CylinderGeometry, DoubleSide, Group, MeshPhysicalMaterial, MeshStandardMaterial, SphereGeometry, TorusGeometry } from 'three';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
 import {
@@ -34,120 +34,120 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
   currentAnimRef,
   rotationRef,
 }: ProceduralPlayerModelProps) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
 
   useProceduralPlayerAnimation(groupRef, rotationRef, currentAnimRef);
 
   /* ─── Shared geometry instances (optimization 2) ─── */
   const sharedGeo = useMemo(() => ({
-    upperArmCapsule: new THREE.CapsuleGeometry(0.048, 0.18, 4, 6),
-    forearmCapsule: new THREE.CapsuleGeometry(0.042, 0.14, 4, 6),
-    wristCapsule: new THREE.CapsuleGeometry(0.032, 0.03, 3, 5),
-    handSphere: new THREE.SphereGeometry(0.028, 5, 4),
-    upperLegCapsule: new THREE.CapsuleGeometry(0.058, 0.24, 4, 6),
-    lowerLegCapsule: new THREE.CapsuleGeometry(0.05, 0.2, 4, 6),
-    sneakerBox: new THREE.BoxGeometry(0.085, 0.055, 0.15),
-    soleBox: new THREE.BoxGeometry(0.09, 0.02, 0.16),
-    fingerBox: new THREE.BoxGeometry(0.035, 0.02, 0.03),
-    eyeSphere: new THREE.SphereGeometry(0.018, 6, 6),
-    pupilSphere: new THREE.SphereGeometry(0.009, 4, 4),
-    irisSphere: new THREE.SphereGeometry(0.012, 5, 5),
-    eyeGlowSphere: new THREE.SphereGeometry(0.007, 4, 4),
-    browBox: new THREE.BoxGeometry(0.032, 0.006, 0.008),
-    skullSphere: new THREE.SphereGeometry(0.105, 8, 8),
-    hairSphere: new THREE.SphereGeometry(0.09, 5, 4),
-    earSphere: new THREE.SphereGeometry(0.02, 4, 4),
-    noseSphere: new THREE.SphereGeometry(0.014, 4, 4),
-    chinSphere: new THREE.SphereGeometry(0.028, 5, 4),
-    mouthLine: new THREE.BoxGeometry(0.045, 0.004, 0.008),
-    mouthCorner: new THREE.BoxGeometry(0.01, 0.004, 0.005),
-    noseBridge: new THREE.BoxGeometry(0.012, 0.025, 0.01),
-    neckCylinder: new THREE.CylinderGeometry(0.048, 0.055, 0.07, 6),
-    jeansCuffCylinder: new THREE.CylinderGeometry(0.055, 0.052, 0.03, 6),
+    upperArmCapsule: new CapsuleGeometry(0.048, 0.18, 4, 6),
+    forearmCapsule: new CapsuleGeometry(0.042, 0.14, 4, 6),
+    wristCapsule: new CapsuleGeometry(0.032, 0.03, 3, 5),
+    handSphere: new SphereGeometry(0.028, 5, 4),
+    upperLegCapsule: new CapsuleGeometry(0.058, 0.24, 4, 6),
+    lowerLegCapsule: new CapsuleGeometry(0.05, 0.2, 4, 6),
+    sneakerBox: new BoxGeometry(0.085, 0.055, 0.15),
+    soleBox: new BoxGeometry(0.09, 0.02, 0.16),
+    fingerBox: new BoxGeometry(0.035, 0.02, 0.03),
+    eyeSphere: new SphereGeometry(0.018, 6, 6),
+    pupilSphere: new SphereGeometry(0.009, 4, 4),
+    irisSphere: new SphereGeometry(0.012, 5, 5),
+    eyeGlowSphere: new SphereGeometry(0.007, 4, 4),
+    browBox: new BoxGeometry(0.032, 0.006, 0.008),
+    skullSphere: new SphereGeometry(0.105, 8, 8),
+    hairSphere: new SphereGeometry(0.09, 5, 4),
+    earSphere: new SphereGeometry(0.02, 4, 4),
+    noseSphere: new SphereGeometry(0.014, 4, 4),
+    chinSphere: new SphereGeometry(0.028, 5, 4),
+    mouthLine: new BoxGeometry(0.045, 0.004, 0.008),
+    mouthCorner: new BoxGeometry(0.01, 0.004, 0.005),
+    noseBridge: new BoxGeometry(0.012, 0.025, 0.01),
+    neckCylinder: new CylinderGeometry(0.048, 0.055, 0.07, 6),
+    jeansCuffCylinder: new CylinderGeometry(0.055, 0.052, 0.03, 6),
     /* Hair sphere geometries (many small spheres — shared to avoid per-render alloc) */
-    hairFrontFringe: new THREE.SphereGeometry(0.065, 5, 4),
-    hairTuftLeft: new THREE.SphereGeometry(0.03, 4, 3),
-    hairTuftRight: new THREE.SphereGeometry(0.028, 4, 3),
-    hairTopTuft1: new THREE.SphereGeometry(0.025, 3, 3),
-    hairTopTuft2: new THREE.SphereGeometry(0.022, 3, 3),
-    hairTopTuft3: new THREE.SphereGeometry(0.02, 3, 3),
-    hairTopTuft4: new THREE.SphereGeometry(0.02, 3, 3),
-    hairBack: new THREE.SphereGeometry(0.07, 5, 4),
-    hairSideLeft: new THREE.SphereGeometry(0.03, 4, 3),
-    hairSideRight: new THREE.SphereGeometry(0.03, 4, 3),
-    sneakerToeCap: new THREE.SphereGeometry(0.035, 4, 4, 0, Math.PI * 2, 0, Math.PI * 0.5),
+    hairFrontFringe: new SphereGeometry(0.065, 5, 4),
+    hairTuftLeft: new SphereGeometry(0.03, 4, 3),
+    hairTuftRight: new SphereGeometry(0.028, 4, 3),
+    hairTopTuft1: new SphereGeometry(0.025, 3, 3),
+    hairTopTuft2: new SphereGeometry(0.022, 3, 3),
+    hairTopTuft3: new SphereGeometry(0.02, 3, 3),
+    hairTopTuft4: new SphereGeometry(0.02, 3, 3),
+    hairBack: new SphereGeometry(0.07, 5, 4),
+    hairSideLeft: new SphereGeometry(0.03, 4, 3),
+    hairSideRight: new SphereGeometry(0.03, 4, 3),
+    sneakerToeCap: new SphereGeometry(0.035, 4, 4, 0, Math.PI * 2, 0, Math.PI * 0.5),
   }), []);
 
   /* ─── Shared material instances (optimization 3) — AAA Pass: Physical + sheen, no plastic ─── */
   const sharedMat = useMemo(() => ({
-    skin: new THREE.MeshPhysicalMaterial({
+    skin: new MeshPhysicalMaterial({
       color: '#c4a882',
       roughness: 0.52,
       metalness: 0.02,
       sheen: 0.35,
       sheenRoughness: 0.65,
-      sheenColor: new THREE.Color('#ffdfc4'),
+      sheenColor: new Color('#ffdfc4'),
       clearcoat: 0.08,
       clearcoatRoughness: 0.62,
       envMapIntensity: 0.28,
     }),
-    skinShadow: new THREE.MeshPhysicalMaterial({
+    skinShadow: new MeshPhysicalMaterial({
       color: '#b89a72',
       roughness: 0.58,
       metalness: 0.02,
       sheen: 0.25,
       sheenRoughness: 0.7,
-      sheenColor: new THREE.Color('#e8c8a0'),
+      sheenColor: new Color('#e8c8a0'),
       envMapIntensity: 0.22,
     }),
-    hair: new THREE.MeshPhysicalMaterial({
+    hair: new MeshPhysicalMaterial({
       color: '#2a1e12',
       roughness: 0.88,
       metalness: 0.02,
       sheen: 0.15,
       sheenRoughness: 0.9,
-      sheenColor: new THREE.Color('#3a2a1a'),
+      sheenColor: new Color('#3a2a1a'),
       envMapIntensity: 0.15,
     }),
-    hoodie: new THREE.MeshPhysicalMaterial({
+    hoodie: new MeshPhysicalMaterial({
       color: '#2a2a3a',
       roughness: 0.92,
       metalness: 0.02,
       sheen: 0.65,
       sheenRoughness: 0.78,
-      sheenColor: new THREE.Color('#5a5a6a'),
-      emissive: new THREE.Color('#0a0a15'),
+      sheenColor: new Color('#5a5a6a'),
+      emissive: new Color('#0a0a15'),
       emissiveIntensity: 0.06,
       envMapIntensity: 0.18,
     }),
-    hoodieDark: new THREE.MeshPhysicalMaterial({
+    hoodieDark: new MeshPhysicalMaterial({
       color: '#222233',
       roughness: 0.94,
       metalness: 0.01,
       sheen: 0.55,
       sheenRoughness: 0.82,
-      sheenColor: new THREE.Color('#4a4a5a'),
+      sheenColor: new Color('#4a4a5a'),
       envMapIntensity: 0.14,
     }),
-    jeans: new THREE.MeshPhysicalMaterial({
+    jeans: new MeshPhysicalMaterial({
       color: '#3a4050',
       roughness: 0.82,
       metalness: 0.02,
       sheen: 0.45,
       sheenRoughness: 0.75,
-      sheenColor: new THREE.Color('#6a7080'),
+      sheenColor: new Color('#6a7080'),
       envMapIntensity: 0.2,
     }),
-    jeansDark: new THREE.MeshPhysicalMaterial({
+    jeansDark: new MeshPhysicalMaterial({
       color: '#2e3545',
       roughness: 0.86,
       sheen: 0.4,
       sheenRoughness: 0.8,
       envMapIntensity: 0.18,
     }),
-    sneaker: new THREE.MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.88, metalness: 0.03, envMapIntensity: 0.15 }),
-    sole: new THREE.MeshStandardMaterial({ color: '#e8e0d8', roughness: 0.92, envMapIntensity: 0.12 }),
-    bagStrap: new THREE.MeshPhysicalMaterial({
+    sneaker: new MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.88, metalness: 0.03, envMapIntensity: 0.15 }),
+    sole: new MeshStandardMaterial({ color: '#e8e0d8', roughness: 0.92, envMapIntensity: 0.12 }),
+    bagStrap: new MeshPhysicalMaterial({
       color: '#3d3525',
       roughness: 0.68,
       metalness: 0.08,
@@ -155,7 +155,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       clearcoatRoughness: 0.72,
       envMapIntensity: 0.25,
     }),
-    bag: new THREE.MeshPhysicalMaterial({
+    bag: new MeshPhysicalMaterial({
       color: '#332d20',
       roughness: 0.72,
       metalness: 0.04,
@@ -163,23 +163,23 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       sheenRoughness: 0.85,
       envMapIntensity: 0.22,
     }),
-    eyeWhite: new THREE.MeshStandardMaterial({ color: '#f0eeea', roughness: 0.4, metalness: 0.02, envMapIntensity: 0.25 }),
-    pupil: new THREE.MeshStandardMaterial({ color: '#1e100a', roughness: 0.25, metalness: 0.1, envMapIntensity: 0.2 }),
-    iris: new THREE.MeshStandardMaterial({ color: '#4a3520', roughness: 0.5, metalness: 0.08, envMapIntensity: 0.28 }),
-    eyeGlow: new THREE.MeshStandardMaterial({ color: '#00ccdd', emissive: new THREE.Color('#00ccdd'), emissiveIntensity: 0.35, transparent: true, opacity: 0.5 }),
-    brow: new THREE.MeshStandardMaterial({ color: '#2a1e12', roughness: 0.85 }),
-    mouth: new THREE.MeshPhysicalMaterial({ color: '#8a6a52', roughness: 0.62, sheen: 0.15, sheenRoughness: 0.6, envMapIntensity: 0.18 }),
-    stubble: new THREE.MeshStandardMaterial({ color: '#b89a72', roughness: 0.88, transparent: true, opacity: 0.22 }),
-    hoodInside: new THREE.MeshPhysicalMaterial({
+    eyeWhite: new MeshStandardMaterial({ color: '#f0eeea', roughness: 0.4, metalness: 0.02, envMapIntensity: 0.25 }),
+    pupil: new MeshStandardMaterial({ color: '#1e100a', roughness: 0.25, metalness: 0.1, envMapIntensity: 0.2 }),
+    iris: new MeshStandardMaterial({ color: '#4a3520', roughness: 0.5, metalness: 0.08, envMapIntensity: 0.28 }),
+    eyeGlow: new MeshStandardMaterial({ color: '#00ccdd', emissive: new Color('#00ccdd'), emissiveIntensity: 0.35, transparent: true, opacity: 0.5 }),
+    brow: new MeshStandardMaterial({ color: '#2a1e12', roughness: 0.85 }),
+    mouth: new MeshPhysicalMaterial({ color: '#8a6a52', roughness: 0.62, sheen: 0.15, sheenRoughness: 0.6, envMapIntensity: 0.18 }),
+    stubble: new MeshStandardMaterial({ color: '#b89a72', roughness: 0.88, transparent: true, opacity: 0.22 }),
+    hoodInside: new MeshPhysicalMaterial({
       color: '#2a2a3a',
       roughness: 0.9,
       metalness: 0.02,
       sheen: 0.5,
       sheenRoughness: 0.8,
-      side: THREE.DoubleSide,
+      side: DoubleSide,
       envMapIntensity: 0.16,
     }),
-    noseTip: new THREE.MeshPhysicalMaterial({
+    noseTip: new MeshPhysicalMaterial({
       color: '#b89a72',
       roughness: 0.55,
       metalness: 0.02,
@@ -201,7 +201,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
 
   /* ─── Karma-dependent materials (optimization 5) ─── */
   const karmaMat = useMemo(() => ({
-    phoneGlow: new THREE.MeshStandardMaterial({
+    phoneGlow: new MeshStandardMaterial({
       color: karmaGlow,
       emissive: karmaGlow,
       emissiveIntensity: 0.4,
@@ -209,14 +209,14 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       transparent: true,
       opacity: 0.6,
     }),
-    wristbandGlow: new THREE.MeshStandardMaterial({
+    wristbandGlow: new MeshStandardMaterial({
       color: karmaGlow,
       emissive: karmaGlow,
       emissiveIntensity: 0.6,
       roughness: 0.3,
       metalness: 0.4,
     }),
-    sneakerStripeGlow: new THREE.MeshStandardMaterial({
+    sneakerStripeGlow: new MeshStandardMaterial({
       color: karmaGlow,
       emissive: karmaGlow,
       emissiveIntensity: 0.15,
@@ -224,14 +224,14 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
       transparent: true,
       opacity: 0.5,
     }),
-    sneakerSoleGlow: new THREE.MeshStandardMaterial({
+    sneakerSoleGlow: new MeshStandardMaterial({
       color: karmaGlow,
       emissive: karmaGlow,
       emissiveIntensity: 0.12,
       transparent: true,
       opacity: 0.3,
     }),
-    torusGlowGeo: new THREE.TorusGeometry(0.034, 0.006, 4, 8),
+    torusGlowGeo: new TorusGeometry(0.034, 0.006, 4, 8),
   }), [karmaGlow]);
 
   /* ─── Dispose karma-dependent materials on unmount or karmaGlow change ─── */

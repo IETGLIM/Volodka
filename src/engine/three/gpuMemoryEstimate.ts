@@ -3,7 +3,7 @@
  * Browsers do not expose actual VRAM — these are conservative CPU-side proxies.
  */
 
-import * as THREE from 'three';
+import { BufferGeometry, DepthFormat, FloatType, Material, RGBAFormat, RGBFormat, RGFormat, RedFormat, Texture, UnsignedByteType } from 'three';
 
 /** Mip chain adds ~33% over base level. */
 const MIP_CHAIN_FACTOR = 4 / 3;
@@ -23,11 +23,11 @@ const MATERIAL_TEXTURE_KEYS = [
 ] as const;
 
 function bytesPerPixel(format: number, type: number): number {
-  if (format === THREE.RedFormat) return type === THREE.FloatType ? 4 : 1;
-  if (format === THREE.RGFormat) return type === THREE.FloatType ? 8 : 2;
-  if (format === THREE.RGBFormat) return type === THREE.FloatType ? 12 : 3;
-  if (format === THREE.RGBAFormat) return type === THREE.FloatType ? 16 : 4;
-  if (format === THREE.DepthFormat) return 4;
+  if (format === RedFormat) return type === FloatType ? 4 : 1;
+  if (format === RGFormat) return type === FloatType ? 8 : 2;
+  if (format === RGBFormat) return type === FloatType ? 12 : 3;
+  if (format === RGBAFormat) return type === FloatType ? 16 : 4;
+  if (format === DepthFormat) return 4;
   return 4;
 }
 
@@ -43,7 +43,7 @@ function estimateImageBytes(
   return mipmaps ? Math.ceil(base * MIP_CHAIN_FACTOR) : base;
 }
 
-export function estimateBufferGeometryBytes(geometry: THREE.BufferGeometry): number {
+export function estimateBufferGeometryBytes(geometry: BufferGeometry): number {
   let bytes = 0;
   for (const attr of Object.values(geometry.attributes)) {
     if (attr?.array) {
@@ -63,7 +63,7 @@ export function estimateBufferGeometryBytes(geometry: THREE.BufferGeometry): num
   return bytes;
 }
 
-export function estimateTextureBytes(texture: THREE.Texture): number {
+export function estimateTextureBytes(texture: Texture): number {
   const image = texture.image as
     | { width?: number; height?: number; videoWidth?: number; videoHeight?: number }
     | undefined;
@@ -82,12 +82,12 @@ export function estimateTextureBytes(texture: THREE.Texture): number {
   );
 }
 
-export function estimateMaterialBytes(material: THREE.Material): number {
+export function estimateMaterialBytes(material: Material): number {
   let bytes = 512;
   const record = material as unknown as Record<string, unknown>;
   for (const key of MATERIAL_TEXTURE_KEYS) {
     const texture = record[key];
-    if (texture instanceof THREE.Texture) {
+    if (texture instanceof Texture) {
       bytes += estimateTextureBytes(texture);
     }
   }
@@ -106,7 +106,7 @@ export function estimateSceneGeometryBytesFromTriangles(triangleCount: number): 
 export const DEFAULT_TEXTURE_BYTES_ESTIMATE = estimateImageBytes(
   512,
   512,
-  THREE.RGBAFormat,
-  THREE.UnsignedByteType,
+  RGBAFormat,
+  UnsignedByteType,
   true,
 );

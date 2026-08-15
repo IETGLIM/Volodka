@@ -1,12 +1,12 @@
 import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group, PointLight } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 import { seededRandom, hashString } from './seededRandom';
 
 export function LightFlickerAnim({ anim }: { anim: EnvAnimation }) {
-  const rootRef = useRef<THREE.Group>(null);
-  const lightRef = useRef<THREE.PointLight>(null);
+  const rootRef = useRef<Group>(null);
+  const lightRef = useRef<PointLight>(null);
   const timeRef = useRef(0);
   const rng = useMemo(() => seededRandom(hashString(anim.id)), [anim.id]);
   const nextFlickerRef = useRef(0);

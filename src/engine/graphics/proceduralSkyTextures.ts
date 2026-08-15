@@ -1,7 +1,7 @@
-import * as THREE from 'three';
+import { BufferAttribute, BufferGeometry, CanvasTexture, ClampToEdgeWrapping, SRGBColorSpace } from 'three';
 import { seededRand } from '@/shared/utils/seededRand';
 
-const skyCache = new Map<string, THREE.CanvasTexture>();
+const skyCache = new Map<string, CanvasTexture>();
 
 /**
  * All 14 procedural sky dome textures are static (seeded canvas draws, no per-frame updates).
@@ -9,8 +9,8 @@ const skyCache = new Map<string, THREE.CanvasTexture>();
  */
 function getOrCreateSkyTexture(
   key: string,
-  build: () => THREE.CanvasTexture,
-): THREE.CanvasTexture {
+  build: () => CanvasTexture,
+): CanvasTexture {
   const cached = skyCache.get(key);
   if (cached) return cached;
   const tex = build();
@@ -18,8 +18,8 @@ function getOrCreateSkyTexture(
   // color pipeline decodes sky gradients correctly. Without this, skies
   // render ~2.2× too dark (especially noticeable on dream_galaxy and
   // street_night_synthwave which rely on saturated color ramps).
-  if (tex.colorSpace !== THREE.SRGBColorSpace) {
-    tex.colorSpace = THREE.SRGBColorSpace;
+  if (tex.colorSpace !== SRGBColorSpace) {
+    tex.colorSpace = SRGBColorSpace;
   }
   tex.needsUpdate = true;
   skyCache.set(key, tex);
@@ -38,11 +38,11 @@ export function clearSkyTextureCache(): void {
 }
 
 /** Procedural vertical gradient + nebula wisps for the sleep_dream galaxy dome. */
-export function createDreamGalaxySkyTexture(): THREE.CanvasTexture {
+export function createDreamGalaxySkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('dream_galaxy', buildDreamGalaxySkyTexture);
 }
 
-function buildDreamGalaxySkyTexture(): THREE.CanvasTexture {
+function buildDreamGalaxySkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -82,18 +82,18 @@ function buildDreamGalaxySkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Noir sunset dome with galaxy wisps at zenith — rooftop_edge horizon drama. */
-export function createRooftopSunsetGalaxySkyTexture(): THREE.CanvasTexture {
+export function createRooftopSunsetGalaxySkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('rooftop_sunset_galaxy', buildRooftopSunsetGalaxySkyTexture);
 }
 
-function buildRooftopSunsetGalaxySkyTexture(): THREE.CanvasTexture {
+function buildRooftopSunsetGalaxySkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -129,14 +129,14 @@ function buildRooftopSunsetGalaxySkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Sparse upper-hemisphere stars for rooftop sunset — slow-rotatable, fog-exempt. */
-export function createRooftopHorizonStarGeometry(starCount = 90): THREE.BufferGeometry {
+export function createRooftopHorizonStarGeometry(starCount = 90): BufferGeometry {
   const positions = new Float32Array(starCount * 3);
   for (let i = 0; i < starCount; i++) {
     const theta = seededRand(i * 11 + 3107) * Math.PI * 2;
@@ -146,17 +146,17 @@ export function createRooftopHorizonStarGeometry(starCount = 90): THREE.BufferGe
     positions[i * 3 + 1] = Math.cos(phi) * r * 0.65 + 14;
     positions[i * 3 + 2] = Math.sin(theta) * Math.sin(phi + 0.1) * r;
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new BufferAttribute(positions, 3));
   return geo;
 }
 
 /** Overcast gothic haze dome for park_day — soft grey-green zenith to warm horizon. */
-export function createParkHazySkyTexture(): THREE.CanvasTexture {
+export function createParkHazySkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('park_hazy', buildParkHazySkyTexture);
 }
 
-function buildParkHazySkyTexture(): THREE.CanvasTexture {
+function buildParkHazySkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -184,18 +184,18 @@ function buildParkHazySkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Rainy synthwave night sky — street_night horizon haze + neon zenith band. */
-export function createStreetNightSynthwaveSkyTexture(): THREE.CanvasTexture {
+export function createStreetNightSynthwaveSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('street_night_synthwave', buildStreetNightSynthwaveSkyTexture);
 }
 
-function buildStreetNightSynthwaveSkyTexture(): THREE.CanvasTexture {
+function buildStreetNightSynthwaveSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -231,18 +231,18 @@ function buildStreetNightSynthwaveSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Blue-neon ceiling wash for cafe_evening — hazy interior HDR ambience. */
-export function createCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
+export function createCafeEveningNeonSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('cafe_evening_neon', buildCafeEveningNeonSkyTexture);
 }
 
-function buildCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
+function buildCafeEveningNeonSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -271,18 +271,18 @@ function buildCafeEveningNeonSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Sterile overcast wash for office_day ceiling — cold fluorescent haze. */
-export function createOfficeDayOvercastSkyTexture(): THREE.CanvasTexture {
+export function createOfficeDayOvercastSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('office_day_overcast', buildOfficeDayOvercastSkyTexture);
 }
 
-function buildOfficeDayOvercastSkyTexture(): THREE.CanvasTexture {
+function buildOfficeDayOvercastSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -310,18 +310,18 @@ function buildOfficeDayOvercastSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Dusty amber-green dome for library_day — gothic reading light through high windows. */
-export function createLibraryDayWarmSkyTexture(): THREE.CanvasTexture {
+export function createLibraryDayWarmSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('library_day_warm', buildLibraryDayWarmSkyTexture);
 }
 
-function buildLibraryDayWarmSkyTexture(): THREE.CanvasTexture {
+function buildLibraryDayWarmSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -350,18 +350,18 @@ function buildLibraryDayWarmSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Warm amber ceiling wash for home_evening — cozy kitchen/living mood with city-blue spill. */
-export function createHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
+export function createHomeEveningWarmSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('home_evening_warm', buildHomeEveningWarmSkyTexture);
 }
 
-function buildHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
+function buildHomeEveningWarmSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -396,18 +396,18 @@ function buildHomeEveningWarmSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Matrix monitor glow ceiling wash for volodka_room — noir apartment HDR. */
-export function createVolodkaRoomNightSkyTexture(): THREE.CanvasTexture {
+export function createVolodkaRoomNightSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('volodka_room_night', buildVolodkaRoomNightSkyTexture);
 }
 
-function buildVolodkaRoomNightSkyTexture(): THREE.CanvasTexture {
+function buildVolodkaRoomNightSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -445,18 +445,18 @@ function buildVolodkaRoomNightSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Dim rainy corridor ceiling wash for volodka_corridor — communal noir. */
-export function createVolodkaCorridorRainySkyTexture(): THREE.CanvasTexture {
+export function createVolodkaCorridorRainySkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('volodka_corridor_rainy', buildVolodkaCorridorRainySkyTexture);
 }
 
-function buildVolodkaCorridorRainySkyTexture(): THREE.CanvasTexture {
+function buildVolodkaCorridorRainySkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -485,18 +485,18 @@ function buildVolodkaCorridorRainySkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Rust industrial ceiling wash for abandoned_factory — gothic decay. */
-export function createAbandonedFactoryIndustrialSkyTexture(): THREE.CanvasTexture {
+export function createAbandonedFactoryIndustrialSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('abandoned_factory_industrial', buildAbandonedFactoryIndustrialSkyTexture);
 }
 
-function buildAbandonedFactoryIndustrialSkyTexture(): THREE.CanvasTexture {
+function buildAbandonedFactoryIndustrialSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -525,18 +525,18 @@ function buildAbandonedFactoryIndustrialSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** «Заря-М» core glow ceiling wash for factory_basement — machine confession mood. */
-export function createFactoryBasementCoreGlowTexture(): THREE.CanvasTexture {
+export function createFactoryBasementCoreGlowTexture(): CanvasTexture {
   return getOrCreateSkyTexture('factory_basement_core_glow', buildFactoryBasementCoreGlowTexture);
 }
 
-function buildFactoryBasementCoreGlowTexture(): THREE.CanvasTexture {
+function buildFactoryBasementCoreGlowTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -565,18 +565,18 @@ function buildFactoryBasementCoreGlowTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Cozy domestic ceiling wash for zarema_albert_room — warm tea-and-pie mood. */
-export function createZaremaAlbertWarmSkyTexture(): THREE.CanvasTexture {
+export function createZaremaAlbertWarmSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('zarema_albert_warm', buildZaremaAlbertWarmSkyTexture);
 }
 
-function buildZaremaAlbertWarmSkyTexture(): THREE.CanvasTexture {
+function buildZaremaAlbertWarmSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -605,18 +605,18 @@ function buildZaremaAlbertWarmSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Cold overcast winter sky dome for street_winter — desolate departure road. */
-export function createStreetWinterColdSkyTexture(): THREE.CanvasTexture {
+export function createStreetWinterColdSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('street_winter_cold', buildStreetWinterColdSkyTexture);
 }
 
-function buildStreetWinterColdSkyTexture(): THREE.CanvasTexture {
+function buildStreetWinterColdSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
   const canvas = document.createElement('canvas');
@@ -645,14 +645,14 @@ function buildStreetWinterColdSkyTexture(): THREE.CanvasTexture {
     ctx.fillRect(0, 0, w, h);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
   return tex;
 }
 
 /** Upper-hemisphere starfield for sleep_dream — fog-exempt, slow-rotatable. */
-export function createDreamGalaxyStarGeometry(starCount = 220): THREE.BufferGeometry {
+export function createDreamGalaxyStarGeometry(starCount = 220): BufferGeometry {
   const positions = new Float32Array(starCount * 3);
   for (let i = 0; i < starCount; i++) {
     const theta = seededRand(i * 13 + 4242) * Math.PI * 2;
@@ -662,7 +662,7 @@ export function createDreamGalaxyStarGeometry(starCount = 220): THREE.BufferGeom
     positions[i * 3 + 1] = Math.cos(phi) * r * 0.72 + 10;
     positions[i * 3 + 2] = Math.sin(theta) * Math.sin(phi + 0.12) * r;
   }
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new BufferAttribute(positions, 3));
   return geo;
 }

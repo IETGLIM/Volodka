@@ -1,22 +1,22 @@
-import * as THREE from 'three';
+import { BufferGeometry, Group, InstancedMesh, Line, LineSegments, Material, Mesh, Object3D, Points, SkinnedMesh, Sprite } from 'three';
 import {
   disposeObject3DTree,
   type DisposeThreeSkipSets,
 } from '@/engine/three/disposeThreeResources';
 
-function collectTemplateSharedResources(template: THREE.Object3D): DisposeThreeSkipSets {
-  const geometries = new Set<THREE.BufferGeometry>();
-  const materials = new Set<THREE.Material>();
+function collectTemplateSharedResources(template: Object3D): DisposeThreeSkipSets {
+  const geometries = new Set<BufferGeometry>();
+  const materials = new Set<Material>();
 
   template.traverse((child) => {
     if (
-      child instanceof THREE.Mesh
-      || child instanceof THREE.SkinnedMesh
-      || child instanceof THREE.InstancedMesh
-      || child instanceof THREE.Points
-      || child instanceof THREE.Line
-      || child instanceof THREE.LineSegments
-      || child instanceof THREE.Sprite
+      child instanceof Mesh
+      || child instanceof SkinnedMesh
+      || child instanceof InstancedMesh
+      || child instanceof Points
+      || child instanceof Line
+      || child instanceof LineSegments
+      || child instanceof Sprite
     ) {
       if (child.geometry) geometries.add(child.geometry);
       const mats = Array.isArray(child.material) ? child.material : [child.material];
@@ -33,13 +33,13 @@ function collectTemplateSharedResources(template: THREE.Object3D): DisposeThreeS
  * One baked template Group per NPC/enemy definition — instances clone this tree
  * and only update transform / animation (shared geometry + materials).
  */
-const npcTemplateCache = new Map<string, THREE.Group>();
+const npcTemplateCache = new Map<string, Group>();
 
-export function getNpcTemplate(definitionId: string): THREE.Group | undefined {
+export function getNpcTemplate(definitionId: string): Group | undefined {
   return npcTemplateCache.get(definitionId);
 }
 
-export function registerNpcTemplate(definitionId: string, template: THREE.Group): THREE.Group {
+export function registerNpcTemplate(definitionId: string, template: Group): Group {
   const existing = npcTemplateCache.get(definitionId);
   if (existing) return existing;
   template.matrixAutoUpdate = false;
@@ -49,7 +49,7 @@ export function registerNpcTemplate(definitionId: string, template: THREE.Group)
 }
 
 /** Deep clone for placement — geometries/materials stay shared on the template. */
-export function cloneNpcTemplate(definitionId: string): THREE.Group | null {
+export function cloneNpcTemplate(definitionId: string): Group | null {
   const template = npcTemplateCache.get(definitionId);
   if (!template) return null;
   const instance = template.clone(true);
@@ -62,8 +62,8 @@ export function cloneNpcTemplate(definitionId: string): THREE.Group | null {
  * Pass the baked template or its definition id.
  */
 export function disposeNpcInstance(
-  instance: THREE.Object3D | null | undefined,
-  templateOrDefinitionId: THREE.Object3D | string,
+  instance: Object3D | null | undefined,
+  templateOrDefinitionId: Object3D | string,
 ): void {
   if (!instance) return;
 

@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
+import { Mesh, Object3D } from 'three';
 import { ProceduralAtmosphereLayer } from './ProceduralAtmosphereLayer';
 import { StreetHybridGlbLandmarks } from './HybridGlbLandmarks';
 import {
@@ -18,11 +18,11 @@ import {
 
 export function ProceduralAaaHybridOverlay() {
   const [, setGenKey] = useState(getProceduralAaaGenerationKey);
-  const groundMeshesRef = useRef<THREE.Object3D[]>([]);
+  const groundMeshesRef = useRef<Object3D[]>([]);
 
   useEffect(() => onProceduralAaaRegenerate(setGenKey), []);
 
-  const onGroundProxy = useCallback((mesh: THREE.Mesh | null) => {
+  const onGroundProxy = useCallback((mesh: Mesh | null) => {
     groundMeshesRef.current = mesh ? [mesh] : [];
   }, []);
 

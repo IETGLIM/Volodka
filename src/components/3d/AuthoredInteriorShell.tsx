@@ -1,6 +1,6 @@
 import { Suspense, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D } from 'three';
 import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
 import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
 import { isAssetEffectiveShipped } from '@/config/assetManifest';
@@ -80,11 +80,11 @@ function isShellAssetShipped(shellId: InteriorShellModelId | null): boolean {
  * interior floors read as damp/rain-spilled without altering wall/ceiling reads.
  */
 function upgradeShellFloorToPhysicalWet(
-  std: THREE.MeshStandardMaterial,
+  std: MeshStandardMaterial,
   clearcoat: number,
   clearcoatRoughness: number,
-): THREE.MeshPhysicalMaterial {
-  const phys = new THREE.MeshPhysicalMaterial();
+): MeshPhysicalMaterial {
+  const phys = new MeshPhysicalMaterial();
   // Preserve common Material props
   phys.name = std.name;
   phys.transparent = std.transparent;
@@ -124,15 +124,15 @@ function upgradeShellFloorToPhysicalWet(
 }
 
 function cloneInteriorShell(
-  source: THREE.Object3D,
+  source: Object3D,
   castShadow: boolean,
   materialMood: EnvironmentMaterialMood,
   photoMapSet: PhotoPbrMapSet | null,
-): THREE.Object3D {
+): Object3D {
   const clone = source.clone(true);
   clone.traverse((node) => {
-    if ((node as THREE.Mesh).isMesh) {
-      const mesh = node as THREE.Mesh;
+    if ((node as Mesh).isMesh) {
+      const mesh = node as Mesh;
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
       mesh.frustumCulled = false;
@@ -144,7 +144,7 @@ function cloneInteriorShell(
       const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const material of materials) {
         if (material && 'polygonOffset' in material) {
-          const standard = material as THREE.MeshStandardMaterial;
+          const standard = material as MeshStandardMaterial;
           // Pull shell geometry slightly back so props/contact shadows win z-order.
           standard.polygonOffset = true;
           standard.polygonOffsetFactor = -1;
@@ -167,19 +167,19 @@ function cloneInteriorShell(
   // clone traverse. Floor-role classification reuses classifyShellSurfaceRole
   // (name heuristic + thin-horizontal-slab geometry heuristic).
   clone.traverse((node) => {
-    if (!(node as THREE.Mesh).isMesh) return;
-    const mesh = node as THREE.Mesh;
+    if (!(node as Mesh).isMesh) return;
+    const mesh = node as Mesh;
     if (classifyShellSurfaceRole(mesh) !== 'floor') return;
     const sourceMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     let mutated = false;
     const nextMats = sourceMats.map((material) => {
       if (!material) return material;
       // Skip if already MeshPhysicalMaterial (e.g. shell GLB authored with physical).
-      if ((material as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) return material;
+      if ((material as MeshPhysicalMaterial).isMeshPhysicalMaterial) return material;
       if (!('envMapIntensity' in material)) return material;
       mutated = true;
       return upgradeShellFloorToPhysicalWet(
-        material as THREE.MeshStandardMaterial,
+        material as MeshStandardMaterial,
         0.4,
         0.35,
       );

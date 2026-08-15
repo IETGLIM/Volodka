@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { AnimationAction, Group, Mesh, SkinnedMesh } from 'three';
 import type { QuaterniusRigRef } from '@/config/npcComposer/types';
 import { resolveQuaterniusRigFallbackUrl } from '@/config/quaterniusRigCatalog';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
@@ -17,7 +17,7 @@ const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeo
 export interface ComposerRigDriverProps {
   npcId: string;
   rigRef: QuaterniusRigRef;
-  composerRef: React.RefObject<THREE.Group | null>;
+  composerRef: React.RefObject<Group | null>;
   animState: NPCAnimationState;
   /** Per-state clip name overrides (e.g. {idle:'sleeping'} for sleep activity). */
   clipOverrides?: NpcAnimationClipOverrides;
@@ -51,7 +51,7 @@ export function ComposerRigDriver({
   useEffect(() => {
     scene.traverse((node) => {
       node.visible = false;
-      if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
+      if (node instanceof Mesh || node instanceof SkinnedMesh) {
         node.castShadow = false;
         node.receiveShadow = false;
       }
@@ -60,7 +60,7 @@ export function ComposerRigDriver({
 
   const embeddedActions = useMemo(() => {
     if (!mixer) return null;
-    const record: Record<string, THREE.AnimationAction> = {};
+    const record: Record<string, AnimationAction> = {};
     for (const clip of gltf.animations) {
       record[clip.name] = mixer.clipAction(clip, scene);
     }

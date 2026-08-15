@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – ref-counted NPC label sprite textures (shared canvas pool) ─── */
 
-import * as THREE from 'three';
+import { CanvasTexture, SRGBColorSpace, SpriteMaterial, Texture } from 'three';
 import {
   getCachedCanvasTexture,
   releaseCachedCanvasTexture,
@@ -13,7 +13,7 @@ const BUBBLE_CANVAS_H = 80;
 const MARKER_CANVAS_SIZE = 128;
 const NAME_MAX_CHARS = 18;
 
-let sharedSpriteMaterialTemplate: THREE.SpriteMaterial | null = null;
+let sharedSpriteMaterialTemplate: SpriteMaterial | null = null;
 
 function hexWithAlpha(hex: string, alpha: number): string {
   const normalized = hex.replace('#', '');
@@ -74,7 +74,7 @@ export function acquireNpcNameLabelTexture(
   name: string,
   accentColor: string,
   bodyColor: string,
-): THREE.CanvasTexture {
+): CanvasTexture {
   const key = npcNameLabelCacheKey(name, accentColor, bodyColor);
   return getCachedCanvasTexture(key, () => {
     const canvas = document.createElement('canvas');
@@ -84,8 +84,8 @@ export function acquireNpcNameLabelTexture(
     if (ctx) {
       drawNpcNameLabelCanvas(ctx, name, accentColor, bodyColor);
     }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = new CanvasTexture(canvas);
+    tex.colorSpace = SRGBColorSpace;
     return tex;
   });
 }
@@ -143,7 +143,7 @@ export function acquireNpcSpeechBubbleTexture(
   phase: 'thinking' | 'speaking' | 'fading',
   text: string,
   activeDot: number,
-): THREE.CanvasTexture {
+): CanvasTexture {
   const key = `${npcSpeechBubbleCacheKey(text, phase)}:${activeDot}`;
   return getCachedCanvasTexture(key, () => {
     const canvas = document.createElement('canvas');
@@ -153,8 +153,8 @@ export function acquireNpcSpeechBubbleTexture(
     if (ctx) {
       drawNpcSpeechBubbleCanvas(ctx, phase, text, activeDot);
     }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = new CanvasTexture(canvas);
+    tex.colorSpace = SRGBColorSpace;
     return tex;
   });
 }
@@ -206,7 +206,7 @@ export function acquireNpcQuestMarkerTexture(
   icon: string,
   color: string,
   questName: string,
-): THREE.CanvasTexture {
+): CanvasTexture {
   const key = npcQuestMarkerCacheKey(icon, color, questName);
   return getCachedCanvasTexture(key, () => {
     const canvas = document.createElement('canvas');
@@ -216,8 +216,8 @@ export function acquireNpcQuestMarkerTexture(
     if (ctx) {
       drawNpcQuestMarkerCanvas(ctx, icon, color, questName);
     }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = new CanvasTexture(canvas);
+    tex.colorSpace = SRGBColorSpace;
     return tex;
   });
 }
@@ -275,7 +275,7 @@ export function npcActivityBarkCacheKey(text: string, accentColor: string): stri
 export function acquireNpcActivityBarkTexture(
   text: string,
   accentColor: string,
-): THREE.CanvasTexture {
+): CanvasTexture {
   const key = npcActivityBarkCacheKey(text, accentColor);
   return getCachedCanvasTexture(key, () => {
     const canvas = document.createElement('canvas');
@@ -285,8 +285,8 @@ export function acquireNpcActivityBarkTexture(
     if (ctx) {
       drawNpcActivityBarkCanvas(ctx, text, accentColor);
     }
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = new CanvasTexture(canvas);
+    tex.colorSpace = SRGBColorSpace;
     return tex;
   });
 }
@@ -298,9 +298,9 @@ export function releaseNpcActivityBarkTexture(
   releaseCachedCanvasTexture(npcActivityBarkCacheKey(text, accentColor));
 }
 
-export function createNpcSpriteMaterial(map: THREE.Texture): THREE.SpriteMaterial {
+export function createNpcSpriteMaterial(map: Texture): SpriteMaterial {
   if (!sharedSpriteMaterialTemplate) {
-    sharedSpriteMaterialTemplate = new THREE.SpriteMaterial({
+    sharedSpriteMaterialTemplate = new SpriteMaterial({
       transparent: true,
       depthWrite: false,
     });

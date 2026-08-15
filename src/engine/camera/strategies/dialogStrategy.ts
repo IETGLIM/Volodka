@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import {
   getBlendedDialogueShot,
   updateDialogueShotController,
@@ -24,7 +24,7 @@ function isInDialogueMode(): boolean {
 }
 
 // Pre-allocated temps for dialogue camera drift (avoid per-frame allocation).
-const _driftedPos = new THREE.Vector3();
+const _driftedPos = new Vector3();
 const _driftedFov = { value: 75 };
 
 /** Speaker-aware cinematic dialogue shots */

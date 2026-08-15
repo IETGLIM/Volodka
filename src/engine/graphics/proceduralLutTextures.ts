@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { ClampToEdgeWrapping, Data3DTexture, LinearFilter, RGBAFormat, UnsignedByteType } from 'three';
 
 const LUT_SIZE = 16;
 
@@ -134,7 +134,7 @@ function applyLutTransform(
 }
 
 /** Procedural 16³ LUT for post-FX color grade (cached per kind). */
-export function createProceduralLut3DTexture(kind: ProceduralLutKind): THREE.Data3DTexture {
+export function createProceduralLut3DTexture(kind: ProceduralLutKind): Data3DTexture {
   const data = new Uint8Array(LUT_SIZE * LUT_SIZE * LUT_SIZE * 4);
 
   for (let z = 0; z < LUT_SIZE; z++) {
@@ -153,21 +153,21 @@ export function createProceduralLut3DTexture(kind: ProceduralLutKind): THREE.Dat
     }
   }
 
-  const tex = new THREE.Data3DTexture(data, LUT_SIZE, LUT_SIZE, LUT_SIZE);
-  tex.format = THREE.RGBAFormat;
-  tex.type = THREE.UnsignedByteType;
-  tex.minFilter = THREE.LinearFilter;
-  tex.magFilter = THREE.LinearFilter;
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  tex.wrapR = THREE.ClampToEdgeWrapping;
+  const tex = new Data3DTexture(data, LUT_SIZE, LUT_SIZE, LUT_SIZE);
+  tex.format = RGBAFormat;
+  tex.type = UnsignedByteType;
+  tex.minFilter = LinearFilter;
+  tex.magFilter = LinearFilter;
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
+  tex.wrapR = ClampToEdgeWrapping;
   tex.needsUpdate = true;
   return tex;
 }
 
-const lutCache = new Map<ProceduralLutKind, THREE.Data3DTexture>();
+const lutCache = new Map<ProceduralLutKind, Data3DTexture>();
 
-export function getCachedProceduralLut3DTexture(kind: ProceduralLutKind): THREE.Data3DTexture {
+export function getCachedProceduralLut3DTexture(kind: ProceduralLutKind): Data3DTexture {
   const cached = lutCache.get(kind);
   if (cached) return cached;
   const tex = createProceduralLut3DTexture(kind);

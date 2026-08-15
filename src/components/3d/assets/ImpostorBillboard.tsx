@@ -1,6 +1,6 @@
 import { Suspense, useMemo } from 'react';
 import { useTexture } from '@react-three/drei';
-import * as THREE from 'three';
+import { DoubleSide, MeshBasicMaterial } from 'three';
 
 export interface ImpostorBillboardProps {
   /** KTX2 or PNG impostor atlas */
@@ -13,12 +13,12 @@ function ImpostorInner({ url, position = [0, 0, 0], scale = 4 }: ImpostorBillboa
   const map = useTexture(url);
   const material = useMemo(
     () =>
-      new THREE.MeshBasicMaterial({
+      new MeshBasicMaterial({
         map,
         transparent: true,
         alphaTest: 0.4,
         depthWrite: false,
-        side: THREE.DoubleSide,
+        side: DoubleSide,
       }),
     [map],
   );

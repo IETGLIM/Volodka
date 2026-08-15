@@ -1,5 +1,5 @@
 import type { MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Color, InstancedMesh, Matrix4 } from 'three';
 import type { InteractionTargetHit } from '@/engine/interaction/interactionTargetQuery';
 
 
@@ -14,8 +14,8 @@ export const LMB_CLICK_DRAG_THRESHOLD_PX = 12;
 /** Maximum sparkle particles per trigger zone (InstancedMesh pool size) */
 export const MAX_PARTICLES = 8;
 
-const tempMatrix = new THREE.Matrix4();
-const tempColor = new THREE.Color();
+const tempMatrix = new Matrix4();
+const tempColor = new Color();
 
 /** Runtime refs for a trigger zone — updated by the central interaction tick */
 export interface ZoneProximityRuntime {
@@ -31,7 +31,7 @@ export interface ZoneProximityRuntime {
   triggeredRef: MutableRefObject<boolean>;
   triggerCooldown: MutableRefObject<number>;
   particlesRef: MutableRefObject<ParticleData[]>;
-  particleInstanceRef: MutableRefObject<THREE.InstancedMesh | null>;
+  particleInstanceRef: MutableRefObject<InstancedMesh | null>;
   outlineFlashRef: MutableRefObject<boolean>;
 }
 
@@ -166,8 +166,8 @@ export function getTopPrompts(hits: InteractionTargetHit[]): InteractionTargetHi
 
 /** Pre-computed identity matrix helpers for InstancedMesh reset (zone particle tick). */
 export function resetParticleInstanceMatrices(
-  mesh: THREE.InstancedMesh,
-  matrix: THREE.Matrix4 = tempMatrix,
+  mesh: InstancedMesh,
+  matrix: Matrix4 = tempMatrix,
 ): void {
   for (let i = 0; i < MAX_PARTICLES; i++) {
     matrix.makeScale(0, 0, 0);

@@ -4,7 +4,7 @@
 import { Suspense, lazy, useRef, useEffect, useState, memo, Component, Fragment, type ComponentProps, type ReactNode, type ErrorInfo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { ACESFilmicToneMapping, NoToneMapping, PCFSoftShadowMap, SRGBColorSpace, Vector3, WebGLRenderer } from 'three';
 import { devLog, devWarn } from '@/shared/utils/devLog';
 import { SimplePlayer } from './SimplePlayer';
 import { FollowCamera } from './FollowCamera';
@@ -347,7 +347,7 @@ function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
   let factory = webGlRendererFactoryCache.get(antialias);
   if (!factory) {
     const created = ({ canvas }: { canvas: HTMLCanvasElement }) => {
-      const renderer = new THREE.WebGLRenderer({
+      const renderer = new WebGLRenderer({
         canvas,
         antialias,
         stencil: true,
@@ -355,7 +355,7 @@ function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
         powerPreference: 'high-performance',
       });
       // PCFSoftShadowMap reduces shadow aliasing artifacts for a noir/cinematic aesthetic
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+      renderer.shadowMap.type = PCFSoftShadowMap;
       // Default to ACESFilmic — when ExplorationPostFX's EffectComposer is
       // active, the post-frame guard below flips this to NoToneMapping
       // (the composer applies ACES as a pass to avoid double tone curve).
@@ -363,9 +363,9 @@ function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
       // keeps ACESFilmic so the renderer applies the curve directly.
       // Starting from ACESFilmic avoids a 1-frame NoToneMapping flash on
       // first render before the guard runs.
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMapping = ACESFilmicToneMapping;
       renderer.toneMappingExposure = 1.0;
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.outputColorSpace = SRGBColorSpace;
       renderer.setClearColor(0x000000, 1);
       return adoptCanvasWebGlRenderer(renderer);
     };
@@ -381,7 +381,7 @@ function SimpleSceneFallback({
   livePlayerRotationRef,
   virtualControlsRef,
 }: {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
   virtualControlsRef: React.MutableRefObject<VirtualControls>;
 }) {
@@ -415,7 +415,7 @@ function SimpleSceneFallback({
 /** Main 3D canvas for the RPG exploration mode */
 export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const livePlayerPositionRef = useRef(new THREE.Vector3(0, 0.01, -1.0));
+  const livePlayerPositionRef = useRef(new Vector3(0, 0.01, -1.0));
   const livePlayerRotationRef = useRef(Math.PI);
   const virtualControlsRef = useVirtualControlsRef();
 
@@ -535,7 +535,7 @@ type RPGGameCanvasShellProps = {
   shadows: boolean;
   antialias: boolean;
   idle: boolean;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
   virtualControlsRef: React.MutableRefObject<VirtualControls>;
 };
@@ -828,10 +828,10 @@ function CanvasGuardSystem() {
       // active scene and singleton renderer instead of recovering it.
       try {
         gl.resetState();
-        gl.outputColorSpace = THREE.SRGBColorSpace;
+        gl.outputColorSpace = SRGBColorSpace;
         gl.toneMapping = isPostfxActive()
-          ? THREE.NoToneMapping
-          : THREE.ACESFilmicToneMapping;
+          ? NoToneMapping
+          : ACESFilmicToneMapping;
       } catch (e) {
         devWarn('[CanvasGuard] Error resetting restored renderer state:', e);
       }
@@ -871,13 +871,13 @@ function CanvasGuardSystem() {
         // and crushed darks. This was a P0 bug: postfx-off users saw a
         // harsh, flat image with blown-out skies and lose shadow detail.
         const desiredToneMapping = isPostfxActive()
-          ? THREE.NoToneMapping
-          : THREE.ACESFilmicToneMapping;
+          ? NoToneMapping
+          : ACESFilmicToneMapping;
         if (ctx.state.gl.toneMapping !== desiredToneMapping) {
           ctx.state.gl.toneMapping = desiredToneMapping;
         }
-        if (ctx.state.gl.outputColorSpace !== THREE.SRGBColorSpace) {
-          ctx.state.gl.outputColorSpace = THREE.SRGBColorSpace;
+        if (ctx.state.gl.outputColorSpace !== SRGBColorSpace) {
+          ctx.state.gl.outputColorSpace = SRGBColorSpace;
         }
         toneMappingEnforced.current = true;
       } catch {

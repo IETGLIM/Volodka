@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import type { RapierRigidBody } from '@react-three/rapier';
 
 /** Lerp angle with wraparound — smooth rotation without 360 jumps */
@@ -12,7 +12,7 @@ export function lerpAngle(a: number, b: number, t: number): number {
 /** Snap rigid body to probed ground when at/below floor level and falling. */
 export function enforceFloor(
   rb: RapierRigidBody,
-  vel: THREE.Vector3,
+  vel: Vector3,
   groundY: number,
   tolerance = 0.02,
 ): boolean {

@@ -7,7 +7,7 @@
 
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { PointLight } from 'three';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -103,7 +103,7 @@ export function FlickeringLightEffect({ sceneId }: { sceneId: string }) {
 }
 
 function FlickerPointLight({ config, seed }: { config: FlickerLight; seed: number }) {
-  const lightRef = useRef<THREE.PointLight>(null);
+  const lightRef = useRef<PointLight>(null);
   const timeRef = useRef(0);
   const nextFlickerRef = useRef(seededRandom(seed) * config.flickerInterval);
   const flickerEndRef = useRef(0);

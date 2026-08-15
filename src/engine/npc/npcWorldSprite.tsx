@@ -1,5 +1,5 @@
 import { useRef, useEffect, useLayoutEffect, useId, useMemo } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, SRGBColorSpace, Sprite, SpriteMaterial } from 'three';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
 import {
   acquireNpcNameLabelTexture,
@@ -27,7 +27,7 @@ export function NpcNameSprite({
   bodyColor: string;
   opacity: number;
 }) {
-  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
+  const materialRef = useRef<SpriteMaterial | null>(null);
 
   const material = useMemo(() => {
     const texture = acquireNpcNameLabelTexture(name, accentColor, bodyColor);
@@ -73,8 +73,8 @@ export function NpcSpeechSprite({
   const phaseRef = useRef(phase);
   const textRef = useRef(text);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const textureRef = useRef<THREE.CanvasTexture | null>(null);
-  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
+  const textureRef = useRef<CanvasTexture | null>(null);
+  const materialRef = useRef<SpriteMaterial | null>(null);
 
   phaseRef.current = phase;
   textRef.current = text;
@@ -84,8 +84,8 @@ export function NpcSpeechSprite({
     canvas.width = BUBBLE_CANVAS_W;
     canvas.height = BUBBLE_CANVAS_H;
     canvasRef.current = canvas;
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.colorSpace = THREE.SRGBColorSpace;
+    const tex = new CanvasTexture(canvas);
+    tex.colorSpace = SRGBColorSpace;
     textureRef.current = tex;
   }
 
@@ -159,10 +159,10 @@ export function NpcQuestMarkerSprite({
   pulseSpeed: number;
 }) {
   const tickOwner = useId();
-  const spriteRef = useRef<THREE.Sprite>(null);
+  const spriteRef = useRef<Sprite>(null);
   const pulsePhaseRef = useRef(0);
   const pulseSpeedRef = useRef(pulseSpeed);
-  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
+  const materialRef = useRef<SpriteMaterial | null>(null);
 
   pulseSpeedRef.current = pulseSpeed;
 
@@ -219,7 +219,7 @@ export function NpcActivityBarkSprite({
   accentColor: string;
   opacity: number;
 }) {
-  const materialRef = useRef<THREE.SpriteMaterial | null>(null);
+  const materialRef = useRef<SpriteMaterial | null>(null);
 
   const material = useMemo(() => {
     const texture = acquireNpcActivityBarkTexture(text, accentColor);

@@ -7,7 +7,7 @@
 
 import { useRef, useEffect, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group, MathUtils, Vector3 } from 'three';
 
 import { getLivePlayerPosition } from '@/store/stores/explorationStore';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
@@ -74,7 +74,7 @@ function lerpAngle(a: number, b: number, t: number): number {
 }
 
 interface SimplePlayerProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
   virtualControlsRef?: React.MutableRefObject<VirtualControls>;
   onInteractPress?: () => void;
@@ -94,8 +94,8 @@ export function SimplePlayer({
   const useAuthoredHero =
     !preset.visualLite && preset.id !== 'low';
 
-  const groupRef = useRef<THREE.Group>(null);
-  const velocityRef = useRef(new THREE.Vector3(0, 0, 0));
+  const groupRef = useRef<Group>(null);
+  const velocityRef = useRef(new Vector3(0, 0, 0));
   const currentAnimRef = useRef<string>('idle');
   const footstepTimerRef = useRef(0);
   const virtualHoldTimesRef = useRef<VirtualHoldTimes>({});
@@ -154,10 +154,10 @@ export function SimplePlayer({
     return unsub;
   }, [livePlayerPositionRef, livePlayerRotationRef]);
 
-  const tempCameraForward = useRef(new THREE.Vector3());
-  const tempCameraRight = useRef(new THREE.Vector3());
-  const tempUp = useRef(new THREE.Vector3(0, 1, 0));
-  const tempMoveDir = useRef(new THREE.Vector3());
+  const tempCameraForward = useRef(new Vector3());
+  const tempCameraRight = useRef(new Vector3());
+  const tempUp = useRef(new Vector3(0, 1, 0));
+  const tempMoveDir = useRef(new Vector3());
 
   useFrameTick('player', ({ state, delta }) => {
     const dt = Math.min(delta, 0.05);
@@ -363,11 +363,11 @@ export function SimplePlayer({
       // responsive while smoothing the edges.
       if (keyboardDrivesMove) {
         const k = 25;
-        vel.x = THREE.MathUtils.damp(vel.x, targetVx, k, dt);
-        vel.z = THREE.MathUtils.damp(vel.z, targetVz, k, dt);
+        vel.x = MathUtils.damp(vel.x, targetVx, k, dt);
+        vel.z = MathUtils.damp(vel.z, targetVz, k, dt);
       } else {
-        vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
-        vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
+        vel.x = MathUtils.damp(vel.x, targetVx, moveAccel, dt);
+        vel.z = MathUtils.damp(vel.z, targetVz, moveAccel, dt);
       }
 
       // Max Payne OTS: body faces camera look while moving (incl. strafe).
@@ -401,8 +401,8 @@ export function SimplePlayer({
         audioEngine.playFootstep(config.floorMaterial);
       }
     } else {
-      vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
+      vel.x = MathUtils.damp(vel.x, 0, stopDamping, dt);
+      vel.z = MathUtils.damp(vel.z, 0, stopDamping, dt);
       if (currentAnimRef.current !== 'idle') {
         currentAnimRef.current = 'idle';
       }

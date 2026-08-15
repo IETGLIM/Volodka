@@ -1,16 +1,16 @@
 import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group, Vector3 } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 export function LampSwayAnim({ anim }: { anim: EnvAnimation }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const timeRef = useRef(0);
   const amplitude = anim.config.amplitude ?? 0.02;
   const frequency = anim.config.frequency ?? 0.5;
 
   // Pre-allocate position vector
-  const posVec = useMemo(() => new THREE.Vector3(...anim.position), [anim.position]);
+  const posVec = useMemo(() => new Vector3(...anim.position), [anim.position]);
 
   useFrameTick('misc', ({ delta }) => {
     if (!groupRef.current) return;

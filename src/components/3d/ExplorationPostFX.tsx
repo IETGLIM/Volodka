@@ -17,7 +17,7 @@
 
 import { useState, useEffect, useLayoutEffect, useRef, useMemo, type ComponentProps } from 'react';
 import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
+import { Mesh, Vector2, Vector3 } from 'three';
 // Side-effect: patch EffectComposer depth blit before R3F postprocessing mounts.
 import '@/engine/three/patchPostprocessingDepthBlit';
 import {
@@ -620,7 +620,7 @@ function PostFXPipeline() {
   const totalChromaticAmount = baseChromaticAmount + stressChromaticAmount;
   const showChromatic = totalChromaticAmount > 0;
   const chromaticOffset = useMemo(
-    () => new THREE.Vector2(totalChromaticAmount * 0.012, totalChromaticAmount * 0.009),
+    () => new Vector2(totalChromaticAmount * 0.012, totalChromaticAmount * 0.009),
     [totalChromaticAmount],
   );
 
@@ -647,7 +647,7 @@ function PostFXPipeline() {
 
   // Refs + transition state for smooth DOF bokehScale animation.
   const dofRef = useRef<DepthOfFieldEffect | null>(null);
-  const dofFocusTarget = useMemo(() => new THREE.Vector3(0, DOF_NPC_FOCUS_HEIGHT_M, -3), []);
+  const dofFocusTarget = useMemo(() => new Vector3(0, DOF_NPC_FOCUS_HEIGHT_M, -3), []);
   const dofTransitionRef = useRef({
     current: 0,
     target: 0,
@@ -714,7 +714,7 @@ function PostFXPipeline() {
     && selectedPreset === 'ultra'
     && GODRAYS_POST_SCENES.has(sceneId as SceneId);
 
-  const godRaysSunRef = useRef<THREE.Mesh | null>(null);
+  const godRaysSunRef = useRef<Mesh | null>(null);
   const godRaysRef = useRef<GodRaysEffect | null>(null);
   const godRaysTransitionRef = useRef({
     current: 0,

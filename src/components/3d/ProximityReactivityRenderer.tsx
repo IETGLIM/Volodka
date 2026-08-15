@@ -9,7 +9,7 @@
 
 import { useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { MathUtils, PointLight, Vector3 } from 'three';
 import { useGameStore } from '@/store/gameStore';
 import {
   getProximityEffectsForScene,
@@ -19,7 +19,7 @@ import {
 import { eventBus } from '@/engine/EventBus';
 
 interface ProximityReactivityRendererProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 export function ProximityReactivityRenderer({
@@ -51,10 +51,10 @@ function ProximityEffectRenderer({
   activeSoundEffectsRef,
 }: {
   effect: ProximityEffect;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   activeSoundEffectsRef: React.MutableRefObject<Set<string>>;
 }) {
-  const lightRef = useRef<THREE.PointLight>(null);
+  const lightRef = useRef<PointLight>(null);
   const wasInsideRef = useRef(false);
   const currentFactorRef = useRef(0);
 
@@ -76,8 +76,8 @@ function ProximityEffectRenderer({
           const speed = Number(effect.config.speed) || 2;
           // Smooth interpolation with time-based oscillation for "breathing" effect
           const breathe = Math.sin(Date.now() * 0.001 * speed) * 0.15 + 0.85;
-          const targetIntensity = THREE.MathUtils.lerp(minIntensity, maxIntensity, factor) * breathe;
-          lightRef.current.intensity = THREE.MathUtils.lerp(
+          const targetIntensity = MathUtils.lerp(minIntensity, maxIntensity, factor) * breathe;
+          lightRef.current.intensity = MathUtils.lerp(
             lightRef.current.intensity,
             targetIntensity,
             0.15,

@@ -4,7 +4,7 @@
 import { useRef, useMemo, useEffect, Suspense } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BackSide, DoubleSide, InstancedMesh, Mesh, MeshStandardMaterial, Object3D, PointLight, RepeatWrapping, Vector2, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -40,7 +40,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface StreetVisualProps {
   sceneId?: SceneId;
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
 }
 
 /** Street scene with buildings, neon, fog, lamps, and weather */
@@ -236,10 +236,10 @@ export function StreetVisual({ sceneId = 'street_night', livePlayerPositionRef }
         </mesh>
         {/* Broken glass shards */}
         <mesh position={[0, 8.3, 0.01]} geometry={getSharedPlaneGeometry(0.25, 0.3)}>
-          <meshPhysicalMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} clearcoat={1.0} clearcoatRoughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshPhysicalMaterial color="#607080" transparent opacity={0.3} metalness={0.2} roughness={0.1} clearcoat={1.0} clearcoatRoughness={0.1} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
         <mesh position={[0.15, 7.7, 0.01]} geometry={getSharedPlaneGeometry(0.2, 0.35)}>
-          <meshPhysicalMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} clearcoat={1.0} clearcoatRoughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshPhysicalMaterial color="#607080" transparent opacity={0.2} metalness={0.2} roughness={0.1} clearcoat={1.0} clearcoatRoughness={0.1} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </StreetClutterGate>
     </group>
@@ -280,24 +280,24 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
   );
   const map = useMemo(() => {
     const t = maps.map.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
     t.repeat.set(maps.repeat * 0.35, maps.repeat * 2.2);
     t.needsUpdate = true;
     return t;
   }, [maps]);
   const normalMap = useMemo(() => {
     const t = maps.normalMap.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
     t.repeat.copy(map.repeat);
     t.needsUpdate = true;
     return t;
   }, [maps, map]);
   const roughnessMap = useMemo(() => {
     const t = maps.roughnessMap.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
     t.repeat.copy(map.repeat);
     t.needsUpdate = true;
     return t;
@@ -314,7 +314,7 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
         color={isWinter ? '#b0b8c8' : PBR_PRESETS.sidewalk.color}
         map={isWinter ? undefined : map}
         normalMap={normalMap}
-        normalScale={new THREE.Vector2(0.45, 0.45)}
+        normalScale={new Vector2(0.45, 0.45)}
         roughnessMap={roughnessMap}
         roughness={isWinter ? 0.72 : (wet?.roughness ?? PBR_PRESETS.sidewalk.roughness)}
         metalness={wet?.metalness ?? PBR_PRESETS.sidewalk.metalness}
@@ -331,7 +331,7 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
 /** Visible boundary around the 20×20 playable area (physics walls sit at ±10).
  *  Low curb + metal railing: 1 instanced post mesh + 8 rail boxes + 4 curbs. */
 function StreetBoundary({ isWinter }: { isWinter: boolean }) {
-  const postsRef = useRef<THREE.InstancedMesh>(null);
+  const postsRef = useRef<InstancedMesh>(null);
 
   const HALF = 10;
   const RAIL_INSET = 0.25; // just inside the physics wall
@@ -348,7 +348,7 @@ function StreetBoundary({ isWinter }: { isWinter: boolean }) {
   useEffect(() => {
     const mesh = postsRef.current;
     if (!mesh) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     postPositions.forEach(([x, z], i) => {
       dummy.position.set(x, 0.55, z);
       dummy.updateMatrix();
@@ -408,7 +408,7 @@ function StreetClutterGate({
   maxDistance,
   children,
 }: {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
   position: [number, number, number];
   maxDistance: number;
   children: React.ReactNode;
@@ -429,13 +429,13 @@ function StreetClutterGate({
 
 /** Neon sign strips with emissive glow — with flicker animation */
 function NeonSigns({ isWinter }: { isWinter: boolean }) {
-  const redSignRef = useRef<THREE.Mesh>(null);
-  const redLightRef = useRef<THREE.PointLight>(null);
-  const cafeSignRef = useRef<THREE.Mesh>(null);
-  const cafeKafeRef = useRef<THREE.Mesh>(null);
-  const cafeKafeLightRef = useRef<THREE.PointLight>(null);
-  const barScrollRef = useRef<THREE.Mesh>(null);
-  const barScrollLightRef = useRef<THREE.PointLight>(null);
+  const redSignRef = useRef<Mesh>(null);
+  const redLightRef = useRef<PointLight>(null);
+  const cafeSignRef = useRef<Mesh>(null);
+  const cafeKafeRef = useRef<Mesh>(null);
+  const cafeKafeLightRef = useRef<PointLight>(null);
+  const barScrollRef = useRef<Mesh>(null);
+  const barScrollLightRef = useRef<PointLight>(null);
   const kafeOnRef = useRef(true);
   const kafeNextToggleRef = useRef(0);
 
@@ -445,7 +445,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
     // Red neon flicker — time-gated deterministic on/off
     if (redSignRef.current) {
       const flicker = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.18 : 0.72;
-      (redSignRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = flicker;
+      (redSignRef.current.material as MeshStandardMaterial).emissiveIntensity = flicker;
     }
     if (redLightRef.current) {
       redLightRef.current.intensity = Math.sin(t * 17.3 + 4.1) > 0.9 ? 0.12 : 0.45;
@@ -453,7 +453,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
     // Cafe sign subtle pulse
     if (cafeSignRef.current) {
       const pulse = (isWinter ? 0.85 : 1.0) + Math.sin(t * 2) * 0.08;
-      (cafeSignRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
+      (cafeSignRef.current.material as MeshStandardMaterial).emissiveIntensity = pulse;
     }
 
     // "КАФЕ" neon sign flicker — deterministic on/off like a broken tube
@@ -463,7 +463,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
       kafeOnRef.current = Math.sin(t * 53.7 + 7.3) > -0.88;
     }
     if (cafeKafeRef.current) {
-      (cafeKafeRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+      (cafeKafeRef.current.material as MeshStandardMaterial).emissiveIntensity =
         kafeOnRef.current ? 1.15 : 0.04;
     }
     if (cafeKafeLightRef.current) {
@@ -474,7 +474,7 @@ function NeonSigns({ isWinter }: { isWinter: boolean }) {
     if (barScrollRef.current) {
       const baseIntensity = 0.35;
       const scrollBoost = 0.85;
-      (barScrollRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+      (barScrollRef.current.material as MeshStandardMaterial).emissiveIntensity =
         baseIntensity + scrollBoost * 0.5 * (1 + Math.sin(t * 4));
     }
     if (barScrollLightRef.current) {
@@ -618,7 +618,7 @@ function StreetNightSkyDome() {
       <sphereGeometry args={[62, 28, 14, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
       <meshBasicMaterial
         map={skyTexture}
-        side={THREE.BackSide}
+        side={BackSide}
         fog={false}
         depthWrite={false}
       />

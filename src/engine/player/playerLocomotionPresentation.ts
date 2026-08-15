@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { MathUtils } from 'three';
 import {
   getAccessibilityLocomotionSpeed,
   isEffectiveReducedMotion,
@@ -79,7 +79,7 @@ export function dampMoveBlend(
   target: number,
   dt: number,
 ): number {
-  return THREE.MathUtils.damp(current, target, MOVE_BLEND_DAMP, dt);
+  return MathUtils.damp(current, target, MOVE_BLEND_DAMP, dt);
 }
 
 export function updateMoveBlendRef(

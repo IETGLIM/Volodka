@@ -9,7 +9,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, PointLight, Vector3 } from 'three';
 import { Html } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
@@ -54,7 +54,7 @@ interface CreepFrameContext {
 }
 
 interface PatrollingCreepsProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProps) {
@@ -163,21 +163,21 @@ function Creep({
   frameCtxRef,
 }: {
   def: CreepPatrolDef;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   engagedCreepIdRef: React.MutableRefObject<string | null>;
   frameCtxRef: React.MutableRefObject<CreepFrameContext>;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   // WS16-A: ref type upgraded to MeshPhysicalMaterial (enemy bodies now use sheen for organic look).
   // MeshPhysicalMaterial extends MeshStandardMaterial, so the .emissiveIntensity writes below still work.
-  const bodyMatRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
+  const bodyMatRef = useRef<MeshPhysicalMaterial | null>(null);
   const bodyAnimRef = useRef<CreepBodyAnimState>('idle');
-  const lightRef = useRef<THREE.PointLight>(null);
-  const coneMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const duelRingMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const shockwaveRef = useRef<THREE.Mesh>(null);
-  const shockwaveMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const beamMatRef = useRef<THREE.MeshBasicMaterial>(null);
+  const lightRef = useRef<PointLight>(null);
+  const coneMatRef = useRef<MeshBasicMaterial>(null);
+  const duelRingMatRef = useRef<MeshBasicMaterial>(null);
+  const shockwaveRef = useRef<Mesh>(null);
+  const shockwaveMatRef = useRef<MeshBasicMaterial>(null);
+  const beamMatRef = useRef<MeshBasicMaterial>(null);
 
   const stateRef = useRef<CreepState>('patrol');
   const hitReactRef = useRef(0);
@@ -188,7 +188,7 @@ function Creep({
   const [engaging, setEngaging] = useState(false);
 
   const enemyEmoji = ENEMY_TEMPLATES[def.enemyType]?.emoji ?? '👾';
-  const coneGroupRef = useRef<THREE.Group>(null);
+  const coneGroupRef = useRef<Group>(null);
   const waypointIndexRef = useRef(0);
   const headingRef = useRef(0);
   const cooldownRef = useRef(0);
@@ -197,7 +197,7 @@ function Creep({
   const alertToastSentRef = useRef(false);
   const chaseFootstepTimerRef = useRef(0);
   const positionRef = useRef(
-    new THREE.Vector3(def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]),
+    new Vector3(def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]),
   );
 
   // Spawn gating re-checked on mount only (flags rarely flip mid-scene)
@@ -489,7 +489,7 @@ function Creep({
             transparent
             opacity={0.07}
             depthWrite={false}
-            blending={THREE.AdditiveBlending}
+            blending={AdditiveBlending}
           />
         </mesh>
       </group>
@@ -510,7 +510,7 @@ function Creep({
               color="#ff4466"
               transparent
               opacity={0}
-              blending={THREE.AdditiveBlending}
+              blending={AdditiveBlending}
               depthWrite={false}
             />
           </mesh>
@@ -521,7 +521,7 @@ function Creep({
               color={def.color}
               transparent
               opacity={0.35}
-              blending={THREE.AdditiveBlending}
+              blending={AdditiveBlending}
               depthWrite={false}
             />
           </mesh>
@@ -531,7 +531,7 @@ function Creep({
               color={def.color}
               transparent
               opacity={0.12}
-              blending={THREE.AdditiveBlending}
+              blending={AdditiveBlending}
               depthWrite={false}
             />
           </mesh>
@@ -542,8 +542,8 @@ function Creep({
               color={def.color}
               transparent
               opacity={0}
-              blending={THREE.AdditiveBlending}
-              side={THREE.DoubleSide}
+              blending={AdditiveBlending}
+              side={DoubleSide}
               depthWrite={false}
             />
           </mesh>

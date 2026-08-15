@@ -7,7 +7,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BufferAttribute, BufferGeometry, Color, NormalBlending, Points, ShaderMaterial, Vector3 } from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
@@ -152,7 +152,7 @@ export function SnowSystem({ intensity = 1 }: { intensity?: number }) {
 }
 
 function SnowParticles({ config, intensity }: { config: SnowConfig; intensity: number }) {
-  const pointsRef = useRef<THREE.Points>(null);
+  const pointsRef = useRef<Points>(null);
   const timeRef = useRef(0);
   const hasEmittedEvent = useRef(false);
 
@@ -183,26 +183,26 @@ function SnowParticles({ config, intensity }: { config: SnowConfig; intensity: n
         config.sizeRange[0] + Math.random() * (config.sizeRange[1] - config.sizeRange[0]);
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('aVelocity', new THREE.BufferAttribute(velocities, 3));
-    geo.setAttribute('aPhase', new THREE.BufferAttribute(phases, 1));
-    geo.setAttribute('aSize', new THREE.BufferAttribute(sizes, 1));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    geo.setAttribute('aVelocity', new BufferAttribute(velocities, 3));
+    geo.setAttribute('aPhase', new BufferAttribute(phases, 1));
+    geo.setAttribute('aSize', new BufferAttribute(sizes, 1));
 
     const uniforms = {
       uTime: { value: 0 },
       uIntensity: { value: intensity },
-      uBoxSize: { value: new THREE.Vector3(bx, by, bz) },
+      uBoxSize: { value: new Vector3(bx, by, bz) },
       uDriftStrength: { value: config.driftStrength },
       uDriftFrequency: { value: config.driftFrequency },
-      uColor: { value: new THREE.Color(config.color) },
+      uColor: { value: new Color(config.color) },
       uOpacity: { value: config.opacity * intensity },
     };
 
-    const mat = new THREE.ShaderMaterial({
+    const mat = new ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.NormalBlending,
+      blending: NormalBlending,
       uniforms,
       vertexShader: SNOW_VERT,
       fragmentShader: SNOW_FRAG,

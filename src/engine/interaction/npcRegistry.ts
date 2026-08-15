@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – NPC Group Registry ─── */
 
-import * as THREE from 'three';
+import { Group } from 'three';
 import type { NpcBehaviorState } from '@/engine/npc/npcStateMachine';
 import { isValidNpcBehaviorTransition } from '@/engine/npc/npcStateMachine';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
@@ -17,7 +17,7 @@ import { getGameSnapshot } from '@/engine/StateDispatcher';
  */
 
 interface NpcGroupEntry {
-  group: THREE.Group;
+  group: Group;
   sceneId: string;
 }
 
@@ -25,7 +25,7 @@ const npcGroupMap = new Map<string, NpcGroupEntry>();
 const npcBehaviorStateMap = new Map<string, NpcBehaviorState>();
 
 /** Register an NPC's group ref with its owning scene. */
-export function registerNPCGroup(npcId: string, group: THREE.Group, sceneId: string): void {
+export function registerNPCGroup(npcId: string, group: Group, sceneId: string): void {
   npcGroupMap.set(npcId, { group, sceneId });
   if (!npcBehaviorStateMap.has(npcId)) {
     npcBehaviorStateMap.set(npcId, 'idle');
@@ -39,7 +39,7 @@ export function unregisterNPCGroup(npcId: string): void {
 }
 
 /** Get an NPC's group ref by ID, only if it belongs to the current scene. */
-export function getNPCGroup(npcId: string): THREE.Group | undefined {
+export function getNPCGroup(npcId: string): Group | undefined {
   const entry = npcGroupMap.get(npcId);
   if (!entry) return undefined;
   // Skip stale groups from a different scene (cross-scene contamination guard).
@@ -102,7 +102,7 @@ export function resetNpcBehaviorStatesForTests(): void {
   npcBehaviorStateMap.clear();
 }
 
-/** Full registry cleanup — call from disposeGameEngine to prevent stale THREE.Group refs during HMR. */
+/** Full registry cleanup — call from disposeGameEngine to prevent stale Group refs during HMR. */
 export function clearNpcRegistry(): void {
   npcGroupMap.clear();
   npcBehaviorStateMap.clear();

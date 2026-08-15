@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – NPC Head Tracking ─── */
 
-import * as THREE from 'three';
+import { Bone, Euler, Group, Object3D, Quaternion, Vector3 } from 'three';
 import { registerGlobalCleanup, registerModuleGlobalCleanupBinder } from '@/engine/core/GlobalCleanupService';
 import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
 import { resolveEmotionBehavior } from '@/engine/npc/npcEmotionalReactions';
@@ -33,30 +33,30 @@ export const DEFAULT_HEAD_TRACKING_CONFIG: HeadTrackingConfig = {
 };
 
 /** Shared forward axis for bone look-at (read-only). */
-const HEAD_TRACK_FORWARD = new THREE.Vector3(0, 0, 1);
-const HEAD_TRACK_UP = new THREE.Vector3(0, 1, 0);
+const HEAD_TRACK_FORWARD = new Vector3(0, 0, 1);
+const HEAD_TRACK_UP = new Vector3(0, 1, 0);
 const DEGENERATE_DIR_EPS = 1e-8;
 const ANTI_PARALLEL_DOT = -0.9999;
 const PARALLEL_DOT = 0.9999;
 
-/** Per-NPC math state — intentionally no THREE.Object3D refs so LOD/model
+/** Per-NPC math state — intentionally no Object3D refs so LOD/model
  * remounts cannot leave dangling Bone/Group pointers in a module singleton.
  */
 interface HeadTrackingState {
-  originalQuat: THREE.Quaternion;
+  originalQuat: Quaternion;
   hasCapturedOriginal: boolean;
-  targetQuat: THREE.Quaternion;
-  tempQuat: THREE.Quaternion;
+  targetQuat: Quaternion;
+  tempQuat: Quaternion;
   isProcedural: boolean;
   originalRotY: number;
   /** Head bone/group uuid within the current model instance (re-resolved each frame). */
   headObjUuid: string | null;
   /** Pre-allocated temps — avoid Vector3/Quaternion alloc in useFrame hot path. */
-  headWorldPos: THREE.Vector3;
-  direction: THREE.Vector3;
-  localDir: THREE.Vector3;
-  worldQuatInv: THREE.Quaternion;
-  axis: THREE.Vector3;
+  headWorldPos: Vector3;
+  direction: Vector3;
+  localDir: Vector3;
+  worldQuatInv: Quaternion;
+  axis: Vector3;
   /** Layered mode — smoothed additive offsets applied after Mixamo / limb pose. */
   layeredYaw: number;
   layeredPitch: number;
@@ -82,18 +82,18 @@ const headTrackingStates = new Map<string, HeadTrackingState>();
 
 function createHeadTrackingState(): HeadTrackingState {
   return {
-    originalQuat: new THREE.Quaternion(),
+    originalQuat: new Quaternion(),
     hasCapturedOriginal: false,
-    targetQuat: new THREE.Quaternion(),
-    tempQuat: new THREE.Quaternion(),
+    targetQuat: new Quaternion(),
+    tempQuat: new Quaternion(),
     isProcedural: false,
     originalRotY: 0,
     headObjUuid: null,
-    headWorldPos: new THREE.Vector3(),
-    direction: new THREE.Vector3(),
-    localDir: new THREE.Vector3(),
-    worldQuatInv: new THREE.Quaternion(),
-    axis: new THREE.Vector3(),
+    headWorldPos: new Vector3(),
+    direction: new Vector3(),
+    localDir: new Vector3(),
+    worldQuatInv: new Quaternion(),
+    axis: new Vector3(),
     layeredYaw: 0,
     layeredPitch: 0,
     paused: false,
@@ -113,14 +113,14 @@ function getOrCreateState(npcId: string): HeadTrackingState {
   return state;
 }
 
-function isHeadObject(obj: THREE.Object3D): obj is THREE.Bone | THREE.Group {
-  return obj instanceof THREE.Bone || (obj instanceof THREE.Group && obj.name === 'head');
+function isHeadObject(obj: Object3D): obj is Bone | Group {
+  return obj instanceof Bone || (obj instanceof Group && obj.name === 'head');
 }
 
 function resolveHeadObject(
-  npcGroup: THREE.Group,
+  npcGroup: Group,
   state: HeadTrackingState,
-): THREE.Bone | THREE.Group | null {
+): Bone | Group | null {
   if (state.headObjUuid) {
     const cached = npcGroup.getObjectByProperty('uuid', state.headObjUuid);
     if (cached && isHeadObject(cached)) {
@@ -140,10 +140,10 @@ function resolveHeadObject(
  * Returns false when `to` is degenerate (caller should skip rotation update).
  */
 function setQuaternionFromUnitVectorsSafe(
-  quat: THREE.Quaternion,
-  from: THREE.Vector3,
-  to: THREE.Vector3,
-  axis: THREE.Vector3,
+  quat: Quaternion,
+  from: Vector3,
+  to: Vector3,
+  axis: Vector3,
 ): boolean {
   const toLenSq = to.lengthSq();
   if (toLenSq < DEGENERATE_DIR_EPS) return false;
@@ -175,18 +175,18 @@ function setQuaternionFromUnitVectorsSafe(
 /**
  * Find the head/neck bone or named group in an NPC's model.
  * Searches recursively for:
- * 1. THREE.Bone objects matching bone name patterns (for GLB models)
- * 2. THREE.Group objects named 'head' (for procedural models)
+ * 1. Bone objects matching bone name patterns (for GLB models)
+ * 2. Group objects named 'head' (for procedural models)
  */
-export function findHeadBone(group: THREE.Group): THREE.Bone | THREE.Group | null {
+export function findHeadBone(group: Group): Bone | Group | null {
   const config = DEFAULT_HEAD_TRACKING_CONFIG;
-  let headBone: THREE.Bone | THREE.Group | null = null;
+  let headBone: Bone | Group | null = null;
 
   group.traverse((child) => {
     if (headBone) return; // Already found
 
-    // Check for THREE.Bone (GLB models with skeletons)
-    if (child instanceof THREE.Bone) {
+    // Check for Bone (GLB models with skeletons)
+    if (child instanceof Bone) {
       for (const pattern of config.boneNames) {
         if (child.name === pattern || child.name.includes(pattern)) {
           headBone = child;
@@ -195,8 +195,8 @@ export function findHeadBone(group: THREE.Group): THREE.Bone | THREE.Group | nul
       }
     }
 
-    // Check for named THREE.Group 'head' (procedural models)
-    if (child instanceof THREE.Group && child.name === 'head') {
+    // Check for named Group 'head' (procedural models)
+    if (child instanceof Group && child.name === 'head') {
       headBone = child;
       return;
     }
@@ -210,15 +210,15 @@ export function findHeadBone(group: THREE.Group): THREE.Bone | THREE.Group | nul
  * Works with both bone-based (GLB) and group-based (procedural) head objects.
  *
  * @param npcId - Unique NPC identifier
- * @param npcGroup - The NPC's THREE.Group
+ * @param npcGroup - The NPC's Group
  * @param playerPosition - Current player world position
  * @param delta - Frame delta time
  * @param config - Optional override configuration
  */
 export function updateHeadTracking(
   npcId: string,
-  npcGroup: THREE.Group,
-  playerPosition: THREE.Vector3,
+  npcGroup: Group,
+  playerPosition: Vector3,
   delta: number,
   config: HeadTrackingConfig = DEFAULT_HEAD_TRACKING_CONFIG,
 ): void {
@@ -231,7 +231,7 @@ export function updateHeadTracking(
 
   // Determine if this is a procedural model on first frame for this model instance
   if (!state.hasCapturedOriginal) {
-    state.isProcedural = headObj instanceof THREE.Group && !(headObj instanceof THREE.Bone);
+    state.isProcedural = headObj instanceof Group && !(headObj instanceof Bone);
     state.originalQuat.copy(headObj.quaternion);
     state.originalRotY = headObj.rotation.y;
     state.hasCapturedOriginal = true;
@@ -328,9 +328,9 @@ export function updateHeadTracking(
 }
 
 function computeLayeredTrackAngles(
-  headObj: THREE.Bone | THREE.Group,
-  npcGroup: THREE.Group,
-  playerPosition: THREE.Vector3 | null,
+  headObj: Bone | Group,
+  npcGroup: Group,
+  playerPosition: Vector3 | null,
   config: HeadTrackingConfig,
 ): LayeredHeadTrackResult {
   if (!playerPosition) {
@@ -358,13 +358,13 @@ function computeLayeredTrackAngles(
 }
 
 const _layeredScratch = {
-  headWorldPos: new THREE.Vector3(),
-  direction: new THREE.Vector3(),
-  localDir: new THREE.Vector3(),
-  worldQuatInv: new THREE.Quaternion(),
-  animatedQuat: new THREE.Quaternion(),
-  trackQuat: new THREE.Quaternion(),
-  euler: new THREE.Euler(0, 0, 0, 'YXZ'),
+  headWorldPos: new Vector3(),
+  direction: new Vector3(),
+  localDir: new Vector3(),
+  worldQuatInv: new Quaternion(),
+  animatedQuat: new Quaternion(),
+  trackQuat: new Quaternion(),
+  euler: new Euler(0, 0, 0, 'YXZ'),
 };
 
 /**
@@ -373,14 +373,14 @@ const _layeredScratch = {
  */
 export function applyLayeredHeadTracking(
   npcId: string,
-  headObj: THREE.Bone | THREE.Group,
-  npcGroup: THREE.Group,
-  playerPosition: THREE.Vector3 | null,
+  headObj: Bone | Group,
+  npcGroup: Group,
+  playerPosition: Vector3 | null,
   delta: number,
   config: HeadTrackingConfig = DEFAULT_HEAD_TRACKING_CONFIG,
 ): LayeredHeadTrackResult {
   const state = getOrCreateState(npcId);
-  const isProcedural = headObj instanceof THREE.Group && !(headObj instanceof THREE.Bone);
+  const isProcedural = headObj instanceof Group && !(headObj instanceof Bone);
   const target = computeLayeredTrackAngles(headObj, npcGroup, playerPosition, config);
   const lerpFactor = Math.min(1, config.trackSpeed * delta);
 
@@ -390,7 +390,7 @@ export function applyLayeredHeadTracking(
   if (isProcedural) {
     headObj.rotation.y += state.layeredYaw * 0.85;
     headObj.rotation.x += state.layeredPitch * 0.7;
-  } else if (headObj instanceof THREE.Bone) {
+  } else if (headObj instanceof Bone) {
     _layeredScratch.animatedQuat.copy(headObj.quaternion);
     _layeredScratch.euler.setFromQuaternion(_layeredScratch.animatedQuat, 'YXZ');
     _layeredScratch.euler.y += state.layeredYaw;
@@ -403,8 +403,8 @@ export function applyLayeredHeadTracking(
 
 /** Eyes track the player with a fraction of head rotation for extra life. */
 export function applyLayeredEyeTracking(
-  leftEye: THREE.Object3D | null,
-  rightEye: THREE.Object3D | null,
+  leftEye: Object3D | null,
+  rightEye: Object3D | null,
   yaw: number,
   pitch: number,
   delta: number,
@@ -424,7 +424,7 @@ export function applyLayeredEyeTracking(
 /**
  * Reset head tracking for an NPC (return head to original orientation).
  */
-export function resetHeadTracking(npcId: string, npcGroup: THREE.Group): void {
+export function resetHeadTracking(npcId: string, npcGroup: Group): void {
   const state = headTrackingStates.get(npcId);
   if (!state || !state.hasCapturedOriginal) return;
 
@@ -565,8 +565,8 @@ function resolveProximityIntensity(distance: number, emotion: NpcEmotion): numbe
 /** Enhanced head tracking with proximity awareness and emotion scaling. */
 export function updateProximityAwareHeadTracking(
   npcId: string,
-  npcGroup: THREE.Group,
-  playerPosition: THREE.Vector3,
+  npcGroup: Group,
+  playerPosition: Vector3,
   delta: number,
   now?: number,
 ): void {

@@ -7,7 +7,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Points, PointsMaterial } from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
@@ -55,8 +55,8 @@ export function ServerRoomMist({ sceneId }: { sceneId: string }) {
 }
 
 function MistSystem({ config }: { config: MistConfig }) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.PointsMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const materialRef = useRef<PointsMaterial>(null);
   const timeRef = useRef(0);
 
   const { positions, phases, velocities } = useMemo(() => {
@@ -83,8 +83,8 @@ function MistSystem({ config }: { config: MistConfig }) {
   }, [config]);
 
   const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions.slice(), 3));
     return geo;
   }, [positions]);
 
@@ -99,7 +99,7 @@ function MistSystem({ config }: { config: MistConfig }) {
     timeRef.current += delta;
     const t = timeRef.current;
 
-    const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const posAttr = pointsRef.current.geometry.getAttribute('position') as BufferAttribute;
     const posArray = posAttr.array as Float32Array;
     const count = config.count;
 
@@ -143,7 +143,7 @@ function MistSystem({ config }: { config: MistConfig }) {
         opacity={0.2}
         depthWrite={false}
         sizeAttenuation
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
       />
     </points>
   );

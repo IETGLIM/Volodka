@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { AnimationAction, AnimationClip, AnimationMixer, Object3D } from 'three';
 import {
   findPlayerAnimationClip,
   pickPlayerClipAction,
@@ -9,16 +9,16 @@ import {
 } from '@/engine/player/playerClipResolution';
 
 export function bindPlayerClipActions(
-  mixer: THREE.AnimationMixer,
-  actions: Record<string, THREE.AnimationAction> | null,
-  animations: THREE.AnimationClip[],
-  root: THREE.Object3D,
+  mixer: AnimationMixer,
+  actions: Record<string, AnimationAction> | null,
+  animations: AnimationClip[],
+  root: Object3D,
 ): {
-  idle: THREE.AnimationAction | null;
-  walk: THREE.AnimationAction | null;
-  run: THREE.AnimationAction | null;
+  idle: AnimationAction | null;
+  walk: AnimationAction | null;
+  run: AnimationAction | null;
 } {
-  const pickAction = (names: readonly string[]): THREE.AnimationAction | null =>
+  const pickAction = (names: readonly string[]): AnimationAction | null =>
     pickPlayerClipAction(actions, names);
 
   const idleAction =

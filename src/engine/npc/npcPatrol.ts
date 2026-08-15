@@ -16,7 +16,7 @@
  *   avoidance system is still active as a micro-level steer when no
  *   pathQueue is in use. */
 
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import {
   resolveNpcObstacleAvoidance,
   type NpcObstacleAabb,
@@ -44,7 +44,7 @@ export interface PatrolState {
   /** Seconds remaining in idle phase */
   idleTimer: number;
   /** Current interpolated world position */
-  position: THREE.Vector3;
+  position: Vector3;
   /** Current Y-axis rotation (radians) */
   rotationY: number;
   /** Target Y-axis rotation for smooth turning */
@@ -54,8 +54,8 @@ export interface PatrolState {
   /** Random idle duration for current idle phase */
   currentIdleDuration: number;
   /** Pre-allocated temps for updatePatrol (no per-frame Vector3 alloc). */
-  targetPos: THREE.Vector3;
-  direction: THREE.Vector3;
+  targetPos: Vector3;
+  direction: Vector3;
   /** Nav mesh path queue — intermediate waypoints from A* pathfinding.
    *  When set, the NPC walks through these sequentially before reaching
    *  the final patrol waypoint. Cleared when the final waypoint is reached. */
@@ -74,13 +74,13 @@ export function createPatrolState(
     currentWaypointIndex: 0,
     phase: 'idle',
     idleTimer: randomIdleDuration(),
-    position: new THREE.Vector3(startPos[0], startPos[1], startPos[2]),
+    position: new Vector3(startPos[0], startPos[1], startPos[2]),
     rotationY: 0,
     targetRotationY: 0,
     initialized: true,
     currentIdleDuration: randomIdleDuration(),
-    targetPos: new THREE.Vector3(startPos[0], startPos[1], startPos[2]),
-    direction: new THREE.Vector3(),
+    targetPos: new Vector3(startPos[0], startPos[1], startPos[2]),
+    direction: new Vector3(),
     pathQueue: undefined,
     currentPathIndex: 0,
   };
@@ -92,7 +92,7 @@ function randomIdleDuration(): number {
 }
 
 /** Calculate the Y rotation to face from one position toward another */
-function calculateFacingAngle(from: THREE.Vector3, to: THREE.Vector3): number {
+function calculateFacingAngle(from: Vector3, to: Vector3): number {
   const dx = to.x - from.x;
   const dz = to.z - from.z;
   return Math.atan2(dx, dz);
@@ -106,7 +106,7 @@ function calculateFacingAngle(from: THREE.Vector3, to: THREE.Vector3): number {
  * Called when transitioning from idle → walking and the waypoint is far away.
  */
 export function computePatrolPath(
-  currentPos: THREE.Vector3,
+  currentPos: Vector3,
   targetWaypoint: [number, number, number],
   sceneId: string,
   floorY: number,
@@ -219,7 +219,7 @@ export function updatePatrol(
     // ── Determine the current movement target ──
     // If we have a path queue, walk toward the current intermediate waypoint.
     // Otherwise, walk directly toward the final patrol waypoint.
-    let moveTarget: THREE.Vector3;
+    let moveTarget: Vector3;
     let isFollowingPathQueue = false;
 
     if (state.pathQueue && state.currentPathIndex < state.pathQueue.length) {

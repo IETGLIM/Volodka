@@ -13,7 +13,7 @@ import {
   sanitizeBufferGeometryPositions,
   sanitizePositionArray,
 } from '@/engine/three/bufferGeometrySanitize';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, CylinderGeometry, DoubleSide, Mesh, MeshBasicMaterial, Points, PointsMaterial } from 'three';
 
 /* ── Config ── */
 
@@ -576,8 +576,8 @@ export function GodRays({ rays, sceneId, liteMode = false }: GodRaysProps) {
 /* ── Single god ray shaft ── */
 
 function GodRayShaft({ config }: { config: GodRayConfig }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
+  const materialRef = useRef<MeshBasicMaterial>(null);
   const timeRef = useRef(0);
 
   const c = useMemo(
@@ -587,7 +587,7 @@ function GodRayShaft({ config }: { config: GodRayConfig }) {
 
   // Cylinder geometry (open-ended cone for light shaft shape)
   const geometry = useMemo(() => {
-    const geo = new THREE.CylinderGeometry(c.topRadius, c.bottomRadius, c.height, 8, 1, true);
+    const geo = new CylinderGeometry(c.topRadius, c.bottomRadius, c.height, 8, 1, true);
     sanitizeBufferGeometryPositions(geo);
     return geo;
   }, [c.topRadius, c.bottomRadius, c.height]);
@@ -624,8 +624,8 @@ function GodRayShaft({ config }: { config: GodRayConfig }) {
           transparent
           opacity={c.opacity}
           depthWrite={false}
-          side={THREE.DoubleSide}
-          blending={THREE.AdditiveBlending}
+          side={DoubleSide}
+          blending={AdditiveBlending}
         />
       </mesh>
       {/* Dust motes inside the ray */}
@@ -637,8 +637,8 @@ function GodRayShaft({ config }: { config: GodRayConfig }) {
 /* ── Dust motes floating within a god ray ── */
 
 function RayDustMotes({ config }: { config: GodRayConfig }) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.PointsMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const materialRef = useRef<PointsMaterial>(null);
   const timeRef = useRef(0);
 
   const c = useMemo(
@@ -677,8 +677,8 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
   }, [c.dustCount, c.topRadius, c.bottomRadius, c.height]);
 
   const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions.slice(), 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions.slice(), 3));
     sanitizeBufferGeometryPositions(geo);
     return geo;
   }, [positions]);
@@ -694,7 +694,7 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
     timeRef.current += delta;
     const t = timeRef.current;
 
-    const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const posAttr = pointsRef.current.geometry.getAttribute('position') as BufferAttribute;
     const posArray = posAttr.array as Float32Array;
     const count = c.dustCount;
     const halfHeight = c.height / 2;
@@ -755,7 +755,7 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
         opacity={0.4}
         depthWrite={false}
         sizeAttenuation
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
       />
     </points>
   );

@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – NPC idle/walk weight blend (mirrors hero locomotion tree) ─── */
 
 import { useLayoutEffect, useRef } from 'react';
-import * as THREE from 'three';
+import { LoopRepeat } from 'three';
 import type * as THREE_NS from 'three';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
@@ -95,13 +95,13 @@ export function useNpcLocomotionBlend({
 
     if (idleAction) {
       idleAction.reset();
-      idleAction.setLoop(THREE.LoopRepeat, Infinity);
+      idleAction.setLoop(LoopRepeat, Infinity);
       idleAction.setEffectiveWeight(currentIdleWeightRef.current);
       idleAction.play();
     }
     if (walkAction && walkAction !== idleAction) {
       walkAction.reset();
-      walkAction.setLoop(THREE.LoopRepeat, Infinity);
+      walkAction.setLoop(LoopRepeat, Infinity);
       walkAction.setEffectiveWeight(currentWalkWeightRef.current);
       walkAction.play();
     }

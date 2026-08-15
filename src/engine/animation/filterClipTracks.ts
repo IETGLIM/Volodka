@@ -1,6 +1,6 @@
 /* ─── Volodka RPG – filter AnimationClip tracks to bones that exist in the target skeleton ─── */
 
-import * as THREE from 'three';
+import { AnimationClip, Object3D } from 'three';
 import { resolveDestinationBoneName } from './mixamoQuaterniusBoneMap';
 
 /**
@@ -11,12 +11,12 @@ import { resolveDestinationBoneName } from './mixamoQuaterniusBoneMap';
  * `handslotr`, `Rig_Medium`, etc.) onto a Quaternius-style skeleton that
  * uses different bone names.
  *
- * Without this filter, three.js logs a `THREE.PropertyBinding: No target
+ * Without this filter, three.js logs a `PropertyBinding: No target
  * node found for track: <name>.<property>` warning per orphan track and
  * silently drops the track. Filtering upfront silences the warnings and
  * avoids the wasted binding-resolution work per frame.
  */
-export function collectNodeNames(root: THREE.Object3D): Set<string> {
+export function collectNodeNames(root: Object3D): Set<string> {
   const names = new Set<string>();
   root.traverse((node) => {
     if (node.name) names.add(node.name);
@@ -50,9 +50,9 @@ function splitTrackName(trackName: string): { nodeName: string; property: string
  * Returns the original clip when nothing changes.
  */
 export function remapClipTracksToSkeleton(
-  clip: THREE.AnimationClip,
-  root: THREE.Object3D,
-): THREE.AnimationClip {
+  clip: AnimationClip,
+  root: Object3D,
+): AnimationClip {
   const nodeNames = collectNodeNames(root);
   const occupied = new Set<string>();
   for (const track of clip.tracks) {
@@ -83,7 +83,7 @@ export function remapClipTracksToSkeleton(
   });
 
   if (!changed) return clip;
-  return new THREE.AnimationClip(clip.name, clip.duration, remapped, clip.blendMode);
+  return new AnimationClip(clip.name, clip.duration, remapped, clip.blendMode);
 }
 
 /**
@@ -95,9 +95,9 @@ export function remapClipTracksToSkeleton(
  * (morph target tracks). The node name is the first `.`-delimited segment.
  */
 export function filterClipTracksToExistingNodes(
-  clip: THREE.AnimationClip,
-  root: THREE.Object3D,
-): THREE.AnimationClip {
+  clip: AnimationClip,
+  root: Object3D,
+): AnimationClip {
   const nodeNames = collectNodeNames(root);
   // Track names look like "Hips.position" or "Hips.quaternion" or
   // "Head.morphTargetInfluences[0]". The node name is the first segment.
@@ -111,7 +111,7 @@ export function filterClipTracksToExistingNodes(
     return clip; // nothing filtered — no need to clone
   }
 
-  return new THREE.AnimationClip(
+  return new AnimationClip(
     clip.name,
     clip.duration,
     keptTracks,
@@ -136,7 +136,7 @@ const ROOT_BONE_NAMES = new Set([
  * at the first frame, while vertical hip motion is preserved for gait bounce,
  * sitting, kneeling and sleeping poses.
  */
-export function stripRootTranslationTracks(clip: THREE.AnimationClip): THREE.AnimationClip {
+export function stripRootTranslationTracks(clip: AnimationClip): AnimationClip {
   let changed = false;
   const tracks = clip.tracks.map((track) => {
     const parts = splitTrackName(track.name);
@@ -174,5 +174,5 @@ export function stripRootTranslationTracks(clip: THREE.AnimationClip): THREE.Ani
 
   if (!changed) return clip;
 
-  return new THREE.AnimationClip(clip.name, clip.duration, tracks, clip.blendMode);
+  return new AnimationClip(clip.name, clip.duration, tracks, clip.blendMode);
 }

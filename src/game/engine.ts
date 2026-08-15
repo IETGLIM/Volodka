@@ -3,7 +3,7 @@
  * Сцена, камера, цикл дня/ночи, огонёк-проводник, квесты,
  * катсцены, диалоги, мобы, анимированная боёвка посохом, сейвы и HUD.
  */
-import * as THREE from 'three';
+import { ACESFilmicToneMapping, AdditiveBlending, CanvasTexture, Clock, Color, CylinderGeometry, DoubleSide, FogExp2, Group, Mesh, MeshBasicMaterial, PCFSoftShadowMap, PerspectiveCamera, PointLight, SRGBColorSpace, Scene, SphereGeometry, Sprite, SpriteMaterial, Vector2, Vector3, WebGLRenderer } from 'three';
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js';
@@ -86,13 +86,13 @@ const CHAPTER_NAMES: Record<string, string> = {
 export class Game {
   private canvas: HTMLCanvasElement;
   private events: GameEvents;
-  private renderer: THREE.WebGLRenderer;
-  private scene = new THREE.Scene();
-  private camera: THREE.PerspectiveCamera;
+  private renderer: WebGLRenderer;
+  private scene = new Scene();
+  private camera: PerspectiveCamera;
   private composer: EffectComposer | null = null;
   private bloom: UnrealBloomPass | null = null;
   private ssao: SSAOPass | null = null;
-  private clock = new THREE.Clock();
+  private clock = new Clock();
   private raf = 0;
   private disposed = false;
 
@@ -111,7 +111,7 @@ export class Game {
   private state: GameState = { ...DEFAULT_STATE };
   private tDay = 0.37;
   private day = 1;
-  private sunDir = new THREE.Vector3(0.4, 0.7, 0.5);
+  private sunDir = new Vector3(0.4, 0.7, 0.5);
 
   private keys = new Set<string>();
   private jumpQueued = false;
@@ -122,8 +122,8 @@ export class Game {
   private camDist = 6.6;
   private camTargetDist = 6.6;
   private menuDist = 34;
-  private camPos = new THREE.Vector3(0, 3, 20);
-  private lookTarget = new THREE.Vector3(0, 1.6, 14);
+  private camPos = new Vector3(0, 3, 20);
+  private lookTarget = new Vector3(0, 1.6, 14);
   private dragging = false;
   private lastPX = 0;
   private lastPY = 0;
@@ -154,10 +154,10 @@ export class Game {
   private interactables = new Map<string, InteractDef>();
   private activePrompt: { icon: string; text: string } | null = null;
 
-  private wisp: THREE.Group;
-  private wispLight: THREE.PointLight;
-  private beam: THREE.Mesh;
-  private beamMat: THREE.MeshBasicMaterial;
+  private wisp: Group;
+  private wispLight: PointLight;
+  private beam: Mesh;
+  private beamMat: MeshBasicMaterial;
 
   private cutscene: { lines: CSLine[]; idx: number; lineT: number } | null = null;
   private pendingCb: (() => void) | null = null;
@@ -170,13 +170,13 @@ export class Game {
   private trailT = 0;
   private crackleT = 0;
   private kotFollow = false;
-  private kotFollowPos = new THREE.Vector3();
+  private kotFollowPos = new Vector3();
   private prevElev = 0;
   private tGlobal = 0;
 
   // Скретч-векторы для главного цикла: одна аллокация вместо тысяч в секунду.
-  private _tmpV = new THREE.Vector3();
-  private _tmpV2 = new THREE.Vector3();
+  private _tmpV = new Vector3();
+  private _tmpV2 = new Vector3();
   private _heightFn = (x: number, z: number) => this.world.heightAt(x, z);
   private _aliveCount = 0;
 
@@ -185,23 +185,23 @@ export class Game {
     this.events = events;
     this.settings = loadSettings();
 
-    this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+    this.renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.shadowMap.type = PCFSoftShadowMap;
+    this.renderer.toneMapping = ACESFilmicToneMapping;
+    this.renderer.outputColorSpace = SRGBColorSpace;
 
-    this.camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 900);
+    this.camera = new PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 900);
     this.camera.position.copy(this.camPos);
-    this.scene.fog = new THREE.FogExp2(new THREE.Color('#241f4a'), 0.0042);
+    this.scene.fog = new FogExp2(new Color('#241f4a'), 0.0042);
 
     this.world = new World(this.scene);
     this.fx = new FX(this.scene);
     this.fx.setFireflies(this.world.fireflyAnchors);
     this.fx.addEmitter((_dt, t, spawn) => {
       void t;
-      const p = new THREE.Vector3(this.world.firePos[0], this.world.firePos[1] + 0.55, this.world.firePos[2]);
-      spawn(p, new THREE.Vector3(rand(-0.15, 0.15), rand(0.7, 1.5), rand(-0.15, 0.15)), rand(0.6, 1.5), new THREE.Color('#ff9a3d'), rand(0.08, 0.16));
+      const p = new Vector3(this.world.firePos[0], this.world.firePos[1] + 0.55, this.world.firePos[2]);
+      spawn(p, new Vector3(rand(-0.15, 0.15), rand(0.7, 1.5), rand(-0.15, 0.15)), rand(0.6, 1.5), new Color('#ff9a3d'), rand(0.08, 0.16));
     });
     this.loot = new LootSystem(this.scene, (x, z) => this.world.heightAt(x, z));
 
@@ -235,7 +235,7 @@ export class Game {
       this.audio.playerHurt();
       this.shakeT = 0.35;
       this.shakeStr = 0.5;
-      this.fx.burst(this.player.pos.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xff5a4a, 14, 2.2);
+      this.fx.burst(this.player.pos.clone().add(new Vector3(0, 1.2, 0)), 0xff5a4a, 14, 2.2);
     };
 
     // NPC
@@ -257,8 +257,8 @@ export class Game {
     this.spawnEnemies();
 
     // огонёк-проводник
-    this.wisp = new THREE.Group();
-    const wispMesh = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 10), new THREE.MeshBasicMaterial({ color: '#fff3c0' }));
+    this.wisp = new Group();
+    const wispMesh = new Mesh(new SphereGeometry(0.16, 12, 10), new MeshBasicMaterial({ color: '#fff3c0' }));
     this.wisp.add(wispMesh);
     const wt = document.createElement('canvas');
     wt.width = wt.height = 64;
@@ -269,17 +269,17 @@ export class Game {
     wgrad.addColorStop(1, 'rgba(0,0,0,0)');
     wg.fillStyle = wgrad;
     wg.fillRect(0, 0, 64, 64);
-    const wispSprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(wt), color: '#ffe9a8', transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+    const wispSprite = new Sprite(new SpriteMaterial({ map: new CanvasTexture(wt), color: '#ffe9a8', transparent: true, depthWrite: false, blending: AdditiveBlending }));
     wispSprite.scale.setScalar(3.2);
     this.wisp.add(wispSprite);
-    this.wispLight = new THREE.PointLight('#ffd9a0', 1.3, 9, 2);
+    this.wispLight = new PointLight('#ffd9a0', 1.3, 9, 2);
     this.wisp.add(this.wispLight);
     this.wisp.visible = false;
     this.scene.add(this.wisp);
 
     // луч цели
-    this.beamMat = new THREE.MeshBasicMaterial({ color: '#fff2c8', transparent: true, opacity: 0.2, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-    this.beam = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.5, 46, 8, 1, true), this.beamMat);
+    this.beamMat = new MeshBasicMaterial({ color: '#fff2c8', transparent: true, opacity: 0.2, depthWrite: false, blending: AdditiveBlending, side: DoubleSide });
+    this.beam = new Mesh(new CylinderGeometry(0.14, 0.5, 46, 8, 1, true), this.beamMat);
     this.beam.position.y = 23;
     this.beam.visible = false;
     this.scene.add(this.beam);
@@ -306,7 +306,7 @@ export class Game {
     this.enemiesClearedToast = false;
 
     const mk = (kind: 'ten' | 'kust', x: number, z: number, r: number, scale = 1) => {
-      const pos = new THREE.Vector3(x, 0, z);
+      const pos = new Vector3(x, 0, z);
       const e = new Enemy(kind, pos, r, this._heightFn, scale);
       this.scene.add(e.group);
       this.enemies.push(e);
@@ -503,7 +503,7 @@ export class Game {
         do: () => {
           this.state.fireflies++;
           this.audio.pickup();
-          this.fx.burst(new THREE.Vector3(a.x, a.y + 1.2, a.z), 0xffe9a0, 14, 1.6);
+          this.fx.burst(new Vector3(a.x, a.y + 1.2, a.z), 0xffe9a0, 14, 1.6);
           this.toast('✨', `Светлячок пойман (${this.state.fireflies}/12)`);
           if (this.state.fireflies === 12) {
             this.banner('Все светлячки собраны!');
@@ -522,7 +522,7 @@ export class Game {
       show: () => true,
       do: () => {
         this.audio.fireCrackle();
-        this.fx.burst(new THREE.Vector3(this.world.firePos[0], this.world.firePos[1] + 1, this.world.firePos[2]), 0xffb347, 18, 1.4);
+        this.fx.burst(new Vector3(this.world.firePos[0], this.world.firePos[1] + 1, this.world.firePos[2]), 0xffb347, 18, 1.4);
         this.toast('🔥', 'Тепло. Долина пахнет вечером и хвоей');
       },
     });
@@ -589,7 +589,7 @@ export class Game {
     const heal = Math.min(30, this.player.maxHp - this.player.hp);
     if (heal > 0) {
       this.player.hp = Math.min(this.player.maxHp, this.player.hp + 30);
-      this.fx.burst(this.player.pos.clone().add(new THREE.Vector3(0, 1, 0)), 0x9fd8ff, 12, 1.4);
+      this.fx.burst(this.player.pos.clone().add(new Vector3(0, 1, 0)), 0x9fd8ff, 12, 1.4);
       this.toast('🐟', `Серебряный карась! +${heal} здоровья`);
     } else {
       this.toast('🐟', 'Серебряный карась! Красивый — отпустил обратно');
@@ -630,7 +630,7 @@ export class Game {
   private collectStanza(i: number) {
     this.audio.whoosh();
     const [x, y, z] = this.world.getScrollPos(i);
-    this.fx.burst(new THREE.Vector3(x, y, z), 0xffe9a8, 26, 2.4);
+    this.fx.burst(new Vector3(x, y, z), 0xffe9a8, 26, 2.4);
     this.audio.chime();
     this.world.getScroll(i).collect();
     this.playChapter(`ch${i}`, () => {
@@ -832,7 +832,7 @@ export class Game {
     const healed = Math.min(35, this.player.maxHp - this.player.hp);
     this.player.hp = Math.min(this.player.maxHp, this.player.hp + 35);
     this.audio.chime();
-    this.fx.burst(this.player.pos.clone().add(new THREE.Vector3(0, 1, 0)), 0xd94a45, 15, 1.6);
+    this.fx.burst(this.player.pos.clone().add(new Vector3(0, 1, 0)), 0xd94a45, 15, 1.6);
     this.toast('●', `Рябина восстановила ${healed} здоровья`);
     this.pushHud(true);
     this.save();
@@ -1081,7 +1081,7 @@ export class Game {
       this.ssao.maxDistance = 0.12;
       this.ssao.output = SSAOPass.OUTPUT.Default;
       this.composer.addPass(this.ssao);
-      this.bloom = new UnrealBloomPass(new THREE.Vector2(w, h), 0.45, 0.85, 0.72);
+      this.bloom = new UnrealBloomPass(new Vector2(w, h), 0.45, 0.85, 0.72);
       this.composer.addPass(this.bloom);
       this.composer.addPass(new OutputPass());
     } else if (q === 'low' && this.composer) {
@@ -1153,8 +1153,8 @@ export class Game {
         this.shakeStr = 0.14;
       }
 
-      const fogC = this.scene.fog as THREE.FogExp2;
-      fogC.color.set('#141a30').lerp(new THREE.Color('#6a5480'), dusk).lerp(new THREE.Color('#b8cfe0'), day * (1 - dusk * 0.5)).lerp(new THREE.Color('#5a6478'), this.rainLevel * 0.5);
+      const fogC = this.scene.fog as FogExp2;
+      fogC.color.set('#141a30').lerp(new Color('#6a5480'), dusk).lerp(new Color('#b8cfe0'), day * (1 - dusk * 0.5)).lerp(new Color('#5a6478'), this.rainLevel * 0.5);
       fogC.density = 0.0044 - day * 0.0011 + dusk * 0.0007 + this.rainLevel * 0.0013;
       this.renderer.toneMappingExposure = lerp(0.92, 1.25, day) + dusk * 0.12 - this.rainLevel * 0.12;
       this.world.update(t, day, dusk, night, gust, this.sunDir);
@@ -1200,7 +1200,7 @@ export class Game {
         this.player.applyWorldCollision(resolved.x, resolved.z, resolved.blocked);
         if (hitDuringRoll) {
           this.audio.land();
-          this.fx.burst(this.player.pos.clone().add(new THREE.Vector3(0, 0.35, 0)), 0x9a8a6a, 7, 1.2);
+          this.fx.burst(this.player.pos.clone().add(new Vector3(0, 0.35, 0)), 0x9a8a6a, 7, 1.2);
           this.shakeT = 0.1;
           this.shakeStr = 0.12;
         }
@@ -1210,7 +1210,7 @@ export class Game {
           this.dustT -= dt;
           if (this.dustT <= 0) {
             this.dustT = 0.22;
-            this.fx.burst(this.player.pos.clone().add(new THREE.Vector3(0, 0.15, 0)), 0xb0a48c, 2, 0.7);
+            this.fx.burst(this.player.pos.clone().add(new Vector3(0, 0.15, 0)), 0xb0a48c, 2, 0.7);
           }
         }
 
@@ -1254,7 +1254,7 @@ export class Game {
         // Игрок бьёт врагов
         const atk = this.player.getAttack();
         if (atk.active) {
-          const weaponPos = this.player.getWeaponWorldPos(new THREE.Vector3());
+          const weaponPos = this.player.getWeaponWorldPos(new Vector3());
           const fwd = this.player.getForward();
           for (let idx = 0; idx < this.enemies.length; idx++) {
             const e = this.enemies[idx];
@@ -1262,10 +1262,10 @@ export class Game {
             if (atk.hasHit(idx)) continue;
             const d = e.getPos().distanceTo(weaponPos);
             // чуть впереди игрока + конус
-            const toEnemy = new THREE.Vector3().subVectors(e.getPos(), this.player.pos).setY(0).normalize();
+            const toEnemy = new Vector3().subVectors(e.getPos(), this.player.pos).setY(0).normalize();
             const dot = fwd.dot(toEnemy);
             if (d < atk.range + 0.4 && dot > 0.1) {
-              const dir = new THREE.Vector3().subVectors(e.getPos(), this.player.pos).normalize();
+              const dir = new Vector3().subVectors(e.getPos(), this.player.pos).normalize();
               const dead = e.takeDamage(atk.power, dir);
               atk.markHit(idx);
               this.audio.hit();
@@ -1435,7 +1435,7 @@ export class Game {
         const minY = this.world.heightAt(this.camPos.x, this.camPos.z) + 1.0;
         if (this.camPos.y < minY) this.camPos.y = minY;
         this.camera.position.copy(this.camPos);
-        this.camera.lookAt(new THREE.Vector3(line.cam.look[0], line.cam.look[1], line.cam.look[2]));
+        this.camera.lookAt(new Vector3(line.cam.look[0], line.cam.look[1], line.cam.look[2]));
       } else {
         this.camera.position.lerp(this.camPos, 1 - Math.exp(-2.5 * dt));
         this.camera.lookAt(this.lookTarget);
@@ -1444,11 +1444,11 @@ export class Game {
     }
 
     this.camDist = lerp(this.camDist, this.camTargetDist, 1 - Math.exp(-6 * dt));
-    const target = this.player.pos.clone().add(new THREE.Vector3(0, 1.75, 0));
+    const target = this.player.pos.clone().add(new Vector3(0, 1.75, 0));
     // живое покачивание камеры на бегу
     const bob = this.player.getCameraBob();
     target.add(bob);
-    const off = new THREE.Vector3(Math.sin(this.camYaw) * Math.cos(this.camPitch), Math.sin(this.camPitch), Math.cos(this.camYaw) * Math.cos(this.camPitch)).multiplyScalar(this.camDist);
+    const off = new Vector3(Math.sin(this.camYaw) * Math.cos(this.camPitch), Math.sin(this.camPitch), Math.cos(this.camYaw) * Math.cos(this.camPitch)).multiplyScalar(this.camDist);
     const desired = target.clone().add(off);
     const minY = this.world.heightAt(desired.x, desired.z) + 0.5;
     if (desired.y < minY) desired.y = minY;
@@ -1457,7 +1457,7 @@ export class Game {
     // шейк
     const shake = this.shakeT > 0 ? (Math.sin(t * 42) * this.shakeStr * this.shakeT) : 0;
     const shake2 = this.shakeT > 0 ? (Math.cos(t * 35 + 1) * this.shakeStr * this.shakeT) : 0;
-    this.camera.position.copy(this.camPos).add(new THREE.Vector3(shake, shake2 * 0.5, shake * 0.3));
+    this.camera.position.copy(this.camPos).add(new Vector3(shake, shake2 * 0.5, shake * 0.3));
     this.lookTarget.lerp(target, 1 - Math.exp(-12 * dt));
     this.camera.lookAt(this.lookTarget);
     const targetFov = this.player.getRolling() ? 64 : this.player.getAttacking() ? 60 : 58;

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { INTERACTION_LABELS, type TriggerZone } from '@/data/triggerZones';
 import { FIRST_PERSON_ENABLED, FIRST_PERSON_EYE_HEIGHT } from '@/engine/camera/cameraConstants';
 import { getInteractionQueryContext, type InteractionQueryContext } from '@/engine/interaction/interactionQueryContext';
@@ -39,7 +39,7 @@ export interface ExitQueryTarget {
 }
 
 export interface QueryInteractionTargetsParams {
-  playerPos: THREE.Vector3;
+  playerPos: Vector3;
   playerYaw: number;
   zones: TriggerZone[];
   npcs: NpcQueryTarget[];
@@ -48,11 +48,11 @@ export interface QueryInteractionTargetsParams {
   checkLineOfSight?: boolean;
 }
 
-const _playerForward = new THREE.Vector3();
-const _toTarget = new THREE.Vector3();
-const _eye = new THREE.Vector3();
-const _target = new THREE.Vector3();
-const _npcLivePos = new THREE.Vector3();
+const _playerForward = new Vector3();
+const _toTarget = new Vector3();
+const _eye = new Vector3();
+const _target = new Vector3();
+const _npcLivePos = new Vector3();
 
 /** H4: Reusable Ray object to avoid per-NPC per-frame allocation. */
 let _reusableRay: InstanceType<InteractionQueryContext['rapier']['Ray']> | null = null;
@@ -86,9 +86,9 @@ const ZONE_RANGE_PADDING = 1.55;
 
 /** Score a target by distance and whether the player faces it (horizontal only). */
 export function scoreInteractionTarget(
-  playerPos: THREE.Vector3,
+  playerPos: Vector3,
   playerYaw: number,
-  targetPos: THREE.Vector3,
+  targetPos: Vector3,
   maxRange: number,
 ): { distance: number; score: number } | null {
   const distance = playerPos.distanceTo(targetPos);
@@ -123,8 +123,8 @@ type MutableRapierRay = {
 /** H4: Rapier raycast from player eye to target — returns false when blocked by static geometry.
  *  Uses a reusable Ray object and 3-frame throttle to reduce per-NPC allocations + raycasts. */
 export function hasInteractionLineOfSight(
-  playerPos: THREE.Vector3,
-  targetPos: THREE.Vector3,
+  playerPos: Vector3,
+  targetPos: Vector3,
 ): boolean {
   const ctx = getInteractionQueryContext();
   if (!ctx) return true;
@@ -199,7 +199,7 @@ export function clearInteractionLineOfSightCache(): void {
 
 function pushZoneTarget(
   hits: InteractionTargetHit[],
-  playerPos: THREE.Vector3,
+  playerPos: Vector3,
   playerYaw: number,
   zone: TriggerZone,
   _checkLos: boolean,
@@ -223,7 +223,7 @@ function pushZoneTarget(
 
 function pushNpcTarget(
   hits: InteractionTargetHit[],
-  playerPos: THREE.Vector3,
+  playerPos: Vector3,
   playerYaw: number,
   npc: NpcQueryTarget,
   checkLos: boolean,

@@ -8,7 +8,7 @@ import {
   claimMaterialForScene,
   setSceneGpuRegistrationContext,
 } from '@/engine/three/sceneGpuOwnership';
-import * as THREE from 'three';
+import { BufferGeometry, Material } from 'three';
 
 interface SceneModuleGpuEntry<T extends object> {
   resources: T;
@@ -29,9 +29,9 @@ function trackModuleKeyForScene(sceneId: SceneId, moduleKey: string): void {
 
 function claimSceneModuleResources(sceneId: SceneId, resources: object): void {
   for (const value of Object.values(resources)) {
-    if (value instanceof THREE.BufferGeometry) {
+    if (value instanceof BufferGeometry) {
       claimGeometryForScene(sceneId, value);
-    } else if (value instanceof THREE.Material) {
+    } else if (value instanceof Material) {
       claimMaterialForScene(sceneId, value);
     }
   }

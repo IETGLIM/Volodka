@@ -5,7 +5,7 @@
 import { useRef, useState, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Html } from '@react-three/drei';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { useInteractionOverlay, useTimeOfDay, useSceneExitState, useScheduleContext } from '@/store/selectors';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
@@ -56,7 +56,7 @@ import { NPCProximityTriggers } from './interactiveTriggers/NpcProximityMarkers'
 import { TriggerZoneComponent } from './interactiveTriggers/TriggerZoneComponent';
 
 interface InteractiveTriggersProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
 }
 
@@ -151,7 +151,7 @@ export function InteractiveTriggers({
   const [interactTargetActive, setInteractTargetActive] = useState(false);
   const frameCountRef = useRef(0);
   const lastHintIdRef = useRef<string | null>(null);
-  const proximityTempVecRef = useRef(new THREE.Vector3());
+  const proximityTempVecRef = useRef(new Vector3());
   const zoneRuntimeRef = useRef(new Map<string, ZoneProximityRuntime>());
   const npcRuntimeRef = useRef(new Map<string, NpcProximityRuntime>());
   /** Track NPCs that already barked on proximity this scene — one bark per NPC per scene entry. */
@@ -387,7 +387,7 @@ export function InteractiveTriggers({
           });
           // Session 9: Subtle camera POI nudge toward NPC/object on first hint
           if (primaryHit.kind === 'npc' && npcTarget) {
-            setCameraPOITarget(new THREE.Vector3(...npcTarget.position));
+            setCameraPOITarget(new Vector3(...npcTarget.position));
             // Warm packs off the frame tick — avoid stacking sync work on INP.
             const npcId = npcTarget.npcId;
             const scene = sceneIdRef.current;

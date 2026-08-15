@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { MathUtils } from 'three';
 import { setPhysicsStepMs, shouldTrackFrameTiming } from '@/engine/frame/FrameBudgetRegistry';
 import { sampleHeldVirtualControls } from '@/engine/VirtualInputHold';
 import { getTouchLocomotionFactor } from '@/config/scenes';
@@ -237,11 +237,11 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     const targetVz = moveDir.z * speed;
     if (keyboardDrivesMove) {
       const k = 25; // high stiffness, nearly instant but avoids hard snap
-      vel.x = THREE.MathUtils.damp(vel.x, targetVx, k, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, targetVz, k, dt);
+      vel.x = MathUtils.damp(vel.x, targetVx, k, dt);
+      vel.z = MathUtils.damp(vel.z, targetVz, k, dt);
     } else {
-      vel.x = THREE.MathUtils.damp(vel.x, targetVx, moveAccel, dt);
-      vel.z = THREE.MathUtils.damp(vel.z, targetVz, moveAccel, dt);
+      vel.x = MathUtils.damp(vel.x, targetVx, moveAccel, dt);
+      vel.z = MathUtils.damp(vel.z, targetVz, moveAccel, dt);
     }
 
     // Max Payne OTS: while locomoting, body yaw follows camera look (aim),
@@ -261,8 +261,8 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       );
     }
   } else {
-    vel.x = THREE.MathUtils.damp(vel.x, 0, stopDamping, dt);
-    vel.z = THREE.MathUtils.damp(vel.z, 0, stopDamping, dt);
+    vel.x = MathUtils.damp(vel.x, 0, stopDamping, dt);
+    vel.z = MathUtils.damp(vel.z, 0, stopDamping, dt);
   }
 
   // PHYS-1: Sanitize velocity to prevent NaN/Infinity from propagating

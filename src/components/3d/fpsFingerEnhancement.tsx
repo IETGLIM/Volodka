@@ -4,7 +4,7 @@
  */
 
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
-import * as THREE from 'three';
+import { Mesh, Object3D } from 'three';
 
 const SKIN = '#c4a882';
 const SKIN_EMISSIVE = '#1a1208';
@@ -52,10 +52,10 @@ export function FpsFingerEnhancement() {
 }
 
 /** Optional: hide finger caps when arm mesh already has detailed hands. */
-export function armMeshHasFingerDetail(scene: THREE.Object3D): boolean {
+export function armMeshHasFingerDetail(scene: Object3D): boolean {
   let fingerMeshes = 0;
   scene.traverse((obj) => {
-    if (!(obj instanceof THREE.Mesh)) return;
+    if (!(obj instanceof Mesh)) return;
     const name = obj.name.toLowerCase();
     if (name.includes('finger') || name.includes('thumb') || name.includes('index')) {
       fingerMeshes += 1;

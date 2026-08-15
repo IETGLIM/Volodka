@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group, Vector3 } from 'three';
 import { resolveAssetUrl, type GltfAssetDefinition } from '@/config/assetManifest';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
@@ -27,8 +27,8 @@ export interface LodSwitcherProps {
  * instead of remounting GLB scenes on distance change.
  */
 export function LodSwitcher({ asset, children }: LodSwitcherProps) {
-  const anchorRef = useRef<THREE.Group>(null);
-  const worldPosRef = useRef(new THREE.Vector3());
+  const anchorRef = useRef<Group>(null);
+  const worldPosRef = useRef(new Vector3());
   const activeUrlRef = useRef(asset.lods[0]?.url ?? '');
   const distanceRef = useRef(0);
   const camera = useThree((s) => s.camera);

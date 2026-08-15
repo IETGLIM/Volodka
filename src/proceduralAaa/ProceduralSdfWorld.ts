@@ -3,7 +3,7 @@
  * Hard architectural mixes + surface-nets with weld + analytic normals.
  */
 
-import * as THREE from 'three';
+import { BufferGeometry, Float32BufferAttribute, Vector3 } from 'three';
 import { fbm2, fbm3, hash2 } from './noise';
 import type { ProceduralAaaParams } from './params';
 
@@ -27,12 +27,12 @@ export function hardMax(a: number, b: number): number {
   return Math.max(a, b);
 }
 
-export function sdSphere(p: THREE.Vector3, c: THREE.Vector3, r: number): number {
+export function sdSphere(p: Vector3, c: Vector3, r: number): number {
   return p.distanceTo(c) - r;
 }
 
-export function sdBox(p: THREE.Vector3, c: THREE.Vector3, b: THREE.Vector3): number {
-  const q = new THREE.Vector3(
+export function sdBox(p: Vector3, c: Vector3, b: Vector3): number {
+  const q = new Vector3(
     Math.abs(p.x - c.x) - b.x,
     Math.abs(p.y - c.y) - b.y,
     Math.abs(p.z - c.z) - b.z,
@@ -43,7 +43,7 @@ export function sdBox(p: THREE.Vector3, c: THREE.Vector3, b: THREE.Vector3): num
 }
 
 /** Infinite cylinder along Y through center xz. */
-export function sdCylinderY(p: THREE.Vector3, c: THREE.Vector3, r: number): number {
+export function sdCylinderY(p: Vector3, c: Vector3, r: number): number {
   return Math.hypot(p.x - c.x, p.z - c.z) - r;
 }
 
@@ -52,9 +52,9 @@ export function sdCylinderY(p: THREE.Vector3, c: THREE.Vector3, r: number): numb
  * axis='z' → opening faces ±Z (street-facing).
  */
 export function sdArch(
-  p: THREE.Vector3,
-  c: THREE.Vector3,
-  half: THREE.Vector3,
+  p: Vector3,
+  c: Vector3,
+  half: Vector3,
   tunnelR: number,
   axis: 'x' | 'z' = 'z',
 ): number {
@@ -75,8 +75,8 @@ export function sdArch(
 
 /** Flat bridge deck + two pier boxes. */
 export function sdBridge(
-  p: THREE.Vector3,
-  c: THREE.Vector3,
+  p: Vector3,
+  c: Vector3,
   length: number,
   width: number,
   deckThick: number,
@@ -84,26 +84,26 @@ export function sdBridge(
 ): number {
   const deck = sdBox(
     p,
-    new THREE.Vector3(c.x, c.y + pierH, c.z),
-    new THREE.Vector3(length * 0.5, deckThick * 0.5, width * 0.5),
+    new Vector3(c.x, c.y + pierH, c.z),
+    new Vector3(length * 0.5, deckThick * 0.5, width * 0.5),
   );
   const pierL = sdBox(
     p,
-    new THREE.Vector3(c.x - length * 0.35, c.y + pierH * 0.5, c.z),
-    new THREE.Vector3(0.22, pierH * 0.5, width * 0.28),
+    new Vector3(c.x - length * 0.35, c.y + pierH * 0.5, c.z),
+    new Vector3(0.22, pierH * 0.5, width * 0.28),
   );
   const pierR = sdBox(
     p,
-    new THREE.Vector3(c.x + length * 0.35, c.y + pierH * 0.5, c.z),
-    new THREE.Vector3(0.22, pierH * 0.5, width * 0.28),
+    new Vector3(c.x + length * 0.35, c.y + pierH * 0.5, c.z),
+    new Vector3(0.22, pierH * 0.5, width * 0.28),
   );
   return hardMin(deck, hardMin(pierL, pierR));
 }
 
 export function sdCapsule(
-  p: THREE.Vector3,
-  a: THREE.Vector3,
-  b: THREE.Vector3,
+  p: Vector3,
+  a: Vector3,
+  b: Vector3,
   r: number,
 ): number {
   const pa = p.clone().sub(a);
@@ -117,9 +117,9 @@ export function sdCapsule(
  * Only active near building AABB to avoid tiling the whole world.
  */
 function facadeWindowCarve(
-  p: THREE.Vector3,
-  center: THREE.Vector3,
-  half: THREE.Vector3,
+  p: Vector3,
+  center: Vector3,
+  half: Vector3,
   seed: number,
 ): number {
   // Local space
@@ -136,9 +136,9 @@ function facadeWindowCarve(
   const wy = ((ly % (cell * 0.85)) + cell * 0.85) % (cell * 0.85) - cell * 0.4;
   const inset = 0.07 + hash2(Math.floor(ly), Math.floor(lx + lz), seed) * 0.04;
   const win = sdBox(
-    new THREE.Vector3(nearZ ? wx : 0, wy, nearX ? wx : 0),
-    new THREE.Vector3(0, 0, 0),
-    new THREE.Vector3(nearZ ? 0.28 : inset, 0.22, nearX ? 0.28 : inset),
+    new Vector3(nearZ ? wx : 0, wy, nearX ? wx : 0),
+    new Vector3(0, 0, 0),
+    new Vector3(nearZ ? 0.28 : inset, 0.22, nearX ? 0.28 : inset),
   );
   return win - inset * 0.15;
 }
@@ -147,24 +147,24 @@ function facadeWindowCarve(
  * Roof cornice + corner pilaster — crisp silhouette read without repeating modules.
  */
 function facadeCornicePilaster(
-  p: THREE.Vector3,
-  center: THREE.Vector3,
-  half: THREE.Vector3,
+  p: Vector3,
+  center: Vector3,
+  half: Vector3,
   seed: number,
 ): number {
   const topY = center.y + half.y;
   const cornice = sdBox(
     p,
-    new THREE.Vector3(center.x, topY - 0.08, center.z),
-    new THREE.Vector3(half.x + 0.12, 0.08, half.z + 0.12),
+    new Vector3(center.x, topY - 0.08, center.z),
+    new Vector3(half.x + 0.12, 0.08, half.z + 0.12),
   );
   const corner = hash2(Math.floor(center.x), Math.floor(center.z), seed);
   const px = center.x + (corner > 0.5 ? 1 : -1) * half.x;
   const pz = center.z + (corner > 0.35 ? 1 : -1) * half.z;
   const pilaster = sdBox(
     p,
-    new THREE.Vector3(px, center.y, pz),
-    new THREE.Vector3(0.12, half.y * 0.92, 0.12),
+    new Vector3(px, center.y, pz),
+    new Vector3(0.12, half.y * 0.92, 0.12),
   );
   return hardMin(cornice, pilaster);
 }
@@ -180,8 +180,8 @@ export type SdfPrimitiveKind =
 
 export interface SdfPrimitive {
   kind: SdfPrimitiveKind;
-  center: THREE.Vector3;
-  size: THREE.Vector3;
+  center: Vector3;
+  size: Vector3;
   radius?: number;
   /** For arch: tunnel radius; for bridge: pier height encoded in radius. */
   meta?: number;
@@ -195,8 +195,8 @@ export function generateWorldLayout(params: ProceduralAaaParams): SdfPrimitive[]
 
   out.push({
     kind: 'ground',
-    center: new THREE.Vector3(0, -2.5 * terrainAmp, 0),
-    size: new THREE.Vector3(28, 3 * terrainAmp, 28),
+    center: new Vector3(0, -2.5 * terrainAmp, 0),
+    size: new Vector3(28, 3 * terrainAmp, 28),
   });
 
   const buildingCount = Math.round(7 + buildingDensity * 12);
@@ -213,15 +213,15 @@ export function generateWorldLayout(params: ProceduralAaaParams): SdfPrimitive[]
     const tiers = hash2(i, 6, seed) > 0.55 ? 2 : 1;
     out.push({
       kind: 'building',
-      center: new THREE.Vector3(x, (h / tiers) * 0.5, z),
-      size: new THREE.Vector3(w * 0.5, (h / tiers) * 0.5, d * 0.5),
+      center: new Vector3(x, (h / tiers) * 0.5, z),
+      size: new Vector3(w * 0.5, (h / tiers) * 0.5, d * 0.5),
     });
     if (tiers === 2) {
       const shrink = 0.72 + hash2(i, 7, seed) * 0.12;
       out.push({
         kind: 'building',
-        center: new THREE.Vector3(x, h * 0.55 + (h * 0.45) * 0.5, z),
-        size: new THREE.Vector3(w * 0.5 * shrink, h * 0.225, d * 0.5 * shrink),
+        center: new Vector3(x, h * 0.55 + (h * 0.45) * 0.5, z),
+        size: new Vector3(w * 0.5 * shrink, h * 0.225, d * 0.5 * shrink),
       });
     }
   }
@@ -240,8 +240,8 @@ export function generateWorldLayout(params: ProceduralAaaParams): SdfPrimitive[]
     const axis: 'x' | 'z' = hash2(i, 45, seed) > 0.5 ? 'z' : 'x';
     out.push({
       kind: 'arch',
-      center: new THREE.Vector3(x, hh * 0.55, z),
-      size: new THREE.Vector3(hw, hh * 0.55, hd),
+      center: new Vector3(x, hh * 0.55, z),
+      size: new Vector3(hw, hh * 0.55, hd),
       meta: 0.85 + hash2(i, 46, seed) * 0.45,
       axis,
     });
@@ -258,8 +258,8 @@ export function generateWorldLayout(params: ProceduralAaaParams): SdfPrimitive[]
     const pierH = 1.4 + hash2(i, 54, seed) * 1.2;
     out.push({
       kind: 'bridge',
-      center: new THREE.Vector3(x, 0, z),
-      size: new THREE.Vector3(len, wid, 0.18),
+      center: new Vector3(x, 0, z),
+      size: new Vector3(len, wid, 0.18),
       meta: pierH,
     });
   }
@@ -272,8 +272,8 @@ export function generateWorldLayout(params: ProceduralAaaParams): SdfPrimitive[]
     const r = 0.35 + hash2(i, 13, seed) * 1.1 * rockDensity;
     out.push({
       kind: 'rock',
-      center: new THREE.Vector3(x, r * 0.55, z),
-      size: new THREE.Vector3(r, r * 0.7, r),
+      center: new Vector3(x, r * 0.55, z),
+      size: new Vector3(r, r * 0.7, r),
       radius: r,
     });
   }
@@ -292,8 +292,8 @@ export function generateWorldLayout(params: ProceduralAaaParams): SdfPrimitive[]
       const oz = (hash2(i, 35 + lv, seed) - 0.5) * 0.6;
       out.push({
         kind: lv === 0 ? 'ruin' : 'ruin_tier',
-        center: new THREE.Vector3(x + ox, yBase + h * 0.4, z + oz),
-        size: new THREE.Vector3(
+        center: new Vector3(x + ox, yBase + h * 0.4, z + oz),
+        size: new Vector3(
           0.35 + hash2(i, 24 + lv, seed) * 0.75 * (1 - lv * 0.12),
           h * 0.4,
           0.3 + hash2(i, 25 + lv, seed) * 0.55 * (1 - lv * 0.1),
@@ -306,7 +306,7 @@ export function generateWorldLayout(params: ProceduralAaaParams): SdfPrimitive[]
   return out;
 }
 
-const _p = new THREE.Vector3();
+const _p = new Vector3();
 
 export function sampleWorldSdf(
   x: number,
@@ -392,7 +392,7 @@ function quantKey(x: number, y: number, z: number, q: number): string {
 export function buildSdfWorldGeometry(
   params: ProceduralAaaParams,
   bounds = { min: -14, max: 14, yMin: -1.5, yMax: 12 },
-): THREE.BufferGeometry {
+): BufferGeometry {
   const layout = generateWorldLayout(params);
   const res = Math.max(24, Math.min(96, Math.round(params.sdfResolution)));
   const { min, max, yMin, yMax } = bounds;
@@ -418,12 +418,12 @@ export function buildSdfWorldGeometry(
     }
   }
 
-  const cellVert: (THREE.Vector3 | null)[] = new Array((nx - 1) * (ny - 1) * (nz - 1)).fill(null);
+  const cellVert: (Vector3 | null)[] = new Array((nx - 1) * (ny - 1) * (nz - 1)).fill(null);
   const cIdx = (ix: number, iy: number, iz: number) => iy * (nx - 1) * (nz - 1) + iz * (nx - 1) + ix;
 
-  const cornerPos = (ix: number, iy: number, iz: number, c: number): THREE.Vector3 => {
+  const cornerPos = (ix: number, iy: number, iz: number, c: number): Vector3 => {
     const o = CORNER_OFFSETS[c]!;
-    return new THREE.Vector3(
+    return new Vector3(
       min + (ix + o[0]) * dx,
       yMin + (iy + o[1]) * dy,
       min + (iz + o[2]) * dz,
@@ -436,7 +436,7 @@ export function buildSdfWorldGeometry(
     iz: number,
     e: number,
     vals: number[],
-  ): THREE.Vector3 => {
+  ): Vector3 => {
     const [a, b] = EDGE_TABLE[e]!;
     const va = vals[a]!;
     const vb = vals[b]!;
@@ -459,7 +459,7 @@ export function buildSdfWorldGeometry(
         }
         if (mask === 0 || mask === 0xff) continue;
 
-        const pts: THREE.Vector3[] = [];
+        const pts: Vector3[] = [];
         for (let e = 0; e < 12; e++) {
           const [a, b] = EDGE_TABLE[e]!;
           if ((vals[a]! < 0) !== (vals[b]! < 0)) {
@@ -467,7 +467,7 @@ export function buildSdfWorldGeometry(
           }
         }
         if (pts.length < 3) continue;
-        const centroid = new THREE.Vector3();
+        const centroid = new Vector3();
         for (const p of pts) centroid.add(p);
         centroid.multiplyScalar(1 / pts.length);
         cellVert[cIdx(ix, iy, iz)] = centroid;
@@ -475,14 +475,14 @@ export function buildSdfWorldGeometry(
     }
   }
 
-  type Tri = [THREE.Vector3, THREE.Vector3, THREE.Vector3];
+  type Tri = [Vector3, Vector3, Vector3];
   const tris: Tri[] = [];
 
   const emitQuad = (
-    v0: THREE.Vector3 | null | undefined,
-    v1: THREE.Vector3 | null | undefined,
-    v2: THREE.Vector3 | null | undefined,
-    v3: THREE.Vector3 | null | undefined,
+    v0: Vector3 | null | undefined,
+    v1: Vector3 | null | undefined,
+    v2: Vector3 | null | undefined,
+    v3: Vector3 | null | undefined,
     flip: boolean,
   ) => {
     if (!v0 || !v1 || !v2 || !v3) return;
@@ -554,16 +554,16 @@ export function buildSdfWorldGeometry(
   const weldQ = Math.max(24, Math.round(res * 1.4));
   const weldMap = new Map<string, number>();
   const positions: number[] = [];
-  const normalAccum: THREE.Vector3[] = [];
+  const normalAccum: Vector3[] = [];
   const indices: number[] = [];
 
-  const getOrAdd = (v: THREE.Vector3): number => {
+  const getOrAdd = (v: Vector3): number => {
     const k = quantKey(v.x, v.y, v.z, weldQ);
     const hit = weldMap.get(k);
     if (hit !== undefined) return hit;
     const id = positions.length / 3;
     positions.push(v.x, v.y, v.z);
-    normalAccum.push(new THREE.Vector3());
+    normalAccum.push(new Vector3());
     weldMap.set(k, id);
     return id;
   };
@@ -590,7 +590,7 @@ export function buildSdfWorldGeometry(
     const gz =
       sampleWorldSdf(cx, cy, cz + eps, layout, params)
       - sampleWorldSdf(cx, cy, cz - eps, layout, params);
-    const sn = new THREE.Vector3(gx, gy, gz);
+    const sn = new Vector3(gx, gy, gz);
     fn.normalize();
     if (sn.lengthSq() > 1e-10) {
       sn.normalize().multiplyScalar(-1);
@@ -617,9 +617,9 @@ export function buildSdfWorldGeometry(
     normals[i * 3 + 2] = n.z;
   }
 
-  const geo = new THREE.BufferGeometry();
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-  geo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+  const geo = new BufferGeometry();
+  geo.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  geo.setAttribute('normal', new Float32BufferAttribute(normals, 3));
   geo.setIndex(indices);
   geo.computeBoundingSphere();
   return geo;
@@ -629,7 +629,7 @@ export function buildSdfWorldGeometry(
 export function buildSdfWorldLod(
   params: ProceduralAaaParams,
   lod: 0 | 1 | 2,
-): THREE.BufferGeometry {
+): BufferGeometry {
   const resScale = lod === 0 ? 1 : lod === 1 ? 0.7 : 0.45;
   return buildSdfWorldGeometry({
     ...params,

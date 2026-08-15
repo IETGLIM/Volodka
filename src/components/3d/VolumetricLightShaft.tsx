@@ -24,7 +24,7 @@ import {
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, CylinderGeometry, DoubleSide, Mesh, Points, PointsMaterial, ShaderMaterial } from 'three';
 import type { SceneId } from '@/shared/types/game';
 
 /* ── Config ── */
@@ -999,8 +999,8 @@ export function VolumetricLightShafts({ shafts, sceneId }: VolumetricLightShafts
 /* ── Single volumetric shaft ── */
 
 function VolumetricShaft({ config }: { config: VolumetricShaftConfig }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.ShaderMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
+  const matRef = useRef<ShaderMaterial>(null);
   const timeRef = useRef(0);
 
   const c = useMemo(
@@ -1011,7 +1011,7 @@ function VolumetricShaft({ config }: { config: VolumetricShaftConfig }) {
   // Cone geometry (open-ended) — apex at top, base at bottom.
   // CylinderGeometry args: (radiusTop, radiusBottom, height, radialSegments, heightSegments, openEnded)
   const geometry = useMemo(() => {
-    const geo = new THREE.CylinderGeometry(
+    const geo = new CylinderGeometry(
       c.topRadius,
       c.bottomRadius,
       c.height,
@@ -1026,7 +1026,7 @@ function VolumetricShaft({ config }: { config: VolumetricShaftConfig }) {
   // Stable uniforms object — updated in-place via useFrameTick.
   const uniforms = useMemo(
     () => ({
-      uColor: { value: new THREE.Color(c.color) },
+      uColor: { value: new Color(c.color) },
       uOpacity: { value: c.opacity },
       uTime: { value: 0 },
       uFlicker: { value: c.flickerAmp },
@@ -1042,15 +1042,15 @@ function VolumetricShaft({ config }: { config: VolumetricShaftConfig }) {
 
   const material = useMemo(
     () =>
-      new THREE.ShaderMaterial({
+      new ShaderMaterial({
         uniforms,
         vertexShader: SHAFT_VERTEX_SHADER,
         fragmentShader: SHAFT_FRAGMENT_SHADER,
         transparent: true,
         depthWrite: false,
         depthTest: true,
-        side: THREE.DoubleSide,
-        blending: THREE.AdditiveBlending,
+        side: DoubleSide,
+        blending: AdditiveBlending,
         polygonOffset: true,
         polygonOffsetFactor: -1,
         polygonOffsetUnits: -1,
@@ -1111,8 +1111,8 @@ function VolumetricShaft({ config }: { config: VolumetricShaftConfig }) {
 /* ── Dust motes (Points) — animated floating particles inside the shaft ── */
 
 function DustMotesInside({ config }: { config: VolumetricShaftConfig }) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const matRef = useRef<THREE.PointsMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const matRef = useRef<PointsMaterial>(null);
   const timeRef = useRef(0);
 
   const c = useMemo(
@@ -1138,9 +1138,9 @@ function DustMotesInside({ config }: { config: VolumetricShaftConfig }) {
       positions[i3 + 2] = Math.sin(angle) * r;
       phases[i] = Math.random() * Math.PI * 2;
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('phase', new THREE.BufferAttribute(phases, 1));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    geo.setAttribute('phase', new BufferAttribute(phases, 1));
     sanitizeBufferGeometryPositions(geo);
     return geo;
   }, [c.topRadius, c.bottomRadius, c.height]);
@@ -1156,8 +1156,8 @@ function DustMotesInside({ config }: { config: VolumetricShaftConfig }) {
     timeRef.current += delta;
     const t = timeRef.current;
 
-    const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
-    const phaseAttr = pointsRef.current.geometry.getAttribute('phase') as THREE.BufferAttribute;
+    const posAttr = pointsRef.current.geometry.getAttribute('position') as BufferAttribute;
+    const phaseAttr = pointsRef.current.geometry.getAttribute('phase') as BufferAttribute;
     const posArray = posAttr.array as Float32Array;
     const phaseArray = phaseAttr.array as Float32Array;
     const halfHeight = c.height / 2;
@@ -1215,7 +1215,7 @@ function DustMotesInside({ config }: { config: VolumetricShaftConfig }) {
         opacity={0.45}
         depthWrite={false}
         sizeAttenuation
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
       />
     </points>
   );

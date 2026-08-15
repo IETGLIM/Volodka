@@ -3,7 +3,7 @@
 'use client';
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { DoubleSide } from 'three';
 import type { NPCAppearance } from '@/shared/types/game';
 import { getAmbientCrowdImpostorTexture } from '@/engine/graphics/ambientCrowdImpostorTexture';
 
@@ -26,7 +26,7 @@ export function CapsuleImpostorNPC({ appearance }: { appearance: NPCAppearance }
           metalness={0.05}
           alphaTest={0.35}
           depthWrite={false}
-          side={THREE.DoubleSide}
+          side={DoubleSide}
         />
       </mesh>
       <mesh position={[0, 0.02, 0]} rotation={[-Math.PI / 2, 0, 0]}>

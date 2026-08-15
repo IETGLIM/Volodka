@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group, Vector3 } from 'three';
 import {
   environmentDetailVisible,
   resolveEnvironmentLod,
@@ -14,7 +14,7 @@ import { useEnvironmentLod } from './EnvironmentLodProvider';
 export const PROP_DISTANCE_HYSTERESIS_M = 2;
 
 interface PropDistanceGateProps {
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: MutableRefObject<Vector3>;
   /** World-space anchor for this prop group */
   position: [number, number, number];
   /** Max distance from player to anchor before hiding */
@@ -23,7 +23,7 @@ interface PropDistanceGateProps {
 }
 
 interface SceneClutterGateProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
   position: [number, number, number];
   maxDistance: number;
   children: ReactNode;
@@ -60,7 +60,7 @@ export function PropDistanceGate({
   maxDistance,
   children,
 }: PropDistanceGateProps) {
-  const anchor = useRef(new THREE.Vector3(...position));
+  const anchor = useRef(new Vector3(...position));
   anchor.current.set(...position);
 
   const visibleRef = useRef(true);
@@ -116,8 +116,8 @@ const ENV_LOD_TICK_S = 0.15;
  */
 export function EnvironmentDetail({ minLod, position, children }: EnvironmentDetailProps) {
   const { livePlayerPositionRef, thresholds } = useEnvironmentLod();
-  const anchorRef = useRef(new THREE.Vector3());
-  const groupRef = useRef<THREE.Group>(null);
+  const anchorRef = useRef(new Vector3());
+  const groupRef = useRef<Group>(null);
 
   const lodRef = useRef<EnvironmentLodLevel>('full');
   const visibleRef = useRef(true);

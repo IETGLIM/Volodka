@@ -2,37 +2,37 @@
 /* ─── Volodka RPG – Солныш & Лёня room procedural visual ─── */
 
 import type { MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { BoxGeometry, CanvasTexture, CylinderGeometry, PlaneGeometry, RepeatWrapping, Vector3 } from 'three';
 import { Desk, Chair, Lamp, Plant } from './lazyInteriorModels';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 
 interface SolnyshRoomVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 /** Cozy room with carpets — designer + barista couple (8×8 m) */
 /* ─── Shared geometries (module-level, reused across renders) ─── */
 
-const geo_pln_1 = new THREE.PlaneGeometry(8, 8);
-const geo_pln_2 = new THREE.PlaneGeometry(4.2, 3.2);
-const geo_pln_3 = new THREE.PlaneGeometry(2, 1.6);
-const geo_box_4 = new THREE.BoxGeometry(0.06, 1.1, 0.06);
-const geo_box_5 = new THREE.BoxGeometry(0.7, 0.55, 0.03);
-const geo_pln_6 = new THREE.PlaneGeometry(0.5, 0.4);
-const geo_box_7 = new THREE.BoxGeometry(0.9, 0.9, 0.5);
-const geo_cyl_8 = new THREE.CylinderGeometry(0.12, 0.14, 0.35, 8);
-const geo_cyl_9 = new THREE.CylinderGeometry(0.04, 0.04, 0.12, 6);
-const geo_box_10 = new THREE.BoxGeometry(0.8, 1.5, 0.45);
-const geo_box_11 = new THREE.BoxGeometry(0.72, 1.4, 0.02);
-const geo_box_12 = new THREE.BoxGeometry(0.22, 0.16, 0.02);
-const geo_pln_13 = new THREE.PlaneGeometry(0.18, 0.12);
-const geo_box_14 = new THREE.BoxGeometry(0.32, 0.26, 0.02);
-const geo_pln_15 = new THREE.PlaneGeometry(0.26, 0.2);
-const geo_cyl_16 = new THREE.CylinderGeometry(0.28, 0.32, 0.1, 12);
-const geo_pln_wall_wh = new THREE.PlaneGeometry(8, 3);
-const geo_pln_wall_dh = new THREE.PlaneGeometry(8, 3);
+const geo_pln_1 = new PlaneGeometry(8, 8);
+const geo_pln_2 = new PlaneGeometry(4.2, 3.2);
+const geo_pln_3 = new PlaneGeometry(2, 1.6);
+const geo_box_4 = new BoxGeometry(0.06, 1.1, 0.06);
+const geo_box_5 = new BoxGeometry(0.7, 0.55, 0.03);
+const geo_pln_6 = new PlaneGeometry(0.5, 0.4);
+const geo_box_7 = new BoxGeometry(0.9, 0.9, 0.5);
+const geo_cyl_8 = new CylinderGeometry(0.12, 0.14, 0.35, 8);
+const geo_cyl_9 = new CylinderGeometry(0.04, 0.04, 0.12, 6);
+const geo_box_10 = new BoxGeometry(0.8, 1.5, 0.45);
+const geo_box_11 = new BoxGeometry(0.72, 1.4, 0.02);
+const geo_box_12 = new BoxGeometry(0.22, 0.16, 0.02);
+const geo_pln_13 = new PlaneGeometry(0.18, 0.12);
+const geo_box_14 = new BoxGeometry(0.32, 0.26, 0.02);
+const geo_pln_15 = new PlaneGeometry(0.26, 0.2);
+const geo_cyl_16 = new CylinderGeometry(0.28, 0.32, 0.1, 12);
+const geo_pln_wall_wh = new PlaneGeometry(8, 3);
+const geo_pln_wall_dh = new PlaneGeometry(8, 3);
 
 registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_pln_6, geo_box_7, geo_cyl_8, geo_cyl_9, geo_box_10, geo_box_11, geo_box_12, geo_pln_13, geo_box_14, geo_pln_15, geo_cyl_16, geo_pln_wall_wh, geo_pln_wall_dh]);
 
@@ -187,7 +187,7 @@ export function SolnyshRoomVisual({ livePlayerPositionRef: _livePlayerPositionRe
   );
 }
 
-function createWoodFloorTexture(): THREE.CanvasTexture {
+function createWoodFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -202,13 +202,13 @@ function createWoodFloorTexture(): THREE.CanvasTexture {
     ctx.lineTo(size, i);
     ctx.stroke();
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
   tex.repeat.set(3, 3);
   return tex;
 }
 
-function createCarpetTexture(): THREE.CanvasTexture {
+function createCarpetTexture(): CanvasTexture {
   const size = 128;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -221,13 +221,13 @@ function createCarpetTexture(): THREE.CanvasTexture {
   for (let i = 0; i < size; i += 16) {
     ctx.strokeRect(i % 32 === 0 ? i : i - 8, i, 14, 14);
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
   tex.repeat.set(2, 2);
   return tex;
 }
 
-function createWallTexture(): THREE.CanvasTexture {
+function createWallTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -240,8 +240,8 @@ function createWallTexture(): THREE.CanvasTexture {
     ctx.fillStyle = i % 2 ? '#c8b8a8' : '#e8d8c8';
     ctx.fillRect(Math.random() * size, Math.random() * size, 30, 20);
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
   tex.repeat.set(2, 1.5);
   return tex;
 }

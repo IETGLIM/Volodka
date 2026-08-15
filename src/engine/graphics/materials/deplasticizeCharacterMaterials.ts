@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Color, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Object3D } from 'three';
 
 export interface DeplasticizeCharacterOptions {
   /** Base IBL response — cloth/skin should drink light, not mirror it. */
@@ -29,19 +29,19 @@ const DEFAULTS: Required<DeplasticizeCharacterOptions> = {
  * Pull them toward worn cloth/skin response without rebuilding the mesh.
  */
 export function deplasticizeCharacterMaterials(
-  root: THREE.Object3D,
+  root: Object3D,
   options: DeplasticizeCharacterOptions = {},
 ): void {
   const opts = { ...DEFAULTS, ...options };
 
   root.traverse((obj) => {
-    const mesh = obj as THREE.Mesh;
+    const mesh = obj as Mesh;
     if (!mesh.isMesh) return;
 
     const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     for (const m of mats) {
-      if (!m || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) continue;
-      const std = m as THREE.MeshStandardMaterial;
+      if (!m || !(m as MeshStandardMaterial).isMeshStandardMaterial) continue;
+      const std = m as MeshStandardMaterial;
 
       const name = `${std.name ?? ''} ${mesh.name ?? ''}`.toLowerCase();
       const isSkin =
@@ -93,19 +93,19 @@ export function deplasticizeCharacterMaterials(
       }
 
       // AAA: add subtle sheen for cloth/skin when using Physical (graceful on Standard)
-      const physical = std as unknown as THREE.MeshPhysicalMaterial;
+      const physical = std as unknown as MeshPhysicalMaterial;
       if (isCloth && 'sheen' in physical) {
         try {
           (physical as any).sheen = Math.max((physical as any).sheen ?? 0, 0.45);
           (physical as any).sheenRoughness = 0.72;
-          (physical as any).sheenColor = new THREE.Color('#5a5a6a');
+          (physical as any).sheenColor = new Color('#5a5a6a');
         } catch { /* ignore */ }
       }
       if (isSkin && 'sheen' in physical) {
         try {
           (physical as any).sheen = Math.max((physical as any).sheen ?? 0, 0.28);
           (physical as any).sheenRoughness = 0.58;
-          (physical as any).sheenColor = new THREE.Color('#ffdfc4');
+          (physical as any).sheenColor = new Color('#ffdfc4');
         } catch { /* ignore */ }
         // SSS approximation: thin clearcoat layer simulates epidermis specular
         // and subtle transmission simulates light through thin skin (ears, fingers).

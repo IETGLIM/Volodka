@@ -4,7 +4,7 @@
  * Session-scoped resources (InteriorModels, NPC caches) dispose on canvas unmount / HMR.
  */
 
-import * as THREE from 'three';
+import { BoxGeometry, BufferGeometry, CircleGeometry, ConeGeometry, CylinderGeometry, PlaneGeometry, SphereGeometry, TorusGeometry } from 'three';
 import { registerGlobalCleanup, registerModuleGlobalCleanupBinder } from '@/engine/core/GlobalCleanupService';
 import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { trackModuleGeometry, untrackModuleGeometry } from '@/engine/performance/GpuResourceBudgetTracker';
@@ -15,14 +15,14 @@ import {
 } from '@/engine/three/sceneGpuOwnership';
 import type { SceneId } from '@/shared/types/game';
 
-const moduleGeometries = new Set<THREE.BufferGeometry>();
-const sharedGeometryCache = new Map<string, THREE.BufferGeometry>();
+const moduleGeometries = new Set<BufferGeometry>();
+const sharedGeometryCache = new Map<string, BufferGeometry>();
 
 function cacheKey(kind: string, args: readonly number[]): string {
   return `${kind}:${args.join(':')}`;
 }
 
-function getSharedGeometry<T extends THREE.BufferGeometry>(
+function getSharedGeometry<T extends BufferGeometry>(
   kind: string,
   args: readonly number[],
   factory: () => T,
@@ -41,7 +41,7 @@ function getSharedGeometry<T extends THREE.BufferGeometry>(
 }
 
 /** Register a module-level geometry for lifecycle disposal. Returns the same instance. */
-export function registerModuleGeometry<T extends THREE.BufferGeometry>(geometry: T): T {
+export function registerModuleGeometry<T extends BufferGeometry>(geometry: T): T {
   moduleGeometries.add(geometry);
   trackModuleGeometry(geometry);
   claimGeometryForActiveScene(geometry);
@@ -49,13 +49,13 @@ export function registerModuleGeometry<T extends THREE.BufferGeometry>(geometry:
 }
 
 /** True when geometry is tracked by the module registry (skip mesh-tree dispose). */
-export function isRegistryManagedGeometry(geometry: THREE.BufferGeometry): boolean {
+export function isRegistryManagedGeometry(geometry: BufferGeometry): boolean {
   return moduleGeometries.has(geometry);
 }
 
 /** Register many module-level geometries at once (per-module HMR dispose in dev). */
 export function registerModuleGeometries(
-  geometries: Iterable<THREE.BufferGeometry>,
+  geometries: Iterable<BufferGeometry>,
   sceneId?: SceneId,
 ): void {
   const owned = [...geometries];
@@ -77,7 +77,7 @@ export function registerModuleGeometries(
   }
 }
 
-function evictSharedGeometryFromCache(geometry: THREE.BufferGeometry): void {
+function evictSharedGeometryFromCache(geometry: BufferGeometry): void {
   for (const [key, cached] of sharedGeometryCache) {
     if (cached === geometry) {
       sharedGeometryCache.delete(key);
@@ -85,7 +85,7 @@ function evictSharedGeometryFromCache(geometry: THREE.BufferGeometry): void {
   }
 }
 
-export function disposeRegisteredModuleGeometry(geometry: THREE.BufferGeometry): void {
+export function disposeRegisteredModuleGeometry(geometry: BufferGeometry): void {
   if (!moduleGeometries.has(geometry)) return;
   untrackModuleGeometry(geometry);
   geometry.dispose();
@@ -93,12 +93,12 @@ export function disposeRegisteredModuleGeometry(geometry: THREE.BufferGeometry):
   evictSharedGeometryFromCache(geometry);
 }
 
-export function getSharedBoxGeometry(width: number, height: number, depth: number): THREE.BoxGeometry {
-  return getSharedGeometry('box', [width, height, depth], () => new THREE.BoxGeometry(width, height, depth));
+export function getSharedBoxGeometry(width: number, height: number, depth: number): BoxGeometry {
+  return getSharedGeometry('box', [width, height, depth], () => new BoxGeometry(width, height, depth));
 }
 
-export function getSharedPlaneGeometry(width: number, height: number): THREE.PlaneGeometry {
-  return getSharedGeometry('plane', [width, height], () => new THREE.PlaneGeometry(width, height));
+export function getSharedPlaneGeometry(width: number, height: number): PlaneGeometry {
+  return getSharedGeometry('plane', [width, height], () => new PlaneGeometry(width, height));
 }
 
 export function getSharedCylinderGeometry(
@@ -106,11 +106,11 @@ export function getSharedCylinderGeometry(
   radiusBottom: number,
   height: number,
   radialSegments: number,
-): THREE.CylinderGeometry {
+): CylinderGeometry {
   return getSharedGeometry(
     'cylinder',
     [radiusTop, radiusBottom, height, radialSegments],
-    () => new THREE.CylinderGeometry(radiusTop, radiusBottom, height, radialSegments),
+    () => new CylinderGeometry(radiusTop, radiusBottom, height, radialSegments),
   );
 }
 
@@ -118,27 +118,27 @@ export function getSharedSphereGeometry(
   radius: number,
   widthSegments: number,
   heightSegments: number,
-): THREE.SphereGeometry {
+): SphereGeometry {
   return getSharedGeometry(
     'sphere',
     [radius, widthSegments, heightSegments],
-    () => new THREE.SphereGeometry(radius, widthSegments, heightSegments),
+    () => new SphereGeometry(radius, widthSegments, heightSegments),
   );
 }
 
-export function getSharedCircleGeometry(radius: number, segments: number): THREE.CircleGeometry {
-  return getSharedGeometry('circle', [radius, segments], () => new THREE.CircleGeometry(radius, segments));
+export function getSharedCircleGeometry(radius: number, segments: number): CircleGeometry {
+  return getSharedGeometry('circle', [radius, segments], () => new CircleGeometry(radius, segments));
 }
 
 export function getSharedConeGeometry(
   radius: number,
   height: number,
   radialSegments: number,
-): THREE.ConeGeometry {
+): ConeGeometry {
   return getSharedGeometry(
     'cone',
     [radius, height, radialSegments],
-    () => new THREE.ConeGeometry(radius, height, radialSegments),
+    () => new ConeGeometry(radius, height, radialSegments),
   );
 }
 
@@ -148,11 +148,11 @@ export function getSharedTorusGeometry(
   radialSegments: number,
   tubularSegments: number,
   arc = Math.PI * 2,
-): THREE.TorusGeometry {
+): TorusGeometry {
   return getSharedGeometry(
     'torus',
     [radius, tube, radialSegments, tubularSegments, arc],
-    () => new THREE.TorusGeometry(radius, tube, radialSegments, tubularSegments, arc),
+    () => new TorusGeometry(radius, tube, radialSegments, tubularSegments, arc),
   );
 }
 

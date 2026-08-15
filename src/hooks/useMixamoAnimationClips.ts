@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – optional Mixamo GLB clips merged into a skinned mixer ─── */
 
 import { useEffect, useMemo, useState } from 'react';
-import * as THREE from 'three';
+import { AnimationAction, AnimationClip, AnimationMixer, Object3D } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import type { MixamoClipId } from '@/config/mixamoAnimationCatalog';
 import { MIXAMO_ANIMATION_CATALOG } from '@/config/mixamoAnimationCatalog';
@@ -32,9 +32,9 @@ function getOnDiskMixamoBindings(): MixamoClipBinding[] {
 }
 
 function resolveSourceClip(
-  clips: readonly THREE.AnimationClip[],
+  clips: readonly AnimationClip[],
   binding: MixamoClipBinding,
-): THREE.AnimationClip | null {
+): AnimationClip | null {
   const names = [binding.canonicalName, binding.clipId, ...binding.aliases];
   for (const name of names) {
     const exact = clips.find((clip) => clip.name.toLowerCase() === name.toLowerCase());
@@ -75,12 +75,12 @@ const CRITICAL_CLIP_IDS: ReadonlySet<MixamoClipId> = new Set<MixamoClipId>([
  * Deferred clips (talking, working, …) load sequentially through the scheduler.
  */
 export function useMixamoAnimationClips(
-  mixer: THREE.AnimationMixer | null,
-  root: THREE.Object3D | null,
-  embeddedActions: Record<string, THREE.AnimationAction> | null,
-): Record<string, THREE.AnimationAction> | null {
+  mixer: AnimationMixer | null,
+  root: Object3D | null,
+  embeddedActions: Record<string, AnimationAction> | null,
+): Record<string, AnimationAction> | null {
   const bindings = getOnDiskMixamoBindings();
-  const [mixamoActions, setMixamoActions] = useState<Record<string, THREE.AnimationAction>>({});
+  const [mixamoActions, setMixamoActions] = useState<Record<string, AnimationAction>>({});
 
   useEffect(() => {
     if (!mixer || !root || bindings.length === 0) {
@@ -89,14 +89,14 @@ export function useMixamoAnimationClips(
 
     let cancelled = false;
     const cancelSchedules: Array<() => void> = [];
-    const createdActions = new Set<THREE.AnimationAction>();
+    const createdActions = new Set<AnimationAction>();
     const loader = new GLTFLoader();
     extendGltfLoader(loader);
 
     // Coalesce actions that become ready in the same turn. The locomotion pair
     // below is deliberately published together; deferred cinematic arrivals
     // remain independent and do not trigger locomotion re-binding.
-    const pendingActions: Record<string, THREE.AnimationAction> = {};
+    const pendingActions: Record<string, AnimationAction> = {};
     let flushScheduled = false;
     const scheduleFlush = (): void => {
       if (flushScheduled) return;
@@ -117,7 +117,7 @@ export function useMixamoAnimationClips(
 
     const loadBindingAction = async (
       binding: MixamoClipBinding,
-    ): Promise<THREE.AnimationAction | null> => {
+    ): Promise<AnimationAction | null> => {
       try {
         const gltf = await loader.loadAsync(binding.url);
         if (cancelled) return null;

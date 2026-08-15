@@ -2,17 +2,17 @@
  * Система частиц: пул для искр/эмберов/следов + отдельные светлячки.
  * Аддитивное смешение, затухание цветом — мягкая «живая» картинка.
  */
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, DynamicDrawUsage, Points, PointsMaterial, Scene, Vector3 } from 'three';
 import { rand, TAU, clamp } from './utils';
 
 type SpawnFn = (
   dt: number,
   t: number,
-  spawn: (pos: THREE.Vector3, vel: THREE.Vector3, life: number, color: THREE.Color, size: number) => void,
+  spawn: (pos: Vector3, vel: Vector3, life: number, color: Color, size: number) => void,
 ) => void;
 
 export class FX {
-  private points: THREE.Points;
+  private points: Points;
   private N = 700;
   private posArr: Float32Array;
   private colArr: Float32Array;
@@ -20,19 +20,19 @@ export class FX {
   private life: Float32Array;
   private maxLife: Float32Array;
   private sizeArr: Float32Array;
-  private baseCol: THREE.Color[];
+  private baseCol: Color[];
   private cursor = 0;
   private emitters: SpawnFn[] = [];
 
   // светлячки — отдельное облако
-  private flyPoints: THREE.Points;
+  private flyPoints: Points;
   private flyPos: Float32Array;
-  private flyMat: THREE.PointsMaterial;
-  private flyAnchors: THREE.Vector3[] = [];
+  private flyMat: PointsMaterial;
+  private flyAnchors: Vector3[] = [];
   private flyPhase: number[] = [];
-  private tmpColor = new THREE.Color();
+  private tmpColor = new Color();
 
-  constructor(scene: THREE.Scene) {
+  constructor(scene: Scene) {
     this.N = 700;
     this.posArr = new Float32Array(this.N * 3);
     this.colArr = new Float32Array(this.N * 3);
@@ -42,43 +42,43 @@ export class FX {
     this.sizeArr = new Float32Array(this.N);
     this.baseCol = [];
     for (let i = 0; i < this.N; i++) {
-      this.baseCol.push(new THREE.Color(0, 0, 0));
+      this.baseCol.push(new Color(0, 0, 0));
       this.sizeArr[i] = 0.15;
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(this.posArr, 3).setUsage(THREE.DynamicDrawUsage));
-    geo.setAttribute('color', new THREE.BufferAttribute(this.colArr, 3).setUsage(THREE.DynamicDrawUsage));
-    const mat = new THREE.PointsMaterial({
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(this.posArr, 3).setUsage(DynamicDrawUsage));
+    geo.setAttribute('color', new BufferAttribute(this.colArr, 3).setUsage(DynamicDrawUsage));
+    const mat = new PointsMaterial({
       size: 0.16,
       vertexColors: true,
       transparent: true,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
     });
-    this.points = new THREE.Points(geo, mat);
+    this.points = new Points(geo, mat);
     this.points.frustumCulled = false;
     scene.add(this.points);
 
     // светлячки
     this.flyPos = new Float32Array(60 * 3);
-    const fg = new THREE.BufferGeometry();
-    fg.setAttribute('position', new THREE.BufferAttribute(this.flyPos, 3).setUsage(THREE.DynamicDrawUsage));
-    this.flyMat = new THREE.PointsMaterial({
+    const fg = new BufferGeometry();
+    fg.setAttribute('position', new BufferAttribute(this.flyPos, 3).setUsage(DynamicDrawUsage));
+    this.flyMat = new PointsMaterial({
       size: 0.22,
-      color: new THREE.Color('#ffe9a0'),
+      color: new Color('#ffe9a0'),
       transparent: true,
       opacity: 0,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       depthWrite: false,
       sizeAttenuation: true,
     });
-    this.flyPoints = new THREE.Points(fg, this.flyMat);
+    this.flyPoints = new Points(fg, this.flyMat);
     this.flyPoints.frustumCulled = false;
     scene.add(this.flyPoints);
   }
 
-  setFireflies(anchors: THREE.Vector3[]) {
+  setFireflies(anchors: Vector3[]) {
     this.flyAnchors = anchors;
     this.flyPhase = [];
     for (let i = 0; i < anchors.length * 3; i++) this.flyPhase.push(rand(0, TAU));
@@ -88,8 +88,8 @@ export class FX {
     this.emitters.push(fn);
   }
 
-  burst(pos: THREE.Vector3, colorHex: number, n: number, speed = 2.2) {
-    const c = new THREE.Color(colorHex);
+  burst(pos: Vector3, colorHex: number, n: number, speed = 2.2) {
+    const c = new Color(colorHex);
     for (let i = 0; i < n; i++) {
       const idx = this.cursor;
       this.cursor = (this.cursor + 1) % this.N;
@@ -166,8 +166,8 @@ export class FX {
       this.sizeArr[idx] = size;
     });
 
-    (this.points.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
-    (this.points.geometry.getAttribute('color') as THREE.BufferAttribute).needsUpdate = true;
-    (this.flyPoints.geometry.getAttribute('position') as THREE.BufferAttribute).needsUpdate = true;
+    (this.points.geometry.getAttribute('position') as BufferAttribute).needsUpdate = true;
+    (this.points.geometry.getAttribute('color') as BufferAttribute).needsUpdate = true;
+    (this.flyPoints.geometry.getAttribute('position') as BufferAttribute).needsUpdate = true;
   }
 }

@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry, SphereGeometry } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 interface DripDrop {
@@ -10,7 +10,7 @@ interface DripDrop {
 }
 
 export function DripAnim({ anim }: { anim: EnvAnimation }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const timeRef = useRef(0);
   const dripTimerRef = useRef(0);
   const dropRef = useRef<DripDrop | null>(null);
@@ -21,28 +21,28 @@ export function DripAnim({ anim }: { anim: EnvAnimation }) {
 
   // Pre-create drop mesh (reused, toggled via visibility)
   const { dropMesh, dropMat, splashRings, splashMats, splashGroup } = useMemo(() => {
-    const dropGeo = new THREE.SphereGeometry(0.02, 6, 6);
-    const dropMat = new THREE.MeshBasicMaterial({
+    const dropGeo = new SphereGeometry(0.02, 6, 6);
+    const dropMat = new MeshBasicMaterial({
       color: '#88aacc',
       transparent: true,
       opacity: 0.7,
     });
-    const dropMesh = new THREE.Mesh(dropGeo, dropMat);
+    const dropMesh = new Mesh(dropGeo, dropMat);
     dropMesh.visible = false;
 
-    const splashGeo = new THREE.RingGeometry(0, 0.1, 8);
-    const splashGroup = new THREE.Group();
+    const splashGeo = new RingGeometry(0, 0.1, 8);
+    const splashGroup = new Group();
     splashGroup.visible = false;
-    const splashRings: THREE.Mesh[] = [];
-    const splashMats: THREE.MeshBasicMaterial[] = [];
+    const splashRings: Mesh[] = [];
+    const splashMats: MeshBasicMaterial[] = [];
     for (let i = 0; i < 4; i++) {
-      const mat = new THREE.MeshBasicMaterial({
+      const mat = new MeshBasicMaterial({
         color: '#88aacc',
         transparent: true,
         opacity: 0.5,
-        side: THREE.DoubleSide,
+        side: DoubleSide,
       });
-      const ring = new THREE.Mesh(splashGeo, mat);
+      const ring = new Mesh(splashGeo, mat);
       const angle = (i / 4) * Math.PI * 2;
       ring.position.set(
         Math.cos(angle) * 0.05,

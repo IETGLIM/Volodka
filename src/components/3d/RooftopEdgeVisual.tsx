@@ -3,7 +3,7 @@
 
 import { useMemo, useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BackSide, CanvasTexture, Mesh, Points, RepeatWrapping, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -33,7 +33,7 @@ import {
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface RooftopEdgeVisualProps {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
 }
 
 /** Distant skyline buildings (static layout) */
@@ -66,7 +66,7 @@ export function RooftopEdgeVisual({ livePlayerPositionRef: _livePlayerPositionRe
   const W = 10;
   const D = 8;
 
-  const shirtRef = useRef<THREE.Mesh>(null);
+  const shirtRef = useRef<Mesh>(null);
 
   // Deterministic lit-window layout — Math.random() in render made windows
   // jump to new positions on every re-render
@@ -489,7 +489,7 @@ function SunsetSkyDome() {
     && !isEffectiveReducedMotion();
   const skyTexture = useCachedCanvasTexture('rooftop_edge:galaxy-sky', createRooftopSunsetGalaxySkyTexture);
   const starGeometry = useOwnedBufferGeometry(() => createRooftopHorizonStarGeometry(), []);
-  const starsRef = useRef<THREE.Points>(null);
+  const starsRef = useRef<Points>(null);
 
   useFrameTick('misc', ({ state }) => {
     if (!animateStars || !starsRef.current) return;
@@ -500,7 +500,7 @@ function SunsetSkyDome() {
     <group renderOrder={-10}>
       <mesh position={[0, 0, 0]}>
         <sphereGeometry args={[60, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
-        <meshBasicMaterial map={skyTexture} side={THREE.BackSide} fog={false} depthWrite={false} />
+        <meshBasicMaterial map={skyTexture} side={BackSide} fog={false} depthWrite={false} />
       </mesh>
       <points ref={starsRef} geometry={starGeometry}>
         <pointsMaterial
@@ -517,7 +517,7 @@ function SunsetSkyDome() {
   );
 }
 
-function createRooftopFloorTexture(): THREE.CanvasTexture {
+function createRooftopFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -548,9 +548,9 @@ function createRooftopFloorTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(5, 4);
   return tex;
 }

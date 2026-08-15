@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Footstep Dust Particles ───
  *  Subtle dust puffs spawned at the player's feet on each footstep event.
  *  Uses a fixed-size particle pool (no per-frame allocation) and a single
- *  THREE.Points draw call. Honors prefers-reduced-motion (no particles spawn
+ *  Points draw call. Honors prefers-reduced-motion (no particles spawn
  *  when reduced motion is effective).
  *
  *  Design notes:
@@ -15,7 +15,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BufferAttribute, BufferGeometry, Color, MathUtils, NormalBlending, Points, PointsMaterial } from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 
@@ -27,23 +27,23 @@ const PARTICLE_UPWARD_VEL = 0.4;
 const PARTICLE_OUTWARD_VEL = 0.35;
 const PARTICLE_GRAVITY = -0.6;
 
-const DUST_COLOR = new THREE.Color('#c8b89a');
+const DUST_COLOR = new Color('#c8b89a');
 
 // AAA cinematic dust — scene-aware tint for richer feel (warm indoors, cooler outdoors)
-function getSceneDustColor(sceneId: string): THREE.Color {
+function getSceneDustColor(sceneId: string): Color {
   if (sceneId.includes('volodka') || sceneId.includes('home') || sceneId.includes('library') || sceneId.includes('albert')) {
-    return new THREE.Color('#d4c3a0'); // warm beige indoor
+    return new Color('#d4c3a0'); // warm beige indoor
   }
   if (sceneId.includes('factory') || sceneId.includes('bunker') || sceneId.includes('abandoned')) {
-    return new THREE.Color('#a89f88'); // industrial dust
+    return new Color('#a89f88'); // industrial dust
   }
   if (sceneId.includes('pier') || sceneId.includes('river') || sceneId.includes('chk')) {
-    return new THREE.Color('#b8a88a'); // earthy / wooden pier
+    return new Color('#b8a88a'); // earthy / wooden pier
   }
   if (sceneId.includes('park') || sceneId.includes('forest')) {
-    return new THREE.Color('#a8b090'); // mossy green-brown
+    return new Color('#a8b090'); // mossy green-brown
   }
-  return new THREE.Color('#c8b89a'); // default
+  return new Color('#c8b89a'); // default
 }
 
 interface Particle {
@@ -113,8 +113,8 @@ function spawnBurst(
 }
 
 export function FootstepDust() {
-  const pointsRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.PointsMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const materialRef = useRef<PointsMaterial>(null);
   const poolRef = useRef<Particle[]>(createParticlePool());
   const reducedMotionRef = useRef(false);
 
@@ -135,10 +135,10 @@ export function FootstepDust() {
   }, []);
 
   const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
     // Per-vertex color attribute — we fade each particle's color toward
-    // black as its life decreases. THREE.PointsMaterial multiplies this
+    // black as its life decreases. PointsMaterial multiplies this
     // color by its base opacity, so black = invisible.
     const colors = new Float32Array(MAX_PARTICLES * 3);
     for (let i = 0; i < MAX_PARTICLES; i++) {
@@ -146,7 +146,7 @@ export function FootstepDust() {
       colors[i * 3 + 1] = DUST_COLOR.g;
       colors[i * 3 + 2] = DUST_COLOR.b;
     }
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute('color', new BufferAttribute(colors, 3));
     return geo;
   }, [positions]);
 
@@ -395,16 +395,16 @@ export function FootstepDust() {
     const dt = Math.min(delta, 0.05);
     const pool = poolRef.current;
 
-    const posAttr = pointsRef.current.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const posAttr = pointsRef.current.geometry.getAttribute('position') as BufferAttribute;
     const posArray = posAttr.array as Float32Array;
-    const colorAttr = pointsRef.current.geometry.getAttribute('color') as THREE.BufferAttribute;
+    const colorAttr = pointsRef.current.geometry.getAttribute('color') as BufferAttribute;
     const colorArray = colorAttr.array as Float32Array;
 
     // AAA Phase B: smooth cinematic size reset — sprint puffs stay big & heavy for a moment,
     // then gently return to normal so every step feels weighty but never stuck.
     if (materialRef.current) {
       const targetSize = PARTICLE_BASE_SIZE * (0.92 + 0.08); // base + tiny breathing
-      materialRef.current.size = THREE.MathUtils.lerp(
+      materialRef.current.size = MathUtils.lerp(
         materialRef.current.size,
         targetSize,
         1 - Math.exp(-6 * dt)
@@ -475,7 +475,7 @@ export function FootstepDust() {
         depthWrite={false}
         sizeAttenuation
         vertexColors
-        blending={THREE.NormalBlending}
+        blending={NormalBlending}
       />
     </points>
   );

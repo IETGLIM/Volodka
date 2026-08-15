@@ -12,7 +12,7 @@ import { useRef, useEffect } from 'react';
 import { devWarn } from '@/shared/utils/devLog';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { InteractionState, DEFAULT_CUTSCENE_DURATION } from '@/engine/interaction/interactionMachine';
 import { resolveNpcInteractionSplash, deriveZoneRepeatSkipFlag } from '@/engine/interaction/resolveInteractionSplash';
 import {
@@ -81,7 +81,7 @@ const ALIGN_LERP_SPEED = 8;
 const GLOBAL_INTERACTION_TIMEOUT = 5.0;
 
 interface InteractionSystemBridgeProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
 }
 

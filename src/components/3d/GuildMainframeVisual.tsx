@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   getSharedBoxGeometry,
@@ -27,7 +27,7 @@ import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface GuildMainframeVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const W = 16;
@@ -77,9 +77,9 @@ export function GuildMainframeVisual(_props: GuildMainframeVisualProps) {
   });
   const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
   const oilPuddle = useMemo(() => getWetPuddlePhysicalParams(0.55), []);
-  const rootRef = useRef<THREE.Group>(null);
-  const coreRef = useRef<THREE.Mesh>(null);
-  const consoleScreenRef = useRef<THREE.Mesh>(null);
+  const rootRef = useRef<Group>(null);
+  const coreRef = useRef<Mesh>(null);
+  const consoleScreenRef = useRef<Mesh>(null);
   const tRef = useRef(0);
   const damp = useMemo(() => getIndustrialDampFloorSettings('guild_mainframe'), []);
   const floorRoughness = damp?.roughness ?? 0.55;
@@ -103,10 +103,10 @@ export function GuildMainframeVisual(_props: GuildMainframeVisualProps) {
       tRef.current += delta;
       const pulse = 0.85 + Math.sin(tRef.current * 2.1) * 0.35;
       if (coreRef.current) {
-        (coreRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.2 * pulse;
+        (coreRef.current.material as MeshStandardMaterial).emissiveIntensity = 1.2 * pulse;
       }
       if (consoleScreenRef.current) {
-        const mat = consoleScreenRef.current.material as THREE.MeshStandardMaterial;
+        const mat = consoleScreenRef.current.material as MeshStandardMaterial;
         mat.emissiveIntensity = 0.75 + Math.sin(tRef.current * 3.2) * 0.2;
       }
     },

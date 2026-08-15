@@ -4,31 +4,31 @@
  * Default 1024; Ultra 2048 — document GPU fill-rate tradeoff vs 60fps.
  */
 
-import * as THREE from 'three';
+import { ColorSpace, DataTexture, LinearFilter, LinearMipmapLinearFilter, MeshStandardMaterial, NoColorSpace, RepeatWrapping, SRGBColorSpace } from 'three';
 import { fbm2, worley2, hash2 } from './noise';
 import type { TextureResolutionTier } from './params';
 
 export type DynamicTextureKind = 'asphalt' | 'concrete' | 'metal_worn' | 'brick' | 'skin';
 
 export interface DynamicTextureSet {
-  albedo: THREE.DataTexture;
-  normal: THREE.DataTexture;
-  roughness: THREE.DataTexture;
-  metalness: THREE.DataTexture;
-  height: THREE.DataTexture;
+  albedo: DataTexture;
+  normal: DataTexture;
+  roughness: DataTexture;
+  metalness: DataTexture;
+  height: DataTexture;
   size: number;
   kind: DynamicTextureKind;
 }
 
 const cache = new Map<string, DynamicTextureSet>();
 
-function makeTex(data: Uint8Array, size: number, colorSpace: THREE.ColorSpace): THREE.DataTexture {
-  const tex = new THREE.DataTexture(data, size, size);
+function makeTex(data: Uint8Array, size: number, colorSpace: ColorSpace): DataTexture {
+  const tex = new DataTexture(data, size, size);
   tex.colorSpace = colorSpace;
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
+  tex.magFilter = LinearFilter;
+  tex.minFilter = LinearMipmapLinearFilter;
   tex.generateMipmaps = true;
   tex.anisotropy = 8;
   tex.needsUpdate = true;
@@ -175,11 +175,11 @@ export function generateDynamicTexturesSync(
 
   const normal = heightToNormal(height, size, 4.5);
   const set: DynamicTextureSet = {
-    albedo: makeTex(albedo, size, THREE.SRGBColorSpace),
-    normal: makeTex(normal, size, THREE.NoColorSpace),
-    roughness: makeTex(rough, size, THREE.NoColorSpace),
-    metalness: makeTex(metal, size, THREE.NoColorSpace),
-    height: makeTex(heightRgba, size, THREE.NoColorSpace),
+    albedo: makeTex(albedo, size, SRGBColorSpace),
+    normal: makeTex(normal, size, NoColorSpace),
+    roughness: makeTex(rough, size, NoColorSpace),
+    metalness: makeTex(metal, size, NoColorSpace),
+    height: makeTex(heightRgba, size, NoColorSpace),
     size,
     kind,
   };
@@ -204,7 +204,7 @@ export function getDynamicTextureCacheSize(): number {
 
 /** Apply maps to MeshStandardMaterial (main-thread apply after worker/sync gen). */
 export function applyDynamicTexturesToMaterial(
-  mat: THREE.MeshStandardMaterial,
+  mat: MeshStandardMaterial,
   set: DynamicTextureSet,
   repeat = 4,
 ): void {

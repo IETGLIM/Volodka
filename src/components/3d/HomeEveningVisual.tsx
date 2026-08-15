@@ -3,7 +3,7 @@
 
 import { useRef, useEffect, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BoxGeometry, CanvasTexture, CylinderGeometry, DoubleSide, Group, MathUtils, PlaneGeometry, RepeatWrapping, SphereGeometry, TorusGeometry } from 'three';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { useGameStore } from '@/store/gameStore';
@@ -23,89 +23,89 @@ import { HomeEveningProps } from './sceneChunks/homeEvening';
 /** Home evening room (14×14m) – kitchen, living area, bedroom area */
 /* ─── Shared geometries (module-level, reused across renders) ─── */
 
-const geo_pln_1 = new THREE.PlaneGeometry(14, 14);
-const geo_pln_2 = new THREE.PlaneGeometry(14, 3);
-const geo_box_3 = new THREE.BoxGeometry(4, 0.9, 0.7);
-const geo_box_4 = new THREE.BoxGeometry(4.05, 0.03, 0.75);
-const geo_box_5 = new THREE.BoxGeometry(0.68, 1.78, 0.5);
-const geo_box_6 = new THREE.BoxGeometry(0.72, 0.03, 0.72);
-const geo_box_7 = new THREE.BoxGeometry(0.66, 1.78, 0.04);
-const geo_box_8 = new THREE.BoxGeometry(0.02, 0.3, 0.04);
-const geo_box_9 = new THREE.BoxGeometry(0.64, 0.02, 0.005);
-const geo_pln_10 = new THREE.PlaneGeometry(0.15, 0.2);
-const geo_pln_11 = new THREE.PlaneGeometry(0.12, 0.15);
-const geo_box_12 = new THREE.BoxGeometry(0.6, 0.1, 0.5);
-const geo_cyl_13 = new THREE.CylinderGeometry(0.02, 0.02, 0.4, 8);
-const geo_box_14 = new THREE.BoxGeometry(2.2, 0.35, 0.9);
-const geo_box_15 = new THREE.BoxGeometry(2.2, 0.5, 0.15);
-const geo_box_16 = new THREE.BoxGeometry(0.15, 0.3, 0.9);
-const geo_box_17 = new THREE.BoxGeometry(1, 0.04, 0.6);
-const geo_box_18 = new THREE.BoxGeometry(0.04, 0.35, 0.04);
-const geo_box_19 = new THREE.BoxGeometry(1.4, 0.8, 0.06);
-const geo_box_20 = new THREE.BoxGeometry(0.8, 0.6, 0.35);
-const geo_box_21 = new THREE.BoxGeometry(1.4, 0.3, 2);
-const geo_box_22 = new THREE.BoxGeometry(1.4, 0.5, 0.08);
-const geo_box_23 = new THREE.BoxGeometry(0.6, 0.12, 0.3);
-const geo_box_24 = new THREE.BoxGeometry(1.3, 0.06, 1.2);
-const geo_box_25 = new THREE.BoxGeometry(0.98, 1.98, 0.55);
-const geo_box_26 = new THREE.BoxGeometry(1.04, 0.03, 0.63);
-const geo_box_27 = new THREE.BoxGeometry(0.94, 0.03, 0.5);
-const geo_box_28 = new THREE.BoxGeometry(0.47, 1.94, 0.03);
-const geo_cyl_29 = new THREE.CylinderGeometry(0.01, 0.01, 0.08, 6);
-const geo_box_30 = new THREE.BoxGeometry(0.3, 0.5, 0.005);
-const geo_pln_31 = new THREE.PlaneGeometry(2, 1.5);
-const geo_box_32 = new THREE.BoxGeometry(0.05, 1.55, 2.05);
-const geo_box_33 = new THREE.BoxGeometry(0.04, 1.5, 0.03);
-const geo_box_34 = new THREE.BoxGeometry(0.03, 0.03, 2);
-const geo_box_35 = new THREE.BoxGeometry(0.7, 0.9, 0.65);
-const geo_box_36 = new THREE.BoxGeometry(0.72, 0.02, 0.67);
-const geo_tor_37 = new THREE.TorusGeometry(0.06, 0.008, 6, 16);
-const geo_box_38 = new THREE.BoxGeometry(0.6, 0.45, 0.02);
-const geo_cyl_39 = new THREE.CylinderGeometry(0.008, 0.008, 0.3, 6);
-const geo_cyl_40 = new THREE.CylinderGeometry(0.06, 0.05, 0.14, 8);
-const geo_sph_41 = new THREE.SphereGeometry(0.055, 6, 4, 0, 6.283185307179586, 0, 1.5707963267948966);
-const geo_cyl_42 = new THREE.CylinderGeometry(0.012, 0.015, 0.08, 6);
-const geo_tor_43 = new THREE.TorusGeometry(0.04, 0.006, 4, 8, 3.141592653589793);
-const geo_box_44 = new THREE.BoxGeometry(1.2, 0.7, 0.35);
-const geo_cyl_45 = new THREE.CylinderGeometry(0.006, 0.006, 0.15, 4);
-const geo_box_46 = new THREE.BoxGeometry(0.6, 0.04, 0.15);
-const geo_cyl_47 = new THREE.CylinderGeometry(0.02, 0.02, 0.08, 6);
-const geo_pln_48 = new THREE.PlaneGeometry(1.5, 0.8);
-const geo_box_49 = new THREE.BoxGeometry(1, 2, 0.3);
-const geo_box_50 = new THREE.BoxGeometry(0.98, 0.03, 0.28);
-const geo_cyl_51 = new THREE.CylinderGeometry(0.06, 0.08, 0.04, 8);
-const geo_cyl_52 = new THREE.CylinderGeometry(0.012, 0.012, 0.25, 6);
-const geo_cyl_53 = new THREE.CylinderGeometry(0.04, 0.1, 0.12, 8);
-const geo_sph_54 = new THREE.SphereGeometry(0.03, 6, 6);
-const geo_box_55 = new THREE.BoxGeometry(0.05, 0.012, 0.15);
-const geo_cyl_56 = new THREE.CylinderGeometry(0.03, 0.025, 0.06, 8);
-const geo_cyl_57 = new THREE.CylinderGeometry(0.045, 0.045, 0.005, 12);
-const geo_pln_58 = new THREE.PlaneGeometry(0.4, 1.6);
-const geo_cyl_59 = new THREE.CylinderGeometry(0.01, 0.01, 2.3, 6);
-const geo_pln_60 = new THREE.PlaneGeometry(3, 2.5);
-const geo_pln_61 = new THREE.PlaneGeometry(2.8, 2.3);
-const geo_cyl_62 = new THREE.CylinderGeometry(0.025, 0.03, 1.8, 6);
-const geo_cyl_63 = new THREE.CylinderGeometry(0.2, 0.22, 0.06, 8);
-const geo_cyl_64 = new THREE.CylinderGeometry(0.005, 0.005, 0.08, 4);
-const geo_box_65 = new THREE.BoxGeometry(0.4, 0.55, 0.05);
-const geo_box_66 = new THREE.BoxGeometry(0.5, 0.8, 0.03);
-const geo_pln_67 = new THREE.PlaneGeometry(0.42, 0.7);
-const geo_box_68 = new THREE.BoxGeometry(0.08, 0.04, 0.2);
-const geo_pln_69 = new THREE.PlaneGeometry(1.2, 0.6);
-const geo_box_70 = new THREE.BoxGeometry(0.12, 0.18, 0.03);
-const geo_box_71 = new THREE.BoxGeometry(0.08, 0.06, 0.002);
-const geo_cyl_72 = new THREE.CylinderGeometry(0.015, 0.015, 0.005, 8);
-const geo_box_book_h0 = new THREE.BoxGeometry(0.08, 0.18, 0.15);
-const geo_box_book_h1 = new THREE.BoxGeometry(0.08, 0.21, 0.15);
-const geo_box_book_h2 = new THREE.BoxGeometry(0.08, 0.24, 0.15);
+const geo_pln_1 = new PlaneGeometry(14, 14);
+const geo_pln_2 = new PlaneGeometry(14, 3);
+const geo_box_3 = new BoxGeometry(4, 0.9, 0.7);
+const geo_box_4 = new BoxGeometry(4.05, 0.03, 0.75);
+const geo_box_5 = new BoxGeometry(0.68, 1.78, 0.5);
+const geo_box_6 = new BoxGeometry(0.72, 0.03, 0.72);
+const geo_box_7 = new BoxGeometry(0.66, 1.78, 0.04);
+const geo_box_8 = new BoxGeometry(0.02, 0.3, 0.04);
+const geo_box_9 = new BoxGeometry(0.64, 0.02, 0.005);
+const geo_pln_10 = new PlaneGeometry(0.15, 0.2);
+const geo_pln_11 = new PlaneGeometry(0.12, 0.15);
+const geo_box_12 = new BoxGeometry(0.6, 0.1, 0.5);
+const geo_cyl_13 = new CylinderGeometry(0.02, 0.02, 0.4, 8);
+const geo_box_14 = new BoxGeometry(2.2, 0.35, 0.9);
+const geo_box_15 = new BoxGeometry(2.2, 0.5, 0.15);
+const geo_box_16 = new BoxGeometry(0.15, 0.3, 0.9);
+const geo_box_17 = new BoxGeometry(1, 0.04, 0.6);
+const geo_box_18 = new BoxGeometry(0.04, 0.35, 0.04);
+const geo_box_19 = new BoxGeometry(1.4, 0.8, 0.06);
+const geo_box_20 = new BoxGeometry(0.8, 0.6, 0.35);
+const geo_box_21 = new BoxGeometry(1.4, 0.3, 2);
+const geo_box_22 = new BoxGeometry(1.4, 0.5, 0.08);
+const geo_box_23 = new BoxGeometry(0.6, 0.12, 0.3);
+const geo_box_24 = new BoxGeometry(1.3, 0.06, 1.2);
+const geo_box_25 = new BoxGeometry(0.98, 1.98, 0.55);
+const geo_box_26 = new BoxGeometry(1.04, 0.03, 0.63);
+const geo_box_27 = new BoxGeometry(0.94, 0.03, 0.5);
+const geo_box_28 = new BoxGeometry(0.47, 1.94, 0.03);
+const geo_cyl_29 = new CylinderGeometry(0.01, 0.01, 0.08, 6);
+const geo_box_30 = new BoxGeometry(0.3, 0.5, 0.005);
+const geo_pln_31 = new PlaneGeometry(2, 1.5);
+const geo_box_32 = new BoxGeometry(0.05, 1.55, 2.05);
+const geo_box_33 = new BoxGeometry(0.04, 1.5, 0.03);
+const geo_box_34 = new BoxGeometry(0.03, 0.03, 2);
+const geo_box_35 = new BoxGeometry(0.7, 0.9, 0.65);
+const geo_box_36 = new BoxGeometry(0.72, 0.02, 0.67);
+const geo_tor_37 = new TorusGeometry(0.06, 0.008, 6, 16);
+const geo_box_38 = new BoxGeometry(0.6, 0.45, 0.02);
+const geo_cyl_39 = new CylinderGeometry(0.008, 0.008, 0.3, 6);
+const geo_cyl_40 = new CylinderGeometry(0.06, 0.05, 0.14, 8);
+const geo_sph_41 = new SphereGeometry(0.055, 6, 4, 0, 6.283185307179586, 0, 1.5707963267948966);
+const geo_cyl_42 = new CylinderGeometry(0.012, 0.015, 0.08, 6);
+const geo_tor_43 = new TorusGeometry(0.04, 0.006, 4, 8, 3.141592653589793);
+const geo_box_44 = new BoxGeometry(1.2, 0.7, 0.35);
+const geo_cyl_45 = new CylinderGeometry(0.006, 0.006, 0.15, 4);
+const geo_box_46 = new BoxGeometry(0.6, 0.04, 0.15);
+const geo_cyl_47 = new CylinderGeometry(0.02, 0.02, 0.08, 6);
+const geo_pln_48 = new PlaneGeometry(1.5, 0.8);
+const geo_box_49 = new BoxGeometry(1, 2, 0.3);
+const geo_box_50 = new BoxGeometry(0.98, 0.03, 0.28);
+const geo_cyl_51 = new CylinderGeometry(0.06, 0.08, 0.04, 8);
+const geo_cyl_52 = new CylinderGeometry(0.012, 0.012, 0.25, 6);
+const geo_cyl_53 = new CylinderGeometry(0.04, 0.1, 0.12, 8);
+const geo_sph_54 = new SphereGeometry(0.03, 6, 6);
+const geo_box_55 = new BoxGeometry(0.05, 0.012, 0.15);
+const geo_cyl_56 = new CylinderGeometry(0.03, 0.025, 0.06, 8);
+const geo_cyl_57 = new CylinderGeometry(0.045, 0.045, 0.005, 12);
+const geo_pln_58 = new PlaneGeometry(0.4, 1.6);
+const geo_cyl_59 = new CylinderGeometry(0.01, 0.01, 2.3, 6);
+const geo_pln_60 = new PlaneGeometry(3, 2.5);
+const geo_pln_61 = new PlaneGeometry(2.8, 2.3);
+const geo_cyl_62 = new CylinderGeometry(0.025, 0.03, 1.8, 6);
+const geo_cyl_63 = new CylinderGeometry(0.2, 0.22, 0.06, 8);
+const geo_cyl_64 = new CylinderGeometry(0.005, 0.005, 0.08, 4);
+const geo_box_65 = new BoxGeometry(0.4, 0.55, 0.05);
+const geo_box_66 = new BoxGeometry(0.5, 0.8, 0.03);
+const geo_pln_67 = new PlaneGeometry(0.42, 0.7);
+const geo_box_68 = new BoxGeometry(0.08, 0.04, 0.2);
+const geo_pln_69 = new PlaneGeometry(1.2, 0.6);
+const geo_box_70 = new BoxGeometry(0.12, 0.18, 0.03);
+const geo_box_71 = new BoxGeometry(0.08, 0.06, 0.002);
+const geo_cyl_72 = new CylinderGeometry(0.015, 0.015, 0.005, 8);
+const geo_box_book_h0 = new BoxGeometry(0.08, 0.18, 0.15);
+const geo_box_book_h1 = new BoxGeometry(0.08, 0.21, 0.15);
+const geo_box_book_h2 = new BoxGeometry(0.08, 0.24, 0.15);
 const BOOK_GEOS = [geo_box_book_h0, geo_box_book_h1, geo_box_book_h2] as const;
-const geo_box_photo_0 = new THREE.BoxGeometry(0.25, 0.2, 0.02);
-const geo_box_photo_1 = new THREE.BoxGeometry(0.30, 0.23, 0.02);
-const geo_box_photo_2 = new THREE.BoxGeometry(0.35, 0.26, 0.02);
+const geo_box_photo_0 = new BoxGeometry(0.25, 0.2, 0.02);
+const geo_box_photo_1 = new BoxGeometry(0.30, 0.23, 0.02);
+const geo_box_photo_2 = new BoxGeometry(0.35, 0.26, 0.02);
 const PHOTO_FRAME_GEOS = [geo_box_photo_0, geo_box_photo_1, geo_box_photo_2] as const;
-const geo_pln_photo_0 = new THREE.PlaneGeometry(0.2, 0.15);
-const geo_pln_photo_1 = new THREE.PlaneGeometry(0.24, 0.17);
-const geo_pln_photo_2 = new THREE.PlaneGeometry(0.28, 0.19);
+const geo_pln_photo_0 = new PlaneGeometry(0.2, 0.15);
+const geo_pln_photo_1 = new PlaneGeometry(0.24, 0.17);
+const geo_pln_photo_2 = new PlaneGeometry(0.28, 0.19);
 const PHOTO_PLANE_GEOS = [geo_pln_photo_0, geo_pln_photo_1, geo_pln_photo_2] as const;
 
 registerModuleGeometries([geo_pln_1, geo_pln_2, geo_box_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_pln_10, geo_pln_11, geo_box_12, geo_cyl_13, geo_box_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_box_27, geo_box_28, geo_cyl_29, geo_box_30, geo_pln_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_tor_37, geo_box_38, geo_cyl_39, geo_cyl_40, geo_sph_41, geo_cyl_42, geo_tor_43, geo_box_44, geo_cyl_45, geo_box_46, geo_cyl_47, geo_pln_48, geo_box_49, geo_box_50, geo_cyl_51, geo_cyl_52, geo_cyl_53, geo_sph_54, geo_box_55, geo_cyl_56, geo_cyl_57, geo_pln_58, geo_cyl_59, geo_pln_60, geo_pln_61, geo_cyl_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_pln_67, geo_box_68, geo_pln_69, geo_box_70, geo_box_71, geo_cyl_72, geo_box_book_h0, geo_box_book_h1, geo_box_book_h2, geo_box_photo_0, geo_box_photo_1, geo_box_photo_2, geo_pln_photo_0, geo_pln_photo_1, geo_pln_photo_2, ...BOOK_GEOS, ...PHOTO_FRAME_GEOS, ...PHOTO_PLANE_GEOS]);
@@ -154,11 +154,11 @@ const mat_41 = getSharedStandardMaterial({ color: '#5a4030', roughness: 0.7 });
 const mat_42 = getSharedStandardMaterial({ color: '#5a4030', roughness: 0.8 });
 const mat_43 = getSharedStandardMaterial({ color: '#4a3520', roughness: 0.7 });
 const mat_44 = getSharedStandardMaterial({ color: '#8a7a50', metalness: 0.5, roughness: 0.4 });
-const mat_45 = getSharedStandardMaterial({ color: '#e8d8b0', roughness: 0.8, side: THREE.DoubleSide });
+const mat_45 = getSharedStandardMaterial({ color: '#e8d8b0', roughness: 0.8, side: DoubleSide });
 const mat_46 = getSharedStandardMaterial({ color: '#ffddaa', emissive: '#ffcc80', emissiveIntensity: 2.0 });
 const mat_47 = getSharedStandardMaterial({ color: '#1a1a1a', roughness: 0.7 });
 const mat_48 = getSharedStandardMaterial({ color: '#e8e0d8', roughness: 0.5 });
-const mat_49 = getSharedStandardMaterial({ color: '#5a4a40', roughness: 0.9, side: THREE.DoubleSide });
+const mat_49 = getSharedStandardMaterial({ color: '#5a4a40', roughness: 0.9, side: DoubleSide });
 const mat_50 = getSharedStandardMaterial({ color: '#6a5a40', metalness: 0.4, roughness: 0.5 });
 const mat_51 = getSharedStandardMaterial({ color: '#555', metalness: 0.6, roughness: 0.4 });
 const mat_52 = getSharedStandardMaterial({ color: '#2a3040', roughness: 0.85 });
@@ -215,9 +215,9 @@ export function HomeEveningVisual() {
   const H = 3;
 
   // ── Interactive object animation refs ──
-  const wardrobeLeftDoorRef = useRef<THREE.Group>(null);
-  const wardrobeRightDoorRef = useRef<THREE.Group>(null);
-  const fridgeDoorRef = useRef<THREE.Group>(null);
+  const wardrobeLeftDoorRef = useRef<Group>(null);
+  const wardrobeRightDoorRef = useRef<Group>(null);
+  const fridgeDoorRef = useRef<Group>(null);
 
   // ── Listen for object:interact events to toggle interactive objects ──
   useEffect(() => {
@@ -246,7 +246,7 @@ export function HomeEveningVisual() {
     if (wardrobeLeftDoorRef.current) {
       const open = states['kitchen_wardrobe'] ?? false;
       const targetY = open ? Math.PI / 3 : 0;
-      wardrobeLeftDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      wardrobeLeftDoorRef.current.rotation.y = MathUtils.lerp(
         wardrobeLeftDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -255,7 +255,7 @@ export function HomeEveningVisual() {
     if (wardrobeRightDoorRef.current) {
       const open = states['kitchen_wardrobe'] ?? false;
       const targetY = open ? -Math.PI / 3 : 0;
-      wardrobeRightDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      wardrobeRightDoorRef.current.rotation.y = MathUtils.lerp(
         wardrobeRightDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -266,7 +266,7 @@ export function HomeEveningVisual() {
     if (fridgeDoorRef.current) {
       const open = states['kitchen_fridge'] ?? false;
       const targetY = open ? -Math.PI / 2.5 : 0;
-      fridgeDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      fridgeDoorRef.current.rotation.y = MathUtils.lerp(
         fridgeDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -650,7 +650,7 @@ export function HomeEveningVisual() {
   );
 }
 
-function createHomeFloorTexture(): THREE.CanvasTexture {
+function createHomeFloorTexture(): CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -670,14 +670,14 @@ function createHomeFloorTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(7, 7);
   return tex;
 }
 
-function createHomeWallTexture(): THREE.CanvasTexture {
+function createHomeWallTexture(): CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -695,9 +695,9 @@ function createHomeWallTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(4, 2);
   return tex;
 }

@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, DoubleSide, Mesh, MeshBasicMaterial, PointLight, SpotLight } from 'three';
 
 interface ProximityGodRayProps {
   /** Static active flag — omit when using activeRef */
@@ -35,12 +35,12 @@ export function ProximityGodRay({
   pulsePhaseRef,
   staticHighlightRef,
 }: ProximityGodRayProps) {
-  const spotRef = useRef<THREE.SpotLight>(null);
-  const fillRef = useRef<THREE.PointLight>(null);
-  const coneMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const coneMeshRef = useRef<THREE.Mesh>(null);
-  const glintMatRef = useRef<THREE.MeshBasicMaterial>(null);
-  const glintMeshRef = useRef<THREE.Mesh>(null);
+  const spotRef = useRef<SpotLight>(null);
+  const fillRef = useRef<PointLight>(null);
+  const coneMatRef = useRef<MeshBasicMaterial>(null);
+  const coneMeshRef = useRef<Mesh>(null);
+  const glintMatRef = useRef<MeshBasicMaterial>(null);
+  const glintMeshRef = useRef<Mesh>(null);
   const pulseRef = useRef(0);
   const usesActiveRef = activeRef !== undefined;
   const resolvedColor = colorRef?.current ?? color;
@@ -114,8 +114,8 @@ export function ProximityGodRay({
           transparent
           opacity={0.1}
           depthWrite={false}
-          side={THREE.DoubleSide}
-          blending={THREE.AdditiveBlending}
+          side={DoubleSide}
+          blending={AdditiveBlending}
         />
       </mesh>
       <mesh ref={glintMeshRef} position={[0, 0.06, 0]} renderOrder={3}>
@@ -126,7 +126,7 @@ export function ProximityGodRay({
           transparent
           opacity={0.24}
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={AdditiveBlending}
         />
       </mesh>
       <pointLight ref={fillRef} color={color} intensity={0.22} distance={2.8} decay={2} position={[0, 0.25, 0]} />

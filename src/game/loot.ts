@@ -2,7 +2,7 @@
  * Physical mob loot: drop arc, bounce, idle bob, magnetic pickup.
  * Resources remain lightweight procedural meshes with no external assets.
  */
-import * as THREE from 'three';
+import { AdditiveBlending, CanvasTexture, ConeGeometry, Group, Mesh, MeshStandardMaterial, OctahedronGeometry, Scene, SphereGeometry, Sprite, SpriteMaterial, Vector3 } from 'three';
 import { rand, TAU } from './utils';
 import { crownGeo, deformGeometry } from './organic';
 import type { EnemyKind } from './combat';
@@ -15,15 +15,15 @@ export interface LootPickup {
   label: string;
   icon: string;
   rare: boolean;
-  position: THREE.Vector3;
+  position: Vector3;
 }
 
 interface LootItem {
   id: number;
   kind: LootKind;
   amount: number;
-  group: THREE.Group;
-  velocity: THREE.Vector3;
+  group: Group;
+  velocity: Vector3;
   age: number;
   settled: boolean;
   baseY: number;
@@ -47,25 +47,25 @@ function makeGlowTexture() {
   g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, 64, 64);
-  return new THREE.CanvasTexture(c);
+  return new CanvasTexture(c);
 }
 
 export class LootSystem {
-  private scene: THREE.Scene;
+  private scene: Scene;
   private heightAt: (x: number, z: number) => number;
   private items: LootItem[] = [];
   private nextId = 1;
   private glowTexture = makeGlowTexture();
 
-  constructor(scene: THREE.Scene, heightAt: (x: number, z: number) => number) {
+  constructor(scene: Scene, heightAt: (x: number, z: number) => number) {
     this.scene = scene;
     this.heightAt = heightAt;
   }
 
-  private createVisual(kind: LootKind): THREE.Group {
+  private createVisual(kind: LootKind): Group {
     const meta = META[kind];
-    const group = new THREE.Group();
-    const material = new THREE.MeshStandardMaterial({
+    const group = new Group();
+    const material = new MeshStandardMaterial({
       color: meta.color,
       emissive: meta.color,
       emissiveIntensity: meta.rare ? 1.8 : 0.9,
@@ -74,59 +74,59 @@ export class LootSystem {
     });
 
     if (kind === 'essence') {
-      const mesh = new THREE.Mesh(new THREE.OctahedronGeometry(0.16, 1), material);
+      const mesh = new Mesh(new OctahedronGeometry(0.16, 1), material);
       mesh.scale.set(0.75, 1.35, 0.75);
       group.add(mesh);
     } else if (kind === 'berry') {
       for (let i = 0; i < 3; i++) {
         const a = (i / 3) * TAU;
-        const berry = new THREE.Mesh(new THREE.SphereGeometry(0.105, 10, 8), material);
+        const berry = new Mesh(new SphereGeometry(0.105, 10, 8), material);
         berry.position.set(Math.cos(a) * 0.1, Math.sin(i * 1.8) * 0.04, Math.sin(a) * 0.1);
         group.add(berry);
       }
-      const leaf = new THREE.Mesh(
-        new THREE.SphereGeometry(0.1, 8, 6),
-        new THREE.MeshStandardMaterial({ color: '#567548', roughness: 1 }),
+      const leaf = new Mesh(
+        new SphereGeometry(0.1, 8, 6),
+        new MeshStandardMaterial({ color: '#567548', roughness: 1 }),
       );
       leaf.scale.set(1.4, 0.25, 0.8);
       leaf.position.y = 0.14;
       group.add(leaf);
     } else if (kind === 'shard') {
-      const geo = new THREE.ConeGeometry(0.15, 0.5, 5);
+      const geo = new ConeGeometry(0.15, 0.5, 5);
       deformGeometry(geo, 0.025, 2, rand(0, 100));
-      const shard = new THREE.Mesh(geo, material);
+      const shard = new Mesh(geo, material);
       shard.rotation.z = 0.35;
       group.add(shard);
     } else {
-      const bark = new THREE.Mesh(crownGeo(0.2, 9), material);
+      const bark = new Mesh(crownGeo(0.2, 9), material);
       bark.scale.set(0.55, 1.3, 0.35);
       bark.rotation.z = 0.45;
       group.add(bark);
     }
 
-    const glow = new THREE.Sprite(new THREE.SpriteMaterial({
+    const glow = new Sprite(new SpriteMaterial({
       map: this.glowTexture,
       color: meta.color,
       transparent: true,
       opacity: meta.rare ? 0.8 : 0.45,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
     }));
     glow.scale.setScalar(meta.rare ? 1.35 : 0.85);
     group.add(glow);
-    group.traverse((o) => { if (o instanceof THREE.Mesh) o.castShadow = true; });
+    group.traverse((o) => { if (o instanceof Mesh) o.castShadow = true; });
     return group;
   }
 
-  drop(kind: LootKind, position: THREE.Vector3, amount = 1) {
+  drop(kind: LootKind, position: Vector3, amount = 1) {
     const group = this.createVisual(kind);
-    group.position.copy(position).add(new THREE.Vector3(rand(-0.25, 0.25), 0.75, rand(-0.25, 0.25)));
+    group.position.copy(position).add(new Vector3(rand(-0.25, 0.25), 0.75, rand(-0.25, 0.25)));
     const item: LootItem = {
       id: this.nextId++,
       kind,
       amount,
       group,
-      velocity: new THREE.Vector3(rand(-1.5, 1.5), rand(3.6, 5.2), rand(-1.5, 1.5)),
+      velocity: new Vector3(rand(-1.5, 1.5), rand(3.6, 5.2), rand(-1.5, 1.5)),
       age: 0,
       settled: false,
       baseY: this.heightAt(group.position.x, group.position.z) + 0.28,
@@ -136,7 +136,7 @@ export class LootSystem {
     this.scene.add(group);
   }
 
-  dropEnemy(kind: EnemyKind, position: THREE.Vector3) {
+  dropEnemy(kind: EnemyKind, position: Vector3) {
     // A readable, generous table: every kill gives progression material.
     this.drop('essence', position, kind === 'ten' && Math.random() < 0.35 ? 2 : 1);
     if (kind === 'ten') {
@@ -148,7 +148,7 @@ export class LootSystem {
     }
   }
 
-  update(dt: number, t: number, playerPos: THREE.Vector3): LootPickup[] {
+  update(dt: number, t: number, playerPos: Vector3): LootPickup[] {
     const picked: LootPickup[] = [];
     for (let i = this.items.length - 1; i >= 0; i--) {
       const item = this.items[i];
@@ -180,11 +180,11 @@ export class LootSystem {
       const distance = p.distanceTo(playerPos);
       if (item.age > 0.32 && distance < 4.5) {
         const strength = 5 + (4.5 - distance) * 2.2;
-        const target = playerPos.clone().add(new THREE.Vector3(0, 1, 0));
+        const target = playerPos.clone().add(new Vector3(0, 1, 0));
         p.lerp(target, Math.min(1, dt * strength));
       }
 
-      if (item.age > 0.32 && p.distanceTo(playerPos.clone().add(new THREE.Vector3(0, 0.8, 0))) < 0.78) {
+      if (item.age > 0.32 && p.distanceTo(playerPos.clone().add(new Vector3(0, 0.8, 0))) < 0.78) {
         const meta = META[item.kind];
         picked.push({
           kind: item.kind,

@@ -3,7 +3,7 @@
  * Merged BufferGeometry per building ID so the plaza silhouette is not “same GLB × N”.
  */
 
-import * as THREE from 'three';
+import { BoxGeometry, BufferGeometry, CylinderGeometry } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 
 export type StreetBuildingArchetype =
@@ -33,8 +33,8 @@ function boxAt(
   x: number,
   y: number,
   z: number,
-): THREE.BufferGeometry {
-  const g = new THREE.BoxGeometry(w, h, d);
+): BufferGeometry {
+  const g = new BoxGeometry(w, h, d);
   g.translate(x, y, z);
   return g;
 }
@@ -47,14 +47,14 @@ function cylAt(
   y: number,
   z: number,
   radial = 8,
-): THREE.BufferGeometry {
-  const g = new THREE.CylinderGeometry(rTop, rBot, h, radial);
+): BufferGeometry {
+  const g = new CylinderGeometry(rTop, rBot, h, radial);
   g.translate(x, y, z);
   return g;
 }
 
-function buildArchetype(arch: StreetBuildingArchetype): THREE.BufferGeometry {
-  const parts: THREE.BufferGeometry[] = [];
+function buildArchetype(arch: StreetBuildingArchetype): BufferGeometry {
+  const parts: BufferGeometry[] = [];
 
   switch (arch) {
     case 'narrow_tower': {
@@ -150,15 +150,15 @@ function buildArchetype(arch: StreetBuildingArchetype): THREE.BufferGeometry {
   const merged = mergeGeometries(parts, false);
   for (const p of parts) p.dispose();
   if (!merged) {
-    return new THREE.BoxGeometry(8, 14, 6).translate(0, 7, 0);
+    return new BoxGeometry(8, 14, 6).translate(0, 7, 0);
   }
   merged.computeVertexNormals();
   return merged;
 }
 
-const geometryCache = new Map<StreetBuildingArchetype, THREE.BufferGeometry>();
+const geometryCache = new Map<StreetBuildingArchetype, BufferGeometry>();
 
-export function getUniqueBuildingGeometry(arch: StreetBuildingArchetype): THREE.BufferGeometry {
+export function getUniqueBuildingGeometry(arch: StreetBuildingArchetype): BufferGeometry {
   let g = geometryCache.get(arch);
   if (!g) {
     g = buildArchetype(arch);

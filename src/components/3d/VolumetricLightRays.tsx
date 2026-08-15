@@ -12,7 +12,7 @@
 'use client';
 
 import { useRef, useMemo } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, CylinderGeometry, DoubleSide, Mesh, MeshBasicMaterial, Quaternion, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -73,28 +73,28 @@ const SCENE_VOLUMETRIC_RAYS: Partial<Record<SceneId, VolumetricRayConfig[]>> = {
 
 /** Single volumetric light shaft — transparent cone mesh. */
 function VolumetricShaft({ config, seed }: { config: VolumetricRayConfig; seed: number }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
 
   // Align cylinder along the light direction
   const quaternion = useMemo(() => {
-    const dir = new THREE.Vector3(...config.direction).normalize();
-    const defaultDir = new THREE.Vector3(0, -1, 0);
-    const q = new THREE.Quaternion();
+    const dir = new Vector3(...config.direction).normalize();
+    const defaultDir = new Vector3(0, -1, 0);
+    const q = new Quaternion();
     q.setFromUnitVectors(defaultDir, dir);
     return q;
   }, [config.direction]);
 
   // Position at the midpoint of the shaft
   const midPosition = useMemo((): [number, number, number] => {
-    const dir = new THREE.Vector3(...config.direction).normalize();
-    const origin = new THREE.Vector3(...config.position);
+    const dir = new Vector3(...config.direction).normalize();
+    const origin = new Vector3(...config.position);
     const mid = origin.clone().add(dir.clone().multiplyScalar(config.length * 0.5));
     return [mid.x, mid.y, mid.z];
   }, [config.position, config.direction, config.length]);
 
   const geometry = useMemo(
-    () => new THREE.CylinderGeometry(
+    () => new CylinderGeometry(
       Math.max(0.01, config.radiusTop),
       Math.max(0.01, config.radiusBottom),
       config.length,
@@ -109,7 +109,7 @@ function VolumetricShaft({ config, seed }: { config: VolumetricRayConfig; seed: 
     const t = timeRef.current;
     // Subtle opacity pulsing — gives the shafts a living, breathing quality
     const pulse = 0.85 + 0.15 * Math.sin(t * 0.5 + seed * 1.7);
-    const mat = meshRef.current.material as THREE.MeshBasicMaterial;
+    const mat = meshRef.current.material as MeshBasicMaterial;
     mat.opacity = config.opacity * pulse;
   });
 
@@ -125,9 +125,9 @@ function VolumetricShaft({ config, seed }: { config: VolumetricRayConfig; seed: 
         color={config.color}
         transparent
         opacity={config.opacity}
-        side={THREE.DoubleSide}
+        side={DoubleSide}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
         toneMapped={false}
       />
     </mesh>

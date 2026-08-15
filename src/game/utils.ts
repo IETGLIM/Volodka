@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 
 export type V3 = [number, number, number];
 
@@ -43,6 +43,6 @@ export const fbm = (x: number, y: number) => {
 };
 
 export const v3 = (x: number, y: number, z: number): V3 => [x, y, z];
-export const vec3 = (v: V3) => new THREE.Vector3(v[0], v[1], v[2]);
+export const vec3 = (v: V3) => new Vector3(v[0], v[1], v[2]);
 export const dist2 = (ax: number, az: number, bx: number, bz: number) => Math.hypot(ax - bx, az - bz);
 export const dist3 = (a: V3, b: V3) => Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]);

@@ -7,7 +7,7 @@
 
 import { useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { MathUtils, PointLight } from 'three';
 import { eventBus } from '@/engine/EventBus';
 
 /** Duration of the pulse animation in seconds */
@@ -22,7 +22,7 @@ const PULSE_MAX_INTENSITY = 3;
 export function ChoiceReactivity() {
   const pulseActiveRef = useRef(false);
   const pulseColorRef = useRef('#ffffff');
-  const pulseRef = useRef<THREE.PointLight>(null);
+  const pulseRef = useRef<PointLight>(null);
   const timerRef = useRef(0);
 
   useEffect(() => {
@@ -67,7 +67,7 @@ export function ChoiceReactivity() {
       }
     }
 
-    light.intensity = THREE.MathUtils.lerp(light.intensity, 0, 0.1);
+    light.intensity = MathUtils.lerp(light.intensity, 0, 0.1);
   });
 
   return (

@@ -4,7 +4,7 @@
 
 import { useRef } from 'react';
 import { Html } from '@react-three/drei';
-import * as THREE from 'three';
+import { Group, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useCurrentSceneId } from '@/store/selectors';
 import { useGameStore } from '@/store/gameStore';
@@ -22,7 +22,7 @@ const FLOOR_Y = 0.01;
 const BOB_HEIGHT = FLOOR_Y + 0.11;
 
 interface UmkaDogProps {
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: MutableRefObject<Vector3>;
 }
 
 function UmkaMesh() {
@@ -71,7 +71,7 @@ export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
   const solnyshState = useGameStore((s) => s.exploration.npcStates.solnysh);
   const activeCutsceneId = useGameStore((s) => s.activeCutsceneId);
   const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const phaseRef = useRef(Math.random() * Math.PI * 2);
   const labelRef = useRef<HTMLDivElement>(null);
 

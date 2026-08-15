@@ -3,7 +3,7 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { Mesh, Object3D } from 'three';
 import { useCurrentSceneId } from '@/store/selectors';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
 import type { SceneId } from '@/shared/types/game';
@@ -37,10 +37,10 @@ interface ScenePropMeshInnerProps {
   def: NonNullable<ReturnType<typeof getPropModelDefinition>>;
 }
 
-function buildPropClone(source: THREE.Object3D): THREE.Object3D {
+function buildPropClone(source: Object3D): Object3D {
   const root = source.clone(true);
   root.traverse((node) => {
-    if (node instanceof THREE.Mesh) {
+    if (node instanceof Mesh) {
       node.castShadow = true;
       node.receiveShadow = true;
     }
@@ -52,9 +52,9 @@ function buildPropClone(source: THREE.Object3D): THREE.Object3D {
 
 function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
   const gltf = useGLTF(def.url, true, true, extendLoader);
-  const [clone, setClone] = useState<THREE.Object3D | null>(null);
-  const cloneRef = useRef<THREE.Object3D | null>(null);
-  const placementFallback = useMemo(() => new THREE.Object3D(), []);
+  const [clone, setClone] = useState<Object3D | null>(null);
+  const cloneRef = useRef<Object3D | null>(null);
+  const placementFallback = useMemo(() => new Object3D(), []);
 
   useEffect(() => {
     let cancelled = false;

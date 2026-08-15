@@ -4,7 +4,7 @@
 
 import { useLayoutEffect, useMemo } from 'react';
 import { useTexture } from '@react-three/drei';
-import * as THREE from 'three';
+import { NoColorSpace, RepeatWrapping, SRGBColorSpace, Texture } from 'three';
 import {
   getPolyHavenPbrUrls,
   type PolyHavenMaterialId,
@@ -12,10 +12,10 @@ import {
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 export interface PolyHavenPbrTextures {
-  map: THREE.Texture;
-  normalMap: THREE.Texture;
-  roughnessMap: THREE.Texture;
-  aoMap: THREE.Texture;
+  map: Texture;
+  normalMap: Texture;
+  roughnessMap: Texture;
+  aoMap: Texture;
   repeat: number;
 }
 
@@ -39,15 +39,15 @@ export function usePolyHavenPbr(
   const repeat = urls.repeat * repeatScale;
 
   useLayoutEffect(() => {
-    maps.map.colorSpace = THREE.SRGBColorSpace;
-    maps.map.wrapS = maps.map.wrapT = THREE.RepeatWrapping;
+    maps.map.colorSpace = SRGBColorSpace;
+    maps.map.wrapS = maps.map.wrapT = RepeatWrapping;
     maps.map.anisotropy = 8;
     maps.map.repeat.set(repeat, repeat);
     maps.map.needsUpdate = true;
 
     for (const t of [maps.normalMap, maps.roughnessMap, maps.aoMap]) {
-      t.colorSpace = THREE.NoColorSpace;
-      t.wrapS = t.wrapT = THREE.RepeatWrapping;
+      t.colorSpace = NoColorSpace;
+      t.wrapS = t.wrapT = RepeatWrapping;
       t.anisotropy = 8;
       t.repeat.set(repeat, repeat);
       t.needsUpdate = true;

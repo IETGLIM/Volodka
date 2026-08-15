@@ -7,7 +7,7 @@
  */
 
 import { useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { DoubleSide, Group, Mesh, MeshBasicMaterial } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -72,7 +72,7 @@ export function AaaCinematicAtmosphere() {
 
 function DustMoteCloud({ sceneId, count }: { sceneId: string; count: number }) {
   const motes = useMemo(() => generateMotes(count, sceneId), [sceneId, count]);
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const timeRef = useRef(0);
 
   useFrameTick('misc', ({ delta }) => {
@@ -82,13 +82,13 @@ function DustMoteCloud({ sceneId, count }: { sceneId: string; count: number }) {
     const t = timeRef.current;
     // gentle drift
     for (let i = 0; i < g.children.length; i++) {
-      const child = g.children[i] as THREE.Mesh;
+      const child = g.children[i] as Mesh;
       const m = motes[i];
       if (!m) continue;
       child.position.y = m.y + Math.sin(t * m.drift * 0.3 + m.phase) * 0.12;
       child.position.x = m.x + Math.sin(t * m.drift * 0.14 + m.phase * 1.3) * 0.08;
       child.position.z = m.z + Math.cos(t * m.drift * 0.11 + m.phase * 0.7) * 0.08;
-      const mat = child.material as THREE.MeshBasicMaterial;
+      const mat = child.material as MeshBasicMaterial;
       if (mat) {
         mat.opacity = m.opacity * (0.7 + 0.3 * Math.sin(t * 0.4 + m.phase));
       }
@@ -122,7 +122,7 @@ function SoftVolumetricGlow({ sceneId }: { sceneId: string }) {
     <group>
       <mesh position={[0, 1.6, 0]} rotation-x={-0.15}>
         <planeGeometry args={[12, 12]} />
-        <meshBasicMaterial color="#0a0a16" transparent opacity={0.04} depthWrite={false} side={THREE.DoubleSide} toneMapped={false} />
+        <meshBasicMaterial color="#0a0a16" transparent opacity={0.04} depthWrite={false} side={DoubleSide} toneMapped={false} />
       </mesh>
       <mesh position={[0, 0.02, 0]} rotation-x={-Math.PI / 2}>
         <circleGeometry args={[9, 24]} />
@@ -146,7 +146,7 @@ function HeroGodRayDust({ sceneId }: { sceneId: string }) {
     }));
   }, []);
 
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const timeRef = useRef(0);
 
   useFrameTick('misc', ({ delta }) => {
@@ -158,10 +158,10 @@ function HeroGodRayDust({ sceneId }: { sceneId: string }) {
     g.children.forEach((child, i) => {
       const m = motes[i];
       if (!m) return;
-      const mesh = child as THREE.Mesh;
+      const mesh = child as Mesh;
       mesh.position.y = m.y + Math.sin(t * 0.7 + m.phase) * 0.25;
       mesh.position.x = m.x + Math.sin(t * 0.4 + m.phase * 1.6) * 0.1;
-      const mat = mesh.material as THREE.MeshBasicMaterial;
+      const mat = mesh.material as MeshBasicMaterial;
       if (mat) mat.opacity = 0.22 + Math.sin(t * 1.1 + m.phase) * 0.12;
     });
   });

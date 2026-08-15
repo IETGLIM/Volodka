@@ -5,7 +5,7 @@ import { Component, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useSt
 import { Html, useGLTF } from '@react-three/drei';
 import { useThree } from '@react-three/fiber';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
-import * as THREE from 'three';
+import { AnimationAction, Color, Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import type { NPCDefinition } from '@/shared/types/game';
 import {
   ASSET_MANIFEST,
@@ -54,7 +54,7 @@ interface GltfNPCModelInnerProps {
   visible?: boolean;
   /** Fired once the GLTF scene is fitted — used by dual-LOD keep-alive swap. */
   onReady?: () => void;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 function GltfNPCModelInner({
@@ -74,7 +74,7 @@ function GltfNPCModelInner({
   patrolActivity?: 'idle' | 'walk';
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const fitRef = useRef<THREE.Group>(null);
+  const fitRef = useRef<Group>(null);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const [fit, setFit] = useState<Fit>({ scale: modelScale, rotX: 0, y: 0 });
   const appearance = useMemo(
@@ -92,7 +92,7 @@ function GltfNPCModelInner({
 
   const embeddedActions = useMemo(() => {
     if (!mixer) return null;
-    const record: Record<string, THREE.AnimationAction> = {};
+    const record: Record<string, AnimationAction> = {};
     for (const clip of gltf.animations) {
       record[clip.name] = mixer.clipAction(clip);
     }
@@ -149,20 +149,20 @@ function GltfNPCModelInner({
       maxEmissiveIntensity: 0.42,
     });
 
-    const body = new THREE.Color(appearance.bodyColor);
-    const accent = new THREE.Color(appearance.accentColor);
-    const glow = new THREE.Color(appearance.glowColor);
+    const body = new Color(appearance.bodyColor);
+    const accent = new Color(appearance.accentColor);
+    const glow = new Color(appearance.glowColor);
     const shareTint = NPC_UNIQUE_STAGED_RIG[definition.id] != null;
     const tintStrength = shareTint ? 0.55 : 0.42;
 
     let matIndex = 0;
     scene.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
+      const mesh = obj as Mesh;
       if (!mesh.isMesh) return;
       const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const m of mats) {
-        if (!m || !(m as THREE.MeshStandardMaterial).isMeshStandardMaterial) continue;
-        const std = m as THREE.MeshStandardMaterial;
+        if (!m || !(m as MeshStandardMaterial).isMeshStandardMaterial) continue;
+        const std = m as MeshStandardMaterial;
         const tint = matIndex % 2 === 0 ? body : accent;
         std.color.lerp(tint, tintStrength);
         if (shareTint || appearance.glowColor) {
@@ -231,7 +231,7 @@ interface GltfNPCModelSceneProps {
   /** Whether the parent NPC group is at 'full' LOD (visible). When false,
    *  mixer.update is skipped to save per-frame CPU. */
   lodVisible: boolean;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /** Preloads manifest LOD/compression urls and swaps visibility by camera distance.
@@ -249,8 +249,8 @@ function GltfNPCModelScene({
   lodVisible,
   livePlayerPositionRef,
 }: GltfNPCModelSceneProps) {
-  const anchorRef = useRef<THREE.Group>(null);
-  const worldPosRef = useRef(new THREE.Vector3());
+  const anchorRef = useRef<Group>(null);
+  const worldPosRef = useRef(new Vector3());
   const lastLodDistRef = useRef(-1);
   const camera = useThree((s) => s.camera);
   const { preset } = useGraphicsQuality();
@@ -416,7 +416,7 @@ interface GltfNPCModelProps {
   /** Whether the parent NPC group is at 'full' LOD (visible). When false,
    *  mixer.update is skipped to save per-frame CPU on culled/impostor NPCs. */
   lodVisible?: boolean;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /** Loads a rigged GLB when `modelPath` or registry entry exists; otherwise procedural. */

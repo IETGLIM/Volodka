@@ -9,7 +9,7 @@
  *  - Exploration enhancements (turn tilt, height smoothing, breathing idle)
  */
 
-import * as THREE from 'three';
+import { MathUtils, Object3D, Raycaster, Vector3 } from 'three';
 import {
   configureCameraCollisionRaycaster,
   isCameraCollisionHit,
@@ -65,33 +65,33 @@ const TRANSITION_SWAY_AMPLITUDE = 0.6;
 const MIN_SEGMENT_DURATION = 0.001;   // guard against zero-duration infinite loop
 
 /* ── Pre-allocated temp vectors (avoid GC) ── */
-const _tempPos = new THREE.Vector3();
-const _tempLook = new THREE.Vector3();
-const _springForce = new THREE.Vector3();
-const _camDir = new THREE.Vector3();
-const _camDirReverse = new THREE.Vector3();
-const _bezierA = new THREE.Vector3();
-const _bezierB = new THREE.Vector3();
-const _bezierC = new THREE.Vector3();
-const _bezierD = new THREE.Vector3();
-const _bezierTemp = new THREE.Vector3();
-const _shotRight = new THREE.Vector3();
-const _shotPos = new THREE.Vector3();
-const _shotLook = new THREE.Vector3();
-const _shotMidpoint = new THREE.Vector3();
-const _autoControlOut = new THREE.Vector3();
-const _autoControlIn = new THREE.Vector3();
-const _transitionPos = new THREE.Vector3();
-const _transitionLookAt = new THREE.Vector3();
-const _transitionDir = new THREE.Vector3();
-const _transitionRight = new THREE.Vector3();
-const _tempUp = new THREE.Vector3(0, 1, 0);
+const _tempPos = new Vector3();
+const _tempLook = new Vector3();
+const _springForce = new Vector3();
+const _camDir = new Vector3();
+const _camDirReverse = new Vector3();
+const _bezierA = new Vector3();
+const _bezierB = new Vector3();
+const _bezierC = new Vector3();
+const _bezierD = new Vector3();
+const _bezierTemp = new Vector3();
+const _shotRight = new Vector3();
+const _shotPos = new Vector3();
+const _shotLook = new Vector3();
+const _shotMidpoint = new Vector3();
+const _autoControlOut = new Vector3();
+const _autoControlIn = new Vector3();
+const _transitionPos = new Vector3();
+const _transitionLookAt = new Vector3();
+const _transitionDir = new Vector3();
+const _transitionRight = new Vector3();
+const _tempUp = new Vector3(0, 1, 0);
 const _dialogueShotOut: CameraShot = {
   position: _shotPos,
   lookAt: _shotLook,
   fov: DIALOGUE_FOV,
 };
-const _cutsceneUpdateOut: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number } = {
+const _cutsceneUpdateOut: { position: Vector3; lookAt: Vector3; fov: number } = {
   position: _tempPos,
   lookAt: _tempLook,
   fov: DEFAULT_FOV,
@@ -106,11 +106,11 @@ const _explorationUpdateOut = { targetRoll: 0, targetHeight: 0 };
 
 export interface SpringCameraState {
   /** Current position */
-  position: THREE.Vector3;
+  position: Vector3;
   /** Current velocity */
-  velocity: THREE.Vector3;
+  velocity: Vector3;
   /** Current look-at target */
-  lookAt: THREE.Vector3;
+  lookAt: Vector3;
   /** Current FOV */
   fov: number;
   /** Current roll (radians) for tilt effect */
@@ -119,12 +119,12 @@ export interface SpringCameraState {
 
 /** Create a new spring camera state */
 export function createSpringCameraState(
-  initialPos: THREE.Vector3,
-  initialLookAt: THREE.Vector3,
+  initialPos: Vector3,
+  initialLookAt: Vector3,
 ): SpringCameraState {
   return {
     position: initialPos.clone(),
-    velocity: new THREE.Vector3(),
+    velocity: new Vector3(),
     lookAt: initialLookAt.clone(),
     fov: DEFAULT_FOV,
     roll: 0,
@@ -137,8 +137,8 @@ export function createSpringCameraState(
  */
 export function updateSpringCamera(
   state: SpringCameraState,
-  targetPos: THREE.Vector3,
-  targetLookAt: THREE.Vector3,
+  targetPos: Vector3,
+  targetLookAt: Vector3,
   targetFov: number,
   delta: number,
   targetRoll: number = 0,
@@ -192,10 +192,10 @@ export function updateSpringCamera(
   state.lookAt.lerp(targetLookAt, 1 - Math.exp(-LOOK_AT_STIFFNESS * dt));
 
   // ── FOV spring ──
-  state.fov = THREE.MathUtils.lerp(state.fov, targetFov, 1 - Math.exp(-FOV_LERP_SPEED * dt));
+  state.fov = MathUtils.lerp(state.fov, targetFov, 1 - Math.exp(-FOV_LERP_SPEED * dt));
 
   // ── Roll spring ──
-  state.roll = THREE.MathUtils.lerp(state.roll, targetRoll, 1 - Math.exp(-ROLL_LERP_SPEED * dt));
+  state.roll = MathUtils.lerp(state.roll, targetRoll, 1 - Math.exp(-ROLL_LERP_SPEED * dt));
 }
 
 /* ════════════════════════════════════════════════════
@@ -204,14 +204,14 @@ export function updateSpringCamera(
  * ════════════════════════════════════════════════════ */
 
 export function resolveCameraCollision(
-  raycaster: THREE.Raycaster,
-  sceneChildren: THREE.Object3D[],
-  lookTarget: THREE.Vector3,
-  desiredPos: THREE.Vector3,
+  raycaster: Raycaster,
+  sceneChildren: Object3D[],
+  lookTarget: Vector3,
+  desiredPos: Vector3,
   margin: number = 0.25,
   minDistance: number = 0.8,
-  out: THREE.Vector3 = desiredPos,
-): THREE.Vector3 {
+  out: Vector3 = desiredPos,
+): Vector3 {
   _camDir.copy(desiredPos).sub(lookTarget);
   const fullDistance = _camDir.length();
 
@@ -273,8 +273,8 @@ export type DialogueShotType = 'overShoulder' | 'closeUpNPC' | 'closeUpPlayer' |
 export type DialogueSpeaker = 'npc' | 'player' | 'narrator' | 'unknown';
 
 export interface CameraShot {
-  position: THREE.Vector3;
-  lookAt: THREE.Vector3;
+  position: Vector3;
+  lookAt: Vector3;
   fov: number;
 }
 
@@ -307,8 +307,8 @@ export function getDialogueShotForSpeaker(speaker: DialogueSpeaker): DialogueSho
  */
 export function getBlendedDialogueShot(
   controller: DialogueShotController,
-  playerPos: THREE.Vector3,
-  npcPos: THREE.Vector3,
+  playerPos: Vector3,
+  npcPos: Vector3,
   npcRotation: number = 0,
 ): CameraShot {
   const t = easeInOutCubic(controller.transitionProgress);
@@ -334,8 +334,8 @@ export function getBlendedDialogueShot(
  */
 export function getDialogueShot(
   type: DialogueShotType,
-  playerPos: THREE.Vector3,
-  npcPos: THREE.Vector3,
+  playerPos: Vector3,
+  npcPos: Vector3,
   _npcRotation: number = 0,
 ): CameraShot {
   const dir = _tempLook.copy(npcPos).sub(playerPos);
@@ -573,9 +573,9 @@ export function createExplorationCameraState(): ExplorationCameraState {
  */
 export function updateExplorationState(
   state: ExplorationCameraState,
-  playerPos: THREE.Vector3,
+  playerPos: Vector3,
   currentYaw: number,
-  playerVelocity: THREE.Vector3,
+  playerVelocity: Vector3,
   delta: number,
   moveBlend = 0,
 ): { targetRoll: number; targetHeight: number } {
@@ -583,7 +583,7 @@ export function updateExplorationState(
   const motionScale = getExplorationCameraMotionScale(moveBlend);
 
   // ── Height smoothing (for stairs/slopes) ──
-  state.smoothedHeight = THREE.MathUtils.lerp(
+  state.smoothedHeight = MathUtils.lerp(
     state.smoothedHeight,
     playerPos.y,
     1 - Math.exp(-HEIGHT_SMOOTH_SPEED * dt),
@@ -596,7 +596,7 @@ export function updateExplorationState(
   while (yawDelta < -Math.PI) yawDelta += Math.PI * 2;
 
   state.turnRate = yawDelta / dt;
-  state.smoothedTurnRate = THREE.MathUtils.lerp(
+  state.smoothedTurnRate = MathUtils.lerp(
     state.smoothedTurnRate,
     state.turnRate,
     1 - Math.exp(-TURN_TILT_SPEED * dt),
@@ -604,7 +604,7 @@ export function updateExplorationState(
   state.prevYaw = currentYaw;
 
   // Roll proportional to turn rate (negative = tilt into turn)
-  const targetRoll = -THREE.MathUtils.clamp(
+  const targetRoll = -MathUtils.clamp(
     state.smoothedTurnRate * 0.003,
     -TURN_TILT_MAX,
     TURN_TILT_MAX,
@@ -637,7 +637,7 @@ export function updateExplorationState(
  */
 /** Mutates `position` in place — caller must pass a fresh target each frame. */
 export function applyEnhancedBreathingIdle(
-  position: THREE.Vector3,
+  position: Vector3,
   time: number,
   intensity: number,
 ): void {
@@ -665,15 +665,15 @@ export function applyEnhancedBreathingIdle(
 
 export interface CameraWaypoint {
   /** Camera position at this waypoint */
-  position: THREE.Vector3;
+  position: Vector3;
   /** Look-at target at this waypoint */
-  lookAt: THREE.Vector3;
+  lookAt: Vector3;
   /** FOV at this waypoint */
   fov: number;
   /** Duration to travel FROM previous waypoint TO this one (seconds) */
   duration: number;
   /** Bezier control handle (optional, auto-computed if omitted) */
-  controlPoint?: THREE.Vector3;
+  controlPoint?: Vector3;
 }
 
 export interface CutsceneController {
@@ -690,8 +690,8 @@ export interface CutsceneController {
   /** Total elapsed time */
   elapsed: number;
   /** Current computed camera state */
-  currentPosition: THREE.Vector3;
-  currentLookAt: THREE.Vector3;
+  currentPosition: Vector3;
+  currentLookAt: Vector3;
   currentFov: number;
 }
 
@@ -700,16 +700,16 @@ export function createCutsceneController(
 ): CutsceneController {
   if (waypoints.length === 0) {
     // Fallback: single point
-    const pos = new THREE.Vector3(0, 2, 5);
+    const pos = new Vector3(0, 2, 5);
     return {
-      waypoints: [{ position: pos, lookAt: new THREE.Vector3(), fov: DEFAULT_FOV, duration: 0 }],
+      waypoints: [{ position: pos, lookAt: new Vector3(), fov: DEFAULT_FOV, duration: 0 }],
       currentSegment: 0,
       segmentProgress: 0,
       isComplete: true,
       isPlaying: false,
       elapsed: 0,
       currentPosition: pos.clone(),
-      currentLookAt: new THREE.Vector3(),
+      currentLookAt: new Vector3(),
       currentFov: DEFAULT_FOV,
     };
   }
@@ -753,7 +753,7 @@ export function stopCutscene(controller: CutsceneController): void {
 export function updateCutsceneController(
   controller: CutsceneController,
   delta: number,
-): { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number } | null {
+): { position: Vector3; lookAt: Vector3; fov: number } | null {
   if (!controller.isPlaying || controller.isComplete) return null;
 
   const dt = Math.min(delta, SIM_DELTA_MAX);
@@ -805,7 +805,7 @@ export function updateCutsceneController(
 
   _tempLook.lerpVectors(from.lookAt, to.lookAt, t);
 
-  const fov = THREE.MathUtils.lerp(from.fov, to.fov, t);
+  const fov = MathUtils.lerp(from.fov, to.fov, t);
 
   controller.currentPosition.copy(pos);
   controller.currentLookAt.copy(_tempLook);
@@ -819,11 +819,11 @@ export function updateCutsceneController(
 
 /** Compute an auto control point for bezier when none is specified */
 function computeAutoControlPoint(
-  from: THREE.Vector3,
-  to: THREE.Vector3,
+  from: Vector3,
+  to: Vector3,
   type: 'in' | 'out',
-  out: THREE.Vector3,
-): THREE.Vector3 {
+  out: Vector3,
+): Vector3 {
   out.lerpVectors(from, to, 0.33);
   if (type === 'out') {
     // Arc upward for a cinematic fly feel
@@ -836,12 +836,12 @@ function computeAutoControlPoint(
 
 /** Cubic bezier interpolation between 4 control points */
 function bezierInterpolate(
-  p0: THREE.Vector3,
-  p1: THREE.Vector3,
-  p2: THREE.Vector3,
-  p3: THREE.Vector3,
+  p0: Vector3,
+  p1: Vector3,
+  p2: Vector3,
+  p3: Vector3,
   t: number,
-): THREE.Vector3 {
+): Vector3 {
   const mt = 1 - t;
   const mt2 = mt * mt;
   const mt3 = mt2 * mt;
@@ -882,7 +882,7 @@ export interface CombatCameraState {
     elapsed: number;
     intensity: number;
     /** Reused each frame; returned as shakeOffset when active */
-    offset: THREE.Vector3;
+    offset: Vector3;
   };
 }
 
@@ -894,7 +894,7 @@ export function createCombatCameraState(): CombatCameraState {
       active: false,
       elapsed: 0,
       intensity: 0,
-      offset: new THREE.Vector3(),
+      offset: new Vector3(),
     },
   };
 }
@@ -925,8 +925,8 @@ export function triggerCombatShake(state: CombatCameraState, intensity: number =
 export function updateCombatCamera(
   state: CombatCameraState,
   delta: number,
-  _cameraPosition: THREE.Vector3,
-): { shakeOffset: THREE.Vector3; effectiveFov: number } {
+  _cameraPosition: Vector3,
+): { shakeOffset: Vector3; effectiveFov: number } {
   const dt = Math.min(delta, SIM_DELTA_MAX);
   let effectiveFov = state.targetFov;
 
@@ -939,7 +939,7 @@ export function updateCombatCamera(
     }
   } else {
     // Smoothly recover to combat FOV
-    effectiveFov = THREE.MathUtils.lerp(state.targetFov, COMBAT_FOV, 1 - Math.exp(-COMBAT_ZOOM_RECOVER_SPEED * dt));
+    effectiveFov = MathUtils.lerp(state.targetFov, COMBAT_FOV, 1 - Math.exp(-COMBAT_ZOOM_RECOVER_SPEED * dt));
     state.targetFov = effectiveFov;
   }
 
@@ -976,13 +976,13 @@ export interface SceneTransitionState {
   /** Progress through transition (0-1) */
   progress: number;
   /** Start position (before transition) */
-  startPos: THREE.Vector3;
+  startPos: Vector3;
   /** Start look-at (before transition) */
-  startLookAt: THREE.Vector3;
+  startLookAt: Vector3;
   /** Target position (after transition) */
-  endPos: THREE.Vector3;
+  endPos: Vector3;
   /** Target look-at (after transition) */
-  endLookAt: THREE.Vector3;
+  endLookAt: Vector3;
   /** Mid-point height for arc */
   flyHeight: number;
 }
@@ -991,10 +991,10 @@ export function createSceneTransitionState(): SceneTransitionState {
   return {
     active: false,
     progress: 0,
-    startPos: new THREE.Vector3(),
-    startLookAt: new THREE.Vector3(),
-    endPos: new THREE.Vector3(),
-    endLookAt: new THREE.Vector3(),
+    startPos: new Vector3(),
+    startLookAt: new Vector3(),
+    endPos: new Vector3(),
+    endLookAt: new Vector3(),
     flyHeight: TRANSITION_FLY_HEIGHT,
   };
 }
@@ -1002,10 +1002,10 @@ export function createSceneTransitionState(): SceneTransitionState {
 /** Start a scene transition fly-through */
 export function startSceneTransition(
   state: SceneTransitionState,
-  currentCamPos: THREE.Vector3,
-  currentLookAt: THREE.Vector3,
-  targetCamPos: THREE.Vector3,
-  targetLookAt: THREE.Vector3,
+  currentCamPos: Vector3,
+  currentLookAt: Vector3,
+  targetCamPos: Vector3,
+  targetLookAt: Vector3,
 ): void {
   state.active = true;
   state.progress = 0;
@@ -1029,7 +1029,7 @@ export function cancelSceneTransition(state: SceneTransitionState): void {
 export function updateSceneTransition(
   state: SceneTransitionState,
   delta: number,
-): { position: THREE.Vector3; lookAt: THREE.Vector3 } | null {
+): { position: Vector3; lookAt: Vector3 } | null {
   if (!state.active) return null;
 
   const dt = Math.min(delta, SIM_DELTA_MAX);

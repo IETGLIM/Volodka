@@ -7,7 +7,7 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
+import { AdditiveBlending, Color, Mesh, ShaderMaterial, Vector2 } from 'three';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 interface LensFlareConfig {
@@ -73,7 +73,7 @@ export function LensFlare({ sceneId }: { sceneId: string }) {
 function LensFlareImpl({ config }: { config: LensFlareConfig }) {
   const { size } = useThree();
   const timeRef = useRef(0);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
 
   // Ghost positions along the light-to-center axis
   // NOTE: ghost data is pre-computed for future multi-ghost rendering expansion
@@ -89,18 +89,18 @@ function LensFlareImpl({ config }: { config: LensFlareConfig }) {
   }, [config.ghostCount]);
 
   const material = useMemo(() => {
-    return new THREE.ShaderMaterial({
+    return new ShaderMaterial({
       transparent: true,
       depthWrite: false,
       depthTest: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       uniforms: {
         uTime: { value: 0 },
-        uColor: { value: new THREE.Color(config.ghostColor) },
+        uColor: { value: new Color(config.ghostColor) },
         uIntensity: { value: config.intensity },
         uAnamorphic: { value: config.anamorphicStreak ? 1.0 : 0.0 },
-        uStreakColor: { value: new THREE.Color(config.streakColor) },
-        uResolution: { value: new THREE.Vector2(size.width, size.height) },
+        uStreakColor: { value: new Color(config.streakColor) },
+        uResolution: { value: new Vector2(size.width, size.height) },
       },
       vertexShader: /* glsl */ `
         varying vec2 vUv;

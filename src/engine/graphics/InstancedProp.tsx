@@ -20,7 +20,7 @@
 
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { BufferGeometry, InstancedMesh, Material, Matrix4, Mesh, Object3D } from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
@@ -51,18 +51,18 @@ export interface InstancedPropProps {
 /* ── Mesh part extraction ───────────────────────────────────── */
 
 interface MeshPart {
-  geometry: THREE.BufferGeometry;
-  material: THREE.Material | THREE.Material[];
+  geometry: BufferGeometry;
+  material: Material | Material[];
 }
 
 /**
  * Collect unique (geometry, material) pairs from a GLTF scene.
  * Multi-material meshes produce one part per material.
  */
-function extractMeshParts(scene: THREE.Object3D): MeshPart[] {
+function extractMeshParts(scene: Object3D): MeshPart[] {
   const parts: MeshPart[] = [];
   scene.traverse((child) => {
-    if (child instanceof THREE.Mesh && child.geometry) {
+    if (child instanceof Mesh && child.geometry) {
       // Multi-material: Three.js stores an array; each sub-draw gets one material.
       // InstancedMesh supports material arrays natively.
       parts.push({
@@ -77,10 +77,10 @@ function extractMeshParts(scene: THREE.Object3D): MeshPart[] {
 /* ── Single-instanced InstancedMesh part ────────────────────── */
 
 interface InstancedMeshPartProps {
-  geometry: THREE.BufferGeometry;
-  material: THREE.Material | THREE.Material[];
+  geometry: BufferGeometry;
+  material: Material | Material[];
   count: number;
-  matrices: readonly THREE.Matrix4[];
+  matrices: readonly Matrix4[];
   castShadow: boolean;
   receiveShadow: boolean;
 }
@@ -93,7 +93,7 @@ function InstancedMeshPart({
   castShadow,
   receiveShadow,
 }: InstancedMeshPartProps) {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const meshRef = useRef<InstancedMesh>(null);
 
   useEffect(() => {
     const mesh = meshRef.current;
@@ -133,12 +133,12 @@ interface SingleInstanceProps {
 
 function SingleInstance({ url, instance, castShadow, receiveShadow }: SingleInstanceProps) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const cloneRef = useRef<THREE.Object3D | null>(null);
+  const cloneRef = useRef<Object3D | null>(null);
 
   useEffect(() => {
     const clone = gltf.scene.clone(true);
     clone.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
+      if (child instanceof Mesh) {
         child.castShadow = castShadow;
         child.receiveShadow = receiveShadow;
       }

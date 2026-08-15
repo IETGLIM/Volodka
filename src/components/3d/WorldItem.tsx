@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Mesh } from 'three';
 import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
 import { eventBus } from '@/engine/EventBus';
 
@@ -16,7 +16,7 @@ export function WorldItem({
   label: string;
   onPickup?: (id: string) => void;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
   const baseY = position[1];
   const time = useRef(0);
   const [picked, setPicked] = useState(false);

@@ -4,7 +4,7 @@
  * ступни, плащ, капюшон, пояс, сапоги, посох с кристаллом.
  * Всё из деформированных мешей с 24–48 сегментами.
  */
-import * as THREE from 'three';
+import { AdditiveBlending, BoxGeometry, BufferAttribute, BufferGeometry, CanvasTexture, CapsuleGeometry, Color, ConeGeometry, CylinderGeometry, Group, Material, Mesh, MeshStandardMaterial, OctahedronGeometry, SphereGeometry, Sprite, SpriteMaterial, TorusGeometry, Vector3 } from 'three';
 import { lerp, clamp, TAU } from './utils';
 import { deformGeometry, trunkGeo } from './organic';
 
@@ -18,41 +18,41 @@ export interface PlayerInput {
 }
 
 /* ---------- Утилиты ---------- */
-function softBody(geo: THREE.BufferGeometry, amt: number) {
+function softBody(geo: BufferGeometry, amt: number) {
   return deformGeometry(geo, amt, 1.3, Math.random() * 200);
 }
 function softSphere(r: number, seg = 32) {
-  return softBody(new THREE.SphereGeometry(r, seg, seg * 0.75), r * 0.06);
+  return softBody(new SphereGeometry(r, seg, seg * 0.75), r * 0.06);
 }
 function softCapsule(r: number, h: number, seg = 24) {
-  return softBody(new THREE.CapsuleGeometry(r, h, seg, seg + 6), r * 0.07);
+  return softBody(new CapsuleGeometry(r, h, seg, seg + 6), r * 0.07);
 }
 
 // Общий цвет красной вспышки урона — один инстанс, не создаём каждый кадр
-const _hurtColor = new THREE.Color('#ff4a3a');
+const _hurtColor = new Color('#ff4a3a');
 
 export class Player {
-  group = new THREE.Group();
-  pos = new THREE.Vector3();
-  private vel = new THREE.Vector3();
+  group = new Group();
+  pos = new Vector3();
+  private vel = new Vector3();
   private yaw = 0;
   private animT = 0;
   private speed = 0;
   private heightAt: (x: number, z: number) => number;
 
   // --- части тела для анимации ---
-  private head: THREE.Group;
-  private armL: THREE.Group;
-  private armR: THREE.Group;
-  private legL: THREE.Group;
-  private legR: THREE.Group;
-  private cloakGroup: THREE.Group;
-  private staffGroup: THREE.Group;
-  private gemSprite: THREE.Sprite;
-  private crystal!: THREE.Mesh;
-  private crystalMat!: THREE.MeshStandardMaterial;
+  private head: Group;
+  private armL: Group;
+  private armR: Group;
+  private legL: Group;
+  private legR: Group;
+  private cloakGroup: Group;
+  private staffGroup: Group;
+  private gemSprite: Sprite;
+  private crystal!: Mesh;
+  private crystalMat!: MeshStandardMaterial;
   // список тканевых материалов, которым можно ставить красную вспышку при уроне
-  private hurtMats: THREE.MeshStandardMaterial[] = [];
+  private hurtMats: MeshStandardMaterial[] = [];
   private _hurtWasOn = false;
 
   // --- физика ---
@@ -62,7 +62,7 @@ export class Player {
   private rolling = false;
   private rollT = 0;
   private rollDur = 0.55;
-  private rollDir = new THREE.Vector3(0, 0, 1);
+  private rollDir = new Vector3(0, 0, 1);
   private landSquash = 0;
 
   // --- бой ---
@@ -97,7 +97,7 @@ export class Player {
       this.rolling = false;
       this.rollT = 0;
       this.speed *= 0.25;
-      const torso = (this as any)._torso as THREE.Group;
+      const torso = (this as any)._torso as Group;
       if (torso) {
         torso.rotation.x = 0;
         torso.scale.set(1, 1, 1);
@@ -109,47 +109,47 @@ export class Player {
     this.heightAt = heightAt;
 
     // Материалы
-    const skin = new THREE.MeshStandardMaterial({ color: '#e4b48a', roughness: 0.78 });
-    const cloak = new THREE.MeshStandardMaterial({ color: '#2a3a62', roughness: 0.7 });
-    const cloakInner = new THREE.MeshStandardMaterial({ color: '#1c2749', roughness: 0.75 });
-    const leather = new THREE.MeshStandardMaterial({ color: '#5a3e28', roughness: 0.85 });
-    const boot = new THREE.MeshStandardMaterial({ color: '#3e2f20', roughness: 0.9 });
-    const hair = new THREE.MeshStandardMaterial({ color: '#3a2a1a', roughness: 0.8 });
+    const skin = new MeshStandardMaterial({ color: '#e4b48a', roughness: 0.78 });
+    const cloak = new MeshStandardMaterial({ color: '#2a3a62', roughness: 0.7 });
+    const cloakInner = new MeshStandardMaterial({ color: '#1c2749', roughness: 0.75 });
+    const leather = new MeshStandardMaterial({ color: '#5a3e28', roughness: 0.85 });
+    const boot = new MeshStandardMaterial({ color: '#3e2f20', roughness: 0.9 });
+    const hair = new MeshStandardMaterial({ color: '#3a2a1a', roughness: 0.8 });
     // Собираем материалы, которые будут мигать красным при уроне (без кристалла и глаз)
     this.hurtMats = [cloak, cloakInner, skin, leather, boot];
-    const wood = new THREE.MeshStandardMaterial({ color: '#6b4a2f', roughness: 0.85 });
-    const crystalMat = new THREE.MeshStandardMaterial({
+    const wood = new MeshStandardMaterial({ color: '#6b4a2f', roughness: 0.85 });
+    const crystalMat = new MeshStandardMaterial({
       color: '#9fe8ff', emissive: '#7fd8ff', emissiveIntensity: 2, roughness: 0.2,
     });
-    const eyeWhite = new THREE.MeshStandardMaterial({ color: '#eef2f6', roughness: 0.4 });
-    const eyeIris = new THREE.MeshStandardMaterial({ color: '#4a7ab5', roughness: 0.3 });
-    const eyePupil = new THREE.MeshStandardMaterial({ color: '#0a0e18', roughness: 0.2 });
-    const mouth = new THREE.MeshStandardMaterial({ color: '#c48a6e', roughness: 0.6 });
-    const nose = new THREE.MeshStandardMaterial({ color: '#d4a478', roughness: 0.7 });
-    const brow = new THREE.MeshStandardMaterial({ color: '#3a2a1a', roughness: 0.8 });
-    const beltMat = new THREE.MeshStandardMaterial({ color: '#4a3520', roughness: 0.8 });
-    const buckle = new THREE.MeshStandardMaterial({ color: '#c9b06a', metalness: 0.5, roughness: 0.35 });
+    const eyeWhite = new MeshStandardMaterial({ color: '#eef2f6', roughness: 0.4 });
+    const eyeIris = new MeshStandardMaterial({ color: '#4a7ab5', roughness: 0.3 });
+    const eyePupil = new MeshStandardMaterial({ color: '#0a0e18', roughness: 0.2 });
+    const mouth = new MeshStandardMaterial({ color: '#c48a6e', roughness: 0.6 });
+    const nose = new MeshStandardMaterial({ color: '#d4a478', roughness: 0.7 });
+    const brow = new MeshStandardMaterial({ color: '#3a2a1a', roughness: 0.8 });
+    const beltMat = new MeshStandardMaterial({ color: '#4a3520', roughness: 0.8 });
+    const buckle = new MeshStandardMaterial({ color: '#c9b06a', metalness: 0.5, roughness: 0.35 });
 
     // === ТОРС ===
-    const torso = new THREE.Group();
+    const torso = new Group();
     this.group.add(torso);
 
     // Грудь — деформированная капсюла
-    const chest = new THREE.Mesh(softCapsule(0.38, 0.35, 28), cloak);
+    const chest = new Mesh(softCapsule(0.38, 0.35, 28), cloak);
     chest.position.y = 1.45;
     chest.castShadow = true;
     torso.add(chest);
 
     // Живот
-    const belly = new THREE.Mesh(softSphere(0.34, 28), cloakInner);
+    const belly = new Mesh(softSphere(0.34, 28), cloakInner);
     belly.scale.set(1, 1.1, 0.85);
     belly.position.y = 1.12;
     belly.castShadow = true;
     torso.add(belly);
 
     // Спина (накидка плаща)
-    const backCloak = new THREE.Mesh(
-      softBody(new THREE.SphereGeometry(0.42, 32, 24, 0, TAU, 0, Math.PI * 0.45), 0.03),
+    const backCloak = new Mesh(
+      softBody(new SphereGeometry(0.42, 32, 24, 0, TAU, 0, Math.PI * 0.45), 0.03),
       cloakInner,
     );
     backCloak.position.set(0, 1.35, -0.22);
@@ -158,18 +158,18 @@ export class Player {
     torso.add(backCloak);
 
     // Пояс
-    const belt = new THREE.Mesh(softBody(new THREE.TorusGeometry(0.4, 0.065, 12, 32), 0.02), beltMat);
+    const belt = new Mesh(softBody(new TorusGeometry(0.4, 0.065, 12, 32), 0.02), beltMat);
     belt.position.y = 0.92;
     belt.rotation.x = Math.PI / 2;
     torso.add(belt);
-    const buck = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.06), buckle);
+    const buck = new Mesh(new BoxGeometry(0.14, 0.12, 0.06), buckle);
     buck.position.set(0, 0.92, 0.4);
     torso.add(buck);
 
     // Плащ (длинная накидка сзади)
-    this.cloakGroup = new THREE.Group();
-    const capeBack = new THREE.Mesh(
-      softBody(new THREE.BoxGeometry(0.85, 1.4, 0.06, 8, 14, 2), 0.04),
+    this.cloakGroup = new Group();
+    const capeBack = new Mesh(
+      softBody(new BoxGeometry(0.85, 1.4, 0.06, 8, 14, 2), 0.04),
       cloak,
     );
     capeBack.position.set(0, 0.5, -0.38);
@@ -178,8 +178,8 @@ export class Player {
 
     // Боковые полы плаща
     for (const s of [-1, 1]) {
-      const side = new THREE.Mesh(
-        softBody(new THREE.BoxGeometry(0.2, 1.2, 0.06, 4, 12, 2), 0.03),
+      const side = new Mesh(
+        softBody(new BoxGeometry(0.2, 1.2, 0.06, 4, 12, 2), 0.03),
         cloakInner,
       );
       side.position.set(s * 0.42, 0.55, -0.28);
@@ -190,14 +190,14 @@ export class Player {
     torso.add(this.cloakGroup);
 
     // === ГОЛОВА ===
-    this.head = new THREE.Group();
+    this.head = new Group();
     this.head.position.y = 1.72;
     torso.add(this.head);
 
     // Лицевая основа — деформированная сфера (скулы, подбородок через шум)
-    const faceGeo = softBody(new THREE.SphereGeometry(0.2, 32, 28), 0.018);
+    const faceGeo = softBody(new SphereGeometry(0.2, 32, 28), 0.018);
     // дополнительно вытянем вниз (подбородок)
-    const fa = faceGeo.getAttribute('position') as THREE.BufferAttribute;
+    const fa = faceGeo.getAttribute('position') as BufferAttribute;
     for (let i = 0; i < fa.count; i++) {
       const y = fa.getY(i);
       if (y < -0.02) {
@@ -205,100 +205,100 @@ export class Player {
       }
     }
     faceGeo.computeVertexNormals();
-    const face = new THREE.Mesh(faceGeo, skin);
+    const face = new Mesh(faceGeo, skin);
     face.castShadow = true;
     this.head.add(face);
 
     // Капюшон (объёмная накидка поверх головы)
     const hoodGeo = softBody(
-      new THREE.SphereGeometry(0.27, 30, 24, 0, TAU, 0, Math.PI * 0.55),
+      new SphereGeometry(0.27, 30, 24, 0, TAU, 0, Math.PI * 0.55),
       0.025,
     );
-    const hood = new THREE.Mesh(hoodGeo, cloakInner);
+    const hood = new Mesh(hoodGeo, cloakInner);
     hood.position.set(0, 0.06, -0.02);
     hood.castShadow = true;
     this.head.add(hood);
 
     // Волосы (выбитые из-под капюшона)
-    const hairBack = new THREE.Mesh(softSphere(0.21, 26), hair);
+    const hairBack = new Mesh(softSphere(0.21, 26), hair);
     hairBack.position.set(0, 0.03, -0.08);
     hairBack.scale.set(1, 1.05, 1.1);
     this.head.add(hairBack);
 
     // Глаза
     for (const s of [-1, 1]) {
-      const white = new THREE.Mesh(new THREE.SphereGeometry(0.032, 14, 10), eyeWhite);
+      const white = new Mesh(new SphereGeometry(0.032, 14, 10), eyeWhite);
       white.position.set(s * 0.07, 0.03, 0.17);
       white.scale.set(1.2, 0.75, 0.6);
       this.head.add(white);
 
-      const iris = new THREE.Mesh(new THREE.SphereGeometry(0.018, 12, 10), eyeIris);
+      const iris = new Mesh(new SphereGeometry(0.018, 12, 10), eyeIris);
       iris.position.set(s * 0.07, 0.03, 0.19);
       this.head.add(iris);
 
-      const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.01, 10, 8), eyePupil);
+      const pupil = new Mesh(new SphereGeometry(0.01, 10, 8), eyePupil);
       pupil.position.set(s * 0.07, 0.03, 0.2);
       this.head.add(pupil);
 
       // Брови
-      const browGeo = softBody(new THREE.CapsuleGeometry(0.012, 0.06, 6, 10), 0.004);
-      const browMesh = new THREE.Mesh(browGeo, brow);
+      const browGeo = softBody(new CapsuleGeometry(0.012, 0.06, 6, 10), 0.004);
+      const browMesh = new Mesh(browGeo, brow);
       browMesh.position.set(s * 0.07, 0.06, 0.18);
       browMesh.rotation.z = s * -0.2;
       this.head.add(browMesh);
     }
 
     // Нос
-    const noseGeo = softBody(new THREE.ConeGeometry(0.028, 0.065, 14), 0.006);
-    const noseMesh = new THREE.Mesh(noseGeo, nose);
+    const noseGeo = softBody(new ConeGeometry(0.028, 0.065, 14), 0.006);
+    const noseMesh = new Mesh(noseGeo, nose);
     noseMesh.position.set(0, 0.0, 0.21);
     noseMesh.rotation.x = -0.4;
     this.head.add(noseMesh);
 
     // Рот
-    const mouthGeo = softBody(new THREE.CapsuleGeometry(0.01, 0.04, 8, 12), 0.004);
-    const mouthMesh = new THREE.Mesh(mouthGeo, mouth);
+    const mouthGeo = softBody(new CapsuleGeometry(0.01, 0.04, 8, 12), 0.004);
+    const mouthMesh = new Mesh(mouthGeo, mouth);
     mouthMesh.position.set(0, -0.07, 0.19);
     mouthMesh.rotation.z = Math.PI / 2;
     this.head.add(mouthMesh);
 
     // Уши
     for (const s of [-1, 1]) {
-      const earGeo = softBody(new THREE.SphereGeometry(0.045, 12, 10), 0.008);
-      const ear = new THREE.Mesh(earGeo, skin);
+      const earGeo = softBody(new SphereGeometry(0.045, 12, 10), 0.008);
+      const ear = new Mesh(earGeo, skin);
       ear.position.set(s * 0.19, 0.01, 0.02);
       ear.scale.set(0.35, 1.1, 0.7);
       this.head.add(ear);
     }
 
     // === РУКИ ===
-    const mkArm = (side: number, mat: THREE.Material): THREE.Group => {
-      const g = new THREE.Group();
+    const mkArm = (side: number, mat: Material): Group => {
+      const g = new Group();
       g.position.set(0.46 * side, 1.52, 0);
 
       // Плечо
-      const shoulder = new THREE.Mesh(softSphere(0.14, 20), mat);
+      const shoulder = new Mesh(softSphere(0.14, 20), mat);
       shoulder.scale.set(1, 0.85, 0.9);
       g.add(shoulder);
 
       // Верхняя часть руки
-      const upper = new THREE.Mesh(softCapsule(0.09, 0.28, 20), mat);
+      const upper = new Mesh(softCapsule(0.09, 0.28, 20), mat);
       upper.position.y = -0.2;
       g.add(upper);
 
       // Локоть
-      const elbow = new THREE.Mesh(softSphere(0.085, 18), mat);
+      const elbow = new Mesh(softSphere(0.085, 18), mat);
       elbow.position.y = -0.38;
       g.add(elbow);
 
       // Предплечье
-      const forearm = new THREE.Mesh(softCapsule(0.075, 0.25, 18), mat);
+      const forearm = new Mesh(softCapsule(0.075, 0.25, 18), mat);
       forearm.position.y = -0.56;
       forearm.castShadow = true;
       g.add(forearm);
 
       // Кисть (кожа)
-      const hand = new THREE.Mesh(softSphere(0.065, 20), skin);
+      const hand = new Mesh(softSphere(0.065, 20), skin);
       hand.position.y = -0.78;
       hand.scale.set(0.85, 0.65, 1.1);
       hand.castShadow = true;
@@ -306,8 +306,8 @@ export class Player {
 
       // Пальцы (короткие капсюлы)
       for (let f = -1; f <= 1; f++) {
-        const finger = new THREE.Mesh(
-          softBody(new THREE.CapsuleGeometry(0.018, 0.065, 8, 10), 0.004),
+        const finger = new Mesh(
+          softBody(new CapsuleGeometry(0.018, 0.065, 8, 10), 0.004),
           skin,
         );
         finger.position.set(f * 0.022, -0.84, 0.02);
@@ -321,38 +321,38 @@ export class Player {
     torso.add(this.armL, this.armR);
 
     // === НОГИ ===
-    const mkLeg = (side: number): THREE.Group => {
-      const g = new THREE.Group();
+    const mkLeg = (side: number): Group => {
+      const g = new Group();
       g.position.set(0.2 * side, 0.85, 0);
 
       // Бедро (под плащом — кожа/ткань)
-      const thigh = new THREE.Mesh(softCapsule(0.12, 0.32, 22), leather);
+      const thigh = new Mesh(softCapsule(0.12, 0.32, 22), leather);
       thigh.position.y = -0.22;
       thigh.castShadow = true;
       g.add(thigh);
 
       // Колено
-      const knee = new THREE.Mesh(softSphere(0.1, 18), leather);
+      const knee = new Mesh(softSphere(0.1, 18), leather);
       knee.position.y = -0.46;
       g.add(knee);
 
       // Голень
-      const shin = new THREE.Mesh(softCapsule(0.095, 0.3, 20), leather);
+      const shin = new Mesh(softCapsule(0.095, 0.3, 20), leather);
       shin.position.y = -0.66;
       shin.castShadow = true;
       g.add(shin);
 
       // Сапог
-      const bootGeo = softBody(new THREE.BoxGeometry(0.16, 0.16, 0.24, 6, 6, 6), 0.015);
-      const bootMesh = new THREE.Mesh(bootGeo, boot);
+      const bootGeo = softBody(new BoxGeometry(0.16, 0.16, 0.24, 6, 6, 6), 0.015);
+      const bootMesh = new Mesh(bootGeo, boot);
       bootMesh.position.set(0, -0.88, 0.03);
       bootMesh.castShadow = true;
       g.add(bootMesh);
 
       // Подошва
-      const sole = new THREE.Mesh(
-        softBody(new THREE.BoxGeometry(0.15, 0.04, 0.26, 4, 2, 4), 0.01),
-        new THREE.MeshStandardMaterial({ color: '#2a1f15', roughness: 0.95 }),
+      const sole = new Mesh(
+        softBody(new BoxGeometry(0.15, 0.04, 0.26, 4, 2, 4), 0.01),
+        new MeshStandardMaterial({ color: '#2a1f15', roughness: 0.95 }),
       );
       sole.position.set(0, -0.97, 0.04);
       g.add(sole);
@@ -364,20 +364,20 @@ export class Player {
     torso.add(this.legL, this.legR);
 
     // === ПОСОХ ===
-    this.staffGroup = new THREE.Group();
-    const staffMesh = new THREE.Mesh(trunkGeo(0.035, 0.05, 1.85), wood);
+    this.staffGroup = new Group();
+    const staffMesh = new Mesh(trunkGeo(0.035, 0.05, 1.85), wood);
     staffMesh.castShadow = true;
     this.staffGroup.add(staffMesh);
 
     // Обмотка посоха
-    const wrapGeo = softBody(new THREE.CylinderGeometry(0.055, 0.055, 0.25, 16, 3), 0.01);
-    const wrap = new THREE.Mesh(wrapGeo, leather);
+    const wrapGeo = softBody(new CylinderGeometry(0.055, 0.055, 0.25, 16, 3), 0.01);
+    const wrap = new Mesh(wrapGeo, leather);
     wrap.position.y = 0.65;
     this.staffGroup.add(wrap);
 
     // Кристалл (многоугольник)
-    const crystalGeo = softBody(new THREE.OctahedronGeometry(0.11, 2), 0.012);
-    this.crystal = new THREE.Mesh(crystalGeo, crystalMat);
+    const crystalGeo = softBody(new OctahedronGeometry(0.11, 2), 0.012);
+    this.crystal = new Mesh(crystalGeo, crystalMat);
     this.crystal.position.y = 1.05;
     this.crystal.castShadow = true;
     this.crystalMat = crystalMat;
@@ -393,13 +393,13 @@ export class Player {
     grad.addColorStop(1, 'rgba(0,0,0,0)');
     g2.fillStyle = grad;
     g2.fillRect(0, 0, 64, 64);
-    this.gemSprite = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: new THREE.CanvasTexture(gt),
+    this.gemSprite = new Sprite(new SpriteMaterial({
+      map: new CanvasTexture(gt),
       color: '#9fe8ff',
       transparent: true,
       opacity: 0.9,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
     }));
     this.gemSprite.position.set(0, 1.05, 0);
     this.gemSprite.scale.setScalar(0.85);
@@ -437,7 +437,7 @@ export class Player {
     this.pos.set(x, this.heightAt(x, z), z);
     this.group.position.copy(this.pos);
     // сбрасываем визуальные аномалии
-    const torso = (this as any)._torso as THREE.Group | undefined;
+    const torso = (this as any)._torso as Group | undefined;
     if (torso) {
       torso.scale.set(1, 1, 1);
       torso.rotation.set(0, this.yaw, 0);
@@ -447,8 +447,8 @@ export class Player {
     this._hurtWasOn = false;
   }
 
-  getWeaponWorldPos(out: THREE.Vector3): THREE.Vector3 {
-    const off = new THREE.Vector3(0.5, 0.8, 0.6).applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
+  getWeaponWorldPos(out: Vector3): Vector3 {
+    const off = new Vector3(0.5, 0.8, 0.6).applyAxisAngle(new Vector3(0, 1, 0), this.yaw);
     out.copy(this.pos).add(off);
     out.y = this.pos.y + 1.5;
     if (this.attacking) {
@@ -460,8 +460,8 @@ export class Player {
     return out;
   }
 
-  getForward(): THREE.Vector3 {
-    return new THREE.Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
+  getForward(): Vector3 {
+    return new Vector3(Math.sin(this.yaw), 0, Math.cos(this.yaw));
   }
 
   getAttack() {
@@ -481,7 +481,7 @@ export class Player {
     return this.rolling || this.hurtT > 0;
   }
 
-  takeDamage(amount: number, dir: THREE.Vector3): boolean {
+  takeDamage(amount: number, dir: Vector3): boolean {
     if (this.isInvulnerable()) return false;
     this.hp = Math.max(0, this.hp - amount);
     this.hurtT = 0.8;
@@ -613,7 +613,7 @@ export class Player {
     }
 
     // --- АНИМАЦИЯ ВЫСОКОПОЛИГОНАЛЬНОЙ МОДЕЛИ ---
-    const torso = (this as any)._torso as THREE.Group;
+    const torso = (this as any)._torso as Group;
     const sf = clamp(this.speed / 6.6, 0, 1);
     const rollP = this.rolling ? this.rollT / this.rollDur : 0;
     const bob = this.moving && this.grounded && !this.attacking ? Math.sin(this.animT * 2) * 0.045 * sf : Math.sin(t * 1.6) * 0.01;
@@ -726,11 +726,11 @@ export class Player {
   getAirborne() { return !this.grounded; }
   getAttacking() { return this.attacking; }
 
-  getCameraBob(): THREE.Vector3 {
-    if (!this.moving || !this.grounded || this.attacking || this.rolling) return new THREE.Vector3();
+  getCameraBob(): Vector3 {
+    if (!this.moving || !this.grounded || this.attacking || this.rolling) return new Vector3();
     const sf = clamp(this.speed / 6.6, 0, 1);
     const amp = 0.045 * sf;
-    return new THREE.Vector3(Math.cos(this.animT * 2) * amp * 0.45, Math.sin(this.animT * 4) * amp, 0);
+    return new Vector3(Math.cos(this.animT * 2) * amp * 0.45, Math.sin(this.animT * 4) * amp, 0);
   }
 
   /**
@@ -739,8 +739,8 @@ export class Player {
    * Возвращает сглаженный сдвиг относительно альтитуды в точке персонажа.
    */
   getFootIK(side: number): number {
-    const footLocal = new THREE.Vector3(0.2 * side, 0.15, 0.12 * Math.cos(this.animT * 2));
-    footLocal.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.yaw);
+    const footLocal = new Vector3(0.2 * side, 0.15, 0.12 * Math.cos(this.animT * 2));
+    footLocal.applyAxisAngle(new Vector3(0, 1, 0), this.yaw);
     return this.heightAt(this.pos.x + footLocal.x, this.pos.z + footLocal.z) - this.pos.y;
   }
 }

@@ -6,7 +6,7 @@
  */
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject, type RefObject } from 'react';
-import * as THREE from 'three';
+import { BufferAttribute, BufferGeometry, CanvasTexture, DoubleSide, Group, InstancedMesh, Mesh, MeshBasicMaterial, Object3D, RepeatWrapping, SRGBColorSpace, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -37,7 +37,7 @@ import type { SceneId } from '@/shared/types/game';
 
 interface RiverPierVisualProps {
   sceneId?: SceneId;
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const W = 26;
@@ -69,11 +69,11 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const plankWet = useMemo(() => getRainWetPlankSettings(rainIntensity), [rainIntensity]);
   const wetPuddle = useMemo(() => getWetPuddlePhysicalParams(rainIntensity), [rainIntensity]);
-  const waterRef = useRef<THREE.Mesh>(null);
-  const fireRef = useRef<THREE.Mesh>(null);
-  const moonRoadRef = useRef<THREE.Mesh>(null);
-  const stringLightsRef = useRef<THREE.Group>(null);
-  const reedsRef = useRef<THREE.Group>(null);
+  const waterRef = useRef<Mesh>(null);
+  const fireRef = useRef<Mesh>(null);
+  const moonRoadRef = useRef<Mesh>(null);
+  const stringLightsRef = useRef<Group>(null);
+  const reedsRef = useRef<Group>(null);
   const tRef = useRef(0);
 
   useFrameTick('misc', ({ delta }) => {
@@ -90,7 +90,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
       waterRef.current.position.y = -0.35 + Math.sin(t * 0.5) * 0.03;
     }
     if (moonRoadRef.current) {
-      (moonRoadRef.current.material as THREE.MeshBasicMaterial).opacity =
+      (moonRoadRef.current.material as MeshBasicMaterial).opacity =
         reducedMotion ? 0.1 : 0.1 + Math.sin(t * 0.55) * 0.025;
       moonRoadRef.current.scale.x = reducedMotion ? 1 : 0.94 + Math.sin(t * 0.34) * 0.06;
     }
@@ -341,7 +341,7 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
       <group position={[-6, 0, 3]} rotation={[0, 0.4, Math.PI]}>
         <mesh position={[0, -0.4, 0]} castShadow>
           <cylinderGeometry args={[0.5, 0.7, 2.8, 7, 1, false, 0, Math.PI]} />
-          <meshStandardMaterial color="#3f4a50" roughness={0.85} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#3f4a50" roughness={0.85} side={DoubleSide} />
         </mesh>
       </group>
 
@@ -373,8 +373,8 @@ function PierNightSky({ visualLite = false }: { visualLite?: boolean }) {
       positions[i * 3 + 1] = Math.cos(phi) * r * 0.5 + 8;
       positions[i * 3 + 2] = -Math.abs(Math.sin(theta + Math.PI / 2)) * Math.sin(phi + 0.2) * r - 14;
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
     return geo;
   }, [visualLite]);
 
@@ -426,16 +426,16 @@ function StringLights({
   swayRef,
   visualLite,
 }: {
-  swayRef: RefObject<THREE.Group | null>;
+  swayRef: RefObject<Group | null>;
   visualLite: boolean;
 }) {
-  const bulbsRef = useRef<THREE.InstancedMesh>(null);
+  const bulbsRef = useRef<InstancedMesh>(null);
   const bulbCount = visualLite ? 7 : 11;
 
   useLayoutEffect(() => {
     const mesh = bulbsRef.current;
     if (!mesh) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     for (let i = 0; i < bulbCount; i++) {
       const f = i / (bulbCount - 1);
       const x = -4 + f * 8;
@@ -472,10 +472,10 @@ function Reeds({
   swayRef,
   visualLite,
 }: {
-  swayRef: RefObject<THREE.Group | null>;
+  swayRef: RefObject<Group | null>;
   visualLite: boolean;
 }) {
-  const reedsRef = useRef<THREE.InstancedMesh>(null);
+  const reedsRef = useRef<InstancedMesh>(null);
 
   const placements = useMemo(() => {
     const rng = pierSeededRandom(551234);
@@ -494,7 +494,7 @@ function Reeds({
   useLayoutEffect(() => {
     const mesh = reedsRef.current;
     if (!mesh) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     placements.forEach((p, i) => {
       dummy.position.set(p.x, p.s * 0.5 - 0.3, p.z);
       dummy.rotation.set(p.lean, 0, p.lean * 0.7);
@@ -514,7 +514,7 @@ function Reeds({
   );
 }
 
-function createPlankTexture(): THREE.CanvasTexture {
+function createPlankTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -545,9 +545,9 @@ function createPlankTexture(): THREE.CanvasTexture {
     ctx.globalAlpha = 1;
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
+  tex.wrapS = tex.wrapT = RepeatWrapping;
   tex.anisotropy = 4;
   tex.repeat.set(5, 5);
   return tex;

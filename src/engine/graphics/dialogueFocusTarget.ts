@@ -15,13 +15,13 @@
  *    resets it on scene:enter / scene:transition_start).
  */
 
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { getNPCGroup } from '@/engine/interaction/npcRegistry';
 
 /** Read-only snapshot of the current focus target. */
 export interface DialogueFocusSnapshot {
   /** Active NPC world position (cloned — safe to read without mutation). Returns null when no dialogue is active. */
-  position: THREE.Vector3 | null;
+  position: Vector3 | null;
   /** Whether a dialogue is currently active (state === Dialogue). */
   active: boolean;
   /** Monotonic counter — bumped every time the target changes. Lets consumers detect changes without deep-equal. */
@@ -29,7 +29,7 @@ export interface DialogueFocusSnapshot {
 }
 
 class DialogueFocusTargetStore {
-  private cachedPosition: THREE.Vector3 | null = null;
+  private cachedPosition: Vector3 | null = null;
   private active: boolean = false;
   private revision: number = 0;
   private npcId: string | null = null;
@@ -42,7 +42,7 @@ class DialogueFocusTargetStore {
     if (npcId) {
       const group = getNPCGroup(npcId);
       if (group) {
-        if (!this.cachedPosition) this.cachedPosition = new THREE.Vector3();
+        if (!this.cachedPosition) this.cachedPosition = new Vector3();
         // World space — NPC roots may sit under scene transform parents.
         group.getWorldPosition(this.cachedPosition);
       } else {
@@ -61,7 +61,7 @@ class DialogueFocusTargetStore {
     if (!this.active || !this.npcId) return false;
     const group = getNPCGroup(this.npcId);
     if (!group) return false;
-    if (!this.cachedPosition) this.cachedPosition = new THREE.Vector3();
+    if (!this.cachedPosition) this.cachedPosition = new Vector3();
     group.getWorldPosition(this.cachedPosition);
     return true;
   }
@@ -77,7 +77,7 @@ class DialogueFocusTargetStore {
 
   /** Direct read of the cached position (no clone — do NOT mutate).
    *  Returns null when no target is active or position hasn't been resolved yet. */
-  peekPosition(): THREE.Vector3 | null {
+  peekPosition(): Vector3 | null {
     return this.cachedPosition;
   }
 

@@ -1,7 +1,7 @@
 /* ─── NPC patrol hook — manages patrol state and per-frame movement ─── */
 
 import { useRef, useState, useEffect, useMemo, type RefObject } from 'react';
-import * as THREE from 'three';
+import { Group } from 'three';
 import { createPatrolState, updatePatrol, shouldPatrol, type PatrolState } from '@/engine/npc/npcPatrol';
 import { buildNpcAvoidanceObstacles, type NpcObstacleAabb } from '@/engine/npc/npcObstacleAvoidance';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
@@ -18,7 +18,7 @@ interface UseNpcPatrolParams {
   sceneId: SceneId;
   rotation?: number;
   interactionState: InteractionState;
-  groupRef: RefObject<THREE.Group | null>;
+  groupRef: RefObject<Group | null>;
 }
 
 interface UseNpcPatrolResult {

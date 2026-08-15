@@ -28,7 +28,7 @@
  * (typically 1–8), and each iteration is a cheap distance check.
  */
 
-import * as THREE from 'three';
+import { Group, Vector3 } from 'three';
 
 import { eventBus } from '@/engine/EventBus';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
@@ -105,11 +105,11 @@ function resolveEffectiveCooldownMs(npcId: string, baseCooldownMs: number): numb
  * The band field now includes emotion-linked bands.
  */
 export function tickNpcAmbientBarks(params: {
-  playerPosition: THREE.Vector3;
+  playerPosition: Vector3;
   now: number;
   rng?: RngFn;
   cooldowns?: CooldownMap;
-  getNpcGroup?: (npcId: string) => THREE.Group | undefined;
+  getNpcGroup?: (npcId: string) => Group | undefined;
   getNpcDefinition?: (npcId: string) => NPCDefinition | undefined;
   registeredNpcIds?: readonly string[];
   interactionLocked?: boolean;
@@ -218,7 +218,7 @@ export function resetNpcAmbientBarkCooldownsForTests(): void {
  * (same ref used by NPCSystem / InteractionSystemBridge).
  */
 export function useNpcAmbientBarkSystem(
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>,
+  livePlayerPositionRef: React.MutableRefObject<Vector3>,
   options: { enabled?: boolean } = {},
 ): void {
   const { enabled = true } = options;

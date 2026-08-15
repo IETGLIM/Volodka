@@ -1,6 +1,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import type { MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { AnimationAction, AnimationClip, AnimationMixer, LoopRepeat, Object3D } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   resolveLocomotionClipState,
@@ -56,8 +56,8 @@ const CINEMATIC_CLIP_NAMES = new Set<string>([
  * and cause the walk animation to flicker/restart).
  */
 function computeLocomotionBindKey(
-  animations: THREE.AnimationClip[],
-  actions: Record<string, THREE.AnimationAction>,
+  animations: AnimationClip[],
+  actions: Record<string, AnimationAction>,
 ): string {
   const locomotionKeys = Object.keys(actions)
     .filter((k) => LOCOMOTION_CLIP_NAMES.has(k))
@@ -68,11 +68,11 @@ function computeLocomotionBindKey(
 }
 
 export interface UsePlayerLocomotionControllerOptions {
-  mixer: THREE.AnimationMixer | null;
-  root: THREE.Object3D;
-  animations: THREE.AnimationClip[];
+  mixer: AnimationMixer | null;
+  root: Object3D;
+  animations: AnimationClip[];
   /** Merged embedded + optional Mixamo clip actions. */
-  actions: Record<string, THREE.AnimationAction> | null;
+  actions: Record<string, AnimationAction> | null;
   currentAnimRef: MutableRefObject<string>;
   /**
    * Latest player horizontal speed (m/s). Drives the continuous walk↔run
@@ -98,10 +98,10 @@ export function usePlayerLocomotionController({
   currentAnimRef,
   currentHSpeedRef,
 }: UsePlayerLocomotionControllerOptions): void {
-  const idleActionRef = useRef<THREE.AnimationAction | null>(null);
-  const walkActionRef = useRef<THREE.AnimationAction | null>(null);
-  const runActionRef = useRef<THREE.AnimationAction | null>(null);
-  const cinematicActionRef = useRef<THREE.AnimationAction | null>(null);
+  const idleActionRef = useRef<AnimationAction | null>(null);
+  const walkActionRef = useRef<AnimationAction | null>(null);
+  const runActionRef = useRef<AnimationAction | null>(null);
+  const cinematicActionRef = useRef<AnimationAction | null>(null);
   const prevCinematicClipRef = useRef<string | null>(null);
 
   // Session 12-B: one-shot flag set when the blend tree transitions OUT of a
@@ -125,7 +125,7 @@ export function usePlayerLocomotionController({
   // Track the latest actions object so the frame tick can look up
   // cinematic clips by name without re-registering the tick callback
   // each time a new Mixamo clip loads.
-  const actionsRef = useRef<Record<string, THREE.AnimationAction> | null>(actions);
+  const actionsRef = useRef<Record<string, AnimationAction> | null>(actions);
   actionsRef.current = actions;
   const locomotionBindKey = actions
     ? computeLocomotionBindKey(animations, actions)
@@ -164,7 +164,7 @@ export function usePlayerLocomotionController({
     );
 
     if (idleAction) {
-      idleAction.setLoop(THREE.LoopRepeat, Infinity);
+      idleAction.setLoop(LoopRepeat, Infinity);
       idleAction.reset();
       idleAction.play();
       idleActionRef.current = idleAction;
@@ -173,7 +173,7 @@ export function usePlayerLocomotionController({
     }
 
     if (walkAction && walkAction !== idleAction) {
-      walkAction.setLoop(THREE.LoopRepeat, Infinity);
+      walkAction.setLoop(LoopRepeat, Infinity);
       walkAction.reset();
       walkAction.play();
       walkActionRef.current = walkAction;
@@ -182,7 +182,7 @@ export function usePlayerLocomotionController({
     }
 
     if (runAction && runAction !== walkAction && runAction !== idleAction) {
-      runAction.setLoop(THREE.LoopRepeat, Infinity);
+      runAction.setLoop(LoopRepeat, Infinity);
       runAction.reset();
       runAction.play();
       runActionRef.current = runAction;
@@ -277,7 +277,7 @@ export function usePlayerLocomotionController({
             cinematicActionRef.current.fadeOut(CINEMATIC_CROSSFADE_SEC);
           }
 
-          targetCinematicAction.setLoop(THREE.LoopRepeat, Infinity);
+          targetCinematicAction.setLoop(LoopRepeat, Infinity);
           targetCinematicAction.reset();
           targetCinematicAction.setEffectiveWeight(0);
           targetCinematicAction.play();

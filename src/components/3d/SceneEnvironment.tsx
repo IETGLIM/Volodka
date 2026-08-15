@@ -6,7 +6,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneConfig } from '@/config/scenes';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
-import * as THREE from 'three';
+import { Color, Fog, FogExp2 } from 'three';
 import { liftHexColor, SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { ENV_MAP_WARMUP_FRAMES } from '@/shared/constants/transitionTimings';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -205,8 +205,8 @@ export function SceneEnvironment() {
     }
   });
 
-  const fogRef = useRef<THREE.Fog>(null);
-  const fogExpRef = useRef<THREE.FogExp2>(null);
+  const fogRef = useRef<Fog>(null);
+  const fogExpRef = useRef<FogExp2>(null);
   const timeRef = useRef(0);
 
   const fogNear = config.fogNear ?? 5;
@@ -254,17 +254,17 @@ export function SceneEnvironment() {
   // Fog animation config
   const fogAnim = SCENE_FOG_ANIM[fogAnimKey] ?? DEFAULT_FOG_ANIM;
 
-  // Pre-compute fog color and alternate color as THREE.Color for blending
-  const baseFogColor = useMemo(() => new THREE.Color(fogColor), [fogColor]);
+  // Pre-compute fog color and alternate color as Color for blending
+  const baseFogColor = useMemo(() => new Color(fogColor), [fogColor]);
   const altFogColor = useMemo(() => {
     if (fogAnim.altFogColor) {
-      return new THREE.Color(fogAnim.altFogColor);
+      return new Color(fogAnim.altFogColor);
     }
     return baseFogColor.clone();
   }, [fogAnim.altFogColor, baseFogColor]);
 
   // Temp color for blending (avoid allocation in useFrame)
-  const tempColor = useMemo(() => new THREE.Color(), []);
+  const tempColor = useMemo(() => new Color(), []);
 
   // Animated fog: pulsing density and optional color shift
   useFrameTick('weather', ({ delta }) => {

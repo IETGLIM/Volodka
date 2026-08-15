@@ -1,5 +1,5 @@
 import { Suspense, useCallback, useRef, useState } from 'react';
-import * as THREE from 'three';
+import { Group } from 'three';
 import type { NPCAppearance } from '@/shared/types/game';
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
 import type { NpcComposeRecipe } from '@/config/npcComposer/types';
@@ -22,7 +22,7 @@ export interface NpcComposerModelProps {
  * Modular CC0-part NPC composer — slots + palette + Quaternius/Mixamo rig retarget.
  */
 export function NpcComposerModel({ npcId, recipe, appearance, animState, clipOverrides }: NpcComposerModelProps) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const [rigActive, setRigActive] = useState(false);
   const palette = resolveComposePalette(appearance, recipe);
   const torsoBaseY = recipe.slots.body === 'elder_female_stooped' ? 0.98 : 1.05;

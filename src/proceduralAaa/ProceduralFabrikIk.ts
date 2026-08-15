@@ -3,16 +3,16 @@
  * Foot targets + raycast ground; limb chain solve.
  */
 
-import * as THREE from 'three';
+import { Object3D, Raycaster, Vector3 } from 'three';
 import type { ProceduralAaaParams } from './params';
 
 export interface IkChain {
-  joints: THREE.Vector3[];
+  joints: Vector3[];
   lengths: number[];
   totalLength: number;
 }
 
-export function createChain(points: THREE.Vector3[]): IkChain {
+export function createChain(points: Vector3[]): IkChain {
   const lengths: number[] = [];
   let total = 0;
   for (let i = 0; i < points.length - 1; i++) {
@@ -34,7 +34,7 @@ export function createChain(points: THREE.Vector3[]): IkChain {
  */
 export function solveFabrik(
   chain: IkChain,
-  target: THREE.Vector3,
+  target: Vector3,
   iterations = 8,
   tolerance = 0.002,
 ): void {
@@ -71,17 +71,17 @@ export function solveFabrik(
 
 export interface WalkCycleState {
   phase: number;
-  leftTarget: THREE.Vector3;
-  rightTarget: THREE.Vector3;
-  hip: THREE.Vector3;
+  leftTarget: Vector3;
+  rightTarget: Vector3;
+  hip: Vector3;
 }
 
-export function createWalkState(origin = new THREE.Vector3(0, 0, 0)): WalkCycleState {
+export function createWalkState(origin = new Vector3(0, 0, 0)): WalkCycleState {
   return {
     phase: 0,
-    leftTarget: origin.clone().add(new THREE.Vector3(-0.18, 0, 0)),
-    rightTarget: origin.clone().add(new THREE.Vector3(0.18, 0, 0)),
-    hip: origin.clone().add(new THREE.Vector3(0, 0.95, 0)),
+    leftTarget: origin.clone().add(new Vector3(-0.18, 0, 0)),
+    rightTarget: origin.clone().add(new Vector3(0.18, 0, 0)),
+    hip: origin.clone().add(new Vector3(0, 0.95, 0)),
   };
 }
 
@@ -93,14 +93,14 @@ export function updateWalkCycle(
   state: WalkCycleState,
   dt: number,
   params: ProceduralAaaParams,
-  facing: THREE.Vector3,
+  facing: Vector3,
   groundYLeft: number,
   groundYRight: number,
 ): void {
   const speed = params.walkSpeed;
   state.phase += dt * speed * 2.05;
   const forward = facing.clone().normalize();
-  const right = new THREE.Vector3().crossVectors(forward, new THREE.Vector3(0, 1, 0)).normalize();
+  const right = new Vector3().crossVectors(forward, new Vector3(0, 1, 0)).normalize();
 
   const stride = 0.38;
   const stepH = params.ikStepHeight;
@@ -142,12 +142,12 @@ export function updateIdleBreathe(phase: number, dt: number, rate = 1.15): numbe
 
 /** Raycast helper against a list of meshes — returns ground Y or fallback. */
 export function raycastGroundY(
-  raycaster: THREE.Raycaster,
-  origin: THREE.Vector3,
-  meshes: THREE.Object3D[],
+  raycaster: Raycaster,
+  origin: Vector3,
+  meshes: Object3D[],
   fallback = 0,
 ): number {
-  raycaster.set(origin.clone().setY(origin.y + 2), new THREE.Vector3(0, -1, 0));
+  raycaster.set(origin.clone().setY(origin.y + 2), new Vector3(0, -1, 0));
   const hits = raycaster.intersectObjects(meshes, true);
   if (hits.length > 0) return hits[0]!.point.y;
   return fallback;

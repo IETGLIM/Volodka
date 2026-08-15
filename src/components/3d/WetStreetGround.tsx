@@ -22,7 +22,7 @@ import { applySurfaceDetailMaps } from '@/engine/graphics/proceduralSurfaceTextu
 import { getSharedPlaneGeometry } from '@/engine/three/moduleGeometryRegistry';
 import { usePolyHavenPbr } from '@/hooks/usePolyHavenPbr';
 import type { SceneId } from '@/shared/types/game';
-import * as THREE from 'three';
+import { Vector2 } from 'three';
 
 export type WetStreetGroundProps = {
   sceneId: SceneId;
@@ -125,7 +125,7 @@ function WetStreetGroundPbr({
           color={groundColor}
           map={maps.map}
           normalMap={maps.normalMap}
-          normalScale={new THREE.Vector2(0.75, 0.75)}
+          normalScale={new Vector2(0.75, 0.75)}
           roughnessMap={maps.roughnessMap}
           aoMap={maps.aoMap}
           roughness={dryRoughness}
@@ -147,7 +147,7 @@ function WetStreetGroundPbr({
           color={groundColor}
           map={maps.map}
           normalMap={maps.normalMap}
-          normalScale={new THREE.Vector2(0.75, 0.75)}
+          normalScale={new Vector2(0.75, 0.75)}
           roughnessMap={maps.roughnessMap}
           aoMap={maps.aoMap}
           roughness={dryRoughness}

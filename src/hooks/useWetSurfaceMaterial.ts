@@ -1,6 +1,6 @@
 import { useLayoutEffect, useEffect, useRef } from 'react';
 import { registerFrameTick, unregisterFrameTick } from '@/engine/frame/FrameBudgetRegistry';
-import * as THREE from 'three';
+import { MeshStandardMaterial } from 'three';
 import { applyWetness } from '@/engine/graphics/materials/pbrPresets';
 
 export interface WetSurfaceMaterialOptions {
@@ -13,8 +13,8 @@ export interface WetSurfaceMaterialOptions {
 export function useWetSurfaceMaterial(
   color: string,
   options: WetSurfaceMaterialOptions,
-): THREE.MeshStandardMaterial {
-  const matRef = useRef<THREE.MeshStandardMaterial | null>(null);
+): MeshStandardMaterial {
+  const matRef = useRef<MeshStandardMaterial | null>(null);
   const lastColorRef = useRef<string | null>(null);
   const optionsRef = useRef(options);
   optionsRef.current = options;
@@ -22,7 +22,7 @@ export function useWetSurfaceMaterial(
   const wetActive = (options.rainIntensity ?? 0) > 0;
 
   if (!matRef.current) {
-    matRef.current = new THREE.MeshStandardMaterial({
+    matRef.current = new MeshStandardMaterial({
       color,
       roughness: options.dryRoughness,
       metalness: options.dryMetalness,

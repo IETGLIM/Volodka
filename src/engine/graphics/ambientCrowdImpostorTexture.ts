@@ -3,7 +3,7 @@
  * Soft alpha silhouette reads as a distant person, not capsule/sphere kitbash.
  */
 
-import * as THREE from 'three';
+import { ClampToEdgeWrapping, DataTexture, LinearFilter, LinearMipmapLinearFilter, SRGBColorSpace } from 'three';
 
 const WIDTH = 64;
 const HEIGHT = 128;
@@ -48,10 +48,10 @@ export function sampleAmbientCrowdSilhouette(u: number, v: number): number {
   return Math.min(1, fringe);
 }
 
-let cached: THREE.DataTexture | null = null;
+let cached: DataTexture | null = null;
 
 /** Shared white RGB + silhouette alpha map for instanced crowd billboards. */
-export function getAmbientCrowdImpostorTexture(): THREE.DataTexture {
+export function getAmbientCrowdImpostorTexture(): DataTexture {
   if (cached) return cached;
 
   const data = new Uint8Array(WIDTH * HEIGHT * 4);
@@ -68,12 +68,12 @@ export function getAmbientCrowdImpostorTexture(): THREE.DataTexture {
     }
   }
 
-  const tex = new THREE.DataTexture(data, WIDTH, HEIGHT);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = THREE.ClampToEdgeWrapping;
-  tex.wrapT = THREE.ClampToEdgeWrapping;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  const tex = new DataTexture(data, WIDTH, HEIGHT);
+  tex.colorSpace = SRGBColorSpace;
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
+  tex.magFilter = LinearFilter;
+  tex.minFilter = LinearMipmapLinearFilter;
   tex.generateMipmaps = true;
   tex.needsUpdate = true;
   cached = tex;

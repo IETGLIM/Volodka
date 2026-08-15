@@ -3,7 +3,7 @@
 
 import { useRef, useState, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import type { SceneExit } from '@/shared/types/game';
 import { useSceneExitState } from '@/store/selectors';
 import { getSceneExits } from '@/config/scenes';
@@ -13,7 +13,7 @@ import { ProximityGodRay } from './ProximityGodRay';
 const EXIT_PROXIMITY_RANGE = 2.5; // Distance to show subtle foot glow
 
 interface SceneExitIndicatorProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /** Renders exit markers at scene boundaries and triggers scene transitions */
@@ -58,10 +58,10 @@ function ExitMarker({
   livePlayerPositionRef,
 }: {
   exit: SceneExit;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }) {
   const showIndicatorRef = useRef(false);
-  const _exitPosRef = useRef(new THREE.Vector3());
+  const _exitPosRef = useRef(new Vector3());
   const proximityRef = useRef(0);
   const pulsePhaseRef = useRef(0);
   const [showIndicator, setShowIndicator] = useState(false);

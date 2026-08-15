@@ -1,7 +1,7 @@
 /* Unique per-archetype street facades — designed city-block silhouette, not GLB clone grid. */
 
 import { Suspense, useMemo, useEffect, useState, useRef } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, PointLight, RepeatWrapping, SRGBColorSpace, Vector2 } from 'three';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { getCachedSurfaceDetailMaps } from '@/engine/graphics/proceduralSurfaceTextures';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
@@ -18,7 +18,7 @@ import {
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { disposeEphemeralGpuResources } from '@/engine/three/disposeThreeResources';
 
-function createWeatheringAtlas(seed: number): THREE.CanvasTexture {
+function createWeatheringAtlas(seed: number): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -53,16 +53,16 @@ function createWeatheringAtlas(seed: number): THREE.CanvasTexture {
     ctx.fillStyle = `rgba(0,0,0,${0.04 + seededRand(seed + i * 13) * 0.08})`;
     ctx.fillRect(x, y, 1, 1);
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
+  tex.wrapS = tex.wrapT = RepeatWrapping;
   tex.repeat.set(2.2, 3.5);
   tex.anisotropy = 4;
   tex.needsUpdate = true;
   return tex;
 }
 
-function createLitWindowPlane(seed: number, cols: number, rows: number): THREE.CanvasTexture {
+function createLitWindowPlane(seed: number, cols: number, rows: number): CanvasTexture {
   const cw = cols * 14;
   const ch = rows * 18;
   const canvas = document.createElement('canvas');
@@ -86,8 +86,8 @@ function createLitWindowPlane(seed: number, cols: number, rows: number): THREE.C
       }
     }
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
   tex.anisotropy = 4;
   tex.needsUpdate = true;
   return tex;
@@ -102,7 +102,7 @@ function UniqueBuilding({ spec }: { spec: UniqueBuildingSpec }) {
     () => getCachedSurfaceDetailMaps('concrete', preset.textureScale),
     [preset.textureScale],
   );
-  const lightRef = useRef<THREE.PointLight>(null);
+  const lightRef = useRef<PointLight>(null);
   const [, bump] = useState(0);
 
   useEffect(() => subscribeCinematicLightCue(() => bump((n) => n + 1)), []);
@@ -129,7 +129,7 @@ function UniqueBuilding({ spec }: { spec: UniqueBuildingSpec }) {
           color="#4a4a58"
           map={weather}
           normalMap={detail.normalMap}
-          normalScale={new THREE.Vector2(0.55, 0.55)}
+          normalScale={new Vector2(0.55, 0.55)}
           roughnessMap={detail.roughnessMap}
           roughness={0.92}
           metalness={0.08}

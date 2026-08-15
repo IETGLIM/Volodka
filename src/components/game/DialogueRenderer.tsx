@@ -3,7 +3,7 @@
 */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FastForward, History } from 'lucide-react';
@@ -122,7 +122,7 @@ function getChoiceImpact(effects: StoryEffect[] | undefined, npcId?: string): Ch
    ══════════════════════════════════════════════════════════════ */
 
 /** Pre-allocated temp for NPC world position reads (avoid alloc per bark). */
-const _barkNpcPos = new THREE.Vector3();
+const _barkNpcPos = new Vector3();
 
 /** Per-speaker debounce: skip barks within 1.5s of the last bark from the
  *  same speaker. Prevents spamming during rapid line transitions (e.g.

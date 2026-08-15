@@ -3,7 +3,7 @@
 
 import { useMemo, useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { CanvasTexture, DoubleSide, Mesh, RepeatWrapping, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -27,7 +27,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { SceneBackdropShell } from './SceneBackdropShell';
 
 interface AbandonedFactoryVisualProps {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
 }
 
 /** Gothic/Industrial abandoned factory (20×18m) */
@@ -56,7 +56,7 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
   const D = 18;
   const H = 6;
 
-  const dripRef = useRef<THREE.Mesh>(null);
+  const dripRef = useRef<Mesh>(null);
 
   const debrisData = useMemo(
     () =>
@@ -210,13 +210,13 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
               thickness={wetGlass.thickness}
               clearcoat={wetGlass.clearcoat}
               clearcoatRoughness={wetGlass.clearcoatRoughness}
-              side={THREE.DoubleSide}
+              side={DoubleSide}
               polygonOffset
               polygonOffsetFactor={1}
               polygonOffsetUnits={1}
             />
           ) : (
-            <meshStandardMaterial color="#a0b0c0" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            <meshStandardMaterial color="#a0b0c0" transparent opacity={0.3} metalness={0.2} roughness={0.1} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
           )}
         </mesh>
         <mesh rotation-y={-Math.PI / 2} position={[0.02, -0.3, 0.5]} geometry={getSharedPlaneGeometry(0.4, 0.5)}>
@@ -231,13 +231,13 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
               thickness={wetGlass.thickness}
               clearcoat={wetGlass.clearcoat}
               clearcoatRoughness={wetGlass.clearcoatRoughness}
-              side={THREE.DoubleSide}
+              side={DoubleSide}
               polygonOffset
               polygonOffsetFactor={1}
               polygonOffsetUnits={1}
             />
           ) : (
-            <meshStandardMaterial color="#a0b0c0" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            <meshStandardMaterial color="#a0b0c0" transparent opacity={0.2} metalness={0.2} roughness={0.1} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
           )}
         </mesh>
       </group>
@@ -419,13 +419,13 @@ export function AbandonedFactoryVisual({ livePlayerPositionRef }: AbandonedFacto
               transparent
               opacity={wetGlass.opacity}
               depthWrite={false}
-              side={THREE.DoubleSide}
+              side={DoubleSide}
               polygonOffset
               polygonOffsetFactor={1}
               polygonOffsetUnits={1}
             />
           ) : (
-            <meshStandardMaterial color="#a0b8c0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            <meshStandardMaterial color="#a0b8c0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
           )}
         </mesh>
       ))}
@@ -514,7 +514,7 @@ function FactoryPropGate({
   maxDistance,
   children,
 }: {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
   position: [number, number, number];
   maxDistance: number;
   children: React.ReactNode;
@@ -552,7 +552,7 @@ function ChemicalVat({ position, color }: { position: [number, number, number]; 
   );
 }
 
-function createFactoryFloorTexture(): THREE.CanvasTexture {
+function createFactoryFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -600,14 +600,14 @@ function createFactoryFloorTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(5, 5);
   return tex;
 }
 
-function createFactoryWallTexture(): THREE.CanvasTexture {
+function createFactoryWallTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -642,9 +642,9 @@ function createFactoryWallTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(5, 4);
   return tex;
 }

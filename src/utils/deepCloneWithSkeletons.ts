@@ -13,7 +13,7 @@
  *  4. Also fixes bindMatrix to ensure proper vertex deformation
  */
 
-import * as THREE from 'three';
+import { Bone, Group, Mesh, Object3D, Skeleton, SkinnedMesh } from 'three';
 
 export interface DeepCloneOptions {
   /** When true, dispose GPU resources on the source after cloning (default false). */
@@ -21,9 +21,9 @@ export interface DeepCloneOptions {
 }
 
 export function deepCloneWithSkeletons(
-  source: THREE.Object3D,
+  source: Object3D,
   options: DeepCloneOptions = {},
-): THREE.Group {
+): Group {
   // Step 1: Tag every source object with a unique persistent ID
   // (We use userData so it doesn't interfere with Three.js internals)
   const tag = `__deepClone_${Date.now()}_${Math.random().toString(36).slice(2)}`;
@@ -34,10 +34,10 @@ export function deepCloneWithSkeletons(
   });
 
   // Step 2: Clone the entire scene graph
-  const cloned = source.clone(true) as THREE.Group;
+  const cloned = source.clone(true) as Group;
 
   // Step 3: Build a map: source UUID → cloned object
-  const cloneMap = new Map<string, THREE.Object3D>();
+  const cloneMap = new Map<string, Object3D>();
   cloned.traverse((obj) => {
     const srcUUID = obj.userData[`${tag}_uuid`];
     if (srcUUID) {
@@ -47,16 +47,16 @@ export function deepCloneWithSkeletons(
 
   // Step 4: Fix SkinnedMeshes in the clone
   source.traverse((srcObj) => {
-    if (!(srcObj instanceof THREE.SkinnedMesh)) return;
+    if (!(srcObj instanceof SkinnedMesh)) return;
 
-    const srcMesh = srcObj as THREE.SkinnedMesh;
+    const srcMesh = srcObj as SkinnedMesh;
     const srcUUID = srcMesh.userData[`${tag}_uuid`];
     if (!srcUUID) return;
 
     const clonedObj = cloneMap.get(srcUUID);
-    if (!clonedObj || !(clonedObj instanceof THREE.SkinnedMesh)) return;
+    if (!clonedObj || !(clonedObj instanceof SkinnedMesh)) return;
 
-    const clonedMesh = clonedObj as THREE.SkinnedMesh;
+    const clonedMesh = clonedObj as SkinnedMesh;
 
     try {
     // Clone each bone — find it in the clone map first
@@ -66,14 +66,14 @@ export function deepCloneWithSkeletons(
       const boneUUID = bone.userData[boneTag];
       if (boneUUID) {
         const match = cloneMap.get(boneUUID);
-        if (match && match instanceof THREE.Bone) return match;
+        if (match && match instanceof Bone) return match;
       }
 
       // Second try: search by name in the cloned tree
       if (bone.name) {
-        let found: THREE.Bone | null = null;
+        let found: Bone | null = null;
         cloned.traverse((obj) => {
-          if (obj instanceof THREE.Bone && obj.name === bone.name && !found) {
+          if (obj instanceof Bone && obj.name === bone.name && !found) {
             found = obj;
           }
         });
@@ -81,7 +81,7 @@ export function deepCloneWithSkeletons(
       }
 
       // Fallback: manual clone of the bone
-      const newBone = bone.clone() as THREE.Bone;
+      const newBone = bone.clone() as Bone;
       newBone.name = bone.name;
       return newBone;
     });
@@ -91,10 +91,10 @@ export function deepCloneWithSkeletons(
     // constructor because the constructor validates that the array length matches
     // the number of bones. When GLB models have mismatched bone counts (e.g.,
     // more bone matrices than actual bones), this causes the warning:
-    //   "THREE.Skeleton: Number of inverse bone matrices does not match amount of bones"
+    //   "Skeleton: Number of inverse bone matrices does not match amount of bones"
     // Instead, we let Skeleton compute inverseBindMatrices from the bone world matrices
     // via the bind() call below, which is the correct approach for cloned skeletons.
-    const clonedSkeleton = new THREE.Skeleton(clonedBones);
+    const clonedSkeleton = new Skeleton(clonedBones);
 
     // Clone bone texture if it exists
     if (srcMesh.skeleton.boneTexture) {
@@ -113,7 +113,7 @@ export function deepCloneWithSkeletons(
     clonedMesh.updateMatrixWorld(true);
     } catch (err) {
       // Skeleton cloning can fail when the GLB model has mismatched bone
-      // counts (e.g. "THREE.Skeleton: Number of inverse bone matrices does
+      // counts (e.g. "Skeleton: Number of inverse bone matrices does
       // not match amount of bones"). Skip this mesh's skeleton fix rather
       // than crashing — the clone will still render, just without proper
       // skinning on this particular mesh.
@@ -136,7 +136,7 @@ export function deepCloneWithSkeletons(
 
   if (options.disposeSource) {
     source.traverse((obj) => {
-      if (obj instanceof THREE.Mesh || obj instanceof THREE.SkinnedMesh) {
+      if (obj instanceof Mesh || obj instanceof SkinnedMesh) {
         obj.geometry?.dispose();
         const materials = Array.isArray(obj.material) ? obj.material : [obj.material];
         for (const mat of materials) {

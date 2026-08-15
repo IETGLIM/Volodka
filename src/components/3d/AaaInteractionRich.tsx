@@ -8,7 +8,7 @@
 
 import { useEffect, useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BackSide, BoxGeometry, FrontSide, Group, Mesh, MeshBasicMaterial, PointLight } from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -47,15 +47,15 @@ const DURATION = 1.35;
 
 function createRichSlot(kind: InteractionKind) {
   const col = KIND_COLOR[kind];
-  const innerGeo = new THREE.BoxGeometry(1, 1, 1);
-  const outerGeo = new THREE.BoxGeometry(1, 1, 1);
-  const innerMat = new THREE.MeshBasicMaterial({ color: col.inner, transparent: true, opacity: 0, depthWrite: false, side: THREE.FrontSide });
-  const outerMat = new THREE.MeshBasicMaterial({ color: col.outer, transparent: true, opacity: 0, depthWrite: false, side: THREE.BackSide });
-  const innerMesh = new THREE.Mesh(innerGeo, innerMat);
-  const outerMesh = new THREE.Mesh(outerGeo, outerMat);
-  const light = new THREE.PointLight(col.light, 0, 5, 2);
+  const innerGeo = new BoxGeometry(1, 1, 1);
+  const outerGeo = new BoxGeometry(1, 1, 1);
+  const innerMat = new MeshBasicMaterial({ color: col.inner, transparent: true, opacity: 0, depthWrite: false, side: FrontSide });
+  const outerMat = new MeshBasicMaterial({ color: col.outer, transparent: true, opacity: 0, depthWrite: false, side: BackSide });
+  const innerMesh = new Mesh(innerGeo, innerMat);
+  const outerMesh = new Mesh(outerGeo, outerMat);
+  const light = new PointLight(col.light, 0, 5, 2);
   light.position.set(0, 0.5, 0);
-  const group = new THREE.Group();
+  const group = new Group();
   group.add(innerMesh, outerMesh, light);
   group.visible = false;
   return { group, innerMesh, outerMesh, light, innerMat, outerMat, innerGeo, outerGeo, kind };

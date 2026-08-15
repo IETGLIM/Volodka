@@ -3,7 +3,7 @@
  * Unity custom surface shader → Three.js ShaderMaterial / onBeforeCompile.
  */
 
-import * as THREE from 'three';
+import { BufferAttribute, BufferGeometry, Color, DataTexture, ShaderMaterial, Texture, Vector3 } from 'three';
 import type { ProceduralAaaParams } from './params';
 
 const VERT = /* glsl */ `
@@ -250,26 +250,26 @@ void main() {
 
 export function createAaaSurfaceMaterial(
   maps: {
-    albedo: THREE.Texture;
-    normal: THREE.Texture;
-    roughness: THREE.Texture;
-    metalness: THREE.Texture;
-    height: THREE.Texture;
-    detailNormal?: THREE.Texture;
-    aoMap?: THREE.Texture;
+    albedo: Texture;
+    normal: Texture;
+    roughness: Texture;
+    metalness: Texture;
+    height: Texture;
+    detailNormal?: Texture;
+    aoMap?: Texture;
   },
   params: ProceduralAaaParams,
-): THREE.ShaderMaterial {
+): ShaderMaterial {
   // 1x1 flat normal fallback (0.5, 0.5, 1.0 in [0,1] = (0,0,1) in [-1,1])
   const flatNormalData = new Uint8Array([128, 128, 255, 255]);
-  const flatNormalTex = new THREE.DataTexture(flatNormalData, 1, 1);
+  const flatNormalTex = new DataTexture(flatNormalData, 1, 1);
   flatNormalTex.needsUpdate = true;
   // 1x1 white AO fallback (no occlusion)
   const whiteAoData = new Uint8Array([255, 255, 255, 255]);
-  const whiteAoTex = new THREE.DataTexture(whiteAoData, 1, 1);
+  const whiteAoTex = new DataTexture(whiteAoData, 1, 1);
   whiteAoTex.needsUpdate = true;
 
-  return new THREE.ShaderMaterial({
+  return new ShaderMaterial({
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
@@ -292,15 +292,15 @@ export function createAaaSurfaceMaterial(
       uClearcoatRough: { value: 0.18 },
       uDetailNormalStrength: { value: maps.detailNormal ? 0.45 : 0 },
       uRainFlowAngle: { value: -1.5708 }, // -PI/2 = downward flow
-      uLightDir: { value: new THREE.Vector3(0.35, 0.85, 0.25).normalize() },
-      uLightColor: { value: new THREE.Color('#c8d0ff') },
+      uLightDir: { value: new Vector3(0.35, 0.85, 0.25).normalize() },
+      uLightColor: { value: new Color('#c8d0ff') },
       uTime: { value: 0 },
     },
   });
 }
 
 export function updateAaaSurfaceFromParams(
-  mat: THREE.ShaderMaterial,
+  mat: ShaderMaterial,
   params: ProceduralAaaParams,
 ): void {
   mat.uniforms.uParallaxScale!.value = params.parallaxScale;
@@ -313,7 +313,7 @@ export function updateAaaSurfaceFromParams(
 }
 
 /** Ensure geometry has tangents for TBN / parallax. */
-export function ensureTangents(geo: THREE.BufferGeometry): void {
+export function ensureTangents(geo: BufferGeometry): void {
   if (geo.getAttribute('tangent')) return;
   // computeTangents требует index — строим naive fan-index по треугольникам
   if (!geo.getIndex()) {
@@ -321,7 +321,7 @@ export function ensureTangents(geo: THREE.BufferGeometry): void {
     if (!pos) return;
     const indices = new Uint32Array(pos.count);
     for (let i = 0; i < pos.count; i++) indices[i] = i;
-    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    geo.setIndex(new BufferAttribute(indices, 1));
   }
   try {
     geo.computeTangents();
@@ -335,6 +335,6 @@ export function ensureTangents(geo: THREE.BufferGeometry): void {
       tangents[i * 4 + 2] = 0;
       tangents[i * 4 + 3] = 1;
     }
-    geo.setAttribute('tangent', new THREE.BufferAttribute(tangents, 4));
+    geo.setAttribute('tangent', new BufferAttribute(tangents, 4));
   }
 }

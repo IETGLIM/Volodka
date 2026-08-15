@@ -3,7 +3,7 @@
  * Prop/NPC preloads are scoped per scene instead of loading the full registry.
  */
 
-import * as THREE from 'three';
+import { Cache } from 'three';
 import { useGLTF } from '@react-three/drei';
 import type { SceneId } from '@/shared/types/game';
 import { sceneMatchesScheduleEntry, resolveDerivedSceneId } from '@/config/sceneInheritance';
@@ -41,7 +41,7 @@ export function shouldUnloadSceneGpuOnTransition(
 }
 
 /**
- * Single scene:unload teardown path: ownership claims + GLTF/THREE.Cache eviction.
+ * Single scene:unload teardown path: ownership claims + GLTF/Cache eviction.
  * Prefer this over ad-hoc dispose of module-level shared resources.
  */
 export function releaseSceneGpuOnUnload(sceneId: SceneId, nextSceneId: SceneId): void {
@@ -120,7 +120,7 @@ function collectAssetUrls(assetId: string): string[] {
 
 function evictGltfUrl(url: string): void {
   useGLTF.clear(url);
-  THREE.Cache.remove(url);
+  Cache.remove(url);
 }
 
 function preloadScenePropModels(sceneId: SceneId): void {
@@ -184,7 +184,7 @@ export function preloadNpcModel(npcId: string): void {
   );
 }
 
-/** Remove loader + THREE.Cache entries for assets only used by `fromSceneId`. */
+/** Remove loader + Cache entries for assets only used by `fromSceneId`. */
 export function evictSceneGpuCache(fromSceneId: SceneId, keepSceneId?: SceneId): void {
   const fromRoot = resolveDerivedSceneId(fromSceneId);
   const keepRoot = keepSceneId !== undefined ? resolveDerivedSceneId(keepSceneId) : undefined;

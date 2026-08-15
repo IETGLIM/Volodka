@@ -4,7 +4,7 @@
 import { Suspense, useRef, useEffect, useMemo, type MutableRefObject } from 'react';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BoxGeometry, CanvasTexture, CylinderGeometry, DoubleSide, Group, MathUtils, PlaneGeometry, PointLight, RepeatWrapping, SphereGeometry, Vector3 } from 'three';
 import { getSharedStandardMaterial } from '@/engine/three/moduleMaterialRegistry';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
@@ -19,72 +19,72 @@ import {
 import { getSharedCircleGeometry } from '@/engine/three/moduleGeometryRegistry';
 
 interface VolodkaCorridorVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 /** Communal corridor (6×16×3m) — matches sceneDefinition physics bounds */
 /* ─── Shared geometries (module-level, reused across renders) ─── */
 
-const geo_pln_1 = new THREE.PlaneGeometry(6, 16);
-const geo_pln_2 = new THREE.PlaneGeometry(1.4, 14);
-const geo_pln_3 = new THREE.PlaneGeometry(16, 3);
-const geo_pln_4 = new THREE.PlaneGeometry(6, 3);
-const geo_box_5 = new THREE.BoxGeometry(0.5, 0.7, 0.4);
-const geo_box_6 = new THREE.BoxGeometry(0.48, 0.03, 0.38);
-const geo_box_7 = new THREE.BoxGeometry(0.08, 0.8, 0.6);
-const geo_box_8 = new THREE.BoxGeometry(0.02, 0.08, 0.55);
-const geo_box_9 = new THREE.BoxGeometry(0.15, 0.05, 0.15);
-const geo_cyl_10 = new THREE.CylinderGeometry(0.1, 0.2, 0.15, 8);
-const geo_pln_11 = new THREE.PlaneGeometry(0.9, 2.2);
-const geo_box_12 = new THREE.BoxGeometry(0.03, 2.2, 0.95);
-const geo_box_13 = new THREE.BoxGeometry(0.03, 0.05, 0.95);
-const geo_box_14 = new THREE.BoxGeometry(0.04, 2.15, 0.9);
-const geo_cyl_15 = new THREE.CylinderGeometry(0.012, 0.012, 0.1, 6);
-const geo_box_16 = new THREE.BoxGeometry(0.005, 0.5, 0.5);
-const geo_box_17 = new THREE.BoxGeometry(0.95, 2.2, 0.03);
-const geo_box_18 = new THREE.BoxGeometry(0.95, 0.05, 0.03);
-const geo_box_19 = new THREE.BoxGeometry(0.9, 2.15, 0.04);
-const geo_box_20 = new THREE.BoxGeometry(0.5, 0.6, 0.005);
-const geo_pln_21 = new THREE.PlaneGeometry(1.2, 0.6);
-const geo_pln_22 = new THREE.PlaneGeometry(0.6, 0.3);
-const geo_sph_23 = new THREE.SphereGeometry(0.08, 5, 5);
-const geo_sph_24 = new THREE.SphereGeometry(0.06, 5, 5);
-const geo_pln_25 = new THREE.PlaneGeometry(0.25, 0.18);
-const geo_pln_26 = new THREE.PlaneGeometry(0.5, 0.5);
-const geo_cyl_27 = new THREE.CylinderGeometry(0.006, 0.006, 0.3, 4);
-const geo_pln_28 = new THREE.PlaneGeometry(0.08, 0.14);
-const geo_pln_29 = new THREE.PlaneGeometry(0.4, 0.3);
-const geo_pln_30 = new THREE.PlaneGeometry(0.35, 0.22);
-const geo_box_31 = new THREE.BoxGeometry(0.8, 1.2, 0.15);
-const geo_box_32 = new THREE.BoxGeometry(0.65, 0.18, 0.01);
-const geo_box_33 = new THREE.BoxGeometry(0.2, 0.03, 0.003);
-const geo_cyl_34 = new THREE.CylinderGeometry(0.005, 0.005, 0.003, 6);
-const geo_box_35 = new THREE.BoxGeometry(0.15, 0.25, 0.03);
-const geo_box_36 = new THREE.BoxGeometry(0.1, 0.08, 0.002);
-const geo_box_37 = new THREE.BoxGeometry(0.09, 0.003, 0.001);
-const geo_cyl_38 = new THREE.CylinderGeometry(0.015, 0.015, 0.005, 8);
-const geo_cyl_39 = new THREE.CylinderGeometry(0.01, 0.01, 0.005, 8);
-const geo_pln_40 = new THREE.PlaneGeometry(0.4, 0.4);
-const geo_pln_41 = new THREE.PlaneGeometry(0.25, 0.005);
-const geo_pln_42 = new THREE.PlaneGeometry(0.15, 0.004);
-const geo_box_43 = new THREE.BoxGeometry(0.4, 0.6, 0.02);
-const geo_pln_44 = new THREE.PlaneGeometry(0.33, 0.52);
-const geo_cyl_45 = new THREE.CylinderGeometry(0.005, 0.005, 0.06, 4);
-const geo_cyl_46 = new THREE.CylinderGeometry(0.005, 0.005, 0.03, 4);
-const geo_box_47 = new THREE.BoxGeometry(0.06, 0.5, 0.015);
-const geo_pln_48 = new THREE.PlaneGeometry(0.8, 0.5);
-const geo_cyl_49 = new THREE.CylinderGeometry(0.025, 0.025, 16, 8);
-const geo_box_50 = new THREE.BoxGeometry(0.04, 0.06, 0.04);
-const geo_cyl_51 = new THREE.CylinderGeometry(0.04, 0.04, 0.02, 6);
-const geo_box_52 = new THREE.BoxGeometry(0.08, 0.01, 0.01);
-const geo_box_53 = new THREE.BoxGeometry(0.06, 0.08, 0.01);
-const geo_box_54 = new THREE.BoxGeometry(0.03, 0.015, 0.005);
-const geo_sph_55 = new THREE.SphereGeometry(0.05, 4, 3);
-const geo_pln_56 = new THREE.PlaneGeometry(0.7, 2);
-const geo_box_57 = new THREE.BoxGeometry(0.03, 2, 0.75);
-const geo_box_58 = new THREE.BoxGeometry(0.04, 1.95, 0.7);
-const geo_cyl_59 = new THREE.CylinderGeometry(0.012, 0.012, 0.08, 6);
-const geo_pln_60 = new THREE.PlaneGeometry(0.06, 0.04);
+const geo_pln_1 = new PlaneGeometry(6, 16);
+const geo_pln_2 = new PlaneGeometry(1.4, 14);
+const geo_pln_3 = new PlaneGeometry(16, 3);
+const geo_pln_4 = new PlaneGeometry(6, 3);
+const geo_box_5 = new BoxGeometry(0.5, 0.7, 0.4);
+const geo_box_6 = new BoxGeometry(0.48, 0.03, 0.38);
+const geo_box_7 = new BoxGeometry(0.08, 0.8, 0.6);
+const geo_box_8 = new BoxGeometry(0.02, 0.08, 0.55);
+const geo_box_9 = new BoxGeometry(0.15, 0.05, 0.15);
+const geo_cyl_10 = new CylinderGeometry(0.1, 0.2, 0.15, 8);
+const geo_pln_11 = new PlaneGeometry(0.9, 2.2);
+const geo_box_12 = new BoxGeometry(0.03, 2.2, 0.95);
+const geo_box_13 = new BoxGeometry(0.03, 0.05, 0.95);
+const geo_box_14 = new BoxGeometry(0.04, 2.15, 0.9);
+const geo_cyl_15 = new CylinderGeometry(0.012, 0.012, 0.1, 6);
+const geo_box_16 = new BoxGeometry(0.005, 0.5, 0.5);
+const geo_box_17 = new BoxGeometry(0.95, 2.2, 0.03);
+const geo_box_18 = new BoxGeometry(0.95, 0.05, 0.03);
+const geo_box_19 = new BoxGeometry(0.9, 2.15, 0.04);
+const geo_box_20 = new BoxGeometry(0.5, 0.6, 0.005);
+const geo_pln_21 = new PlaneGeometry(1.2, 0.6);
+const geo_pln_22 = new PlaneGeometry(0.6, 0.3);
+const geo_sph_23 = new SphereGeometry(0.08, 5, 5);
+const geo_sph_24 = new SphereGeometry(0.06, 5, 5);
+const geo_pln_25 = new PlaneGeometry(0.25, 0.18);
+const geo_pln_26 = new PlaneGeometry(0.5, 0.5);
+const geo_cyl_27 = new CylinderGeometry(0.006, 0.006, 0.3, 4);
+const geo_pln_28 = new PlaneGeometry(0.08, 0.14);
+const geo_pln_29 = new PlaneGeometry(0.4, 0.3);
+const geo_pln_30 = new PlaneGeometry(0.35, 0.22);
+const geo_box_31 = new BoxGeometry(0.8, 1.2, 0.15);
+const geo_box_32 = new BoxGeometry(0.65, 0.18, 0.01);
+const geo_box_33 = new BoxGeometry(0.2, 0.03, 0.003);
+const geo_cyl_34 = new CylinderGeometry(0.005, 0.005, 0.003, 6);
+const geo_box_35 = new BoxGeometry(0.15, 0.25, 0.03);
+const geo_box_36 = new BoxGeometry(0.1, 0.08, 0.002);
+const geo_box_37 = new BoxGeometry(0.09, 0.003, 0.001);
+const geo_cyl_38 = new CylinderGeometry(0.015, 0.015, 0.005, 8);
+const geo_cyl_39 = new CylinderGeometry(0.01, 0.01, 0.005, 8);
+const geo_pln_40 = new PlaneGeometry(0.4, 0.4);
+const geo_pln_41 = new PlaneGeometry(0.25, 0.005);
+const geo_pln_42 = new PlaneGeometry(0.15, 0.004);
+const geo_box_43 = new BoxGeometry(0.4, 0.6, 0.02);
+const geo_pln_44 = new PlaneGeometry(0.33, 0.52);
+const geo_cyl_45 = new CylinderGeometry(0.005, 0.005, 0.06, 4);
+const geo_cyl_46 = new CylinderGeometry(0.005, 0.005, 0.03, 4);
+const geo_box_47 = new BoxGeometry(0.06, 0.5, 0.015);
+const geo_pln_48 = new PlaneGeometry(0.8, 0.5);
+const geo_cyl_49 = new CylinderGeometry(0.025, 0.025, 16, 8);
+const geo_box_50 = new BoxGeometry(0.04, 0.06, 0.04);
+const geo_cyl_51 = new CylinderGeometry(0.04, 0.04, 0.02, 6);
+const geo_box_52 = new BoxGeometry(0.08, 0.01, 0.01);
+const geo_box_53 = new BoxGeometry(0.06, 0.08, 0.01);
+const geo_box_54 = new BoxGeometry(0.03, 0.015, 0.005);
+const geo_sph_55 = new SphereGeometry(0.05, 4, 3);
+const geo_pln_56 = new PlaneGeometry(0.7, 2);
+const geo_box_57 = new BoxGeometry(0.03, 2, 0.75);
+const geo_box_58 = new BoxGeometry(0.04, 1.95, 0.7);
+const geo_cyl_59 = new CylinderGeometry(0.012, 0.012, 0.08, 6);
+const geo_pln_60 = new PlaneGeometry(0.06, 0.04);
 
 registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_pln_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_cyl_10, geo_pln_11, geo_box_12, geo_box_13, geo_box_14, geo_cyl_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_pln_21, geo_pln_22, geo_sph_23, geo_sph_24, geo_pln_25, geo_pln_26, geo_cyl_27, geo_pln_28, geo_pln_29, geo_pln_30, geo_box_31, geo_box_32, geo_box_33, geo_cyl_34, geo_box_35, geo_box_36, geo_box_37, geo_cyl_38, geo_cyl_39, geo_pln_40, geo_pln_41, geo_pln_42, geo_box_43, geo_pln_44, geo_cyl_45, geo_cyl_46, geo_box_47, geo_pln_48, geo_cyl_49, geo_box_50, geo_cyl_51, geo_box_52, geo_box_53, geo_box_54, geo_sph_55, geo_pln_56, geo_box_57, geo_box_58, geo_cyl_59, geo_pln_60]);
 
@@ -93,7 +93,7 @@ const mat_2 = getSharedStandardMaterial({ color: '#3a2818' });
 const mat_3 = getSharedStandardMaterial({ color: '#888', metalness: 0.6, roughness: 0.3 });
 const mat_4 = getSharedStandardMaterial({ color: '#999', metalness: 0.5, roughness: 0.4 });
 const mat_5 = getSharedStandardMaterial({ color: '#333', metalness: 0.7 });
-const mat_6 = getSharedStandardMaterial({ color: '#ffe8a0', emissive: '#ffdd80', emissiveIntensity: 0.5, side: THREE.DoubleSide });
+const mat_6 = getSharedStandardMaterial({ color: '#ffe8a0', emissive: '#ffdd80', emissiveIntensity: 0.5, side: DoubleSide });
 const mat_7 = getSharedStandardMaterial({ color: '#3a2820', roughness: 0.85 });
 const mat_8 = getSharedStandardMaterial({ color: '#5a4838' });
 const mat_9 = getSharedStandardMaterial({ color: '#6a5038', roughness: 0.72, emissive: '#3a2818', emissiveIntensity: 0.12 });
@@ -106,12 +106,12 @@ const mat_15 = getSharedStandardMaterial({ color: '#1a1a1a', emissive: '#ff2244'
 const mat_16 = getSharedStandardMaterial({ color: '#1a1a1a', emissive: '#44aaff', emissiveIntensity: 0.25, roughness: 0.95 });
 const mat_17 = getSharedStandardMaterial({ color: '#c8c0a8', roughness: 0.95 });
 const mat_18 = getSharedStandardMaterial({ color: '#b0a890', roughness: 0.95 });
-const mat_19 = getSharedStandardMaterial({ color: '#c8c0a0', roughness: 0.95, side: THREE.DoubleSide });
+const mat_19 = getSharedStandardMaterial({ color: '#c8c0a0', roughness: 0.95, side: DoubleSide });
 const mat_20 = getSharedStandardMaterial({ color: '#0a0a0a', roughness: 1 });
 const mat_21 = getSharedStandardMaterial({ color: '#222', roughness: 0.9 });
 const mat_22 = getSharedStandardMaterial({ color: '#2a2520', roughness: 0.6, transparent: true, opacity: 0.25, polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1 });
 const mat_23 = getSharedStandardMaterial({ color: '#5a4a40', roughness: 0.95 });
-const mat_24 = getSharedStandardMaterial({ color: '#3a3540', roughness: 0.9, side: THREE.DoubleSide });
+const mat_24 = getSharedStandardMaterial({ color: '#3a3540', roughness: 0.9, side: DoubleSide });
 const mat_25 = getSharedStandardMaterial({ color: '#4a4a4a', metalness: 0.4, roughness: 0.5 });
 const mat_26 = getSharedStandardMaterial({ color: '#333', metalness: 0.3, roughness: 0.6 });
 // Deplasticize: clamp envMapIntensity on metal-heavy props so they don't
@@ -218,16 +218,16 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   const D = 16;
   const H = 3;
 
-  const flickerLightRef = useRef<THREE.PointLight>(null);
-  const rootGroupRef = useRef<THREE.Group>(null);
+  const flickerLightRef = useRef<PointLight>(null);
+  const rootGroupRef = useRef<Group>(null);
 
   // ── Interactive object animation refs ──
-  const kitchenDoorRef = useRef<THREE.Group>(null);
-  const streetDoorRef = useRef<THREE.Group>(null);
-  const roomDoorRef = useRef<THREE.Group>(null);
-  const solnyshDoorRef = useRef<THREE.Group>(null);
-  const zaremaDoorRef = useRef<THREE.Group>(null);
-  const bathroomDoorRef = useRef<THREE.Group>(null);
+  const kitchenDoorRef = useRef<Group>(null);
+  const streetDoorRef = useRef<Group>(null);
+  const roomDoorRef = useRef<Group>(null);
+  const solnyshDoorRef = useRef<Group>(null);
+  const zaremaDoorRef = useRef<Group>(null);
+  const bathroomDoorRef = useRef<Group>(null);
 
   // ── Listen for object:interact events to toggle interactive objects ──
   useEffect(() => {
@@ -264,7 +264,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     if (kitchenDoorRef.current) {
       const open = objStates['corridor_kitchen_door'] ?? false;
       const targetY = open ? -Math.PI / 2 : 0;
-      kitchenDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      kitchenDoorRef.current.rotation.y = MathUtils.lerp(
         kitchenDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -275,7 +275,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     if (streetDoorRef.current) {
       const open = objStates['corridor_street_door'] ?? false;
       const targetY = open ? Math.PI / 2 : 0;
-      streetDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      streetDoorRef.current.rotation.y = MathUtils.lerp(
         streetDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -286,7 +286,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     if (roomDoorRef.current) {
       const open = objStates['corridor_room_door'] ?? false;
       const targetY = open ? -Math.PI / 2 : 0;
-      roomDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      roomDoorRef.current.rotation.y = MathUtils.lerp(
         roomDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -296,7 +296,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     if (solnyshDoorRef.current) {
       const open = objStates['corridor_solnysh_door'] ?? false;
       const targetY = open ? -Math.PI / 2 : 0;
-      solnyshDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      solnyshDoorRef.current.rotation.y = MathUtils.lerp(
         solnyshDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -306,7 +306,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     if (zaremaDoorRef.current) {
       const open = objStates['corridor_zarema_door'] ?? false;
       const targetY = open ? Math.PI / 2 : 0;
-      zaremaDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      zaremaDoorRef.current.rotation.y = MathUtils.lerp(
         zaremaDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -316,7 +316,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
     if (bathroomDoorRef.current) {
       const open = objStates['corridor_bathroom_door'] ?? false;
       const targetY = open ? -Math.PI / 2 : 0;
-      bathroomDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      bathroomDoorRef.current.rotation.y = MathUtils.lerp(
         bathroomDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -704,7 +704,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
   );
 }
 
-function createCorridorFloorTexture(): THREE.CanvasTexture {
+function createCorridorFloorTexture(): CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -728,14 +728,14 @@ function createCorridorFloorTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(3, 9);
   return tex;
 }
 
-function createCorridorCarpetTexture(): THREE.CanvasTexture {
+function createCorridorCarpetTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -761,14 +761,14 @@ function createCorridorCarpetTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(1, 8);
   return tex;
 }
 
-function createCorridorWallTexture(): THREE.CanvasTexture {
+function createCorridorWallTexture(): CanvasTexture {
   const size = 512;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -788,9 +788,9 @@ function createCorridorWallTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(2, 5);
   return tex;
 }

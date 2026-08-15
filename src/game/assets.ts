@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { AnimationClip, DataTexture, EquirectangularReflectionMapping, Group } from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js';
 
@@ -8,10 +8,10 @@ export class AssetManager {
   private static gltfLoader = new GLTFLoader();
   private static rgbeLoader = new RGBELoader();
 
-  private static models = new Map<string, THREE.Group>();
-  private static animations = new Map<string, THREE.AnimationClip>();
+  private static models = new Map<string, Group>();
+  private static animations = new Map<string, AnimationClip>();
 
-  static async loadModel(path: string): Promise<THREE.Group> {
+  static async loadModel(path: string): Promise<Group> {
     if (this.models.has(path)) {
       return this.models.get(path)!.clone(true);
     }
@@ -32,13 +32,13 @@ export class AssetManager {
         (err) => {
           console.error(`Failed to load model ${path}:`, err);
           // Return an empty group as fallback
-          resolve(new THREE.Group());
+          resolve(new Group());
         }
       );
     });
   }
 
-  static async loadAnimation(path: string): Promise<THREE.AnimationClip | null> {
+  static async loadAnimation(path: string): Promise<AnimationClip | null> {
     if (this.animations.has(path)) {
       return this.animations.get(path)!;
     }
@@ -63,12 +63,12 @@ export class AssetManager {
     });
   }
 
-  static async loadHDRI(path: string): Promise<THREE.DataTexture> {
+  static async loadHDRI(path: string): Promise<DataTexture> {
     return new Promise((resolve, reject) => {
       this.rgbeLoader.load(
         REPO_BASE + path,
         (texture) => {
-          texture.mapping = THREE.EquirectangularReflectionMapping;
+          texture.mapping = EquirectangularReflectionMapping;
           resolve(texture);
         },
         undefined,

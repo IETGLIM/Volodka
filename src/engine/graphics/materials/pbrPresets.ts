@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { MathUtils, MeshPhysicalMaterial, MeshPhysicalMaterialParameters, MeshStandardMaterial, MeshStandardMaterialParameters } from 'three';
 
 /** Shared PBR material presets for procedural scenes — tuned away from plastic kit look. */
 export const PBR_PRESETS = {
@@ -138,14 +138,14 @@ export type PbrPresetId = keyof typeof PBR_PRESETS;
 
 export function createStandardFromPreset(
   preset: PbrPresetId,
-  overrides?: Partial<THREE.MeshStandardMaterialParameters>,
-): THREE.MeshStandardMaterial {
+  overrides?: Partial<MeshStandardMaterialParameters>,
+): MeshStandardMaterial {
   const p = PBR_PRESETS[preset];
   // Presets with transmission require MeshPhysicalMaterial
   if ('transmission' in p) {
-    return createPhysicalFromPreset(preset, overrides as Partial<THREE.MeshPhysicalMaterialParameters>) as unknown as THREE.MeshStandardMaterial;
+    return createPhysicalFromPreset(preset, overrides as Partial<MeshPhysicalMaterialParameters>) as unknown as MeshStandardMaterial;
   }
-  return new THREE.MeshStandardMaterial({
+  return new MeshStandardMaterial({
     color: p.color,
     roughness: p.roughness,
     metalness: p.metalness,
@@ -162,13 +162,13 @@ export function createStandardFromPreset(
 
 export function createPhysicalFromPreset(
   preset: PbrPresetId,
-  overrides?: Partial<THREE.MeshPhysicalMaterialParameters>,
-): THREE.MeshPhysicalMaterial {
+  overrides?: Partial<MeshPhysicalMaterialParameters>,
+): MeshPhysicalMaterial {
   const p = PBR_PRESETS[preset];
   const transmission = 'transmission' in p ? p.transmission : 0;
   const thickness = 'thickness' in p ? p.thickness : 0;
   const wetGlassLike = preset === 'wetGlass' || preset === 'neonWetGlass' || preset === 'wetAsphaltPuddle';
-  return new THREE.MeshPhysicalMaterial({
+  return new MeshPhysicalMaterial({
     color: p.color,
     roughness: p.roughness,
     metalness: p.metalness,
@@ -199,13 +199,13 @@ export function createPhysicalFromPreset(
 
 /** Lerp roughness/metalness toward wet surface values (rain intensity 0–1). */
 export function applyWetness(
-  material: THREE.MeshStandardMaterial,
+  material: MeshStandardMaterial,
   dryRoughness: number,
   dryMetalness: number,
   wetness: number,
 ): void {
   const t = Math.min(1, Math.max(0, wetness));
-  material.roughness = THREE.MathUtils.lerp(dryRoughness, 0.28, t);
-  material.metalness = THREE.MathUtils.lerp(dryMetalness, 0.35, t);
+  material.roughness = MathUtils.lerp(dryRoughness, 0.28, t);
+  material.metalness = MathUtils.lerp(dryMetalness, 0.35, t);
   material.needsUpdate = true;
 }

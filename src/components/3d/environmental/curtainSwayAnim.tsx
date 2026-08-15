@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 export function CurtainSwayAnim({ anim }: { anim: EnvAnimation }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const timeRef = useRef(0);
   const amplitude = anim.config.amplitude ?? 0.05;
   const frequency = anim.config.frequency ?? 0.3;

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import * as THREE from 'three';
+import { Object3D } from 'three';
 import {
   fitPropGltf,
   measureGltfBounds,
@@ -19,7 +19,7 @@ export interface GltfPropPlacement {
 
 /** Measure a loaded GLB clone and resolve AAA metre-scale placement. */
 export function useGltfPropPlacement(
-  scene: THREE.Object3D,
+  scene: Object3D,
   options: GltfPropPlacementOptions,
 ): GltfPropPlacement {
   const { manualScale = 1, targetSizeM, fitAxis } = options;

@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import * as THREE from 'three';
+import { BufferAttribute, Mesh, ShaderMaterial } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { buildSdfWorldLod } from './ProceduralSdfWorld';
 import { generateDynamicTexturesSync } from './DynamicTextureGenerator';
@@ -26,7 +26,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 export interface ProceduralSdfWorldMeshProps {
   spectrumRef?: React.MutableRefObject<number>;
-  onMeshReady?: (mesh: THREE.Mesh) => void;
+  onMeshReady?: (mesh: Mesh) => void;
   generationKey?: number;
 }
 
@@ -35,8 +35,8 @@ export function ProceduralSdfWorldMesh({
   onMeshReady,
   generationKey = 0,
 }: ProceduralSdfWorldMeshProps) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.ShaderMaterial | null>(null);
+  const meshRef = useRef<Mesh>(null);
+  const matRef = useRef<ShaderMaterial | null>(null);
   const { preset } = useGraphicsQuality();
   const [params, setParams] = useState<ProceduralAaaParams>(getProceduralAaaParams);
 
@@ -81,7 +81,7 @@ export function ProceduralSdfWorldMesh({
           uvs[i * 2 + 1] = (y + 1.5) / 14;
         }
       }
-      geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+      geo.setAttribute('uv', new BufferAttribute(uvs, 2));
     }
     ensureTangents(geo);
 

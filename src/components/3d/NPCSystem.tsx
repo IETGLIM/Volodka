@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – NPC system for current scene ─── */
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import type { SceneId, NPCDefinition } from '@/shared/types/game';
 import { useCurrentSceneId, useTimeOfDay, useScheduleContext } from '@/store/selectors';
 import { getNPCsForScene, getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
@@ -16,7 +16,7 @@ import { separateNpcPositions } from '@/engine/npc/separateNpcPositions';
 import { resolveNpcRenderTier } from '@/engine/npc/npcRenderTier';
 
 interface NPCSystemProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   /** Current interaction state from the interaction system */
   interactionState?: InteractionState;
   /** The NPC ID that is currently the target of interaction */

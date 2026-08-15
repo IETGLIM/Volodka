@@ -9,7 +9,7 @@ import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { scratchColor } from '@/engine/three/frameScratch';
 import { seededRand } from '@/shared/utils/seededRand';
-import * as THREE from 'three';
+import { CircleGeometry, DoubleSide, Group, InstancedMesh, Object3D, PlaneGeometry, Vector3 } from 'three';
 import type { SceneId } from '@/shared/types/game';
 import { useGameStore } from '@/store/gameStore';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
@@ -198,7 +198,7 @@ function angleXZ(fromX: number, fromZ: number, toX: number, toZ: number): number
 /* ─── Component ─── */
 
 interface AmbientNPCsProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
@@ -227,17 +227,17 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
 
   const colors = config ? TYPE_COLORS[config.type] : TYPE_COLORS.office_worker;
 
-  const meshRef = useRef<THREE.InstancedMesh>(null);
-  const shadowRef = useRef<THREE.InstancedMesh>(null);
-  const rootRef = useRef<THREE.Group>(null);
+  const meshRef = useRef<InstancedMesh>(null);
+  const shadowRef = useRef<InstancedMesh>(null);
+  const rootRef = useRef<Group>(null);
   // Cardboard plane impostors are Low-only — never allocate them on hero hubs.
   const showCardboardOverflow = preset.id === 'low';
   const planeGeometry = useMemo(
-    () => (showCardboardOverflow ? new THREE.PlaneGeometry(NPC_WIDTH, NPC_HEIGHT) : null),
+    () => (showCardboardOverflow ? new PlaneGeometry(NPC_WIDTH, NPC_HEIGHT) : null),
     [showCardboardOverflow],
   );
   const shadowGeometry = useMemo(
-    () => (showCardboardOverflow ? new THREE.CircleGeometry(0.22, 10) : null),
+    () => (showCardboardOverflow ? new CircleGeometry(0.22, 10) : null),
     [showCardboardOverflow],
   );
   const impostorMap = useMemo(
@@ -264,8 +264,8 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
       active: false,
     })),
   );
-  const dummy = useMemo(() => new THREE.Object3D(), []);
-  const camPos = useMemo(() => new THREE.Vector3(), []);
+  const dummy = useMemo(() => new Object3D(), []);
+  const camPos = useMemo(() => new Vector3(), []);
 
   useEffect(() => {
     if (!config || count === 0) {
@@ -507,7 +507,7 @@ export function AmbientNPCs({ livePlayerPositionRef }: AmbientNPCsProps) {
               metalness={0.05}
               alphaTest={0.35}
               depthWrite={false}
-              side={THREE.DoubleSide}
+              side={DoubleSide}
             />
           </instancedMesh>
           <instancedMesh

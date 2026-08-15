@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import type { MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { consumeEKey, isEKeyConsumed } from '@/engine/input/eKeyConsumption';
@@ -27,7 +27,7 @@ import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 import { getGamePhase } from '@/shared/gamePhase';
 
 export interface UseEKeyInteractionOptions {
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: MutableRefObject<Vector3>;
   isOverlayBlockingRef: MutableRefObject<boolean>;
   sceneExitsRef: MutableRefObject<SceneExit[]>;
   zonesRef: MutableRefObject<TriggerZone[]>;

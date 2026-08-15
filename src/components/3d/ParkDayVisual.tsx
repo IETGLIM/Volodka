@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Memorial Park procedural 3D visual ─── */
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { BackSide, CanvasTexture, DoubleSide, InstancedMesh, Object3D, RepeatWrapping, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -27,7 +27,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface ParkDayVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const DISTANT_TREES: Array<[number, number, number]> = [
@@ -265,7 +265,7 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
             <meshStandardMaterial
               color={['#6a4020', '#8a5a20', '#5a3a10', '#7a4a18'][i % 4]}
               roughness={0.95}
-              side={THREE.DoubleSide}
+              side={DoubleSide}
             />
           </mesh>
         );
@@ -321,7 +321,7 @@ export function ParkDayVisual({ livePlayerPositionRef }: ParkDayVisualProps) {
 
       {/* ── Discarded newspaper on path ── */}
       <mesh rotation={[-Math.PI / 2, 0, 0.3]} position={[1.5, 0.04, -1.0]} geometry={getSharedPlaneGeometry(0.3, 0.2)}>
-        <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={THREE.DoubleSide} />
+        <meshStandardMaterial color="#c8c0a0" roughness={0.95} side={DoubleSide} />
       </mesh>
 
       {/* Legacy path puddle — selective MeshPhysical dew when quality allows */}
@@ -383,8 +383,8 @@ function parkSeededRandom(seed: number): () => number {
 
 /** Instanced desaturated tree ring outside the iron fence — fills the misty horizon. */
 function MistyTreeBelt() {
-  const trunkRef = useRef<THREE.InstancedMesh>(null);
-  const canopyRef = useRef<THREE.InstancedMesh>(null);
+  const trunkRef = useRef<InstancedMesh>(null);
+  const canopyRef = useRef<InstancedMesh>(null);
 
   const placements = useMemo(() => {
     const rng = parkSeededRandom(331177);
@@ -406,7 +406,7 @@ function MistyTreeBelt() {
     const trunk = trunkRef.current;
     const canopy = canopyRef.current;
     if (!trunk || !canopy) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     scratchColor.set('#ffffff');
     const color = scratchColor;
     placements.forEach((p, i) => {
@@ -452,14 +452,14 @@ const RAVEN_PERCHES: Array<{ x: number; y: number; z: number; yaw: number }> = [
 ];
 
 function Ravens() {
-  const bodyRef = useRef<THREE.InstancedMesh>(null);
-  const headRef = useRef<THREE.InstancedMesh>(null);
+  const bodyRef = useRef<InstancedMesh>(null);
+  const headRef = useRef<InstancedMesh>(null);
 
   useLayoutEffect(() => {
     const body = bodyRef.current;
     const head = headRef.current;
     if (!body || !head) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     RAVEN_PERCHES.forEach((p, i) => {
       dummy.position.set(p.x, p.y, p.z);
       dummy.rotation.set(0, p.yaw, 0);
@@ -588,7 +588,7 @@ function IronFencePost({ position, rotation = 0 }: { position: [number, number, 
   );
 }
 
-function createParkGroundTexture(): THREE.CanvasTexture {
+function createParkGroundTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -620,9 +620,9 @@ function createParkGroundTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(10, 10);
   return tex;
 }
@@ -633,7 +633,7 @@ function ParkHazySkyDome() {
   return (
     <mesh position={[0, 4, 0]} renderOrder={-10}>
       <sphereGeometry args={[55, 24, 12, 0, Math.PI * 2, 0, Math.PI * 0.52]} />
-      <meshBasicMaterial map={skyTexture} side={THREE.BackSide} fog={false} depthWrite={false} />
+      <meshBasicMaterial map={skyTexture} side={BackSide} fog={false} depthWrite={false} />
     </mesh>
   );
 }

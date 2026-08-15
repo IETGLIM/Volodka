@@ -1,6 +1,6 @@
 import { useRef, useEffect, type MutableRefObject, type RefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group, MathUtils } from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
@@ -31,18 +31,18 @@ export type ProceduralPlayerModelProps = {
 };
 
 export function useProceduralPlayerAnimation(
-  groupRef: RefObject<THREE.Group | null>,
+  groupRef: RefObject<Group | null>,
   rotationRef: MutableRefObject<number>,
   currentAnimRef: MutableRefObject<string>,
 ) {
   const animTimeRef = useRef(0);
   const bodyPartsRef = useRef<{
-    head: THREE.Group | null;
-    torso: THREE.Group | null;
-    leftArm: THREE.Group | null;
-    rightArm: THREE.Group | null;
-    leftLeg: THREE.Group | null;
-    rightLeg: THREE.Group | null;
+    head: Group | null;
+    torso: Group | null;
+    leftArm: Group | null;
+    rightArm: Group | null;
+    leftLeg: Group | null;
+    rightLeg: Group | null;
   } | null>(null);
 
   const standUpPhaseRef = useRef(0);
@@ -126,12 +126,12 @@ export function useProceduralPlayerAnimation(
     if (!bodyPartsRef.current) {
       const body = groupRef.current;
       bodyPartsRef.current = {
-        head: body.getObjectByName('head') as THREE.Group | null,
-        torso: body.getObjectByName('torso') as THREE.Group | null,
-        leftArm: body.getObjectByName('leftArm') as THREE.Group | null,
-        rightArm: body.getObjectByName('rightArm') as THREE.Group | null,
-        leftLeg: body.getObjectByName('leftLeg') as THREE.Group | null,
-        rightLeg: body.getObjectByName('rightLeg') as THREE.Group | null,
+        head: body.getObjectByName('head') as Group | null,
+        torso: body.getObjectByName('torso') as Group | null,
+        leftArm: body.getObjectByName('leftArm') as Group | null,
+        rightArm: body.getObjectByName('rightArm') as Group | null,
+        leftLeg: body.getObjectByName('leftLeg') as Group | null,
+        rightLeg: body.getObjectByName('rightLeg') as Group | null,
       };
     }
 
@@ -329,23 +329,23 @@ export function useProceduralPlayerAnimation(
     const locomotionSpeed = targetLocomotion > locomotionBlendRef.current
       ? ANIM_BLEND_TO_MOVE
       : ANIM_BLEND_TO_IDLE;
-    locomotionBlendRef.current = THREE.MathUtils.lerp(
+    locomotionBlendRef.current = MathUtils.lerp(
       locomotionBlendRef.current, targetLocomotion, blendT(locomotionSpeed)
     );
 
-    runBlendRef.current = THREE.MathUtils.lerp(
+    runBlendRef.current = MathUtils.lerp(
       runBlendRef.current, targetRun, blendT(ANIM_BLEND_TO_RUN)
     );
 
-    airborneBlendRef.current = THREE.MathUtils.lerp(
+    airborneBlendRef.current = MathUtils.lerp(
       airborneBlendRef.current, targetAirborne, blendT(ANIM_BLEND_TO_AIRBORNE)
     );
 
-    jumpBlendRef.current = THREE.MathUtils.lerp(
+    jumpBlendRef.current = MathUtils.lerp(
       jumpBlendRef.current, targetJump, blendT(ANIM_BLEND_JUMP_VS_FALL)
     );
 
-    combatBlendRef.current = THREE.MathUtils.lerp(
+    combatBlendRef.current = MathUtils.lerp(
       combatBlendRef.current, targetCombat, blendT(ANIM_BLEND_TO_COMBAT)
     );
 

@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Zarema & Albert Room procedural 3D visual ─── */
 
 import { useMemo, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { BoxGeometry, CanvasTexture, CylinderGeometry, DoubleSide, PlaneGeometry, RepeatWrapping, Vector3 } from 'three';
 import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
@@ -17,56 +17,56 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 
 interface ZaremaAlbertRoomVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 /** Cozy apartment with DutySupport aesthetic (8×8m) */
 /* ─── Shared geometries (module-level, reused across renders) ─── */
 
-const geo_pln_1 = new THREE.PlaneGeometry(8, 8);
-const geo_pln_2 = new THREE.PlaneGeometry(8, 3);
-const geo_box_3 = new THREE.BoxGeometry(1.6, 0.35, 2.2);
-const geo_box_4 = new THREE.BoxGeometry(1.5, 0.2, 2.1);
-const geo_box_5 = new THREE.BoxGeometry(1.6, 0.8, 0.08);
-const geo_box_6 = new THREE.BoxGeometry(0.45, 0.1, 0.3);
-const geo_box_7 = new THREE.BoxGeometry(1.4, 0.06, 1.5);
-const geo_box_8 = new THREE.BoxGeometry(1.2, 2, 0.6);
-const geo_box_9 = new THREE.BoxGeometry(0.02, 1.9, 0.01);
-const geo_box_10 = new THREE.BoxGeometry(0.03, 0.15, 0.03);
-const geo_box_11 = new THREE.BoxGeometry(1.2, 0.04, 0.7);
-const geo_box_12 = new THREE.BoxGeometry(0.04, 0.72, 0.04);
-const geo_box_13 = new THREE.BoxGeometry(0.4, 0.02, 0.3);
-const geo_box_14 = new THREE.BoxGeometry(0.4, 0.28, 0.01);
-const geo_box_15 = new THREE.BoxGeometry(0.45, 0.04, 0.45);
-const geo_box_16 = new THREE.BoxGeometry(0.45, 0.4, 0.04);
-const geo_pln_17 = new THREE.PlaneGeometry(0.3, 0.4);
-const geo_box_18 = new THREE.BoxGeometry(0.015, 0.42, 0.32);
-const geo_pln_19 = new THREE.PlaneGeometry(0.25, 0.35);
-const geo_box_20 = new THREE.BoxGeometry(0.015, 0.37, 0.27);
-const geo_pln_21 = new THREE.PlaneGeometry(0.35, 0.25);
-const geo_box_22 = new THREE.BoxGeometry(0.015, 0.27, 0.37);
-const geo_pln_23 = new THREE.PlaneGeometry(3, 2.5);
-const geo_pln_24 = new THREE.PlaneGeometry(1.8, 2);
-const geo_cyl_25 = new THREE.CylinderGeometry(0.015, 0.015, 2.2, 6);
-const geo_box_26 = new THREE.BoxGeometry(0.7, 1.6, 0.3);
-const geo_box_27 = new THREE.BoxGeometry(0.68, 0.03, 0.28);
-const geo_box_28 = new THREE.BoxGeometry(0.4, 0.18, 0.2);
-const geo_cyl_29 = new THREE.CylinderGeometry(0.25, 0.25, 0.04, 8);
-const geo_cyl_30 = new THREE.CylinderGeometry(0.04, 0.04, 0.4, 6);
-const geo_cyl_31 = new THREE.CylinderGeometry(0.04, 0.03, 0.06, 8);
-const geo_cyl_32 = new THREE.CylinderGeometry(0.06, 0.06, 0.01, 8);
-const geo_pln_33 = new THREE.PlaneGeometry(1.2, 1.4);
-const geo_box_34 = new THREE.BoxGeometry(0.05, 1.45, 1.25);
-const geo_box_35 = new THREE.BoxGeometry(0.04, 0.03, 1.2);
-const geo_box_36 = new THREE.BoxGeometry(0.03, 1.4, 0.03);
-const geo_box_37 = new THREE.BoxGeometry(0.4, 0.6, 0.35);
-const geo_box_38 = new THREE.BoxGeometry(0.2, 0.015, 0.15);
-const geo_pln_39 = new THREE.PlaneGeometry(0.8, 1.2);
-const geo_pln_40 = new THREE.PlaneGeometry(0.4, 0.3);
-const geo_cyl_41 = new THREE.CylinderGeometry(0.12, 0.08, 0.3, 8);
-const geo_cyl_42 = new THREE.CylinderGeometry(0.015, 0.015, 0.5, 6);
-const geo_cyl_43 = new THREE.CylinderGeometry(0.04, 0.03, 0.08, 6);
-const geo_cyl_44 = new THREE.CylinderGeometry(0.008, 0.008, 0.4, 4);
+const geo_pln_1 = new PlaneGeometry(8, 8);
+const geo_pln_2 = new PlaneGeometry(8, 3);
+const geo_box_3 = new BoxGeometry(1.6, 0.35, 2.2);
+const geo_box_4 = new BoxGeometry(1.5, 0.2, 2.1);
+const geo_box_5 = new BoxGeometry(1.6, 0.8, 0.08);
+const geo_box_6 = new BoxGeometry(0.45, 0.1, 0.3);
+const geo_box_7 = new BoxGeometry(1.4, 0.06, 1.5);
+const geo_box_8 = new BoxGeometry(1.2, 2, 0.6);
+const geo_box_9 = new BoxGeometry(0.02, 1.9, 0.01);
+const geo_box_10 = new BoxGeometry(0.03, 0.15, 0.03);
+const geo_box_11 = new BoxGeometry(1.2, 0.04, 0.7);
+const geo_box_12 = new BoxGeometry(0.04, 0.72, 0.04);
+const geo_box_13 = new BoxGeometry(0.4, 0.02, 0.3);
+const geo_box_14 = new BoxGeometry(0.4, 0.28, 0.01);
+const geo_box_15 = new BoxGeometry(0.45, 0.04, 0.45);
+const geo_box_16 = new BoxGeometry(0.45, 0.4, 0.04);
+const geo_pln_17 = new PlaneGeometry(0.3, 0.4);
+const geo_box_18 = new BoxGeometry(0.015, 0.42, 0.32);
+const geo_pln_19 = new PlaneGeometry(0.25, 0.35);
+const geo_box_20 = new BoxGeometry(0.015, 0.37, 0.27);
+const geo_pln_21 = new PlaneGeometry(0.35, 0.25);
+const geo_box_22 = new BoxGeometry(0.015, 0.27, 0.37);
+const geo_pln_23 = new PlaneGeometry(3, 2.5);
+const geo_pln_24 = new PlaneGeometry(1.8, 2);
+const geo_cyl_25 = new CylinderGeometry(0.015, 0.015, 2.2, 6);
+const geo_box_26 = new BoxGeometry(0.7, 1.6, 0.3);
+const geo_box_27 = new BoxGeometry(0.68, 0.03, 0.28);
+const geo_box_28 = new BoxGeometry(0.4, 0.18, 0.2);
+const geo_cyl_29 = new CylinderGeometry(0.25, 0.25, 0.04, 8);
+const geo_cyl_30 = new CylinderGeometry(0.04, 0.04, 0.4, 6);
+const geo_cyl_31 = new CylinderGeometry(0.04, 0.03, 0.06, 8);
+const geo_cyl_32 = new CylinderGeometry(0.06, 0.06, 0.01, 8);
+const geo_pln_33 = new PlaneGeometry(1.2, 1.4);
+const geo_box_34 = new BoxGeometry(0.05, 1.45, 1.25);
+const geo_box_35 = new BoxGeometry(0.04, 0.03, 1.2);
+const geo_box_36 = new BoxGeometry(0.03, 1.4, 0.03);
+const geo_box_37 = new BoxGeometry(0.4, 0.6, 0.35);
+const geo_box_38 = new BoxGeometry(0.2, 0.015, 0.15);
+const geo_pln_39 = new PlaneGeometry(0.8, 1.2);
+const geo_pln_40 = new PlaneGeometry(0.4, 0.3);
+const geo_cyl_41 = new CylinderGeometry(0.12, 0.08, 0.3, 8);
+const geo_cyl_42 = new CylinderGeometry(0.015, 0.015, 0.5, 6);
+const geo_cyl_43 = new CylinderGeometry(0.04, 0.03, 0.08, 6);
+const geo_cyl_44 = new CylinderGeometry(0.008, 0.008, 0.4, 4);
 
 registerModuleGeometries([geo_pln_1, geo_pln_2, geo_box_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_box_14, geo_box_15, geo_box_16, geo_pln_17, geo_box_18, geo_pln_19, geo_box_20, geo_pln_21, geo_box_22, geo_pln_23, geo_pln_24, geo_cyl_25, geo_box_26, geo_box_27, geo_box_28, geo_cyl_29, geo_cyl_30, geo_cyl_31, geo_cyl_32, geo_pln_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_pln_39, geo_pln_40, geo_cyl_41, geo_cyl_42, geo_cyl_43, geo_cyl_44]);
 
@@ -298,7 +298,7 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
         {/* Curtain left */}
         <mesh rotation-y={-Math.PI / 2} geometry={geo_pln_24}>
 
-          <meshStandardMaterial color="#8a6a5a" roughness={0.95} side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#8a6a5a" roughness={0.95} side={DoubleSide} />
         </mesh>
         {/* Curtain rod */}
         <mesh position={[0, 1.05, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_25}>
@@ -504,7 +504,7 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
   );
 }
 
-function createRoomFloorTexture(): THREE.CanvasTexture {
+function createRoomFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -537,14 +537,14 @@ function createRoomFloorTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(4, 4);
   return tex;
 }
 
-function createRoomWallTexture(): THREE.CanvasTexture {
+function createRoomWallTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -567,9 +567,9 @@ function createRoomWallTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(4, 3);
   return tex;
 }

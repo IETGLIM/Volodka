@@ -1,7 +1,7 @@
-import * as THREE from 'three';
+import { CanvasTexture, SRGBColorSpace } from 'three';
 
 interface CacheEntry {
-  texture: THREE.CanvasTexture;
+  texture: CanvasTexture;
   refs: number;
 }
 
@@ -10,8 +10,8 @@ const canvasTextureCache = new Map<string, CacheEntry>();
 /** Module-level canvas texture cache — survives scene transitions, ref-counted per consumer. */
 export function getCachedCanvasTexture(
   key: string,
-  factory: () => THREE.CanvasTexture,
-): THREE.CanvasTexture {
+  factory: () => CanvasTexture,
+): CanvasTexture {
   const existing = canvasTextureCache.get(key);
   if (existing) {
     existing.refs += 1;
@@ -23,8 +23,8 @@ export function getCachedCanvasTexture(
   // too dark. Force sRGB so the renderer's color pipeline decodes them
   // correctly. This was a P1 bug: every procedural canvas texture (sky
   // gradients, painted props, paper text) appeared washed-out and dark.
-  if (texture.colorSpace !== THREE.SRGBColorSpace) {
-    texture.colorSpace = THREE.SRGBColorSpace;
+  if (texture.colorSpace !== SRGBColorSpace) {
+    texture.colorSpace = SRGBColorSpace;
   }
   texture.needsUpdate = true;
   canvasTextureCache.set(key, { texture, refs: 1 });

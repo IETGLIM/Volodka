@@ -1,7 +1,7 @@
 import { Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { AnimationAction, Group, MathUtils } from 'three';
 import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
@@ -83,7 +83,7 @@ function CesiumPlayerModelInner({
   const { scene, mixer, ready } = useSkinnedGltfClone(gltf.scene, gltf.animations, {
     castShadow: preset.shadows,
   });
-  const yawRef = useRef<THREE.Group>(null);
+  const yawRef = useRef<Group>(null);
   const [fit, setFit] = useState<Fit>({ scale: 1, rotX: 0, y: 0 });
 
   useEffect(() => {
@@ -125,7 +125,7 @@ function CesiumPlayerModelInner({
 
   const embeddedActions = useMemo(() => {
     if (!mixer) return null;
-    const record: Record<string, THREE.AnimationAction> = {};
+    const record: Record<string, AnimationAction> = {};
     for (const clip of gltf.animations) {
       record[clip.name] = mixer.clipAction(clip, scene);
     }
@@ -156,29 +156,29 @@ function CesiumPlayerModelInner({
     const leanT = Math.min(1, Math.max(0, (hSpeed - 4) / 3));
     // Session 13 (ramp-tame): forward body lean ~6.3° max (was 0.385rad / 22° — extreme).
     const bodyLean = -0.11 * leanT;
-    const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
+    const bodyGroup = yawRef.current?.children?.[0] as Group | undefined;
     if (bodyGroup) {
       const targetLean = leanT > 0.05 ? bodyLean : 0;
-      bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, targetLean, 0.18);
+      bodyGroup.rotation.x = MathUtils.lerp(bodyGroup.rotation.x || 0, targetLean, 0.18);
 
       // Rhythmic side sway (figure-8 gait) — matches camera lateral bob phase
       const swayPhase = (performance.now() / 180) % (Math.PI * 2); // ~same frequency as bob
       // Session 13 (ramp-tame): side sway ~2° max (was 0.085rad / 4.9°).
       const sideSway = Math.sin(swayPhase) * 0.035 * leanT;
-      bodyGroup.rotation.z = THREE.MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
+      bodyGroup.rotation.z = MathUtils.lerp(bodyGroup.rotation.z || 0, sideSway, 0.26);
 
       // AAA Phase B: micro vertical compression on heavy sprint steps (weight pressing down)
       // Gives delicious "grounded" feel — the body squats slightly into each stride.
       // Session 13 (ramp-tame): vertical compression ~5% max (was 27.5% — avatar shrank to 72.5% height during sprint).
       const compression = 1 - (leanT * 0.05);
-      bodyGroup.scale.y = THREE.MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
+      bodyGroup.scale.y = MathUtils.lerp(bodyGroup.scale.y || 1, compression, 0.42);
       // Slight forward squash compensation so feet don't sink
-      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);
+      bodyGroup.scale.x = MathUtils.lerp(bodyGroup.scale.x || 1, 1 + leanT * 0.032, 0.36);
       bodyGroup.scale.z = bodyGroup.scale.x;
 
       // Subtle torso breathing / head bob on the upper body (idle + sprint)
       const breath = Math.sin(performance.now() / 420) * 0.013 * (1 + leanT * 0.9);
-      bodyGroup.position.y = THREE.MathUtils.lerp(bodyGroup.position.y || 0, breath, 0.4);
+      bodyGroup.position.y = MathUtils.lerp(bodyGroup.position.y || 0, breath, 0.4);
 
       // AAA Phase B: dynamic arm swing + shoulder roll + head lean (very visible cinematic weight)
       // Scales perfectly with speed + matches footstep cadence. HARDER
@@ -193,11 +193,11 @@ function CesiumPlayerModelInner({
       const rightShoulder = bodyGroup.getObjectByName?.('mixamorigRightShoulder') || bodyGroup.getObjectByName?.('RightShoulder');
 
       // Session 13 (ramp-tame): shoulder rotation multiplier 1.1 (was 1.55 → 129°).
-      if (leftShoulder) leftShoulder.rotation.z = THREE.MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.1, 0.28);
-      if (rightShoulder) rightShoulder.rotation.z = THREE.MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.1, 0.28);
+      if (leftShoulder) leftShoulder.rotation.z = MathUtils.lerp(leftShoulder.rotation.z || 0, armSwing * 1.1, 0.28);
+      if (rightShoulder) rightShoulder.rotation.z = MathUtils.lerp(rightShoulder.rotation.z || 0, -armSwing * 1.1, 0.28);
 
       // Session 13 (ramp-tame): torso twist multiplier 0.35 (was 0.68 → 18° twist).
-      bodyGroup.rotation.y = THREE.MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.35, 0.25);
+      bodyGroup.rotation.y = MathUtils.lerp(bodyGroup.rotation.y || 0, shoulderRoll * 0.35, 0.25);
 
       // Head lean forward + slight bob on sprint (very filmic "looking into the run")
       const head = bodyGroup.getObjectByName?.('mixamorigHead') || bodyGroup.getObjectByName?.('Head') || bodyGroup.children.find(c => c.name.toLowerCase().includes('head'));
@@ -205,7 +205,7 @@ function CesiumPlayerModelInner({
         // Session 13 (ramp-tame): head forward lean ~5° (was 0.31rad / 17.8°).
         const headLean = -0.09 * leanT;
         const headBob = Math.sin(swingPhase * 1.8) * 0.055 * leanT;
-        head.rotation.x = THREE.MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
+        head.rotation.x = MathUtils.lerp(head.rotation.x || 0, headLean + headBob, 0.32);
       }
 
       // AAA Phase B: knee / hip drive — the body "drives" the legs forward on sprint
@@ -213,7 +213,7 @@ function CesiumPlayerModelInner({
       const hip = bodyGroup.getObjectByName?.('mixamorigHips') || bodyGroup.getObjectByName?.('Hips');
       if (hip) {
         const hipDrive = Math.sin(swingPhase * 1.3) * 0.105 * leanT;
-        hip.rotation.x = THREE.MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
+        hip.rotation.x = MathUtils.lerp(hip.rotation.x || 0, hipDrive, 0.3);
       }
 
       // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
@@ -221,7 +221,7 @@ function CesiumPlayerModelInner({
       if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
         // Session 13 (ramp-tame): brake pitch ~7° max (was 0.48rad / 27.5°).
         const brakePitch = (window as any).__brakeRecovery * 0.12;
-        bodyGroup.rotation.x = THREE.MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
+        bodyGroup.rotation.x = MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
         (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - (1/60) * 4.1);
       }
     }
@@ -268,7 +268,7 @@ function CesiumPlayerModelInner({
 
   useFrameTick('player', () => {
     if (!ready) return;
-    const bodyGroup = yawRef.current?.children?.[0] as THREE.Group | undefined;
+    const bodyGroup = yawRef.current?.children?.[0] as Group | undefined;
     if (!bodyGroup) return;
 
     // Apply decaying landing squash (adds delicious physical "thud" to the body)
@@ -277,11 +277,11 @@ function CesiumPlayerModelInner({
     if (landingSquash > 0.001) {
       const currentY = bodyGroup.scale.y || 1;
       const targetY = 1 - landingSquash;
-      bodyGroup.scale.y = THREE.MathUtils.lerp(currentY, targetY, 0.55);
+      bodyGroup.scale.y = MathUtils.lerp(currentY, targetY, 0.55);
 
       // slight X/Z expansion on impact for volume preservation
       const expand = 1 + landingSquash * 0.72;
-      bodyGroup.scale.x = THREE.MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
+      bodyGroup.scale.x = MathUtils.lerp(bodyGroup.scale.x || 1, expand, 0.4);
       bodyGroup.scale.z = bodyGroup.scale.x;
 
       landingSquashRef.current = landingSquash * Math.exp(-landingSquashDecay * 0.016); // ~60fps decay

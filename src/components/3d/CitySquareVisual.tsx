@@ -4,7 +4,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { Group, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
@@ -34,7 +34,7 @@ import { WetStreetGround } from './WetStreetGround';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
 
 interface CitySquareVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const W = 28;
@@ -79,11 +79,11 @@ const matLampGlow = getSharedStandardMaterial({
   emissiveIntensity: 1.2,
 });
 
-function prepareAuthoredClone(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
+function prepareAuthoredClone(source: Object3D, castShadow: boolean): Object3D {
   const clone = source.clone(true);
   clone.traverse((node) => {
-    if ((node as THREE.Mesh).isMesh) {
-      const mesh = node as THREE.Mesh;
+    if ((node as Mesh).isMesh) {
+      const mesh = node as Mesh;
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
     }
@@ -106,8 +106,8 @@ function AuthoredPlazaProp({
   castShadow: boolean;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const [scene, setScene] = useState<THREE.Object3D | null>(null);
-  const cloneRef = useRef<THREE.Object3D | null>(null);
+  const [scene, setScene] = useState<Object3D | null>(null);
+  const cloneRef = useRef<Object3D | null>(null);
 
   useEffect(() => {
     const next = prepareAuthoredClone(gltf.scene, castShadow);
@@ -250,9 +250,9 @@ function AuthoredPlazaLandmark({ castShadow }: { castShadow: boolean }) {
 }
 
 export function CitySquareVisual(_props: CitySquareVisualProps) {
-  const rootRef = useRef<THREE.Group>(null);
-  const neonRef = useRef<THREE.Mesh>(null);
-  const plaqueRef = useRef<THREE.Mesh>(null);
+  const rootRef = useRef<Group>(null);
+  const neonRef = useRef<Mesh>(null);
+  const plaqueRef = useRef<Mesh>(null);
   const tRef = useRef(0);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
   const { preset, selectedPreset } = useGraphicsQuality();
@@ -312,10 +312,10 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
       tRef.current += delta;
       const pulse = 1.1 + Math.sin(tRef.current * 1.7) * 0.35;
       if (neonRef.current) {
-        (neonRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
+        (neonRef.current.material as MeshStandardMaterial).emissiveIntensity = pulse;
       }
       if (plaqueRef.current) {
-        (plaqueRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+        (plaqueRef.current.material as MeshStandardMaterial).emissiveIntensity =
           0.45 + Math.sin(tRef.current * 2.2) * 0.18;
       }
     },

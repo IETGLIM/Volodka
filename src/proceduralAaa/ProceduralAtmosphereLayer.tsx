@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { Group, MathUtils, Vector3 } from 'three';
 import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
@@ -21,7 +21,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 export function ProceduralAtmosphereLayer() {
   const { scene, camera } = useThree();
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const avg = useRef({ r: 0.25, g: 0.28, b: 0.38 });
   const { preset } = useGraphicsQuality();
 
@@ -29,10 +29,10 @@ export function ProceduralAtmosphereLayer() {
     const p = getProceduralAaaParams();
     const soft = resolveSoftWorkForQuality(preset.id, p);
     if (soft.skipSoftVolumetrics) {
-      return createVolumetricRayPlanes(new THREE.Vector3(4, 10, -6), 2, soft.volumetricRays);
+      return createVolumetricRayPlanes(new Vector3(4, 10, -6), 2, soft.volumetricRays);
     }
     const count = Math.max(2, Math.round(4 * soft.volumetricRays));
-    return createVolumetricRayPlanes(new THREE.Vector3(4, 10, -6), count, soft.volumetricRays);
+    return createVolumetricRayPlanes(new Vector3(4, 10, -6), count, soft.volumetricRays);
   }, [preset.id]);
 
   useEffect(() => {
@@ -52,9 +52,9 @@ export function ProceduralAtmosphereLayer() {
     applyHeightDistanceFog(scene, p, camera.position.y);
     // Cheap auto-LUT: drift scene average toward fog-tinted night
     const target = computeAutoLutTarget(avg.current, p.autoLutStrength);
-    avg.current.r = THREE.MathUtils.lerp(avg.current.r, 0.22 + target.lift.r, 0.02);
-    avg.current.g = THREE.MathUtils.lerp(avg.current.g, 0.25 + target.lift.g, 0.02);
-    avg.current.b = THREE.MathUtils.lerp(avg.current.b, 0.36 + target.lift.b, 0.02);
+    avg.current.r = MathUtils.lerp(avg.current.r, 0.22 + target.lift.r, 0.02);
+    avg.current.g = MathUtils.lerp(avg.current.g, 0.25 + target.lift.g, 0.02);
+    avg.current.b = MathUtils.lerp(avg.current.b, 0.36 + target.lift.b, 0.02);
     void buildAtmosphereState(p);
   }, { priority: 15, label: 'proceduralAaa/atmosphere' });
 

@@ -1,14 +1,14 @@
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { seededRand } from '@/shared/utils/seededRand';
-import * as THREE from 'three';
+import { PointLight } from 'three';
 
 /**
  * A ceiling-mounted point light that randomly flickers every 3–8 seconds.
  * Brightness dips subtly then recovers — cheap, no React state.
  */
 export function FlickeringCeilingLight() {
-  const lightRef = useRef<THREE.PointLight>(null);
+  const lightRef = useRef<PointLight>(null);
   const timeRef = useRef(0);
   const nextFlickerRef = useRef(3 + seededRand(42) * 5); // first flicker 3–8s (deterministic)
   const flickerPhaseRef = useRef<'idle' | 'dip' | 'recover'>('idle');

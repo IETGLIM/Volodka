@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { CanvasTexture } from 'three';
 import {
   getCachedCanvasTexture,
   releaseCachedCanvasTexture,
@@ -71,7 +71,7 @@ function contactShadowCacheKey(params: ContactShadowTextureParams): string {
 
 export function createContactShadowTexture(
   params: ContactShadowTextureParams,
-): THREE.CanvasTexture {
+): CanvasTexture {
   const preset = CONTACT_SHADOW_PRESETS[params.variant];
   const size = params.size ?? preset.size;
   const canvas = document.createElement('canvas');
@@ -94,13 +94,13 @@ export function createContactShadowTexture(
   }
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
-  return new THREE.CanvasTexture(canvas);
+  return new CanvasTexture(canvas);
 }
 
 /** Ref-counted global cache — shared across player/NPC remounts. */
 export function getContactShadowTexture(
   params: ContactShadowTextureParams,
-): THREE.CanvasTexture {
+): CanvasTexture {
   const key = contactShadowCacheKey(params);
   return getCachedCanvasTexture(key, () => createContactShadowTexture(params));
 }

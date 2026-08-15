@@ -3,7 +3,7 @@
  */
 
 import { useEffect, useMemo } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, RepeatWrapping, SRGBColorSpace, Vector2 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedPlaneGeometry,
@@ -36,7 +36,7 @@ const FACADES: FacadeSpec[] = [
   { pos: [0, 0, -25], w: 12, h: 25, d: 8, seed: 512, neon: '#c4985a' },
 ];
 
-function createLitWindowAtlas(cols: number, rows: number, seed: number): THREE.CanvasTexture {
+function createLitWindowAtlas(cols: number, rows: number, seed: number): CanvasTexture {
   const cw = cols * 16;
   const ch = rows * 20;
   const canvas = document.createElement('canvas');
@@ -77,8 +77,8 @@ function createLitWindowAtlas(cols: number, rows: number, seed: number): THREE.C
     }
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
   tex.anisotropy = 4;
   tex.needsUpdate = true;
   return tex;
@@ -98,24 +98,24 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
   );
   const map = useMemo(() => {
     const t = maps.map.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
     t.repeat.set(maps.repeat * 0.35, maps.repeat * (spec.h / 12));
     t.needsUpdate = true;
     return t;
   }, [maps, spec.h]);
   const normalMap = useMemo(() => {
     const t = maps.normalMap.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
     t.repeat.copy(map.repeat);
     t.needsUpdate = true;
     return t;
   }, [maps, map]);
   const roughnessMap = useMemo(() => {
     const t = maps.roughnessMap.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
     t.repeat.copy(map.repeat);
     t.needsUpdate = true;
     return t;
@@ -147,7 +147,7 @@ function BevelledFacade({ spec }: { spec: FacadeSpec }) {
           color="#2c2c40"
           map={map}
           normalMap={normalMap}
-          normalScale={new THREE.Vector2(0.65, 0.65)}
+          normalScale={new Vector2(0.65, 0.65)}
           roughnessMap={roughnessMap}
           roughness={0.9}
           metalness={0.06}

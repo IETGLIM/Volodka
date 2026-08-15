@@ -7,7 +7,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { DoubleSide, Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { useQuestWaypointState } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { getQuestMarker } from '@/store/selectors/questSelectors';
@@ -15,7 +15,7 @@ import { eventBus } from '@/engine/EventBus';
 import type { SceneId, SceneExit } from '@/shared/types/game';
 
 interface QuestWaypointsProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /** 3D quest waypoint arrows pointing toward active quest target scenes */
@@ -104,13 +104,13 @@ function QuestArrow({
   targetScene,
 }: {
   position: [number, number, number];
-  playerPosRef: React.MutableRefObject<THREE.Vector3>;
+  playerPosRef: React.MutableRefObject<Vector3>;
   label: string;
   targetScene: SceneId;
 }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
-  const dirRef = useRef(new THREE.Vector3());
+  const dirRef = useRef(new Vector3());
 
   // Get target scene name for display
   const _targetName = useMemo(() => {
@@ -162,12 +162,12 @@ function QuestTargetBeam({
   questId,
 }: {
   position: [number, number, number];
-  playerPosRef: React.MutableRefObject<THREE.Vector3>;
+  playerPosRef: React.MutableRefObject<Vector3>;
   questId: string;
 }) {
-  const beamRef = useRef<THREE.Group>(null);
-  const glowRef = useRef<THREE.Mesh>(null);
-  const baseGlowRef = useRef<THREE.Mesh>(null);
+  const beamRef = useRef<Group>(null);
+  const glowRef = useRef<Mesh>(null);
+  const baseGlowRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
   const pulseBoostRef = useRef(0);
 
@@ -196,13 +196,13 @@ function QuestTargetBeam({
     const amp = 1 + boost * 1.4;
 
     if (glowRef.current) {
-      const mat = glowRef.current.material as THREE.MeshStandardMaterial;
+      const mat = glowRef.current.material as MeshStandardMaterial;
       mat.emissiveIntensity = (0.3 + pulse * 0.7) * amp;
       mat.opacity = Math.min(0.55, (0.15 + pulse * 0.15) * (1 + boost));
     }
 
     if (baseGlowRef.current) {
-      const mat = baseGlowRef.current.material as THREE.MeshStandardMaterial;
+      const mat = baseGlowRef.current.material as MeshStandardMaterial;
       mat.emissiveIntensity = (0.4 + pulse * 0.6) * amp;
       mat.opacity = Math.min(0.55, (0.2 + pulse * 0.15) * (1 + boost * 0.8));
       const s = (1 + pulse * 0.2) * (1 + boost * 0.55);
@@ -224,7 +224,7 @@ function QuestTargetBeam({
           emissiveIntensity={1.2}
           transparent
           opacity={0.6}
-          side={THREE.DoubleSide}
+          side={DoubleSide}
           depthWrite={false}
         />
       </mesh>
@@ -238,7 +238,7 @@ function QuestTargetBeam({
           emissiveIntensity={0.5}
           transparent
           opacity={0.15}
-          side={THREE.DoubleSide}
+          side={DoubleSide}
           depthWrite={false}
         />
       </mesh>

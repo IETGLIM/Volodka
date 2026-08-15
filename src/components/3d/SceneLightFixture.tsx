@@ -10,7 +10,7 @@
 'use client';
 
 import { useRef, useMemo, type ReactNode } from 'react';
-import * as THREE from 'three';
+import { DoubleSide, Mesh, MeshBasicMaterial, PlaneGeometry, PointLight, SphereGeometry } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { getShadowMapResolution } from '@/engine/graphics/TimeOfDayLighting';
@@ -51,13 +51,13 @@ export function NeonSignFixture({
   rotation?: [number, number, number];
 }) {
   const { preset } = useGraphicsQuality();
-  const lightRef = useRef<THREE.PointLight>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const lightRef = useRef<PointLight>(null);
+  const meshRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
   const shadowRes = getShadowMapResolution(preset.id as any);
 
   const geometry = useMemo(
-    () => new THREE.PlaneGeometry(width, height),
+    () => new PlaneGeometry(width, height),
     [width, height],
   );
 
@@ -65,7 +65,7 @@ export function NeonSignFixture({
     if (!lightRef.current || !meshRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
-    const mat = meshRef.current.material as THREE.MeshBasicMaterial;
+    const mat = meshRef.current.material as MeshBasicMaterial;
 
     switch (animated) {
       case 'neon_flicker': {
@@ -111,7 +111,7 @@ export function NeonSignFixture({
           color={color}
           transparent
           opacity={0.9}
-          side={THREE.DoubleSide}
+          side={DoubleSide}
           toneMapped={false}
         />
       </mesh>
@@ -132,18 +132,18 @@ export function StreetLampFixture({
 }: Omit<LightFixtureBaseProps, 'emissiveMesh'>) {
   void animated;
   const { preset } = useGraphicsQuality();
-  const lightRef = useRef<THREE.PointLight>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const lightRef = useRef<PointLight>(null);
+  const meshRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
   const shadowRes = getShadowMapResolution(preset.id as any);
 
-  const geometry = useMemo(() => new THREE.SphereGeometry(0.12, 8, 6), []);
+  const geometry = useMemo(() => new SphereGeometry(0.12, 8, 6), []);
 
   useFrameTick('misc', ({ delta }) => {
     if (!lightRef.current || !meshRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
-    const mat = meshRef.current.material as THREE.MeshBasicMaterial;
+    const mat = meshRef.current.material as MeshBasicMaterial;
 
     // Warm sodium-vapor flicker
     const flicker = 0.9 + 0.1 * Math.sin(t * 8 + seed * 2) * Math.sin(t * 3.7 + seed);
@@ -200,12 +200,12 @@ export function MonitorGlowFixture({
   /** Add subtle scanline shimmer to the glow */
   scanlineEffect?: boolean;
 }) {
-  const lightRef = useRef<THREE.PointLight>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const lightRef = useRef<PointLight>(null);
+  const meshRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
 
   const geometry = useMemo(
-    () => new THREE.PlaneGeometry(width, height),
+    () => new PlaneGeometry(width, height),
     [width, height],
   );
 
@@ -213,7 +213,7 @@ export function MonitorGlowFixture({
     if (!lightRef.current || !meshRef.current) return;
     timeRef.current += delta;
     const t = timeRef.current;
-    const mat = meshRef.current.material as THREE.MeshBasicMaterial;
+    const mat = meshRef.current.material as MeshBasicMaterial;
 
     // Subtle screen flicker (refresh-rate shimmer)
     if (scanlineEffect) {
@@ -241,7 +241,7 @@ export function MonitorGlowFixture({
           color={color}
           transparent
           opacity={0.85}
-          side={THREE.DoubleSide}
+          side={DoubleSide}
           toneMapped={false}
         />
       </mesh>

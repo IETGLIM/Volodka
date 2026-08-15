@@ -1,17 +1,17 @@
 import { useEffect } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, Group, MathUtils, MeshStandardMaterial } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 
 export interface VolodkaRoomAnimationRefs {
-  fanGroupRef: React.RefObject<THREE.Group | null>;
-  ledRef: React.RefObject<THREE.MeshStandardMaterial | null>;
+  fanGroupRef: React.RefObject<Group | null>;
+  ledRef: React.RefObject<MeshStandardMaterial | null>;
   ledTimeRef: React.MutableRefObject<number>;
-  terminalTexRef: React.MutableRefObject<THREE.CanvasTexture | null>;
-  zabbixAlertRef: React.RefObject<THREE.MeshStandardMaterial | null>;
-  roomDoorRef: React.RefObject<THREE.Group | null>;
-  roomWardrobeDoorRef: React.RefObject<THREE.Group | null>;
+  terminalTexRef: React.MutableRefObject<CanvasTexture | null>;
+  zabbixAlertRef: React.RefObject<MeshStandardMaterial | null>;
+  roomDoorRef: React.RefObject<Group | null>;
+  roomWardrobeDoorRef: React.RefObject<Group | null>;
 }
 
 /** Interactive object toggles + desk/room animation tick for Volodka's room. */
@@ -52,7 +52,7 @@ export function useVolodkaRoomAnimations(refs: VolodkaRoomAnimationRefs): void {
     if (refs.roomDoorRef.current) {
       const doorOpen = states['room_door'] ?? false;
       const targetY = doorOpen ? -Math.PI / 2 : 0;
-      refs.roomDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      refs.roomDoorRef.current.rotation.y = MathUtils.lerp(
         refs.roomDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),
@@ -62,7 +62,7 @@ export function useVolodkaRoomAnimations(refs: VolodkaRoomAnimationRefs): void {
     if (refs.roomWardrobeDoorRef.current) {
       const wardrobeOpen = states['room_wardrobe'] ?? false;
       const targetY = wardrobeOpen ? Math.PI / 3 : 0;
-      refs.roomWardrobeDoorRef.current.rotation.y = THREE.MathUtils.lerp(
+      refs.roomWardrobeDoorRef.current.rotation.y = MathUtils.lerp(
         refs.roomWardrobeDoorRef.current.rotation.y,
         targetY,
         1 - Math.exp(-delta * 5),

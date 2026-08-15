@@ -13,7 +13,7 @@
 'use client';
 
 import { useRef, useMemo, useEffect } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, PointsMaterial, Texture } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -51,7 +51,7 @@ const DUST_COUNTS: Record<string, number> = {
 const MAX_DUST_OPACITY = 0.4;
 
 /** Creates a small circular sprite texture for dust particles */
-function createDustTexture(): THREE.Texture {
+function createDustTexture(): Texture {
   const size = 32;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -69,7 +69,7 @@ function createDustTexture(): THREE.Texture {
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, size, size);
 
-  const tex = new THREE.CanvasTexture(canvas);
+  const tex = new CanvasTexture(canvas);
   tex.needsUpdate = true;
   return tex;
 }
@@ -85,8 +85,8 @@ export function AtmosphericDust() {
   const count = DUST_COUNTS[preset.id] ?? 0;
 
   // Material ref for imperative opacity updates (avoids re-renders)
-  const matRef = useRef<THREE.PointsMaterial>(null);
-  const geoRef = useRef<THREE.BufferGeometry>(null);
+  const matRef = useRef<PointsMaterial>(null);
+  const geoRef = useRef<BufferGeometry>(null);
   const targetOpacityRef = useRef(0);
   const currentOpacityRef = useRef(0);
   const velocitiesRef = useRef<Float32Array | null>(null);
@@ -126,8 +126,8 @@ export function AtmosphericDust() {
     const geo = geoRef.current;
     if (!geo) return;
 
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(sizes, 1));
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    geo.setAttribute('size', new BufferAttribute(sizes, 1));
     geo.attributes.position.needsUpdate = true;
 
     return () => {
@@ -137,10 +137,10 @@ export function AtmosphericDust() {
 
   // Geometry (created once, updated imperatively)
   const geometry = useMemo(() => {
-    const geo = new THREE.BufferGeometry();
+    const geo = new BufferGeometry();
     // Initialize with empty attributes — filled in useEffect
-    geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(count * 3), 3));
-    geo.setAttribute('size', new THREE.BufferAttribute(new Float32Array(count), 1));
+    geo.setAttribute('position', new BufferAttribute(new Float32Array(count * 3), 3));
+    geo.setAttribute('size', new BufferAttribute(new Float32Array(count), 1));
     return geo;
   }, [count]);
 
@@ -183,7 +183,7 @@ export function AtmosphericDust() {
 
     if (currentOpacityRef.current < 0.005) return;
 
-    const posAttr = geoRef.current.attributes.position as THREE.BufferAttribute;
+    const posAttr = geoRef.current.attributes.position as BufferAttribute;
     const posArray = posAttr.array as Float32Array;
     const halfW = dims[0] * 0.4;
     const halfH = dims[1] * 0.4;
@@ -234,7 +234,7 @@ export function AtmosphericDust() {
         transparent
         opacity={0}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
         color="#c8d0e0"
         toneMapped={false}
       />

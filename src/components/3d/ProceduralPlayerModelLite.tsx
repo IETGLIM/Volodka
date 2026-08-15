@@ -1,7 +1,7 @@
 /* ─── Mobile LOD player model — same skeleton/animation as full model, ~12 meshes ─── */
 
 import { useRef, useMemo, useEffect, memo } from 'react';
-import * as THREE from 'three';
+import { Group, MeshPhysicalMaterial, MeshStandardMaterial, TorusGeometry } from 'three';
 import { boxGeo, capsuleGeo, sphereGeo } from './proceduralNpcShared';
 import {
   useProceduralPlayerAnimation,
@@ -15,43 +15,43 @@ export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite
   currentAnimRef,
   rotationRef,
 }: ProceduralPlayerModelProps) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
 
   useProceduralPlayerAnimation(groupRef, rotationRef, currentAnimRef);
 
   const mat = useMemo(
     () => ({
-      hoodie: new THREE.MeshPhysicalMaterial({
+      hoodie: new MeshPhysicalMaterial({
         color: '#2a2a3a',
         roughness: 0.85,
         metalness: 0.05,
         sheen: 0.65,
         sheenRoughness: 0.3,
       }),
-      skin: new THREE.MeshPhysicalMaterial({
+      skin: new MeshPhysicalMaterial({
         color: '#c4a882',
         roughness: 0.7,
         metalness: 0.05,
         sheen: 0.35,
         sheenRoughness: 0.5,
       }),
-      hair: new THREE.MeshPhysicalMaterial({ color: '#2a1e12', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
-      jeans: new THREE.MeshPhysicalMaterial({ color: '#3a4050', roughness: 0.85, sheen: 0.45, sheenRoughness: 0.35 }),
-      sneaker: new THREE.MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.9 }),
+      hair: new MeshPhysicalMaterial({ color: '#2a1e12', roughness: 0.9, sheen: 0.15, sheenRoughness: 0.4 }),
+      jeans: new MeshPhysicalMaterial({ color: '#3a4050', roughness: 0.85, sheen: 0.45, sheenRoughness: 0.35 }),
+      sneaker: new MeshStandardMaterial({ color: '#1a1a1a', roughness: 0.9 }),
     }),
     [],
   );
 
   const karmaMat = useMemo(
     () => ({
-      wristbandGlow: new THREE.MeshStandardMaterial({
+      wristbandGlow: new MeshStandardMaterial({
         color: karmaGlow,
         emissive: karmaGlow,
         emissiveIntensity: 0.6,
         roughness: 0.3,
         metalness: 0.4,
       }),
-      phoneGlow: new THREE.MeshStandardMaterial({
+      phoneGlow: new MeshStandardMaterial({
         color: karmaGlow,
         emissive: karmaGlow,
         emissiveIntensity: 0.4,
@@ -59,7 +59,7 @@ export const ProceduralPlayerModelLite = memo(function ProceduralPlayerModelLite
         transparent: true,
         opacity: 0.6,
       }),
-      wristbandGeo: new THREE.TorusGeometry(0.034, 0.006, 4, 8),
+      wristbandGeo: new TorusGeometry(0.034, 0.006, 4, 8),
     }),
     [karmaGlow],
   );

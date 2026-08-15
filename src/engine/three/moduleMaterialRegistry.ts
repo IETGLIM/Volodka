@@ -4,7 +4,7 @@
  * Session-scoped resources dispose on canvas unmount / HMR.
  */
 
-import * as THREE from 'three';
+import { Color, ColorRepresentation, FrontSide, Material, MeshStandardMaterial, MeshStandardMaterialParameters } from 'three';
 import { registerGlobalCleanup, registerModuleGlobalCleanupBinder } from '@/engine/core/GlobalCleanupService';
 import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { trackModuleMaterial, untrackModuleMaterial } from '@/engine/performance/GpuResourceBudgetTracker';
@@ -13,16 +13,16 @@ import {
   resetSceneGpuOwnershipForTests,
 } from '@/engine/three/sceneGpuOwnership';
 
-const moduleMaterials = new Set<THREE.MeshStandardMaterial>();
-const sharedStandardMaterialCache = new Map<string, THREE.MeshStandardMaterial>();
+const moduleMaterials = new Set<MeshStandardMaterial>();
+const sharedStandardMaterialCache = new Map<string, MeshStandardMaterial>();
 
-function colorKey(value: THREE.ColorRepresentation | undefined, fallback: string): string {
-  if (value instanceof THREE.Color) return value.getHexString();
+function colorKey(value: ColorRepresentation | undefined, fallback: string): string {
+  if (value instanceof Color) return value.getHexString();
   if (value === undefined) return fallback;
   return String(value);
 }
 
-function serializeStandardMaterialParams(params: THREE.MeshStandardMaterialParameters): string {
+function serializeStandardMaterialParams(params: MeshStandardMaterialParameters): string {
   const mapUuid =
     params.map && 'uuid' in params.map ? params.map.uuid : params.map ? 'map' : 'none';
   return [
@@ -31,7 +31,7 @@ function serializeStandardMaterialParams(params: THREE.MeshStandardMaterialParam
     params.metalness ?? 0,
     params.transparent ? 1 : 0,
     params.opacity ?? 1,
-    params.side ?? THREE.FrontSide,
+    params.side ?? FrontSide,
     params.polygonOffset ? 1 : 0,
     params.polygonOffsetFactor ?? 0,
     params.polygonOffsetUnits ?? 0,
@@ -43,7 +43,7 @@ function serializeStandardMaterialParams(params: THREE.MeshStandardMaterialParam
 }
 
 /** Register a module-level material for lifecycle disposal. Returns the same instance. */
-export function registerModuleMaterial<T extends THREE.MeshStandardMaterial>(material: T): T {
+export function registerModuleMaterial<T extends MeshStandardMaterial>(material: T): T {
   moduleMaterials.add(material);
   trackModuleMaterial(material);
   claimMaterialForActiveScene(material);
@@ -51,12 +51,12 @@ export function registerModuleMaterial<T extends THREE.MeshStandardMaterial>(mat
 }
 
 /** True when material is tracked by the module registry (skip mesh-tree dispose). */
-export function isRegistryManagedMaterial(material: THREE.Material): boolean {
-  return moduleMaterials.has(material as THREE.MeshStandardMaterial);
+export function isRegistryManagedMaterial(material: Material): boolean {
+  return moduleMaterials.has(material as MeshStandardMaterial);
 }
 
-export function disposeRegisteredModuleMaterial(material: THREE.Material): void {
-  if (!(material instanceof THREE.MeshStandardMaterial)) return;
+export function disposeRegisteredModuleMaterial(material: Material): void {
+  if (!(material instanceof MeshStandardMaterial)) return;
   if (!moduleMaterials.has(material)) return;
   untrackModuleMaterial(material);
   material.dispose();
@@ -72,7 +72,7 @@ export function disposeRegisteredModuleMaterial(material: THREE.Material): void 
  * AAA Pass: auto de-plasticize any procedural shared material.
  * Clamp envMapIntensity, enforce roughness floor, reduce metalness for organic names.
  */
-function aaaDeplasticizeParams(params: THREE.MeshStandardMaterialParameters): THREE.MeshStandardMaterialParameters {
+function aaaDeplasticizeParams(params: MeshStandardMaterialParameters): MeshStandardMaterialParameters {
   const nameHint = `${params.name ?? ''} ${params.color ?? ''}`.toLowerCase();
   const isOrganic =
     /skin|cloth|wood|fabric|plaster|wall|concrete|brick|paper|book|cotton|denim|leather/.test(nameHint) ||
@@ -107,8 +107,8 @@ function aaaDeplasticizeParams(params: THREE.MeshStandardMaterialParameters): TH
 }
 
 export function getSharedStandardMaterial(
-  params: THREE.MeshStandardMaterialParameters,
-): THREE.MeshStandardMaterial {
+  params: MeshStandardMaterialParameters,
+): MeshStandardMaterial {
   const aaaParams = aaaDeplasticizeParams(params);
   const key = serializeStandardMaterialParams(aaaParams);
   const cached = sharedStandardMaterialCache.get(key);
@@ -117,7 +117,7 @@ export function getSharedStandardMaterial(
     return cached;
   }
 
-  const material = registerModuleMaterial(new THREE.MeshStandardMaterial(aaaParams));
+  const material = registerModuleMaterial(new MeshStandardMaterial(aaaParams));
   sharedStandardMaterialCache.set(key, material);
   return material;
 }
@@ -125,8 +125,8 @@ export function getSharedStandardMaterial(
 /** Shorthand for color-first shared materials with optional PBR overrides. */
 export function mat(
   color: string,
-  overrides: Omit<THREE.MeshStandardMaterialParameters, 'color'> = {},
-): THREE.MeshStandardMaterial {
+  overrides: Omit<MeshStandardMaterialParameters, 'color'> = {},
+): MeshStandardMaterial {
   return getSharedStandardMaterial({ color, ...overrides });
 }
 

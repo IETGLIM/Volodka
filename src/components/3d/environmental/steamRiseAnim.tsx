@@ -1,6 +1,6 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Group, ShaderMaterial } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 interface SteamParticleData {
@@ -11,7 +11,7 @@ interface SteamParticleData {
 
 export function SteamRiseAnim({ anim }: { anim: EnvAnimation }) {
   const maxParticles = 30;
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const timeRef = useRef(0);
   const spawnAccumRef = useRef(0);
   const particlesRef = useRef<SteamParticleData[]>([]);
@@ -31,22 +31,22 @@ export function SteamRiseAnim({ anim }: { anim: EnvAnimation }) {
       sizes[i] = 0;
     }
 
-    const positionAttr = new THREE.BufferAttribute(positions, 3);
-    const opacityAttr = new THREE.BufferAttribute(opacities, 1);
-    const sizeAttr = new THREE.BufferAttribute(sizes, 1);
+    const positionAttr = new BufferAttribute(positions, 3);
+    const opacityAttr = new BufferAttribute(opacities, 1);
+    const sizeAttr = new BufferAttribute(sizes, 1);
 
-    const geo = new THREE.BufferGeometry();
+    const geo = new BufferGeometry();
     geo.setAttribute('position', positionAttr);
     geo.setAttribute('aOpacity', opacityAttr);
     geo.setAttribute('aSize', sizeAttr);
     geo.setDrawRange(0, 0); // nothing visible until first spawn
 
-    const mat = new THREE.ShaderMaterial({
+    const mat = new ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       uniforms: {
-        uColor: { value: new THREE.Color('#cccccc') },
+        uColor: { value: new Color('#cccccc') },
       },
       vertexShader: `
         attribute float aOpacity;

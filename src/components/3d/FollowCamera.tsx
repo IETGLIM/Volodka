@@ -5,7 +5,7 @@ import { useRef, useEffect, useLayoutEffect } from 'react';
 import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { isEncounterPresentationActive } from '@/engine/combat/encounterPresentation';
-import * as THREE from 'three';
+import { MathUtils, PerspectiveCamera, Raycaster, Vector3 } from 'three';
 import { useCameraFollowState, usePlayerPosition } from '@/store/selectors';
 import {
   applyTimeScale,
@@ -62,7 +62,7 @@ import {
 } from '@/engine/camera/cameraStateMachine';
 
 interface FollowCameraProps {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
   moveBlendRef?: React.MutableRefObject<number>;
 }
@@ -132,21 +132,21 @@ export function FollowCamera({
   sceneIdRef.current = sceneId;
   const prevGameModeRef = useRef(gameMode);
   const interactionDistanceRef = useRef(DEFAULT_DISTANCE);
-  const lookAheadOffsetRef = useRef(new THREE.Vector3());
-  const prevVelocitySmoothRef = useRef(new THREE.Vector3());
+  const lookAheadOffsetRef = useRef(new Vector3());
+  const prevVelocitySmoothRef = useRef(new Vector3());
   const currentSceneFovRef = useRef(getSceneSpecificFov(sceneId));
   const cameraStateRef = useRef(initialCameraState());
 
-  const _desiredPos = useRef(new THREE.Vector3());
-  const _lookTarget = useRef(new THREE.Vector3());
-  const _offset = useRef(new THREE.Vector3());
-  const _prevPlayerPos = useRef(new THREE.Vector3());
-  const _tempVec = useRef(new THREE.Vector3());
-  const _tempVec2 = useRef(new THREE.Vector3());
-  const _playerVelocity = useRef(new THREE.Vector3());
-  const _fallbackNpcPos = useRef(new THREE.Vector3());
+  const _desiredPos = useRef(new Vector3());
+  const _lookTarget = useRef(new Vector3());
+  const _offset = useRef(new Vector3());
+  const _prevPlayerPos = useRef(new Vector3());
+  const _tempVec = useRef(new Vector3());
+  const _tempVec2 = useRef(new Vector3());
+  const _playerVelocity = useRef(new Vector3());
+  const _fallbackNpcPos = useRef(new Vector3());
 
-  const raycaster = useRef(new THREE.Raycaster());
+  const raycaster = useRef(new Raycaster());
   const wasDraggingRef = useRef(false);
 
   // Ease-back state — set by `camera:ease_back` event from
@@ -156,8 +156,8 @@ export function FollowCamera({
   const easeBackStateRef = useRef<EaseBackState>({ active: false, startMs: 0, durationMs: 0 });
   // Pre-frame scratch for ease-back blend — saved before applyCameraFrame runs
   // so the eased lerp goes from the pre-update position toward the target.
-  const _easePrePos = useRef(new THREE.Vector3());
-  const _easePreLook = useRef(new THREE.Vector3());
+  const _easePrePos = useRef(new Vector3());
+  const _easePreLook = useRef(new Vector3());
 
   const runtimeRef = useRef<CameraRuntimeRefs>({
     orbit: {
@@ -191,7 +191,7 @@ export function FollowCamera({
   });
 
   useEffect(() => {
-    const cam = camera as THREE.PerspectiveCamera;
+    const cam = camera as PerspectiveCamera;
     if (cam) {
       for (let i = 0; i <= 4; i++) cam.layers.enable(i);
     }
@@ -287,7 +287,7 @@ export function FollowCamera({
   const wasTransitionActiveRef = useRef(false);
 
   useFrameTick('camera', ({ delta: rawDelta }) => {
-    const cam = cameraRef.current as THREE.PerspectiveCamera;
+    const cam = cameraRef.current as PerspectiveCamera;
     const spring = springRef.current;
     if (!spring || !cam) return;
 
@@ -354,7 +354,7 @@ export function FollowCamera({
     const distLerpSpeed = wasInDialogueRef.current && !interactionLocked
       ? DIALOGUE_EXIT_LERP_SPEED
       : DISTANCE_LERP_SPEED;
-    interactionDistanceRef.current = THREE.MathUtils.lerp(
+    interactionDistanceRef.current = MathUtils.lerp(
       interactionDistanceRef.current,
       targetInteractionDist,
       1 - Math.exp(-distLerpSpeed * delta),
@@ -362,7 +362,7 @@ export function FollowCamera({
 
     if (!useFirstPerson) {
       const targetSceneFov = getSceneSpecificFov(sceneId);
-      currentSceneFovRef.current = THREE.MathUtils.lerp(
+      currentSceneFovRef.current = MathUtils.lerp(
         currentSceneFovRef.current,
         targetSceneFov,
         1 - Math.exp(-FOV_TRANSITION_SPEED * delta),

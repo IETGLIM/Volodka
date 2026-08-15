@@ -2,7 +2,7 @@
  * Client for textureGen.worker — transferable buffers → DataTextures on main thread.
  */
 
-import * as THREE from 'three';
+import { ColorSpace, DataTexture, LinearFilter, LinearMipmapLinearFilter, NoColorSpace, RepeatWrapping, SRGBColorSpace } from 'three';
 import type { TextureGenRequest, TextureGenResponse } from '@/proceduralAaa/workers/textureGen.worker';
 import type { DynamicTextureKind, DynamicTextureSet } from '@/proceduralAaa/DynamicTextureGenerator';
 
@@ -20,13 +20,13 @@ function getWorker(): Worker | null {
   return worker;
 }
 
-function makeTex(data: Uint8Array, size: number, colorSpace: THREE.ColorSpace): THREE.DataTexture {
-  const tex = new THREE.DataTexture(data, size, size);
+function makeTex(data: Uint8Array, size: number, colorSpace: ColorSpace): DataTexture {
+  const tex = new DataTexture(data, size, size);
   tex.colorSpace = colorSpace;
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
+  tex.magFilter = LinearFilter;
+  tex.minFilter = LinearMipmapLinearFilter;
   tex.generateMipmaps = true;
   tex.anisotropy = 8;
   tex.needsUpdate = true;
@@ -53,11 +53,11 @@ export async function generateDynamicTexturesAsync(
       w.removeEventListener('error', onError);
       const d = event.data;
       resolve({
-        albedo: makeTex(new Uint8Array(d.albedo), d.size, THREE.SRGBColorSpace),
-        normal: makeTex(new Uint8Array(d.normal), d.size, THREE.NoColorSpace),
-        roughness: makeTex(new Uint8Array(d.roughness), d.size, THREE.NoColorSpace),
-        metalness: makeTex(new Uint8Array(d.metalness), d.size, THREE.NoColorSpace),
-        height: makeTex(new Uint8Array(d.height), d.size, THREE.NoColorSpace),
+        albedo: makeTex(new Uint8Array(d.albedo), d.size, SRGBColorSpace),
+        normal: makeTex(new Uint8Array(d.normal), d.size, NoColorSpace),
+        roughness: makeTex(new Uint8Array(d.roughness), d.size, NoColorSpace),
+        metalness: makeTex(new Uint8Array(d.metalness), d.size, NoColorSpace),
+        height: makeTex(new Uint8Array(d.height), d.size, NoColorSpace),
         size: d.size,
         kind: d.kind as DynamicTextureKind,
       });

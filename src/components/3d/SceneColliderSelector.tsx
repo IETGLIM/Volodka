@@ -36,7 +36,7 @@ import { EnvironmentLodProvider } from './lod/EnvironmentLodProvider';
 import type { SceneId } from '@/shared/types/game';
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import type { MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Group, InstancedMesh, Object3D, Vector3 } from 'three';
 import { useThreeCleanup } from '@/hooks/useThreeCleanup';
 
 /* ── Lazy-loaded scene visuals ──
@@ -83,7 +83,7 @@ const AlbertBackroomVisual = lazySceneVisual('albert_backroom', () => import('./
 const ProceduralAaaVisual = lazySceneVisual('procedural_aaa', () => import('./ProceduralAaaVisual'), 'ProceduralAaaVisual');
 
 interface SceneColliderSelectorProps {
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: MutableRefObject<Vector3>;
 }
 
 /** Selects and renders the appropriate visual + physics components based on current sceneId.
@@ -257,12 +257,12 @@ function SceneStructuralColliders({ sceneId }: { sceneId: SceneId }) {
 
 interface VisualSceneProps {
   sceneId: SceneId;
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: MutableRefObject<Vector3>;
 }
 
 /** Wraps scene visuals and disposes GPU resources when sceneId changes. */
 function SceneVisualRoot({ sceneId, livePlayerPositionRef }: VisualSceneProps) {
-  const rootRef = useRef<THREE.Group>(null);
+  const rootRef = useRef<Group>(null);
   useThreeCleanup(rootRef, { sceneId });
 
   return (
@@ -350,7 +350,7 @@ interface BuildingInstanceDef {
 }
 
 function DistantBuildingSilhouettes({ sceneId }: { sceneId: SceneId }) {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const meshRef = useRef<InstancedMesh>(null);
   const BUILDING_COUNT = 12;
 
   const buildings = useMemo<BuildingInstanceDef[]>(() => {
@@ -378,7 +378,7 @@ function DistantBuildingSilhouettes({ sceneId }: { sceneId: SceneId }) {
 
   useEffect(() => {
     if (!meshRef.current) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     buildings.forEach((b, i) => {
       dummy.position.set(b.x, b.y, b.z);
       dummy.rotation.set(0, b.rotation, 0);
@@ -464,7 +464,7 @@ function FallbackVisual({ sceneId }: { sceneId: SceneId }) {
 
 interface ForegroundElementsProps {
   sceneId: SceneId;
-  livePlayerPositionRef: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: MutableRefObject<Vector3>;
 }
 
 function ForegroundElements({ sceneId, livePlayerPositionRef }: ForegroundElementsProps) {
@@ -501,9 +501,9 @@ function StreetForegroundObjects() {
   const lampPositions: [number, number, number][] = [
     [-3, 0, -5], [3, 0, 5], [-3, 0, 12], [3, 0, -12],
   ];
-  const poleRef = useRef<THREE.InstancedMesh>(null);
-  const bulbRef = useRef<THREE.InstancedMesh>(null);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const poleRef = useRef<InstancedMesh>(null);
+  const bulbRef = useRef<InstancedMesh>(null);
+  const dummy = useMemo(() => new Object3D(), []);
 
   useEffect(() => {
     if (!poleRef.current || !bulbRef.current) return;

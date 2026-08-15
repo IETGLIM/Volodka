@@ -1,14 +1,14 @@
 /* Aviator sunglasses for Volodka — gradient dark lenses. */
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, MeshStandardMaterial, SRGBColorSpace } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCylinderGeometry,
   getSharedTorusGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 
-function createGradientLensTexture(): THREE.CanvasTexture {
+function createGradientLensTexture(): CanvasTexture {
   const size = 64;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -27,8 +27,8 @@ function createGradientLensTexture(): THREE.CanvasTexture {
   shine.addColorStop(1, 'rgba(40,30,50,0)');
   ctx.fillStyle = shine;
   ctx.fillRect(0, 0, size, size);
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
   tex.needsUpdate = true;
   return tex;
 }
@@ -38,7 +38,7 @@ export function ProceduralAviatorGlasses() {
   const lensMap = useMemo(() => createGradientLensTexture(), []);
   const lensMat = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new MeshStandardMaterial({
         map: lensMap,
         color: '#ffffff',
         emissiveMap: lensMap,
@@ -53,7 +53,7 @@ export function ProceduralAviatorGlasses() {
   );
   const frameMat = useMemo(
     () =>
-      new THREE.MeshStandardMaterial({
+      new MeshStandardMaterial({
         color: '#c0a060',
         roughness: 0.35,
         metalness: 0.85,

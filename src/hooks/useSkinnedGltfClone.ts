@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
+import { AnimationClip, AnimationMixer, Group, Mesh, Object3D, SkinnedMesh } from 'three';
 import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { deepCloneWithSkeletons } from '@/utils/deepCloneWithSkeletons';
 import {
@@ -13,38 +13,38 @@ export interface UseSkinnedGltfCloneOptions extends DisposeThreeOptions {
 }
 
 export interface SkinnedGltfClone {
-  scene: THREE.Group;
-  mixer: THREE.AnimationMixer | null;
+  scene: Group;
+  mixer: AnimationMixer | null;
   ready: boolean;
 }
 
 function buildSkinnedClone(
-  sourceScene: THREE.Object3D,
-  animations: THREE.AnimationClip[] | undefined,
+  sourceScene: Object3D,
+  animations: AnimationClip[] | undefined,
   options?: UseSkinnedGltfCloneOptions,
 ): SkinnedGltfClone {
   const { castShadow, receiveShadow } = options ?? {};
-  let clone: THREE.Group;
+  let clone: Group;
   try {
-    clone = cloneSkinnedScene(sourceScene) as THREE.Group;
+    clone = cloneSkinnedScene(sourceScene) as Group;
   } catch {
     clone = deepCloneWithSkeletons(sourceScene);
   }
   clone.traverse((node) => {
-    if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
+    if (node instanceof Mesh || node instanceof SkinnedMesh) {
       if (castShadow !== undefined) node.castShadow = castShadow;
       if (receiveShadow !== undefined) node.receiveShadow = receiveShadow;
     }
   });
   const animationMixer =
     animations && animations.length > 0
-      ? new THREE.AnimationMixer(clone)
+      ? new AnimationMixer(clone)
       : null;
   return { scene: clone, mixer: animationMixer, ready: true };
 }
 
 function createPlaceholderClone(): SkinnedGltfClone {
-  return { scene: new THREE.Group(), mixer: null, ready: false };
+  return { scene: new Group(), mixer: null, ready: false };
 }
 
 /**
@@ -53,8 +53,8 @@ function createPlaceholderClone(): SkinnedGltfClone {
  * Clone work is deferred off the critical rAF path when possible.
  */
 export function useSkinnedGltfClone(
-  sourceScene: THREE.Object3D,
-  animations: THREE.AnimationClip[] | undefined,
+  sourceScene: Object3D,
+  animations: AnimationClip[] | undefined,
   options?: UseSkinnedGltfCloneOptions,
 ): SkinnedGltfClone {
   const optionsRef = useRef(options);

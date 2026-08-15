@@ -6,7 +6,7 @@
 
 import { useRef, useMemo, useEffect, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
+import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry } from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId } from '@/store/selectors';
 import { TRIGGER_ZONES, isTriggerZoneAvailable } from '@/data/triggerZones';
@@ -32,17 +32,17 @@ interface PickupGlowProps {
 
 /** Single pulsing glow ring + label for one pickable item. */
 function PickupGlow({ position, label }: PickupGlowProps) {
-  const ringRef = useRef<THREE.Mesh>(null);
-  const matRef = useRef<THREE.MeshBasicMaterial>(null);
+  const ringRef = useRef<Mesh>(null);
+  const matRef = useRef<MeshBasicMaterial>(null);
 
-  const geometry = useMemo(() => new THREE.RingGeometry(GLOW_RADIUS * 0.8, GLOW_RADIUS, 32), []);
+  const geometry = useMemo(() => new RingGeometry(GLOW_RADIUS * 0.8, GLOW_RADIUS, 32), []);
   const material = useMemo(
     () =>
-      new THREE.MeshBasicMaterial({
+      new MeshBasicMaterial({
         color: GLOW_COLOR,
         transparent: true,
         opacity: 0.5,
-        side: THREE.DoubleSide,
+        side: DoubleSide,
         depthTest: false,
       }),
     [],
@@ -81,7 +81,7 @@ function PickupGlow({ position, label }: PickupGlowProps) {
           color={GLOW_COLOR}
           transparent
           opacity={0.5}
-          side={THREE.DoubleSide}
+          side={DoubleSide}
           depthTest={false}
         />
       </mesh>
@@ -122,8 +122,8 @@ type BurstState = {
 };
 
 function CollectBurst({ burst, onDone }: { burst: BurstState; onDone: (id: string) => void }) {
-  const groupRef = useRef<THREE.Group>(null);
-  const matsRef = useRef<(THREE.MeshBasicMaterial | null)[]>([]);
+  const groupRef = useRef<Group>(null);
+  const matsRef = useRef<(MeshBasicMaterial | null)[]>([]);
 
   useFrame((_, delta) => {
     const age = (performance.now() - burst.bornAt) / 1000;
@@ -136,7 +136,7 @@ function CollectBurst({ burst, onDone }: { burst: BurstState; onDone: (id: strin
     if (!g) return;
     for (let i = 0; i < burst.particles.length; i++) {
       const p = burst.particles[i];
-      const child = g.children[i] as THREE.Mesh | undefined;
+      const child = g.children[i] as Mesh | undefined;
       if (!child || !p) continue;
       const t = Math.min(1, age / p.life);
       const dist = p.speed * age * (1 - t * 0.35);

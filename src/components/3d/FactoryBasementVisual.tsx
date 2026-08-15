@@ -6,7 +6,7 @@
  */
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, Color, Group, InstancedMesh, Mesh, MeshStandardMaterial, Object3D, PointLight, RepeatWrapping, Vector3 } from 'three';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { scratchColor } from '@/engine/three/frameScratch';
@@ -33,7 +33,7 @@ import { SceneBackdropShell } from './SceneBackdropShell';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 
 interface FactoryBasementVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const W = 16;
@@ -79,10 +79,10 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
       opacity: Math.min(0.72, base.opacity + 0.08),
     };
   }, [damp, rainIntensity]);
-  const coreRef = useRef<THREE.Mesh>(null);
-  const terminalRef = useRef<THREE.Mesh>(null);
-  const coreLightRef = useRef<THREE.PointLight>(null);
-  const rootGroupRef = useRef<THREE.Group>(null);
+  const coreRef = useRef<Mesh>(null);
+  const terminalRef = useRef<Mesh>(null);
+  const coreLightRef = useRef<PointLight>(null);
+  const rootGroupRef = useRef<Group>(null);
   const tRef = useRef(0);
 
   useFrameTick('misc', ({ delta }) => {
@@ -91,10 +91,10 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
     // «Заря-М» breathes — slow systolic pulse with a double-beat
     const pulse = 0.75 + Math.max(0, Math.sin(t * 1.4)) * 0.5 + Math.max(0, Math.sin(t * 2.8)) * 0.2;
     if (coreRef.current) {
-      (coreRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = 1.2 * pulse;
+      (coreRef.current.material as MeshStandardMaterial).emissiveIntensity = 1.2 * pulse;
     }
     if (terminalRef.current) {
-      (terminalRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+      (terminalRef.current.material as MeshStandardMaterial).emissiveIntensity =
         0.35 + Math.sin(t * 3.6) * 0.12;
     }
     if (coreLightRef.current) {
@@ -355,9 +355,9 @@ function ServerRackRow({
   length: number;
   seed: number;
 }) {
-  const ledsRef = useRef<THREE.InstancedMesh>(null);
+  const ledsRef = useRef<InstancedMesh>(null);
   const tRef = useRef(0);
-  const blinkColorRef = useRef(new THREE.Color());
+  const blinkColorRef = useRef(new Color());
 
   const leds = useMemo(() => {
     const rng = basementSeededRandom(seed * 7919 + 13);
@@ -378,7 +378,7 @@ function ServerRackRow({
   useLayoutEffect(() => {
     const mesh = ledsRef.current;
     if (!mesh) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     const color = scratchColor;
     leds.forEach((led, i) => {
       // Face the aisle: x offset toward scene centre
@@ -427,7 +427,7 @@ function ServerRackRow({
   );
 }
 
-function createBasementFloorTexture(): THREE.CanvasTexture {
+function createBasementFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -466,8 +466,8 @@ function createBasementFloorTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
   tex.repeat.set(4, 4);
   return tex;
 }

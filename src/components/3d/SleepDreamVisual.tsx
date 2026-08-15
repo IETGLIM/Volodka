@@ -3,7 +3,7 @@
 
 import { useMemo, useRef, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, BackSide, BufferAttribute, BufferGeometry, CanvasTexture, DoubleSide, Group, Mesh, PlaneGeometry, Points, RepeatWrapping } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCylinderGeometry,
@@ -29,7 +29,7 @@ export function SleepDreamVisual() {
   const D = 50;
 
   const groundGeometry = useOwnedBufferGeometry(() => {
-    const geo = new THREE.PlaneGeometry(W, D, 64, 64);
+    const geo = new PlaneGeometry(W, D, 64, 64);
     geo.rotateX(-Math.PI / 2);
     return geo;
   }, [W, D]);
@@ -168,7 +168,7 @@ function GalaxySkyDome() {
     && !isEffectiveReducedMotion();
   const skyTexture = useCachedCanvasTexture('sleep_dream:galaxy-sky', createDreamGalaxySkyTexture);
   const starGeometry = useOwnedBufferGeometry(() => createDreamGalaxyStarGeometry(), []);
-  const starsRef = useRef<THREE.Points>(null);
+  const starsRef = useRef<Points>(null);
 
   useFrameTick('misc', ({ state }) => {
     if (!animateStars || !starsRef.current) return;
@@ -181,7 +181,7 @@ function GalaxySkyDome() {
         <sphereGeometry args={[58, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.6]} />
         <meshBasicMaterial
           map={skyTexture}
-          side={THREE.BackSide}
+          side={BackSide}
           fog={false}
           depthWrite={false}
         />
@@ -263,10 +263,10 @@ function VeinOverlay({ width, depth, segments }: { width: number; depth: number;
       }
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
-    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    geo.setAttribute('color', new BufferAttribute(colors, 3));
+    geo.setIndex(new BufferAttribute(indices, 1));
     geo.computeVertexNormals();
     return geo;
   }, [width, depth, segments]);
@@ -286,7 +286,7 @@ function VeinOverlay({ width, depth, segments }: { width: number; depth: number;
         emissive="#00cccc"
         emissiveIntensity={0.3}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
       />
     </mesh>
   );
@@ -344,7 +344,7 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
     };
   }, [width, depth]);
 
-  const pointsRef = useRef<THREE.Points>(null);
+  const pointsRef = useRef<Points>(null);
 
   useFrameTick('misc', ({ state }) => {
     if (!pointsRef.current) return;
@@ -352,7 +352,7 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
     pointsRef.current.rotation.y = t * 0.01;
 
     // Gentle floating motion
-    const posAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+    const posAttr = pointsRef.current.geometry.attributes.position as BufferAttribute;
     for (let i = 0; i < count; i++) {
       const oy = positions[i * 3 + 1];
       posAttr.setY(i, oy + Math.sin(t * 0.3 + i * 0.1) * 0.2);
@@ -372,7 +372,7 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
         transparent
         opacity={0.7}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
         sizeAttenuation
       />
     </points>
@@ -385,7 +385,7 @@ function DreamDustField({ width, depth }: { width: number; depth: number }) {
 
 /** Floating island with impossible terrain */
 function FloatingIsland({ position, scale = 1 }: { position: [number, number, number]; scale?: number }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
 
   useFrameTick('misc', ({ state }) => {
     if (groupRef.current) {
@@ -428,7 +428,7 @@ function ImpossibleStructure({ position }: { position: [number, number, number] 
 
 /** Floating poem text fragment */
 function FloatingPoemFragment({ position, text }: { position: [number, number, number]; text: string }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const texture = useMemo(() => {
     const canvas = document.createElement('canvas');
     canvas.width = 256;
@@ -441,7 +441,7 @@ function FloatingPoemFragment({ position, text }: { position: [number, number, n
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(text, 128, 32);
-    const tex = new THREE.CanvasTexture(canvas);
+    const tex = new CanvasTexture(canvas);
     tex.needsUpdate = true;
     return tex;
   }, [text]);
@@ -460,7 +460,7 @@ function FloatingPoemFragment({ position, text }: { position: [number, number, n
   return (
     <group ref={groupRef} position={position}>
       <mesh geometry={getSharedPlaneGeometry(2.5, 0.6)}>
-        <meshStandardMaterial map={texture} transparent opacity={0.7} side={THREE.DoubleSide} emissive="#00cccc" emissiveIntensity={0.3} />
+        <meshStandardMaterial map={texture} transparent opacity={0.7} side={DoubleSide} emissive="#00cccc" emissiveIntensity={0.3} />
       </mesh>
     </group>
   );
@@ -468,7 +468,7 @@ function FloatingPoemFragment({ position, text }: { position: [number, number, n
 
 /** Glowing memory fragment cube */
 function MemoryFragment({ position, color }: { position: [number, number, number]; color: string }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
 
   useFrameTick('misc', ({ state }) => {
     if (meshRef.current) {
@@ -507,7 +507,7 @@ function SpiralPillar({ position }: { position: [number, number, number] }) {
 
 /** Animated fog layer — now with subtle drift */
 function AnimatedFogLayer({ y, speed }: { y: number; speed: number }) {
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
 
   useFrameTick('misc', ({ state }) => {
     if (meshRef.current) {
@@ -517,7 +517,7 @@ function AnimatedFogLayer({ y, speed }: { y: number; speed: number }) {
 
   return (
     <mesh ref={meshRef} position={[0, y, 0]} rotation-x={-Math.PI / 2} geometry={getSharedPlaneGeometry(50, 50)}>
-      <meshStandardMaterial color="#1a0a30" transparent opacity={0.08} side={THREE.DoubleSide} />
+      <meshStandardMaterial color="#1a0a30" transparent opacity={0.08} side={DoubleSide} />
     </mesh>
   );
 }
@@ -527,7 +527,7 @@ function AnimatedFogLayer({ y, speed }: { y: number; speed: number }) {
 /* ═══════════════════════════════════════════════════════════════════ */
 
 function FloatingClock({ position }: { position: [number, number, number] }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
 
   useFrameTick('misc', ({ state }) => {
     if (groupRef.current) {
@@ -572,10 +572,10 @@ function TornPhoto({ position }: { position: [number, number, number] }) {
   return (
     <group position={position}>
       <mesh rotation={[0.2, 0.4, 0.1]} geometry={getSharedPlaneGeometry(0.2, 0.15)}>
-        <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.7} />
+        <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={DoubleSide} transparent opacity={0.7} />
       </mesh>
       <mesh position={[0.08, -0.04, 0]} rotation={[0.2, 0.4, 0.3]} geometry={getSharedPlaneGeometry(0.08, 0.06)}>
-        <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={THREE.DoubleSide} transparent opacity={0.5} />
+        <meshStandardMaterial color="#c8b8a0" roughness={0.9} side={DoubleSide} transparent opacity={0.5} />
       </mesh>
     </group>
   );
@@ -611,7 +611,7 @@ function InvertedDoorFrame({ position }: { position: [number, number, number] })
 /*  GROUND TEXTURE (enhanced with noise-based patterns)              */
 /* ═══════════════════════════════════════════════════════════════════ */
 
-function createDreamGroundTexture(): THREE.CanvasTexture {
+function createDreamGroundTexture(): CanvasTexture {
   const size = 512; // Increased from 256 for better detail on hilly terrain
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -675,9 +675,9 @@ function createDreamGroundTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(8, 8); // Reduced repeat since texture is now 512px
   return tex;
 }

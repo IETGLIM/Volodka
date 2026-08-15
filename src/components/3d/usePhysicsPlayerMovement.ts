@@ -4,7 +4,7 @@ import { useRef, useEffect, useLayoutEffect } from 'react';
 import type { RootState } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useRapier, type RapierRigidBody, type RapierCollider } from '@react-three/rapier';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 
 import { getLivePlayerPosition } from '@/store/stores/explorationStore';
 import { useCurrentSceneId } from '@/store/selectors';
@@ -44,7 +44,7 @@ import {
 import { createPlayerMovementLockContract } from '@/engine/player/playerMovementContract';
 
 export interface UsePhysicsPlayerMovementOptions {
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   livePlayerRotationRef: React.MutableRefObject<number>;
   virtualControlsRef?: React.MutableRefObject<VirtualControls>;
   physicsPaused?: boolean;
@@ -74,7 +74,7 @@ export function usePhysicsPlayerMovement({
   const rigidBodyRef = useRef<RapierRigidBody | null>(null);
   const capsuleColliderRef = useRef<RapierCollider | null>(null);
   const controllerRef = useRef<RapierCharacterController | null>(null);
-  const velocityRef = useRef(new THREE.Vector3(0, 0, 0));
+  const velocityRef = useRef(new Vector3(0, 0, 0));
   const isGroundedRef = useRef(true);
   const coyoteTimerRef = useRef(0);
   const jumpCooldownRef = useRef(0);
@@ -89,7 +89,7 @@ export function usePhysicsPlayerMovement({
   const stuckLockTimerRef = useRef(0);
   const prevLocomotionLockedRef = useRef(false);
   const warmupTimerRef = useRef(0);
-  const prevRbPosRef = useRef(new THREE.Vector3());
+  const prevRbPosRef = useRef(new Vector3());
   const noMovementFramesRef = useRef(0);
   const virtualHoldTimesRef = useRef({});
   const rbBoundRef = useRef(false);
@@ -158,10 +158,10 @@ export function usePhysicsPlayerMovement({
   const config = getSceneConfig(sceneId);
   const groundProbeCacheRef = useRef(createGroundProbeCache(config.floorY, sceneId));
 
-  const tempCameraForward = useRef(new THREE.Vector3());
-  const tempCameraRight = useRef(new THREE.Vector3());
-  const tempUp = useRef(new THREE.Vector3(0, 1, 0));
-  const tempMoveDir = useRef(new THREE.Vector3());
+  const tempCameraForward = useRef(new Vector3());
+  const tempCameraRight = useRef(new Vector3());
+  const tempUp = useRef(new Vector3(0, 1, 0));
+  const tempMoveDir = useRef(new Vector3());
 
   const frameScratchRef = useRef<PlayerFrameScratch>({
     tickState: null as RootState | null,

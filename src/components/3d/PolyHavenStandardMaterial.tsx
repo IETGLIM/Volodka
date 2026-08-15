@@ -6,7 +6,7 @@
 import { usePolyHavenPbr } from '@/hooks/usePolyHavenPbr';
 import type { PolyHavenMaterialId } from '@/config/polyhavenAssets';
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { Color, Vector2 } from 'three';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 interface PolyHavenStandardMaterialProps {
@@ -69,7 +69,7 @@ export function PolyHavenStandardMaterial({
   const maps = usePolyHavenPbr(materialId, repeatScale);
   const { preset } = useGraphicsQuality();
   const tuning = useMemo(() => getAaaTuning(materialId), [materialId]);
-  const normalScale = useMemo(() => new THREE.Vector2(tuning.normalScale, tuning.normalScale), [tuning]);
+  const normalScale = useMemo(() => new Vector2(tuning.normalScale, tuning.normalScale), [tuning]);
 
   const usePhysical = forcePhysical || preset.id === 'high' || preset.id === 'ultra';
 
@@ -77,7 +77,7 @@ export function PolyHavenStandardMaterial({
   const finalRoughness = Math.min(1, Math.max(0.55, roughness + tuning.roughnessBias));
   const finalMetalness = Math.min(0.12, Math.max(0.01, metalness));
   // Slight procedural jitter via color luma — breaks uniform plastic by ~3%
-  const colorObj = useMemo(() => new THREE.Color(color), [color]);
+  const colorObj = useMemo(() => new Color(color), [color]);
 
   if (usePhysical) {
     return (
@@ -96,7 +96,7 @@ export function PolyHavenStandardMaterial({
         clearcoatRoughness={tuning.clearcoatRoughness}
         sheen={tuning.isFabric ? 0.6 : 0}
         sheenRoughness={tuning.isFabric ? 0.82 : 0}
-        sheenColor={tuning.isFabric ? new THREE.Color('#d8c8b8') as any : undefined}
+        sheenColor={tuning.isFabric ? new Color('#d8c8b8') as any : undefined}
         polygonOffset={polygonOffset}
         polygonOffsetFactor={polygonOffset ? 1 : 0}
         polygonOffsetUnits={polygonOffset ? 1 : 0}

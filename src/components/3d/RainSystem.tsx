@@ -7,7 +7,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Points, ShaderMaterial, Vector3 } from 'three';
 import { useGlobalWeatherControls } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
@@ -187,8 +187,8 @@ function RainParticles({
   intensity: number;
   maxSplashes: number;
 }) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const splashRef = useRef<THREE.Points>(null);
+  const pointsRef = useRef<Points>(null);
+  const splashRef = useRef<Points>(null);
   const timeRef = useRef(0);
   const hasEmittedEvent = useRef(false);
   const splashPoolIdx = useRef(0);
@@ -203,27 +203,27 @@ function RainParticles({
     const { positions, velocities } = seedRainBuffers(capacityConfig, maxCount);
     const [cbx, cby, cbz] = capacityConfig.boxSize;
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setAttribute('aVelocity', new THREE.BufferAttribute(velocities, 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    geo.setAttribute('aVelocity', new BufferAttribute(velocities, 3));
     geo.setDrawRange(0, 0);
 
     const uniforms = {
       uTime: { value: 0 },
       uIntensity: { value: 1 },
-      uBoxSize: { value: new THREE.Vector3(cbx, cby, cbz) },
+      uBoxSize: { value: new Vector3(cbx, cby, cbz) },
       uPointSize: { value: capacityConfig.dropLength },
-      uColor: { value: new THREE.Color(capacityConfig.color) },
+      uColor: { value: new Color(capacityConfig.color) },
       uOpacity: { value: capacityConfig.opacity },
       uWindGustX: { value: 0 },
       uWindGustZ: { value: 0 },
       uWindAngle: { value: capacityConfig.windAngle },
     };
 
-    const mat = new THREE.ShaderMaterial({
+    const mat = new ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       uniforms,
       vertexShader: RAIN_VERT,
       fragmentShader: RAIN_FRAG,
@@ -242,11 +242,11 @@ function RainParticles({
       baseSizes[i] = 0;
     }
 
-    const posAttr = new THREE.BufferAttribute(positions, 3);
-    const birthAttr = new THREE.BufferAttribute(birthTimes, 1);
-    const sizeAttr = new THREE.BufferAttribute(baseSizes, 1);
+    const posAttr = new BufferAttribute(positions, 3);
+    const birthAttr = new BufferAttribute(birthTimes, 1);
+    const sizeAttr = new BufferAttribute(baseSizes, 1);
 
-    const geo = new THREE.BufferGeometry();
+    const geo = new BufferGeometry();
     geo.setAttribute('position', posAttr);
     geo.setAttribute('aBirthTime', birthAttr);
     geo.setAttribute('aBaseSize', sizeAttr);
@@ -254,14 +254,14 @@ function RainParticles({
     const uniforms = {
       uTime: { value: 0 },
       uSplashLifetime: { value: SPLASH_LIFETIME },
-      uColor: { value: new THREE.Color('#b0c8e0') },
+      uColor: { value: new Color('#b0c8e0') },
       uOpacity: { value: 0.4 },
     };
 
-    const mat = new THREE.ShaderMaterial({
+    const mat = new ShaderMaterial({
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: AdditiveBlending,
       uniforms,
       vertexShader: SPLASH_VERT,
       fragmentShader: SPLASH_FRAG,

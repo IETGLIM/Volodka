@@ -3,7 +3,7 @@
 'use client';
 
 import { useRef, useEffect, useMemo } from 'react';
-import * as THREE from 'three';
+import { Group, Mesh, MeshStandardMaterial } from 'three';
 import { getNpcEmissiveColor } from '@/engine/npc/npcEmissiveColor';
 
 /**
@@ -27,7 +27,7 @@ export function NpcEmissiveGlow({
   children: React.ReactNode;
   enabled?: boolean;
 }) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const emissiveColor = useMemo(
     () => getNpcEmissiveColor(npcId, glowColor),
     [npcId, glowColor],
@@ -38,11 +38,11 @@ export function NpcEmissiveGlow({
     const root = groupRef.current;
     if (!root) return;
     root.traverse((obj) => {
-      const mesh = obj as THREE.Mesh;
+      const mesh = obj as Mesh;
       if (!mesh.isMesh) return;
       const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
       for (const mat of materials) {
-        if (!(mat instanceof THREE.MeshStandardMaterial)) continue;
+        if (!(mat instanceof MeshStandardMaterial)) continue;
         mat.emissive.set(emissiveColor);
         mat.emissiveIntensity = Math.max(mat.emissiveIntensity, 0.45);
       }

@@ -2,7 +2,7 @@
  * Pure timeline playback — phase index, camera interpolation, actor sync.
  */
 
-import * as THREE from 'three';
+import { Euler, PerspectiveCamera, Vector3 } from 'three';
 import {
   applyHandoffCamera,
   easeInOutCubic,
@@ -23,13 +23,13 @@ import type {
 } from './cinematicTimelineTypes';
 import { getCinematicCameraPreset } from './cinematicCameraPresets';
 
-const _lookTarget = new THREE.Vector3();
-const _actorPos = new THREE.Vector3();
-const _actorRot = new THREE.Euler();
-const _zeroAnchor = new THREE.Vector3();
+const _lookTarget = new Vector3();
+const _actorPos = new Vector3();
+const _actorRot = new Euler();
+const _zeroAnchor = new Vector3();
 const _handoffFrom = {
-  position: new THREE.Vector3(),
-  lookAt: new THREE.Vector3(),
+  position: new Vector3(),
+  lookAt: new Vector3(),
   fov: 54,
 };
 
@@ -39,32 +39,32 @@ export interface CinematicTimelineState {
   phaseIndex: number;
   isPlaying: boolean;
   isComplete: boolean;
-  anchor: THREE.Vector3;
+  anchor: Vector3;
   npcId?: string;
   skipMotion: boolean;
-  prevCamera: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number };
+  prevCamera: { position: Vector3; lookAt: Vector3; fov: number };
   handoffCaptured: boolean;
   lastOverlayPhaseId: string | null;
 }
 
-function waypointFromData(data: CameraWaypointData, anchor: THREE.Vector3): WakeCameraWaypoint {
+function waypointFromData(data: CameraWaypointData, anchor: Vector3): WakeCameraWaypoint {
   return {
-    position: new THREE.Vector3(...data.position).add(anchor),
-    lookAt: new THREE.Vector3(...data.lookAt).add(anchor),
+    position: new Vector3(...data.position).add(anchor),
+    lookAt: new Vector3(...data.lookAt).add(anchor),
     fov: data.fov,
     duration: data.duration,
     controlPoint: data.controlPoint
-      ? new THREE.Vector3(...data.controlPoint).add(anchor)
+      ? new Vector3(...data.controlPoint).add(anchor)
       : undefined,
   };
 }
 
 function resolvePhaseCamera(
   phase: CinematicTimelinePhase,
-  anchor: THREE.Vector3,
-  prevEnd: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number },
+  anchor: Vector3,
+  prevEnd: { position: Vector3; lookAt: Vector3; fov: number },
 ): {
-  from: { position: THREE.Vector3; lookAt: THREE.Vector3; fov: number };
+  from: { position: Vector3; lookAt: Vector3; fov: number };
   to: WakeCameraWaypoint | null;
   handoffTarget: CameraWaypointData | null;
 } {
@@ -115,7 +115,7 @@ function resolvePhaseCamera(
 function sampleActorKeyframes(
   motion: Extract<CinematicActorMotion, { mode: 'in_place' }>,
   localT: number,
-  anchor: THREE.Vector3,
+  anchor: Vector3,
   out: CinematicTimelineActorFrame,
 ): void {
   const keys = motion.keyframes;
@@ -166,7 +166,7 @@ function sampleActorKeyframes(
 
 function applyActorKeyframe(
   key: CinematicActorKeyframe,
-  anchor: THREE.Vector3,
+  anchor: Vector3,
   out: CinematicTimelineActorFrame,
 ): void {
   out.position.set(
@@ -185,7 +185,7 @@ function applyActorKeyframe(
 function resolveActorFrame(
   motion: CinematicActorMotion,
   localT: number,
-  anchor: THREE.Vector3,
+  anchor: Vector3,
 ): CinematicTimelineActorFrame | null {
   switch (motion.mode) {
     case 'none':
@@ -194,14 +194,14 @@ function resolveActorFrame(
       return {
         clip: motion.clip,
         position: anchor.clone(),
-        rotation: new THREE.Euler(0, 0, 0),
+        rotation: new Euler(0, 0, 0),
         facingY: 0,
       };
     case 'in_place': {
       const frame: CinematicTimelineActorFrame = {
         clip: motion.clip,
-        position: new THREE.Vector3(),
-        rotation: new THREE.Euler(),
+        position: new Vector3(),
+        rotation: new Euler(),
         facingY: 0,
       };
       sampleActorKeyframes(motion, localT, anchor, frame);
@@ -218,7 +218,7 @@ export function createCinematicTimelineState(
   def: CinematicTimelineDef,
   options: CinematicTimelineRuntimeOptions = {},
 ): CinematicTimelineState {
-  const anchor = new THREE.Vector3(...(options.anchor ?? def.anchor?.position ?? [0, 0, 0]));
+  const anchor = new Vector3(...(options.anchor ?? def.anchor?.position ?? [0, 0, 0]));
   return {
     def,
     elapsed: 0,
@@ -229,8 +229,8 @@ export function createCinematicTimelineState(
     npcId: options.npcId ?? def.anchor?.npcId,
     skipMotion: options.skipMotion ?? false,
     prevCamera: {
-      position: new THREE.Vector3(),
-      lookAt: new THREE.Vector3(0, 1, 0),
+      position: new Vector3(),
+      lookAt: new Vector3(0, 1, 0),
       fov: 54,
     },
     handoffCaptured: false,
@@ -280,7 +280,7 @@ function findPhaseAtElapsed(
 export function updateCinematicTimelineState(
   state: CinematicTimelineState,
   delta: number,
-  cameraOut: THREE.PerspectiveCamera,
+  cameraOut: PerspectiveCamera,
 ): CinematicTimelineUpdateResult | null {
   if (!state.isPlaying || state.isComplete) return null;
 
@@ -388,7 +388,7 @@ export function updateCinematicTimelineState(
 
 export function setCinematicTimelineAnchor(
   state: CinematicTimelineState,
-  anchor: THREE.Vector3,
+  anchor: Vector3,
 ): void {
   state.anchor.copy(anchor);
 }

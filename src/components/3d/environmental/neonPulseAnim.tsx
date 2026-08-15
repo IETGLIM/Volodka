@@ -1,11 +1,11 @@
 import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Color, Mesh, MeshStandardMaterial } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 export function NeonPulseAnim({ anim }: { anim: EnvAnimation }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
+  const materialRef = useRef<MeshStandardMaterial>(null);
   const timeRef = useRef(0);
   const speed = anim.config.speed ?? 1.0;
   const minE = anim.config.minEmissive ?? 0.2;
@@ -15,7 +15,7 @@ export function NeonPulseAnim({ anim }: { anim: EnvAnimation }) {
   const colorB = anim.config.colorB ?? 1.0;
 
   const emissiveColor = useMemo(
-    () => new THREE.Color(colorR, colorG, colorB),
+    () => new Color(colorR, colorG, colorB),
     [colorR, colorG, colorB]
   );
 

@@ -4,7 +4,7 @@
  */
 
 import type { MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Camera, PerspectiveCamera, Vector3 } from 'three';
 import { getSceneConfig } from '@/config/scenes';
 import {
   createSpringCameraState,
@@ -100,7 +100,7 @@ export type CameraState =
   | { mode: 'exploration'; params: ExplorationParams }
   | { mode: 'dialogue'; speaker: DialogueSpeaker }
   | { mode: 'cutscene'; controller: CutsceneController; kind: 'story' | 'npc' }
-  | { mode: 'transition'; from: THREE.Vector3; to: THREE.Vector3 }
+  | { mode: 'transition'; from: Vector3; to: Vector3 }
   | { mode: 'cinematic_freeze'; startedAt: number; params: ExplorationParams }
   | { mode: 'intro_wake'; startedAt: number }
   | { mode: 'poem_reading'; startedAt: number };
@@ -143,12 +143,12 @@ export interface CameraRuntimeRefs {
   subsystems: CameraSubsystemsRefs;
   cameraState: MutableRefObject<CameraState>;
   time: MutableRefObject<number>;
-  livePlayerPosition: MutableRefObject<THREE.Vector3>;
+  livePlayerPosition: MutableRefObject<Vector3>;
   livePlayerRotation: MutableRefObject<number>;
-  camera: MutableRefObject<THREE.Camera>;
-  prevPlayerPos: MutableRefObject<THREE.Vector3>;
-  lookAheadOffset: MutableRefObject<THREE.Vector3>;
-  prevVelocitySmooth: MutableRefObject<THREE.Vector3>;
+  camera: MutableRefObject<Camera>;
+  prevPlayerPos: MutableRefObject<Vector3>;
+  lookAheadOffset: MutableRefObject<Vector3>;
+  prevVelocitySmooth: MutableRefObject<Vector3>;
   prevSceneId: MutableRefObject<SceneId>;
 }
 
@@ -165,7 +165,7 @@ export type CameraStateAction =
   | { type: 'cutscene_end'; kind: 'story' }
   | { type: 'npc_cutscene_start'; controller: CutsceneController }
   | { type: 'npc_cutscene_end' }
-  | { type: 'scene_transition_start'; from: THREE.Vector3; to: THREE.Vector3 }
+  | { type: 'scene_transition_start'; from: Vector3; to: Vector3 }
   | { type: 'scene_transition_complete' }
   | { type: 'cinematic_freeze_timeout' }
   | { type: 'exploration'; params: ExplorationParams };
@@ -235,7 +235,7 @@ export function dispatchCameraState(
 }
 
 export function computeExplorationCameraSnap(
-  playerPos: THREE.Vector3,
+  playerPos: Vector3,
   playerYaw: number,
   sceneId: SceneId,
   pitchOverride?: number,
@@ -244,16 +244,16 @@ export function computeExplorationCameraSnap(
   cameraYaw: number;
   pitch: number;
   distance: number;
-  position: THREE.Vector3;
-  lookAt: THREE.Vector3;
+  position: Vector3;
+  lookAt: Vector3;
   fov: number;
 } {
   if (FIRST_PERSON_ENABLED && !forceThirdPerson) {
     const pitch = pitchOverride ?? 0;
     const eyeY = playerPos.y + FIRST_PERSON_EYE_HEIGHT;
-    const position = new THREE.Vector3(playerPos.x, eyeY, playerPos.z);
+    const position = new Vector3(playerPos.x, eyeY, playerPos.z);
     const lookAt = position.clone().add(
-      new THREE.Vector3(
+      new Vector3(
         Math.sin(playerYaw) * Math.cos(pitch),
         Math.sin(pitch),
         Math.cos(playerYaw) * Math.cos(pitch),
@@ -265,12 +265,12 @@ export function computeExplorationCameraSnap(
   const pitch = pitchOverride ?? 0.3;
   const cameraYaw = playerYaw + Math.PI;
   const distance = getSceneDefaultDistance(sceneId);
-  const position = new THREE.Vector3(
+  const position = new Vector3(
     playerPos.x + Math.sin(cameraYaw) * Math.cos(pitch) * distance,
     playerPos.y + LOOK_HEIGHT + Math.sin(pitch) * distance,
     playerPos.z + Math.cos(cameraYaw) * Math.cos(pitch) * distance,
   );
-  const lookAt = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
+  const lookAt = new Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
   return {
     cameraYaw,
     pitch,
@@ -324,7 +324,7 @@ export function applyExplorationSnap(
 export function applyExplorationSnapToCamera(runtime: CameraRuntimeRefs, sceneId: SceneId): void {
   applyExplorationSnap(runtime, sceneId);
   const spring = runtime.subsystems.spring.current;
-  const cam = runtime.camera.current as THREE.PerspectiveCamera;
+  const cam = runtime.camera.current as PerspectiveCamera;
   if (spring && cam) {
     cam.position.copy(spring.position);
     cam.lookAt(spring.lookAt);
@@ -341,15 +341,15 @@ export function initializeCameraSubsystems(runtime: CameraRuntimeRefs, sceneId: 
   const initYaw = FIRST_PERSON_ENABLED ? playerYaw : (config.initialRotation ?? 0) + Math.PI;
   const initDist = FIRST_PERSON_ENABLED ? 0 : DEFAULT_DISTANCE;
   const initPos = FIRST_PERSON_ENABLED
-    ? new THREE.Vector3(spawn[0], spawn[1] + FIRST_PERSON_EYE_HEIGHT, spawn[2])
-    : new THREE.Vector3(
+    ? new Vector3(spawn[0], spawn[1] + FIRST_PERSON_EYE_HEIGHT, spawn[2])
+    : new Vector3(
         spawn[0] + Math.sin(initYaw) * Math.cos(initPitch) * initDist,
         spawn[1] + LOOK_HEIGHT + Math.sin(initPitch) * initDist,
         spawn[2] + Math.cos(initYaw) * Math.cos(initPitch) * initDist,
       );
   const initLook = FIRST_PERSON_ENABLED
-    ? initPos.clone().add(new THREE.Vector3(Math.sin(initYaw), Math.sin(initPitch), Math.cos(initYaw)))
-    : new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
+    ? initPos.clone().add(new Vector3(Math.sin(initYaw), Math.sin(initPitch), Math.cos(initYaw)))
+    : new Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
   const { orbit, subsystems } = runtime;
   orbit.yaw.current = initYaw;
@@ -368,7 +368,7 @@ export function initializeCameraSubsystems(runtime: CameraRuntimeRefs, sceneId: 
   orbit.currentSceneFov.current = FIRST_PERSON_ENABLED ? FIRST_PERSON_FOV : getSceneSpecificFov(sceneId);
   runtime.cameraState.current = { mode: 'exploration', params: { sceneId } };
 
-  const cam = runtime.camera.current as THREE.PerspectiveCamera;
+  const cam = runtime.camera.current as PerspectiveCamera;
   if (cam) {
     cam.position.copy(initPos);
     cam.lookAt(initLook);
@@ -451,15 +451,15 @@ export function resetCameraForSceneChange(
 
   if (subsystems.spring.current) {
     const newCamPos = FIRST_PERSON_ENABLED
-      ? new THREE.Vector3(spawn[0], spawn[1] + FIRST_PERSON_EYE_HEIGHT, spawn[2])
-      : new THREE.Vector3(
+      ? new Vector3(spawn[0], spawn[1] + FIRST_PERSON_EYE_HEIGHT, spawn[2])
+      : new Vector3(
           spawn[0] + Math.sin(cameraYaw) * Math.cos(initPitch) * sceneDist,
           spawn[1] + LOOK_HEIGHT + Math.sin(initPitch) * sceneDist,
           spawn[2] + Math.cos(cameraYaw) * Math.cos(initPitch) * sceneDist,
         );
     const newLookAt = FIRST_PERSON_ENABLED
-      ? newCamPos.clone().add(new THREE.Vector3(Math.sin(cameraYaw), Math.sin(initPitch), Math.cos(cameraYaw)))
-      : new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
+      ? newCamPos.clone().add(new Vector3(Math.sin(cameraYaw), Math.sin(initPitch), Math.cos(cameraYaw)))
+      : new Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
     subsystems.spring.current.position.copy(newCamPos);
     subsystems.spring.current.velocity.set(0, 0, 0);
     subsystems.spring.current.lookAt.copy(newLookAt);
@@ -496,12 +496,12 @@ export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneI
   const spawn = config.spawnPoint;
   const cameraYaw = (config.initialRotation ?? 0) + Math.PI;
   const sceneDist = getSceneDefaultDistance(sceneId);
-  const targetPos = new THREE.Vector3(
+  const targetPos = new Vector3(
     spawn[0] + Math.sin(cameraYaw) * Math.cos(0.3) * sceneDist,
     spawn[1] + LOOK_HEIGHT + Math.sin(0.3) * sceneDist,
     spawn[2] + Math.cos(cameraYaw) * Math.cos(0.3) * sceneDist,
   );
-  const targetLook = new THREE.Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
+  const targetLook = new Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
   // Hero spaces use staged timelines (actor + light cues + holds), not only camera waypoints.
   if (sceneId === 'street_night' && !isCinematicTimelineActive()) {
@@ -636,24 +636,24 @@ export function syncCutsceneFlagsFromState(runtime: CameraRuntimeRefs): void {
 
 export function buildCutsceneController(
   waypoints: CameraWaypointData[],
-  offset?: THREE.Vector3,
+  offset?: Vector3,
 ): CutsceneController | null {
   if (waypoints.length === 0) return null;
 
   const cameraWaypoints: CameraWaypoint[] = waypoints.map((wp, index) => ({
     position: offset
-      ? new THREE.Vector3(...wp.position).add(offset)
-      : new THREE.Vector3(...wp.position),
+      ? new Vector3(...wp.position).add(offset)
+      : new Vector3(...wp.position),
     lookAt: offset
-      ? new THREE.Vector3(...wp.lookAt).add(offset)
-      : new THREE.Vector3(...wp.lookAt),
+      ? new Vector3(...wp.lookAt).add(offset)
+      : new Vector3(...wp.lookAt),
     fov: wp.fov,
     // First beat must ease in from live camera — duration 0 teleports (anti-AAA snap).
     duration: wp.duration <= 0 ? (index === 0 ? 1.35 : 0.001) : wp.duration,
     controlPoint: wp.controlPoint
       ? offset
-        ? new THREE.Vector3(...wp.controlPoint).add(offset)
-        : new THREE.Vector3(...wp.controlPoint)
+        ? new Vector3(...wp.controlPoint).add(offset)
+        : new Vector3(...wp.controlPoint)
       : undefined,
   }));
 
@@ -738,12 +738,12 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
     const playerRotation = runtime.livePlayerRotation.current;
     const cameraYaw = playerRotation + Math.PI;
     const closePitch = 0.15;
-    const closePos = new THREE.Vector3(
+    const closePos = new Vector3(
       playerPos.x + Math.sin(cameraYaw) * Math.cos(closePitch) * INTRO_WAKE_START_DISTANCE,
       playerPos.y + LOOK_HEIGHT + Math.sin(closePitch) * INTRO_WAKE_START_DISTANCE + 0.3,
       playerPos.z + Math.cos(cameraYaw) * Math.cos(closePitch) * INTRO_WAKE_START_DISTANCE,
     );
-    const closeLook = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
+    const closeLook = new Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT, playerPos.z);
 
     if (subsystems.spring.current) {
       subsystems.spring.current.position.copy(closePos);
@@ -767,12 +767,12 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
     const playerRotation = runtime.livePlayerRotation.current;
     const cameraYaw = playerRotation + Math.PI;
     const closePitch = POEM_READING_START_PITCH;
-    const closePos = new THREE.Vector3(
+    const closePos = new Vector3(
       playerPos.x + Math.sin(cameraYaw) * Math.cos(closePitch) * POEM_READING_START_DISTANCE,
       playerPos.y + LOOK_HEIGHT + Math.sin(closePitch) * POEM_READING_START_DISTANCE + 0.2,
       playerPos.z + Math.cos(cameraYaw) * Math.cos(closePitch) * POEM_READING_START_DISTANCE,
     );
-    const closeLook = new THREE.Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT + 0.05, playerPos.z);
+    const closeLook = new Vector3(playerPos.x, playerPos.y + LOOK_HEIGHT + 0.05, playerPos.z);
 
     if (subsystems.spring.current) {
       subsystems.spring.current.position.copy(closePos);
@@ -839,7 +839,7 @@ export function subscribeCameraEventHub(options: CameraEventHubOptions): () => v
   unsubs.push(eventBus.on('camera:npc_cutscene_start', ({ waypoints, npcId }) => {
     if (isCinematicTimelineActive()) return;
     const npcGroup = npcId ? getNPCGroup(npcId) : undefined;
-    const npcPos = npcGroup ? npcGroup.position : new THREE.Vector3(0, 0, 0);
+    const npcPos = npcGroup ? npcGroup.position : new Vector3(0, 0, 0);
     const controller = buildCutsceneController(waypoints, npcPos);
     if (controller) {
       subsystems.npcCutscene.current = controller;

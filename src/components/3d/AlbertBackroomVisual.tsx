@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   getSharedBoxGeometry,
@@ -27,7 +27,7 @@ import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface AlbertBackroomVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const W = 8;
@@ -69,10 +69,10 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
   });
   const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
   const oilPuddle = useMemo(() => getWetPuddlePhysicalParams(0.4), []);
-  const rootRef = useRef<THREE.Group>(null);
-  const neonRef = useRef<THREE.Mesh>(null);
-  const lampRef = useRef<THREE.Mesh>(null);
-  const termRef = useRef<THREE.Mesh>(null);
+  const rootRef = useRef<Group>(null);
+  const neonRef = useRef<Mesh>(null);
+  const lampRef = useRef<Mesh>(null);
+  const termRef = useRef<Mesh>(null);
   const tRef = useRef(0);
   const damp = useMemo(() => getIndustrialDampFloorSettings('albert_backroom'), []);
   const floorRoughness = damp?.roughness ?? 0.8;
@@ -89,13 +89,13 @@ export function AlbertBackroomVisual(_props: AlbertBackroomVisualProps) {
       const neonPulse = 1.1 + Math.sin(tRef.current * 1.9) * 0.35;
       const lampPulse = 1.35 + Math.sin(tRef.current * 3.1) * 0.12;
       if (neonRef.current) {
-        (neonRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = neonPulse;
+        (neonRef.current.material as MeshStandardMaterial).emissiveIntensity = neonPulse;
       }
       if (lampRef.current) {
-        (lampRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = lampPulse;
+        (lampRef.current.material as MeshStandardMaterial).emissiveIntensity = lampPulse;
       }
       if (termRef.current) {
-        (termRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity =
+        (termRef.current.material as MeshStandardMaterial).emissiveIntensity =
           0.75 + Math.sin(tRef.current * 4.2) * 0.2;
       }
     },

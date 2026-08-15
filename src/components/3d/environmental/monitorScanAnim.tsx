@@ -1,11 +1,11 @@
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { CanvasTexture, Mesh, MeshStandardMaterial, RepeatWrapping } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 export function MonitorScanAnim({ anim }: { anim: EnvAnimation }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
+  const materialRef = useRef<MeshStandardMaterial>(null);
   const timeRef = useRef(0);
   const speed = anim.config.speed ?? 2;
   const intensity = anim.config.intensity ?? 0.3;
@@ -27,9 +27,9 @@ export function MonitorScanAnim({ anim }: { anim: EnvAnimation }) {
     // Bright scan bar
     ctx.fillStyle = 'rgba(0, 255, 68, 0.4)';
     ctx.fillRect(0, 0, 64, 8);
-    const tex = new THREE.CanvasTexture(canvas);
-    tex.wrapS = THREE.RepeatWrapping;
-    tex.wrapT = THREE.RepeatWrapping;
+    const tex = new CanvasTexture(canvas);
+    tex.wrapS = RepeatWrapping;
+    tex.wrapT = RepeatWrapping;
     tex.repeat.set(1, 2);
     return tex;
   }, []);

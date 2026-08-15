@@ -1,10 +1,10 @@
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { MeshStandardMaterial } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 export function CRTMonitorAnim({ anim }: { anim: EnvAnimation }) {
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const materialRef = useRef<MeshStandardMaterial>(null);
   const timeRef = useRef(0);
 
   const baseIntensity = anim.config.baseIntensity ?? 4.0;

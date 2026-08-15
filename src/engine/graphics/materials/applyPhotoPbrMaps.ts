@@ -3,24 +3,24 @@
  * Multi-role: floor / wall / ceiling get different material IDs (not one mono wrap).
  */
 
-import * as THREE from 'three';
+import { Box3, Mesh, MeshStandardMaterial, Object3D, RepeatWrapping, Texture, Vector2, Vector3 } from 'three';
 import type { PolyHavenMaterialId } from '@/config/polyhavenAssets';
 import type { EnvironmentMaterialMood } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 
 export type ShellSurfaceRole = 'floor' | 'wall' | 'ceiling';
 
 export interface PhotoPbrMaps {
-  map: THREE.Texture;
-  normalMap: THREE.Texture;
-  roughnessMap: THREE.Texture;
-  aoMap?: THREE.Texture | null;
+  map: Texture;
+  normalMap: Texture;
+  roughnessMap: Texture;
+  aoMap?: Texture | null;
   repeat: number;
 }
 
 export type PhotoPbrMapSet = Record<ShellSurfaceRole, PhotoPbrMaps>;
 
-const _box = new THREE.Box3();
-const _size = new THREE.Vector3();
+const _box = new Box3();
+const _size = new Vector3();
 
 /** Primary wall/facade id by scene mood (floors/ceilings override separately). */
 export function polyHavenIdForEnvironmentMood(mood: EnvironmentMaterialMood): PolyHavenMaterialId {
@@ -74,7 +74,7 @@ export function polyHavenIdsForMood(mood: EnvironmentMaterialMood): Record<Shell
   }
 }
 
-export function classifyShellSurfaceRole(mesh: THREE.Mesh): ShellSurfaceRole {
+export function classifyShellSurfaceRole(mesh: Mesh): ShellSurfaceRole {
   const name = `${mesh.name} ${mesh.parent?.name ?? ''}`.toLowerCase();
   if (/ceil|roof|overhead/.test(name)) return 'ceiling';
   if (/floor|ground|road|deck|pavement|asphalt/.test(name)) return 'floor';
@@ -91,7 +91,7 @@ export function classifyShellSurfaceRole(mesh: THREE.Mesh): ShellSurfaceRole {
   return 'wall';
 }
 
-function isLargeSurface(mesh: THREE.Mesh): boolean {
+function isLargeSurface(mesh: Mesh): boolean {
   mesh.geometry.computeBoundingBox();
   const bb = mesh.geometry.boundingBox ?? _box;
   bb.getSize(_size);
@@ -101,21 +101,21 @@ function isLargeSurface(mesh: THREE.Mesh): boolean {
   return /floor|wall|ceil|ground|shell|plaster|concrete|road|facade/.test(name);
 }
 
-function tileMap(src: THREE.Texture, repeat: number): THREE.Texture {
+function tileMap(src: Texture, repeat: number): Texture {
   const t = src.clone();
-  t.wrapS = THREE.RepeatWrapping;
-  t.wrapT = THREE.RepeatWrapping;
+  t.wrapS = RepeatWrapping;
+  t.wrapT = RepeatWrapping;
   t.repeat.set(repeat, repeat);
   t.anisotropy = Math.max(t.anisotropy, 8);
   t.needsUpdate = true;
   return t;
 }
 
-function applyMapsToMaterial(std: THREE.MeshStandardMaterial, maps: PhotoPbrMaps, repeatScale: number): void {
+function applyMapsToMaterial(std: MeshStandardMaterial, maps: PhotoPbrMaps, repeatScale: number): void {
   const repeat = maps.repeat * repeatScale;
   std.map = tileMap(maps.map, repeat);
   std.normalMap = tileMap(maps.normalMap, repeat);
-  std.normalScale = new THREE.Vector2(0.65, 0.65);
+  std.normalScale = new Vector2(0.65, 0.65);
   std.roughnessMap = tileMap(maps.roughnessMap, repeat);
   if (maps.aoMap) {
     std.aoMap = tileMap(maps.aoMap, repeat);
@@ -131,7 +131,7 @@ function applyMapsToMaterial(std: THREE.MeshStandardMaterial, maps: PhotoPbrMaps
 
 /** @deprecated Prefer applyPhotoPbrMapSetToRoot for multi-role shells. */
 export function applyPhotoPbrMapsToRoot(
-  root: THREE.Object3D,
+  root: Object3D,
   maps: PhotoPbrMaps,
   repeatScale = 1,
 ): void {
@@ -140,13 +140,13 @@ export function applyPhotoPbrMapsToRoot(
 
 /** Per-role Poly Haven maps on large shell surfaces. */
 export function applyPhotoPbrMapSetToRoot(
-  root: THREE.Object3D,
+  root: Object3D,
   mapSet: PhotoPbrMapSet,
   repeatScale = 1,
 ): void {
   root.traverse((node) => {
-    if (!(node as THREE.Mesh).isMesh) return;
-    const mesh = node as THREE.Mesh;
+    if (!(node as Mesh).isMesh) return;
+    const mesh = node as Mesh;
     if (!isLargeSurface(mesh)) return;
 
     const role = classifyShellSurfaceRole(mesh);
@@ -159,7 +159,7 @@ export function applyPhotoPbrMapSetToRoot(
     const sourceMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     const nextMats = sourceMats.map((material) => {
       if (!material || !('envMapIntensity' in material)) return material;
-      applyMapsToMaterial(material as THREE.MeshStandardMaterial, maps, roleRepeat);
+      applyMapsToMaterial(material as MeshStandardMaterial, maps, roleRepeat);
       return material;
     });
     mesh.material = nextMats.length === 1 ? nextMats[0]! : nextMats;

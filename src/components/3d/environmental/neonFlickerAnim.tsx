@@ -1,12 +1,12 @@
 import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Color, Mesh, MeshStandardMaterial, PointLight } from 'three';
 import type { EnvAnimation } from '@/engine/EnvironmentalAnimations';
 
 export function NeonFlickerAnim({ anim }: { anim: EnvAnimation }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const lightRef = useRef<THREE.PointLight>(null);
-  const materialRef = useRef<THREE.MeshStandardMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
+  const lightRef = useRef<PointLight>(null);
+  const materialRef = useRef<MeshStandardMaterial>(null);
   const timeRef = useRef(0);
   const isOnRef = useRef(true);
   const nextToggleRef = useRef(0);
@@ -20,7 +20,7 @@ export function NeonFlickerAnim({ anim }: { anim: EnvAnimation }) {
   const offEmissive = anim.config.offEmissive ?? 0.05;
 
   const emissiveColor = useMemo(
-    () => new THREE.Color(colorR, colorG, colorB),
+    () => new Color(colorR, colorG, colorB),
     [colorR, colorG, colorB],
   );
 

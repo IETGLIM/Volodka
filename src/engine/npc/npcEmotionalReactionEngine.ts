@@ -9,7 +9,7 @@
  * manages EventBus subscriptions.
  */
 
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { getNPCGroup, getRegisteredNPCIds } from '@/engine/interaction/npcRegistry';
 import { getInteractionState } from '@/engine/interaction/interactionSession';
@@ -114,7 +114,7 @@ export function unsubscribeNpcEmotionEvents(): void {
  */
 export function triggerNearbyNpcEmotion(
   triggerSource: string,
-  playerPosition?: THREE.Vector3,
+  playerPosition?: Vector3,
 ): void {
   const trigger = resolveEmotionTrigger(triggerSource);
   if (!trigger) return;
@@ -155,7 +155,7 @@ export function triggerNearbyNpcEmotion(
  */
 export function clearNearbyNpcEmotion(
   _source: string,
-  playerPosition?: THREE.Vector3,
+  playerPosition?: Vector3,
 ): void {
   // _source is accepted for API symmetry with triggerNearbyNpcEmotion but is
   // not used — clearNpcEmotion(npcId) clears the NPC's emotion regardless of
@@ -189,7 +189,7 @@ export function clearNearbyNpcEmotion(
  */
 export function triggerOutfitPerceptionEmotions(
   perceptionTags: SocialPerceptionTag[],
-  playerPosition: THREE.Vector3,
+  playerPosition: Vector3,
 ): void {
   if (perceptionTags.length === 0) return;
 
@@ -234,7 +234,7 @@ export function triggerOutfitPerceptionEmotions(
  * is nearby, unless they already have a stronger emotion active.
  */
 export function tickNpcProximityEmotions(
-  playerPosition: THREE.Vector3,
+  playerPosition: Vector3,
   now: number,
 ): void {
   // Skip during active interaction

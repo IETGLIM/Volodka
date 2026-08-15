@@ -4,7 +4,7 @@
  */
 
 import { useMemo, useRef, type MutableRefObject } from 'react';
-import * as THREE from 'three';
+import { Group, Mesh, MeshStandardMaterial, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   getSharedBoxGeometry,
@@ -28,7 +28,7 @@ import { getInteriorShellScale, isWalkableInteriorShellAllowed } from '@/config/
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 
 interface LibraryBasementVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 const W = 14;
@@ -74,8 +74,8 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
   });
   const crtGlass = useMemo(() => getWetGlassPhysicalParams('crtTerminalGlass'), []);
   const oilPuddle = useMemo(() => getWetPuddlePhysicalParams(0.48), []);
-  const rootRef = useRef<THREE.Group>(null);
-  const screenRef = useRef<THREE.Mesh>(null);
+  const rootRef = useRef<Group>(null);
+  const screenRef = useRef<Mesh>(null);
   const tRef = useRef(0);
   const damp = useMemo(() => getIndustrialDampFloorSettings('library_basement'), []);
   const rainIntensity = useGameStore((s) => s.rainIntensity);
@@ -109,7 +109,7 @@ export function LibraryBasementVisual(_props: LibraryBasementVisualProps) {
       tRef.current += delta;
       const pulse = 1.15 + Math.sin(tRef.current * 2.4) * 0.25 + Math.sin(tRef.current * 11) * 0.06;
       if (screenRef.current) {
-        (screenRef.current.material as THREE.MeshStandardMaterial).emissiveIntensity = pulse;
+        (screenRef.current.material as MeshStandardMaterial).emissiveIntensity = pulse;
       }
     },
     { visibilityRef: rootRef },

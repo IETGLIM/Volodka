@@ -3,7 +3,7 @@
 
 import { Suspense, useMemo, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { CanvasTexture, DoubleSide, Mesh, Object3D, RepeatWrapping, Vector3 } from 'three';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { seededRand } from '@/shared/utils/seededRand';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
@@ -31,7 +31,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 
 interface OfficeDayVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
 }
 
 /** Sterile corporate IT office (14×12m) — CyberPunk2077/Bank aesthetic */
@@ -134,11 +134,11 @@ const OFFICE_FULL_DESK_POSITIONS: readonly [number, number, number][] = [
   [4.5, 0, 1.5],
 ];
 
-function cloneOfficeAsset(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
+function cloneOfficeAsset(source: Object3D, castShadow: boolean): Object3D {
   const clone = source.clone(true);
   clone.traverse((node) => {
-    if ((node as THREE.Mesh).isMesh) {
-      const mesh = node as THREE.Mesh;
+    if ((node as Mesh).isMesh) {
+      const mesh = node as Mesh;
       mesh.castShadow = castShadow;
       mesh.receiveShadow = true;
     }
@@ -469,7 +469,7 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
         );
         const colors = ['#ffdd44', '#ff8888', '#88ddff', '#88ff88'];
         return [[-3.5, 1.2, -3.5], [-1.5, 1.15, -1.0], [1.5, 1.18, 1.5], [4.5, 1.22, -3.5]].map((pos, i) => (
-          <mesh key={`postit-${i}`} position={pos as [number, number, number]} rotation={rotations[i]} material={mat(colors[i], { roughness: 0.9, side: THREE.DoubleSide })}>
+          <mesh key={`postit-${i}`} position={pos as [number, number, number]} rotation={rotations[i]} material={mat(colors[i], { roughness: 0.9, side: DoubleSide })}>
             <planeGeometry args={[0.05, 0.05]} /></mesh>
         ));
       }, [])}
@@ -648,7 +648,7 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
         { pos: [3.0, 1.1, -2.2] as [number, number, number], color: '#88ddff', rot: -0.1 },
         { pos: [3.0, 0.95, -2.3] as [number, number, number], color: '#ffdd44', rot: 0.08 },
       ].map((note, i) => (
-        <mesh key={`extra-postit-${i}`} position={note.pos} rotation={[0, 0, note.rot]} material={mat(note.color, { roughness: 0.9, side: THREE.DoubleSide })}>
+        <mesh key={`extra-postit-${i}`} position={note.pos} rotation={[0, 0, note.rot]} material={mat(note.color, { roughness: 0.9, side: DoubleSide })}>
           <planeGeometry args={[0.06, 0.06]} /></mesh>
       ))
         : null}
@@ -798,7 +798,7 @@ function DyingPlant({ position }: { position: [number, number, number] }) {
   );
 }
 
-function createOfficeFloorTexture(): THREE.CanvasTexture {
+function createOfficeFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -833,14 +833,14 @@ function createOfficeFloorTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(7, 6);
   return tex;
 }
 
-function createOfficeWallTexture(): THREE.CanvasTexture {
+function createOfficeWallTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -861,9 +861,9 @@ function createOfficeWallTexture(): THREE.CanvasTexture {
     ctx.stroke();
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(4, 2);
   return tex;
 }

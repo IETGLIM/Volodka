@@ -11,7 +11,7 @@ import {
   createContactShadowTexture,
 } from '@/engine/three/contactShadowTexture';
 import { useRegisterNpcFrame } from '@/engine/npc/npcFrameBatch';
-import * as THREE from 'three';
+import { Group, Vector3 } from 'three';
 import type { NPCDefinition, NPCAppearance } from '@/shared/types/game';
 
 import { useCurrentSceneId } from '@/store/selectors';
@@ -78,7 +78,7 @@ const DEFAULT_APPEARANCE: NPCAppearance = {
 interface NPCProps {
   definition: NPCDefinition;
   /** Live player position for LOD and proximity checks */
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   /** Schedule-driven position */
   position: [number, number, number];
   /** Schedule-driven rotation */
@@ -108,10 +108,10 @@ export function NPC({
   patrolWaypoints,
   renderTier = 'interactive',
 }: NPCProps) {
-  const groupRef = useRef<THREE.Group>(null);
-  const impostorRef = useRef<THREE.Group>(null);
-  const fullDetailRef = useRef<THREE.Group>(null);
-  const questMarkerRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
+  const impostorRef = useRef<Group>(null);
+  const fullDetailRef = useRef<Group>(null);
+  const questMarkerRef = useRef<Group>(null);
   const lodLevelRef = useRef<NpcLodLevel>('impostor');
   /** Keep impostor mounted briefly when promoting to full — soft mobile LOD handoff. */
   const impostorHoldUntilMsRef = useRef(0);
@@ -343,7 +343,7 @@ function NPCModelWithErrorBoundary({
   activity: string;
   patrolActivity?: 'idle' | 'walk';
   lodVisible: boolean;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }) {
   const appearance = definition.appearance ?? DEFAULT_APPEARANCE;
   const { preset } = useGraphicsQuality();
@@ -403,7 +403,7 @@ function NpcGlbProceduralCrossfade({
   activity: string;
   patrolActivity?: 'idle' | 'walk';
   lodVisible: boolean;
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
   gltfUrl: string;
   enableCrossfade: boolean;
 }) {

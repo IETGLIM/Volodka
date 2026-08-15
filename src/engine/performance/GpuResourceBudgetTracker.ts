@@ -10,7 +10,7 @@ import {
   estimateMaterialBytes,
   estimateSceneGeometryBytesFromTriangles,
 } from '@/engine/three/gpuMemoryEstimate';
-import * as THREE from 'three';
+import { BufferGeometry, Material } from 'three';
 
 export type GpuDriftSeverity = 'ok' | 'warn' | 'fail';
 
@@ -43,8 +43,8 @@ export interface GpuRendererSnapshot {
   triangleCount: number;
 }
 
-const trackedGeometries = new Map<THREE.BufferGeometry, number>();
-const trackedMaterials = new Map<THREE.Material, number>();
+const trackedGeometries = new Map<BufferGeometry, number>();
+const trackedMaterials = new Map<Material, number>();
 
 let rendererSnapshot: GpuRendererSnapshot = {
   geometryCount: 0,
@@ -182,21 +182,21 @@ function buildSnapshot(now: number): GpuResourceBudgetSnapshot {
   };
 }
 
-export function trackModuleGeometry(geometry: THREE.BufferGeometry): void {
+export function trackModuleGeometry(geometry: BufferGeometry): void {
   if (trackedGeometries.has(geometry)) return;
   trackedGeometries.set(geometry, estimateBufferGeometryBytes(geometry));
 }
 
-export function untrackModuleGeometry(geometry: THREE.BufferGeometry): void {
+export function untrackModuleGeometry(geometry: BufferGeometry): void {
   trackedGeometries.delete(geometry);
 }
 
-export function trackModuleMaterial(material: THREE.Material): void {
+export function trackModuleMaterial(material: Material): void {
   if (trackedMaterials.has(material)) return;
   trackedMaterials.set(material, estimateMaterialBytes(material));
 }
 
-export function untrackModuleMaterial(material: THREE.Material): void {
+export function untrackModuleMaterial(material: Material): void {
   trackedMaterials.delete(material);
 }
 

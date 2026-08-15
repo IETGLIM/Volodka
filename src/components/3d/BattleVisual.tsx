@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Combat Arena procedural 3D visual ─── */
 
 import { useEffect, useRef } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, CanvasTexture, DoubleSide, MeshBasicMaterial, RepeatWrapping, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -18,7 +18,7 @@ import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 
 interface BattleVisualProps {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
 }
 
 /** CyberPunk2077/MatrixRain combat arena (12×12m) */
@@ -123,7 +123,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         {/* Chain link panels */}
         {[-3.75, -1.25, 1.25, 3.75].map((x, i) => (
           <mesh key={`cl-${i}`} position={[x, 1.5, 0]} geometry={getSharedPlaneGeometry(2.5, 3)}>
-            <meshStandardMaterial color="#3a3a3a" transparent opacity={0.3} side={THREE.DoubleSide} wireframe polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+            <meshStandardMaterial color="#3a3a3a" transparent opacity={0.3} side={DoubleSide} wireframe polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
           </mesh>
         ))}
       </group>
@@ -181,7 +181,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
         </mesh>
         {/* Glass shards */}
         <mesh position={[0.1, 0.2, 0.04]} rotation={[0.5, 0.3, 0]} geometry={getSharedPlaneGeometry(0.08, 0.12)}>
-          <meshStandardMaterial color="#6080a0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshStandardMaterial color="#6080a0" transparent opacity={0.4} metalness={0.2} roughness={0.1} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       </group>
 
@@ -195,7 +195,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
       {/* ── Scattered papers ── */}
       {[[-1, 0.02, 1], [1.5, 0.02, -2], [-2, 0.02, -1]].map((pos, i) => (
         <mesh key={`paper-${i}`} rotation={[-Math.PI / 2, 0, 0.3 + i * 0.5]} position={pos as [number, number, number]} geometry={getSharedPlaneGeometry(0.15, 0.1)}>
-          <meshStandardMaterial color="#e8e4dc" roughness={0.95} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+          <meshStandardMaterial color="#e8e4dc" roughness={0.95} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
         </mesh>
       ))}
 
@@ -224,7 +224,7 @@ export function BattleVisual({ livePlayerPositionRef: _livePlayerPositionRef }: 
  *  Slow breathing pulse during the fight; bright flash decay on combat hits. */
 function ArenaReactiveGrid({ size }: { size: number }) {
   const gridTexture = useCachedCanvasTexture('battle:grid', createArenaGridTexture);
-  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const materialRef = useRef<MeshBasicMaterial>(null);
   const timeRef = useRef(0);
   const flashRef = useRef(0);
 
@@ -258,7 +258,7 @@ function ArenaReactiveGrid({ size }: { size: number }) {
         color="#22ddff"
         transparent
         opacity={0.3}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
         depthWrite={false}
         polygonOffset
         polygonOffsetFactor={-1}
@@ -282,7 +282,7 @@ function WreckedCar({ position, rotation }: { position: [number, number, number]
       </mesh>
       {/* Shattered windshield */}
       <mesh position={[0.42, 0.92, 0]} rotation={[0, 0, -0.5]} geometry={getSharedPlaneGeometry(0.5, 1.0)}>
-        <meshStandardMaterial color="#6080a0" transparent opacity={0.35} metalness={0.2} roughness={0.15} side={THREE.DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
+        <meshStandardMaterial color="#6080a0" transparent opacity={0.35} metalness={0.2} roughness={0.15} side={DoubleSide} polygonOffset polygonOffsetFactor={1} polygonOffsetUnits={1} />
       </mesh>
       {/* Wheels (one missing — on blocks) */}
       {[
@@ -306,7 +306,7 @@ function WreckedCar({ position, rotation }: { position: [number, number, number]
   );
 }
 
-function createArenaGridTexture(): THREE.CanvasTexture {
+function createArenaGridTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -326,9 +326,9 @@ function createArenaGridTexture(): THREE.CanvasTexture {
     ctx.lineTo(i, size);
     ctx.stroke();
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(3, 3);
   return tex;
 }
@@ -364,7 +364,7 @@ function HolographicDisplay({ position, color }: { position: [number, number, nu
           emissiveIntensity={0.5}
           transparent
           opacity={0.6}
-          side={THREE.DoubleSide}
+          side={DoubleSide}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -400,7 +400,7 @@ function SpotlightTower({ position, lightColor }: { position: [number, number, n
   );
 }
 
-function createArenaFloorTexture(): THREE.CanvasTexture {
+function createArenaFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -446,9 +446,9 @@ function createArenaFloorTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(3, 3);
   return tex;
 }

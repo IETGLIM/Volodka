@@ -6,7 +6,7 @@
  */
 
 import { useRef, useMemo, useEffect } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, DoubleSide, Mesh, MeshBasicMaterial, TorusGeometry } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 
 interface NpcProximityRingProps {
@@ -33,11 +33,11 @@ export function NpcProximityRing({
   relationColor,
   radius = 0.55,
 }: NpcProximityRingProps) {
-  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const materialRef = useRef<MeshBasicMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
 
   const ringGeometry = useMemo(
-    () => new THREE.TorusGeometry(radius, RING_TUBE_RADIUS, 8, RING_SEGMENTS),
+    () => new TorusGeometry(radius, RING_TUBE_RADIUS, 8, RING_SEGMENTS),
     [radius],
   );
 
@@ -83,8 +83,8 @@ export function NpcProximityRing({
         transparent
         opacity={0}
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        side={THREE.DoubleSide}
+        blending={AdditiveBlending}
+        side={DoubleSide}
       />
     </mesh>
   );

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Object3D } from 'three';
 import { armMeshHasFingerDetail } from '@/components/3d/fpsFingerEnhancement';
 import { measureGltfBounds } from '@/engine/assets/gltfScale';
 
@@ -15,7 +15,7 @@ export interface FpsArmsPresentation {
   fingerScale: number;
 }
 
-export function rigHasTorsoBones(scene: THREE.Object3D): boolean {
+export function rigHasTorsoBones(scene: Object3D): boolean {
   let found = false;
   scene.traverse((obj) => {
     const n = obj.name.toLowerCase();
@@ -28,7 +28,7 @@ export function rigHasTorsoBones(scene: THREE.Object3D): boolean {
  * Classify shipped fps_arms.glb (Khronos Soldier interim) vs real meter-scale arm rigs.
  * Legacy rigs need 0.012 on the GLB; meter rigs already include Character scale 0.01.
  */
-export function resolveFpsArmsPresentation(scene: THREE.Object3D): FpsArmsPresentation {
+export function resolveFpsArmsPresentation(scene: Object3D): FpsArmsPresentation {
   scene.updateWorldMatrix(true, true);
   const bounds = measureGltfBounds(scene);
   const maxExtent = Math.max(bounds.size.x, bounds.size.y, bounds.size.z);

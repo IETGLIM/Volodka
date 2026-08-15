@@ -8,7 +8,7 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { DoubleSide, Mesh, MeshBasicMaterial, PlaneGeometry } from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { getFogPlaneCount } from '@/shared/utils/mobileParticleScale';
 
@@ -398,13 +398,13 @@ export function VolumetricFog({ config: userConfig, sceneId }: VolumetricFogProp
 /* ── Single fog plane with animation ── */
 
 function FogPlane({ data, config }: { data: FogPlaneData; config: VolumetricFogConfig }) {
-  const meshRef = useRef<THREE.Mesh>(null);
-  const materialRef = useRef<THREE.MeshBasicMaterial>(null);
+  const meshRef = useRef<Mesh>(null);
+  const materialRef = useRef<MeshBasicMaterial>(null);
   const timeRef = useRef(0);
 
   // Shared geometry — all planes use the same shape
   const geometry = useMemo(
-    () => new THREE.PlaneGeometry(config.planeWidth, config.height),
+    () => new PlaneGeometry(config.planeWidth, config.height),
     [config.planeWidth, config.height],
   );
 
@@ -453,7 +453,7 @@ function FogPlane({ data, config }: { data: FogPlaneData; config: VolumetricFogC
         transparent
         opacity={baseOpacity}
         depthWrite={false}
-        side={THREE.DoubleSide}
+        side={DoubleSide}
       />
     </mesh>
   );

@@ -1,17 +1,17 @@
-import * as THREE from 'three';
+import { Texture } from 'three';
 
 interface TextureEntry {
-  texture: THREE.Texture;
+  texture: Texture;
   refs: number;
 }
 
-/** Ref-counted GPU texture reuse — complements THREE.Cache (loader) and canvas texture cache. */
+/** Ref-counted GPU texture reuse — complements Cache (loader) and canvas texture cache. */
 const textureReuseMap = new Map<string, TextureEntry>();
 
 export function acquireSharedTexture(
   key: string,
-  factory: () => THREE.Texture,
-): THREE.Texture {
+  factory: () => Texture,
+): Texture {
   const existing = textureReuseMap.get(key);
   if (existing) {
     existing.refs += 1;

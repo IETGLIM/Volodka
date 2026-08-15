@@ -7,7 +7,7 @@
 
 import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, CircleGeometry, Color, DoubleSide, InstancedMesh, MeshBasicMaterial, Object3D } from 'three';
 import { useIsMobileVisual, useMobileVisualPerf } from '@/hooks/use-mobile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { getParticleCount } from '@/shared/utils/mobileParticleScale';
@@ -94,22 +94,22 @@ export function NeonRainReflections({ sceneId }: { sceneId: string }) {
 }
 
 function NeonReflectionSystem({ config }: { config: NeonReflectionConfig }) {
-  const meshRef = useRef<THREE.InstancedMesh>(null);
+  const meshRef = useRef<InstancedMesh>(null);
   const timeRef = useRef(0);
-  const dummy = useMemo(() => new THREE.Object3D(), []);
+  const dummy = useMemo(() => new Object3D(), []);
   const colorArray = useMemo(() => new Float32Array(config.count * 3), [config.count]);
 
   // Base geometry — flat disc for each reflection
-  const geometry = useMemo(() => new THREE.CircleGeometry(1, 8), []);
+  const geometry = useMemo(() => new CircleGeometry(1, 8), []);
 
   // Material with vertex colors for per-instance neon colors
   const material = useMemo(() => {
-    const mat = new THREE.MeshBasicMaterial({
+    const mat = new MeshBasicMaterial({
       transparent: true,
       opacity: 0.12,
       depthWrite: false,
-      side: THREE.DoubleSide,
-      blending: THREE.AdditiveBlending,
+      side: DoubleSide,
+      blending: AdditiveBlending,
       vertexColors: false,
     });
     return mat;
@@ -137,10 +137,10 @@ function NeonReflectionSystem({ config }: { config: NeonReflectionConfig }) {
     return { phases, radiusJitter, angleJitter };
   }, [config.count]);
 
-  // Pre-compute pool base colors as raw RGB to avoid per-frame `new THREE.Color()`
+  // Pre-compute pool base colors as raw RGB to avoid per-frame `new Color()`
   // allocations (80 instances × 60fps = 4800 Color objects/sec → GC pressure).
   const poolRgb = useMemo(
-    () => config.pools.map((p) => new THREE.Color(p.color)),
+    () => config.pools.map((p) => new Color(p.color)),
     [config.pools],
   );
 

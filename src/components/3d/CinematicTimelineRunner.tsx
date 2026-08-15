@@ -5,7 +5,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useThree } from '@react-three/fiber';
-import * as THREE from 'three';
+import { Group, PerspectiveCamera } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -69,10 +69,10 @@ export function CinematicTimelineRunner() {
   const audioCuePhaseRef = useRef<string | null>(null);
   const lightCuePhaseRef = useRef<string | null>(null);
   const lastReportedPhaseRef = useRef<string | null>(null);
-  const playerGroupRef = useRef<THREE.Group>(null);
+  const playerGroupRef = useRef<Group>(null);
   const currentAnimRef = useRef('idle');
   const modelRotationRef = useRef(0);
-  const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
+  const camera = useThree((s) => s.camera) as PerspectiveCamera;
 
   const clearFallback = (): void => {
     if (fallbackTimerRef.current) {

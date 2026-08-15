@@ -13,7 +13,7 @@
  *  when dialogue exits.
  */
 
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import { isEffectiveReducedMotion } from '@/engine/accessibility/accessibilitySettings';
 
 const DRIFT_RADIUS_M = 0.1;
@@ -28,9 +28,9 @@ let _driftTime = 0;
 let _lastNodeId: string | null = null;
 let _choicePushStartTime = -Infinity;
 
-const _scratchForward = new THREE.Vector3();
-const _scratchRight = new THREE.Vector3();
-const _scratchUp = new THREE.Vector3(0, 1, 0);
+const _scratchForward = new Vector3();
+const _scratchRight = new Vector3();
+const _scratchUp = new Vector3(0, 1, 0);
 
 /** Reset drift state — call when dialogue exits or scene changes. */
 export function resetDialogueCameraDrift(): void {
@@ -62,10 +62,10 @@ export function isDialogueCameraDriftActive(): boolean {
 export function applyDialogueCameraDrift(
   delta: number,
   currentNodeId: string | undefined,
-  basePos: THREE.Vector3,
-  baseLook: THREE.Vector3,
+  basePos: Vector3,
+  baseLook: Vector3,
   baseFov: number,
-  outPos: THREE.Vector3,
+  outPos: Vector3,
   outFov: { value: number },
 ): void {
   if (isEffectiveReducedMotion()) {

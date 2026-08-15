@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – procedural enemy silhouettes for patrolling creeps ─── */
 
 import { useEffect, useId, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { Group, MeshPhysicalMaterial } from 'three';
 import type { EnemyType } from '@/shared/types/game';
 import {
   getEnemyVisualArchetype,
@@ -16,11 +16,11 @@ export interface CreepBodyProps {
   enemyType: EnemyType;
   color: string;
   animStateRef: React.MutableRefObject<CreepBodyAnimState>;
-  bodyMatRef: React.MutableRefObject<THREE.MeshPhysicalMaterial | null>;
+  bodyMatRef: React.MutableRefObject<MeshPhysicalMaterial | null>;
 }
 
 function useCreepBodyAnimation(
-  groupRef: React.RefObject<THREE.Group | null>,
+  groupRef: React.RefObject<Group | null>,
   animStateRef: React.MutableRefObject<CreepBodyAnimState>,
 ) {
   const tickOwner = useId();
@@ -34,10 +34,10 @@ function useCreepBodyAnimation(
     const body = groupRef.current;
     const anim = animStateRef.current;
 
-    const torso = body.getObjectByName('creepTorso') as THREE.Group | null;
-    const leftLeg = body.getObjectByName('creepLeftLeg') as THREE.Group | null;
-    const rightLeg = body.getObjectByName('creepRightLeg') as THREE.Group | null;
-    const ring = body.getObjectByName('creepRing') as THREE.Group | null;
+    const torso = body.getObjectByName('creepTorso') as Group | null;
+    const leftLeg = body.getObjectByName('creepLeftLeg') as Group | null;
+    const rightLeg = body.getObjectByName('creepRightLeg') as Group | null;
+    const ring = body.getObjectByName('creepRing') as Group | null;
 
     if (anim === 'walk') {
       const speed = 9;
@@ -64,7 +64,7 @@ function EtherealCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: C
   // WS16-A: MeshPhysicalMaterial with subtle spectral sheen — pearlescent energy body, not flat plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshPhysicalMaterial({
+      new MeshPhysicalMaterial({
         color: '#0a0a12',
         emissive: color,
         emissiveIntensity: 1.6,
@@ -105,7 +105,7 @@ function GolemCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cree
   // WS16-A: MeshPhysicalMaterial with earthy organic sheen — stone/golem body reads as weathered rock, not plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshPhysicalMaterial({
+      new MeshPhysicalMaterial({
         color: '#14141c',
         emissive: color,
         emissiveIntensity: 1.4,
@@ -158,7 +158,7 @@ function AgentCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cree
   // WS16-A: MeshPhysicalMaterial with subtle fabric-like sheen — synthetic agent body reads as layered cloth, not flat plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshPhysicalMaterial({
+      new MeshPhysicalMaterial({
         color: '#0c0c14',
         emissive: color,
         emissiveIntensity: 1.5,
@@ -211,7 +211,7 @@ function CensorCreepBody({ color, bodyMatRef }: { color: string; bodyMatRef: Cre
   // WS16-A: MeshPhysicalMaterial with subtle energy pearlescence — censor body reads as flowing energy, not plastic.
   const mat = useMemo(
     () =>
-      new THREE.MeshPhysicalMaterial({
+      new MeshPhysicalMaterial({
         color: '#080810',
         emissive: color,
         emissiveIntensity: 1.7,
@@ -278,7 +278,7 @@ function CreepArchetypeMesh({
 }
 
 export function CreepBody({ enemyType, color, animStateRef, bodyMatRef }: CreepBodyProps) {
-  const groupRef = useRef<THREE.Group>(null);
+  const groupRef = useRef<Group>(null);
   const spec = resolveEnemyVisualSpec(enemyType);
   const archetype = getEnemyVisualArchetype(enemyType);
 

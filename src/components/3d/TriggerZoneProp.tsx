@@ -3,7 +3,7 @@
 /* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 import { Suspense, useEffect, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { Mesh } from 'three';
 import { useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId } from '@/store/selectors';
 import { TRIGGER_ZONES, type TriggerZone, isTriggerZoneAvailable } from '@/data/triggerZones';
@@ -42,7 +42,7 @@ function TriggerZonePropMeshInner({ zone, def }: TriggerZonePropMeshInnerProps) 
   const clone = useMemo(() => {
     const root = gltf.scene.clone(true);
     root.traverse((node) => {
-      if (node instanceof THREE.Mesh) {
+      if (node instanceof Mesh) {
         node.castShadow = true;
         node.receiveShadow = true;
       }

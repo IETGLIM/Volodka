@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Procedural NPC entry (Npc Composer pipeline) ─── */
 
 import { useRef, useMemo } from 'react';
-import * as THREE from 'three';
+import { Group, Vector3 } from 'three';
 import type { NPCAppearance } from '@/shared/types/game';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { useNpcVisualBehavior } from '@/engine/npc/useNpcVisualBehavior';
@@ -30,12 +30,12 @@ export interface ProceduralNPCModelProps {
   /** Schedule-driven activity for FSM resolution */
   activity?: string;
   patrolActivity?: 'idle' | 'walk';
-  livePlayerPositionRef: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
 /** Renders a composed procedural NPC from slot recipes + appearance palette. */
 export function ProceduralNPCModel(props: ProceduralNPCModelProps) {
-  const rootRef = useRef<THREE.Group>(null);
+  const rootRef = useRef<Group>(null);
   const sharedResources = useMemo(() => getProceduralNpcSharedResourceSets(), []);
   useThreeCleanup(rootRef, { skip: sharedResources });
 
@@ -55,7 +55,7 @@ function ProceduralNPCModelInner({
   patrolActivity,
   livePlayerPositionRef,
   modelRootRef,
-}: ProceduralNPCModelProps & { modelRootRef: React.RefObject<THREE.Group | null> }) {
+}: ProceduralNPCModelProps & { modelRootRef: React.RefObject<Group | null> }) {
   const app = appearance ?? DEFAULT_APPEARANCE;
   const gamePhase = useGamePhase();
   const recipe = resolveNpcComposeRecipeForNpc(definitionId);

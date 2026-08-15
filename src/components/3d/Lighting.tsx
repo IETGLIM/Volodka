@@ -18,7 +18,7 @@ import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useThree } from '@react-three/fiber';
 import { computeTimeOfDayLighting } from '@/engine/graphics/TimeOfDayLighting';
-import * as THREE from 'three';
+import { Color, DirectionalLight, HemisphereLight, PointLight } from 'three';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
 const SHADOW_BIAS = -0.002;
@@ -312,8 +312,8 @@ function TimeOfDayAdjuster({
   baseDirColor: string;
 }) {
   const { scene } = useThree();
-  const baseDirCol = useMemo(() => new THREE.Color(baseDirColor), [baseDirColor]);
-  const tmpColorRef = useRef(new THREE.Color());
+  const baseDirCol = useMemo(() => new Color(baseDirColor), [baseDirColor]);
+  const tmpColorRef = useRef(new Color());
   // How strongly time-of-day modulates the scene (0 = no effect, 1 = full override)
   const todInfluence = isIndoor ? 0.08 : 0.35;
   // Directional light sun position follows time-of-day (outdoor only)
@@ -338,7 +338,7 @@ function TimeOfDayAdjuster({
 
     // Find directional light in scene
     for (const obj of scene.children) {
-      if (obj instanceof THREE.DirectionalLight) {
+      if (obj instanceof DirectionalLight) {
         // Modulate intensity: blend base intensity with time-of-day intensity
         obj.intensity = baseDirIntensity * (1 - todInfluence) + tod.dirIntensity * todInfluence;
 
@@ -361,7 +361,7 @@ function TimeOfDayAdjuster({
     // For indoor scenes, very subtle ambient tint from time-of-day
     if (isIndoor) {
       for (const obj of scene.children) {
-        if (obj instanceof THREE.HemisphereLight) {
+        if (obj instanceof HemisphereLight) {
           // Very slight color shift — indoor rooms barely notice
           tmpColor.setRGB(tod.ambientColor[0], tod.ambientColor[1], tod.ambientColor[2]);
           // Blend the sky color of the hemisphere light slightly toward tod
@@ -578,9 +578,9 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
 
 /** Animated accent light with neon color cycling, candle flicker, or cold pulse */
 function AnimatedAccentLight({ config, seed, castShadow, shadowRes = 512 }: { config: AccentLight; seed: number; castShadow: boolean; shadowRes?: number }) {
-  const lightRef = useRef<THREE.PointLight>(null);
+  const lightRef = useRef<PointLight>(null);
   const timeRef = useRef(0);
-  const baseColor = useMemo(() => new THREE.Color(config.color), [config.color]);
+  const baseColor = useMemo(() => new Color(config.color), [config.color]);
 
   useFrameTick('postfx', ({ delta }) => {
     if (!lightRef.current) return;

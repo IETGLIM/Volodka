@@ -2,7 +2,7 @@ import {
   updateExplorationState,
   resolveCameraCollision,
 } from '../cinematicCamera';
-import * as THREE from 'three';
+import { Vector3 } from 'three';
 import {
   LOOK_HEIGHT,
   MIN_DISTANCE,
@@ -222,7 +222,7 @@ export const explorationStrategy: CameraModeStrategy = {
     if (sprintLeanPitch !== 0) {
       const lookDir = targetLook.clone().sub(targetPos).normalize();
       // Apply small pitch rotation around right axis
-      const right = new THREE.Vector3().crossVectors(lookDir, new THREE.Vector3(0,1,0)).normalize();
+      const right = new Vector3().crossVectors(lookDir, new Vector3(0,1,0)).normalize();
       if (right.lengthSq() > 0.001) {
         lookDir.applyAxisAngle(right, sprintLeanPitch);
         targetLook.copy(targetPos).add(lookDir.multiplyScalar(12)); // keep reasonable distance
@@ -236,7 +236,7 @@ export const explorationStrategy: CameraModeStrategy = {
     if (decel > 1.6 && speedMs < 4.8) {
       const decelLean = Math.min(0.022, decel * 0.009); // nose-up settle
       const lookDir2 = targetLook.clone().sub(targetPos).normalize();
-      const right2 = new THREE.Vector3().crossVectors(lookDir2, new THREE.Vector3(0,1,0)).normalize();
+      const right2 = new Vector3().crossVectors(lookDir2, new Vector3(0,1,0)).normalize();
       if (right2.lengthSq() > 0.001) {
         lookDir2.applyAxisAngle(right2, decelLean);
         targetLook.copy(targetPos).add(lookDir2.multiplyScalar(10));

@@ -4,7 +4,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
+import { Mesh, Object3D } from 'three';
 import { ProceduralSdfWorldMesh } from './ProceduralSdfWorldMesh';
 import { ProceduralCharacter } from './ProceduralCharacter';
 import { ProceduralAtmosphereLayer } from './ProceduralAtmosphereLayer';
@@ -83,7 +83,7 @@ if (typeof window !== 'undefined') {
 export function ProceduralAaaSceneRoot({ autoStartAudio = true }: ProceduralAaaSceneRootProps) {
   const [genKey, setGenKey] = useState(generationCounter);
   const spectrumRef = useRef(0);
-  const groundMeshesRef = useRef<THREE.Object3D[]>([]);
+  const groundMeshesRef = useRef<Object3D[]>([]);
   const audioRef = useRef<ProceduralSoundscapeHandle | null>(null);
 
   useEffect(() => onProceduralAaaRegenerate(setGenKey), []);
@@ -109,7 +109,7 @@ export function ProceduralAaaSceneRoot({ autoStartAudio = true }: ProceduralAaaS
     return () => cancelAnimationFrame(raf);
   }, []);
 
-  const onMeshReady = useCallback((mesh: THREE.Mesh) => {
+  const onMeshReady = useCallback((mesh: Mesh) => {
     groundMeshesRef.current = [mesh];
   }, []);
 

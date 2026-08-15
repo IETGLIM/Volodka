@@ -18,7 +18,7 @@ import {
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { eventBus } from '@/engine/EventBus';
-import * as THREE from 'three';
+import { MathUtils, Mesh, MeshBasicMaterial } from 'three';
 
 export interface PhysicsPlayerContactShadowProps {
   /** First-person / body-hidden: keep a tighter ground mark under the capsule. */
@@ -38,7 +38,7 @@ export function PhysicsPlayerContactShadow({
       }),
   );
 
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
 
   // Base values
   const baseOpacity = !preset.shadows
@@ -116,10 +116,10 @@ export function PhysicsPlayerContactShadow({
     m.scale.set(scaleX / 0.42, 1, scaleZ / 0.42);
 
     // Opacity boost on heavy movement (darker, more "grounded" look)
-    const mat = m.material as THREE.MeshBasicMaterial;
+    const mat = m.material as MeshBasicMaterial;
     if (mat) {
       const targetOpacity = baseOpacity + totalWeight * 0.3;
-      mat.opacity = THREE.MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.99);
+      mat.opacity = MathUtils.lerp(mat.opacity, Math.min(1.0, targetOpacity), 0.99);
     }
 
     // Slight vertical squash on hard landing (shadow flattens)

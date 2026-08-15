@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { Box3, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
 import {
   applySurfaceDetailMaps,
   type SurfaceDetailKind,
@@ -69,11 +69,11 @@ const MOOD: Record<
   },
 };
 
-const _box = new THREE.Box3();
-const _size = new THREE.Vector3();
+const _box = new Box3();
+const _size = new Vector3();
 
 function shouldApplyWearMaps(
-  mesh: THREE.Mesh,
+  mesh: Mesh,
   mode: boolean | 'large' | undefined,
 ): boolean {
   if (mode === false) return false;
@@ -93,7 +93,7 @@ function shouldApplyWearMaps(
  * on large kit/authored surfaces (not every prop triangle).
  */
 export function weatherEnvironmentMaterials(
-  root: THREE.Object3D,
+  root: Object3D,
   mood: EnvironmentMaterialMood = 'prop',
   options: WeatherEnvironmentOptions = {},
 ): void {
@@ -101,13 +101,13 @@ export function weatherEnvironmentMaterials(
   const mapMode = options.applyMaps ?? 'large';
 
   root.traverse((node) => {
-    if (!(node as THREE.Mesh).isMesh) return;
-    const mesh = node as THREE.Mesh;
+    if (!(node as Mesh).isMesh) return;
+    const mesh = node as Mesh;
     const sourceMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     const applyMaps = shouldApplyWearMaps(mesh, mapMode);
     const nextMats = sourceMats.map((material) => {
       if (!material || !('envMapIntensity' in material)) return material;
-      const std = (material as THREE.MeshStandardMaterial).clone();
+      const std = (material as MeshStandardMaterial).clone();
       std.envMapIntensity = cfg.envMapIntensity;
       if (typeof std.roughness === 'number') {
         std.roughness = Math.min(1, Math.max(cfg.minRoughness, std.roughness * cfg.roughnessMul));

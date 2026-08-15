@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import * as THREE from 'three';
+import { MeshBasicMaterial, SphereGeometry } from 'three';
 import { eventBus } from '@/engine/EventBus';
 import type { TriggerZone } from '@/data/triggerZones';
 import {
@@ -21,10 +21,10 @@ export function TriggerZoneComponent({
   unregisterPrompt: (id: string) => void;
 }) {
   const outlineFlashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const particleGeo = useMemo(() => new THREE.SphereGeometry(0.06, 4, 4), []);
+  const particleGeo = useMemo(() => new SphereGeometry(0.06, 4, 4), []);
   const particleMat = useMemo(
     () =>
-      new THREE.MeshBasicMaterial({
+      new MeshBasicMaterial({
         color: '#44ffff',
         transparent: true,
         opacity: 0.95,

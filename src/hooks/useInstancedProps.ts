@@ -2,13 +2,13 @@
  * useInstancedProps — Efficiently manages instance transform matrices for InstancedMesh.
  *
  * Converts an array of InstancedPropTransform (position/rotation/scale) into
- * a stable array of THREE.Matrix4 suitable for InstancedMesh.setMatrixAt().
+ * a stable array of Matrix4 suitable for InstancedMesh.setMatrixAt().
  * Handles dynamic add/remove of instances and provides utilities for
  * scene dressers.
  */
 
 import { useMemo, useCallback } from 'react';
-import * as THREE from 'three';
+import { Euler, InstancedMesh, Matrix4, Quaternion, Vector3 } from 'three';
 
 /* ── Public API ─────────────────────────────────────────────── */
 
@@ -22,30 +22,30 @@ export interface InstancedPropTransform {
 
 export interface UseInstancedPropsResult {
   /** Computed 4×4 matrices, one per instance. Recomputed when `transforms` changes. */
-  readonly matrices: readonly THREE.Matrix4[];
+  readonly matrices: readonly Matrix4[];
   /** Shortcut for transforms.length — stable reference. */
   readonly count: number;
   /**
    * Apply all matrices to an InstancedMesh and flag the GPU buffer for upload.
    * Call after creating the InstancedMesh or when matrices change.
    */
-  applyTo: (mesh: THREE.InstancedMesh) => void;
+  applyTo: (mesh: InstancedMesh) => void;
   /**
    * Build a single Matrix4 from a transform (useful for ad-hoc computation).
    * Uses module-level scratch objects — NOT safe across async boundaries.
    */
-  buildMatrix: (transform: InstancedPropTransform) => THREE.Matrix4;
+  buildMatrix: (transform: InstancedPropTransform) => Matrix4;
 }
 
 /* ── Scratch objects (module-level, never exposed) ───────────── */
 
-const _mat = new THREE.Matrix4();
-const _pos = new THREE.Vector3();
-const _quat = new THREE.Quaternion();
-const _euler = new THREE.Euler();
-const _scl = new THREE.Vector3();
+const _mat = new Matrix4();
+const _pos = new Vector3();
+const _quat = new Quaternion();
+const _euler = new Euler();
+const _scl = new Vector3();
 
-function composeMatrix(transform: InstancedPropTransform, out: THREE.Matrix4): void {
+function composeMatrix(transform: InstancedPropTransform, out: Matrix4): void {
   _pos.set(transform.position[0], transform.position[1], transform.position[2]);
   const rot = transform.rotation;
   _euler.set(rot?.[0] ?? 0, rot?.[1] ?? 0, rot?.[2] ?? 0);
@@ -81,9 +81,9 @@ export function useInstancedProps(
   // callers should wrap their static transform arrays in useMemo themselves.
   const matrices = useMemo(() => {
     if (transforms.length === 0) return EMPTY_MATRICES;
-    const arr = new Array<THREE.Matrix4>(transforms.length);
+    const arr = new Array<Matrix4>(transforms.length);
     for (let i = 0; i < transforms.length; i++) {
-      arr[i] = new THREE.Matrix4();
+      arr[i] = new Matrix4();
       composeMatrix(transforms[i], arr[i]);
     }
     return arr;
@@ -92,7 +92,7 @@ export function useInstancedProps(
 
   const count = transforms.length;
 
-  const applyTo = useCallback((mesh: THREE.InstancedMesh) => {
+  const applyTo = useCallback((mesh: InstancedMesh) => {
     for (let i = 0; i < count; i++) {
       mesh.setMatrixAt(i, matrices[i]);
     }
@@ -109,7 +109,7 @@ export function useInstancedProps(
 
 /* ── Singleton empty array (avoids re-alloc for zero-instance case) ── */
 
-const EMPTY_MATRICES: readonly THREE.Matrix4[] = [];
+const EMPTY_MATRICES: readonly Matrix4[] = [];
 
 /* ── Dynamic instance manager ────────────────────────────────── */
 
@@ -123,9 +123,9 @@ export interface InstancedPropManager {
   /** Update the transform of an existing instance. */
   update: (index: number, transform: InstancedPropTransform) => void;
   /** Get a matrix for an instance (uses scratch object — copy if needed). */
-  getMatrix: (index: number) => THREE.Matrix4;
+  getMatrix: (index: number) => Matrix4;
   /** Rebuild all matrices into a typed array for GPU upload. */
-  buildAllMatrices: () => THREE.Matrix4[];
+  buildAllMatrices: () => Matrix4[];
 }
 
 /**
@@ -168,9 +168,9 @@ export function createInstancedPropManager(
       return _mat;
     },
     buildAllMatrices() {
-      const arr = new Array<THREE.Matrix4>(transforms.length);
+      const arr = new Array<Matrix4>(transforms.length);
       for (let i = 0; i < transforms.length; i++) {
-        arr[i] = new THREE.Matrix4();
+        arr[i] = new Matrix4();
         composeMatrix(transforms[i], arr[i]);
       }
       return arr;

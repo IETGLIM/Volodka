@@ -1,6 +1,6 @@
 /* ─── Volodka room — environmental clutter (lazy sub-chunk) ─── */
 
-import * as THREE from 'three';
+import { DoubleSide } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -65,9 +65,9 @@ function buildVolodkaRoomClutterGpu() {
     mat_cyl_17_green: getSharedStandardMaterial({ color: '#00aa44', metalness: 0.4, roughness: 0.3 }),
     mat_cyl_17_blue: getSharedStandardMaterial({ color: '#2244aa', metalness: 0.4, roughness: 0.3 }),
     mat_cyl_18: getSharedStandardMaterial({ color: '#cc2222', metalness: 0.3, roughness: 0.5 }),
-    mat_pln_yellow: getSharedStandardMaterial({ color: '#ffdd44', roughness: 0.9, side: THREE.DoubleSide }),
-    mat_pln_pink: getSharedStandardMaterial({ color: '#ff8888', roughness: 0.9, side: THREE.DoubleSide }),
-    mat_pln_blue: getSharedStandardMaterial({ color: '#88ddff', roughness: 0.9, side: THREE.DoubleSide }),
+    mat_pln_yellow: getSharedStandardMaterial({ color: '#ffdd44', roughness: 0.9, side: DoubleSide }),
+    mat_pln_pink: getSharedStandardMaterial({ color: '#ff8888', roughness: 0.9, side: DoubleSide }),
+    mat_pln_blue: getSharedStandardMaterial({ color: '#88ddff', roughness: 0.9, side: DoubleSide }),
     mat_cyl_21: getSharedStandardMaterial({ color: '#222', roughness: 0.95 }),
     mat_cyl_22: getSharedStandardMaterial({ color: '#882222', roughness: 0.95 }),
     mat_cyl_23: getSharedStandardMaterial({ color: '#228822', roughness: 0.95 }),

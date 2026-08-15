@@ -5,7 +5,7 @@
 
 import { Suspense, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
-import * as THREE from 'three';
+import { Mesh, Object3D } from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -43,11 +43,11 @@ const STREET_HYBRID_LANDMARKS: LandmarkDef[] = [
   { url: POLYHAVEN_MODELS.securityCamera, position: [10.6, 3.4, -12.2], rotationY: -Math.PI / 3, scale: 1.15 },
 ];
 
-function clonePreparedScene(source: THREE.Object3D, castShadow: boolean): THREE.Object3D {
+function clonePreparedScene(source: Object3D, castShadow: boolean): Object3D {
   const clone = source.clone(true);
   clone.traverse((obj) => {
-    if (!(obj as THREE.Mesh).isMesh) return;
-    const mesh = obj as THREE.Mesh;
+    if (!(obj as Mesh).isMesh) return;
+    const mesh = obj as Mesh;
     mesh.castShadow = castShadow;
     mesh.receiveShadow = true;
     if (Array.isArray(mesh.material)) {

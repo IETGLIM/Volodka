@@ -1,6 +1,6 @@
 import { useRef, type RefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { Group } from 'three';
 
 /**
  * Applies a brief horizontal glitch displacement (translateX jitter)
@@ -9,7 +9,7 @@ import * as THREE from 'three';
  * Pure-refs — no React re-renders.
  */
 export function useMonitorGlitch(
-  monitorGroupRef: RefObject<THREE.Group | null>,
+  monitorGroupRef: RefObject<Group | null>,
 ): void {
   const timeRef = useRef(0);
   const nextGlitchRef = useRef(5 + Math.random() * 5);

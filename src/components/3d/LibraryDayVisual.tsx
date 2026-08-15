@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Library procedural 3D visual ─── */
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, DoubleSide, RepeatWrapping } from 'three';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createLibraryDayWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -768,7 +768,7 @@ function ReadingTable({ position }: { position: [number, number, number] }) {
         {/* Lamp shade */}
         <mesh position={[0, 0.4, 0.05]} rotation={[0.3, 0, 0]}>
           <cylinderGeometry args={[0.05, 0.12, 0.1, 8]} />
-          <meshStandardMaterial color="#205030" side={THREE.DoubleSide} />
+          <meshStandardMaterial color="#205030" side={DoubleSide} />
         </mesh>
         {/* Lamp glow */}
         <mesh position={[0, 0.38, 0.05]}>
@@ -785,7 +785,7 @@ function ReadingTable({ position }: { position: [number, number, number] }) {
   );
 }
 
-function createLibraryFloorTexture(): THREE.CanvasTexture {
+function createLibraryFloorTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -818,14 +818,14 @@ function createLibraryFloorTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(8, 7);
   return tex;
 }
 
-function createLibraryWallTexture(): THREE.CanvasTexture {
+function createLibraryWallTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -847,9 +847,9 @@ function createLibraryWallTexture(): THREE.CanvasTexture {
     ctx.strokeRect(i + 4, size / 2 + 4, 56, size / 2 - 8);
   }
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(4, 3);
   return tex;
 }

@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { AnimationMixer, BufferGeometry, InstancedMesh, Light, Line, LineSegments, Material, Mesh, Object3D, Points, Scene, ShaderMaterial, Skeleton, SkinnedMesh, Sprite, Texture, WebGLRenderer, WebGLShadowMap } from 'three';
 import { isRegistryManagedGeometry } from '@/engine/three/moduleGeometryRegistry';
 import { isRegistryManagedMaterial } from '@/engine/three/moduleMaterialRegistry';
 
@@ -31,9 +31,9 @@ const MATERIAL_TEXTURE_KEYS = [
 ] as const;
 
 export interface DisposeThreeSkipSets {
-  geometries?: ReadonlySet<THREE.BufferGeometry>;
-  materials?: ReadonlySet<THREE.Material>;
-  textures?: ReadonlySet<THREE.Texture>;
+  geometries?: ReadonlySet<BufferGeometry>;
+  materials?: ReadonlySet<Material>;
+  textures?: ReadonlySet<Texture>;
 }
 
 export interface DisposeThreeOptions {
@@ -49,10 +49,10 @@ interface DisposeContext {
   skip: DisposeThreeSkipSets;
   disposeTextures: boolean;
   disposeShadowMaps: boolean;
-  disposedGeometries: Set<THREE.BufferGeometry>;
-  disposedMaterials: Set<THREE.Material>;
-  disposedTextures: Set<THREE.Texture>;
-  disposedSkeletons: Set<THREE.Skeleton>;
+  disposedGeometries: Set<BufferGeometry>;
+  disposedMaterials: Set<Material>;
+  disposedTextures: Set<Texture>;
+  disposedSkeletons: Set<Skeleton>;
 }
 
 function createContext(options?: DisposeThreeOptions): DisposeContext {
@@ -67,19 +67,19 @@ function createContext(options?: DisposeThreeOptions): DisposeContext {
   };
 }
 
-function shouldSkipGeometry(ctx: DisposeContext, geometry: THREE.BufferGeometry): boolean {
+function shouldSkipGeometry(ctx: DisposeContext, geometry: BufferGeometry): boolean {
   return (ctx.skip.geometries?.has(geometry) ?? false) || isRegistryManagedGeometry(geometry);
 }
 
-function shouldSkipMaterial(ctx: DisposeContext, material: THREE.Material): boolean {
+function shouldSkipMaterial(ctx: DisposeContext, material: Material): boolean {
   return (ctx.skip.materials?.has(material) ?? false) || isRegistryManagedMaterial(material);
 }
 
-function shouldSkipTexture(ctx: DisposeContext, texture: THREE.Texture): boolean {
+function shouldSkipTexture(ctx: DisposeContext, texture: Texture): boolean {
   return ctx.skip.textures?.has(texture) ?? false;
 }
 
-function disposeTexture(ctx: DisposeContext, texture: THREE.Texture | null | undefined): void {
+function disposeTexture(ctx: DisposeContext, texture: Texture | null | undefined): void {
   if (!texture || !ctx.disposeTextures) return;
   if (shouldSkipTexture(ctx, texture)) return;
   if (ctx.disposedTextures.has(texture)) return;
@@ -87,27 +87,27 @@ function disposeTexture(ctx: DisposeContext, texture: THREE.Texture | null | und
   texture.dispose();
 }
 
-function disposeMaterialTextures(ctx: DisposeContext, material: THREE.Material): void {
+function disposeMaterialTextures(ctx: DisposeContext, material: Material): void {
   if (!ctx.disposeTextures) return;
 
   for (const key of MATERIAL_TEXTURE_KEYS) {
-    const tex = (material as THREE.Material & Record<string, unknown>)[key];
-    if (tex instanceof THREE.Texture) {
+    const tex = (material as Material & Record<string, unknown>)[key];
+    if (tex instanceof Texture) {
       disposeTexture(ctx, tex);
     }
   }
 
-  if (material instanceof THREE.ShaderMaterial) {
+  if (material instanceof ShaderMaterial) {
     for (const uniform of Object.values(material.uniforms)) {
       const value = uniform?.value;
-      if (value instanceof THREE.Texture) {
+      if (value instanceof Texture) {
         disposeTexture(ctx, value);
       }
     }
   }
 }
 
-function disposeMaterial(ctx: DisposeContext, material: THREE.Material | THREE.Material[] | undefined): void {
+function disposeMaterial(ctx: DisposeContext, material: Material | Material[] | undefined): void {
   if (!material) return;
 
   const materials = Array.isArray(material) ? material : [material];
@@ -120,7 +120,7 @@ function disposeMaterial(ctx: DisposeContext, material: THREE.Material | THREE.M
   }
 }
 
-function disposeGeometry(ctx: DisposeContext, geometry: THREE.BufferGeometry | undefined): void {
+function disposeGeometry(ctx: DisposeContext, geometry: BufferGeometry | undefined): void {
   if (!geometry) return;
   if (shouldSkipGeometry(ctx, geometry)) return;
   if (ctx.disposedGeometries.has(geometry)) return;
@@ -128,14 +128,14 @@ function disposeGeometry(ctx: DisposeContext, geometry: THREE.BufferGeometry | u
   geometry.dispose();
 }
 
-function disposeShadowMap(ctx: DisposeContext, object: THREE.Object3D): void {
+function disposeShadowMap(ctx: DisposeContext, object: Object3D): void {
   if (!ctx.disposeShadowMaps) return;
 
-  const light = object as THREE.Light;
+  const light = object as Light;
   const shadow = light.shadow;
   const shadowMap = shadow?.map;
   if (!shadow || !shadowMap) return;
-  if (shadowMap instanceof THREE.Texture) {
+  if (shadowMap instanceof Texture) {
     disposeTexture(ctx, shadowMap);
   } else {
     if (shadowMap.texture) disposeTexture(ctx, shadowMap.texture);
@@ -144,7 +144,7 @@ function disposeShadowMap(ctx: DisposeContext, object: THREE.Object3D): void {
   shadow.map = null;
 }
 
-function disposeSkeleton(ctx: DisposeContext, skeleton: THREE.Skeleton | null | undefined): void {
+function disposeSkeleton(ctx: DisposeContext, skeleton: Skeleton | null | undefined): void {
   if (!skeleton || ctx.disposedSkeletons.has(skeleton)) return;
   ctx.disposedSkeletons.add(skeleton);
   if (skeleton.boneTexture) {
@@ -153,34 +153,34 @@ function disposeSkeleton(ctx: DisposeContext, skeleton: THREE.Skeleton | null | 
   }
 }
 
-function disposeSkinnedMeshExtras(ctx: DisposeContext, mesh: THREE.SkinnedMesh): void {
+function disposeSkinnedMeshExtras(ctx: DisposeContext, mesh: SkinnedMesh): void {
   disposeSkeleton(ctx, mesh.skeleton);
   // Do NOT assign null. three WebGLObjects.update() calls skeleton.update() with
   // no null guard; EffectComposer/RenderPass can still visit the mesh for one
   // more frame after dispose → "Cannot read properties of null (reading 'update')".
-  mesh.skeleton = new THREE.Skeleton([]);
+  mesh.skeleton = new Skeleton([]);
   mesh.bindMatrix.identity();
   mesh.visible = false;
 }
 
 function disposeDrawable(
   ctx: DisposeContext,
-  object: THREE.Object3D & {
-    geometry?: THREE.BufferGeometry;
-    material?: THREE.Material | THREE.Material[];
-    skeleton?: THREE.Skeleton;
+  object: Object3D & {
+    geometry?: BufferGeometry;
+    material?: Material | Material[];
+    skeleton?: Skeleton;
   },
 ): void {
   disposeGeometry(ctx, object.geometry);
   disposeMaterial(ctx, object.material);
 
-  if (object instanceof THREE.SkinnedMesh) {
+  if (object instanceof SkinnedMesh) {
     disposeSkinnedMeshExtras(ctx, object);
   }
 }
 
 /** Stop and uncache an AnimationMixer (call before disposing its root scene). */
-export function disposeAnimationMixer(mixer: THREE.AnimationMixer | null | undefined): void {
+export function disposeAnimationMixer(mixer: AnimationMixer | null | undefined): void {
   if (!mixer) return;
   mixer.stopAllAction();
   mixer.uncacheRoot(mixer.getRoot());
@@ -188,7 +188,7 @@ export function disposeAnimationMixer(mixer: THREE.AnimationMixer | null | undef
 
 /** Dispose GPU resources under `root` (geometries, materials, textures, shadow maps). */
 export function disposeObject3DTree(
-  root: THREE.Object3D | null | undefined,
+  root: Object3D | null | undefined,
   options?: DisposeThreeOptions,
 ): void {
   if (!root) return;
@@ -199,13 +199,13 @@ export function disposeObject3DTree(
     disposeShadowMap(ctx, child);
 
     if (
-      child instanceof THREE.Mesh
-      || child instanceof THREE.SkinnedMesh
-      || child instanceof THREE.InstancedMesh
-      || child instanceof THREE.Points
-      || child instanceof THREE.Line
-      || child instanceof THREE.LineSegments
-      || child instanceof THREE.Sprite
+      child instanceof Mesh
+      || child instanceof SkinnedMesh
+      || child instanceof InstancedMesh
+      || child instanceof Points
+      || child instanceof Line
+      || child instanceof LineSegments
+      || child instanceof Sprite
     ) {
       disposeDrawable(ctx, child);
     }
@@ -223,16 +223,16 @@ export function disposeObject3DTree(
  * Pass the returned object as `options.skip` to `disposeClonedScene` to dispose
  * ONLY resources unique to the clone (e.g., procedurally-added materials).
  */
-export function createSourceSkipSet(sourceScene: THREE.Object3D | null | undefined): DisposeThreeSkipSets {
-  const geometries = new Set<THREE.BufferGeometry>();
-  const materials = new Set<THREE.Material>();
-  const textures = new Set<THREE.Texture>();
+export function createSourceSkipSet(sourceScene: Object3D | null | undefined): DisposeThreeSkipSets {
+  const geometries = new Set<BufferGeometry>();
+  const materials = new Set<Material>();
+  const textures = new Set<Texture>();
   if (!sourceScene) return { geometries, materials, textures };
 
   sourceScene.traverse((child) => {
-    const mesh = child as THREE.Object3D & {
-      geometry?: THREE.BufferGeometry;
-      material?: THREE.Material | THREE.Material[];
+    const mesh = child as Object3D & {
+      geometry?: BufferGeometry;
+      material?: Material | Material[];
     };
     if (mesh.geometry) geometries.add(mesh.geometry);
     if (mesh.material) {
@@ -241,13 +241,13 @@ export function createSourceSkipSet(sourceScene: THREE.Object3D | null | undefin
         if (!mat) continue;
         materials.add(mat);
         for (const key of MATERIAL_TEXTURE_KEYS) {
-          const tex = (mat as THREE.Material & Record<string, unknown>)[key];
-          if (tex instanceof THREE.Texture) textures.add(tex);
+          const tex = (mat as Material & Record<string, unknown>)[key];
+          if (tex instanceof Texture) textures.add(tex);
         }
-        if (mat instanceof THREE.ShaderMaterial) {
+        if (mat instanceof ShaderMaterial) {
           for (const uniform of Object.values(mat.uniforms)) {
             const value = (uniform as { value?: unknown } | undefined)?.value;
-            if (value instanceof THREE.Texture) textures.add(value);
+            if (value instanceof Texture) textures.add(value);
           }
         }
       }
@@ -258,14 +258,14 @@ export function createSourceSkipSet(sourceScene: THREE.Object3D | null | undefin
 }
 
 /** Dispose a cloned GLTF scene (never the cached loader root). */
-export function disposeClonedScene(scene: THREE.Object3D, options?: DisposeThreeOptions): void {
+export function disposeClonedScene(scene: Object3D, options?: DisposeThreeOptions): void {
   disposeObject3DTree(scene, options);
 }
 
 /** Dispose a deepCloneWithSkeletons instance — meshes, skeleton bone textures, materials. */
 export function disposeSkinnedClone(
-  scene: THREE.Object3D,
-  mixer?: THREE.AnimationMixer | null,
+  scene: Object3D,
+  mixer?: AnimationMixer | null,
   options?: DisposeThreeOptions,
 ): void {
   disposeAnimationMixer(mixer);
@@ -338,17 +338,17 @@ export function disposeEffectComposer(
 
 /** Release shadow map RTs on lights and internal shadowMap state when available. */
 export function disposeRendererShadowMaps(
-  renderer: THREE.WebGLRenderer,
-  scene?: THREE.Scene | null,
+  renderer: WebGLRenderer,
+  scene?: Scene | null,
 ): void {
-  const shadowMapApi = renderer.shadowMap as THREE.WebGLShadowMap & { dispose?: () => void };
+  const shadowMapApi = renderer.shadowMap as WebGLShadowMap & { dispose?: () => void };
   if (typeof shadowMapApi.dispose === 'function') {
     shadowMapApi.dispose();
   }
 
   if (scene) {
     scene.traverse((child) => {
-      const light = child as THREE.Light;
+      const light = child as Light;
       const shadow = light.shadow;
       const map = shadow?.map;
       if (!shadow || !map) return;

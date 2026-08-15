@@ -3,7 +3,7 @@
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, InstancedMesh, Mesh, Object3D, PointLight, Points, PointsMaterial, RepeatWrapping, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCircleGeometry,
@@ -26,7 +26,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import type { SceneId } from '@/shared/types/game';
 
 interface ChkForestZorgeVisualProps {
-  livePlayerPositionRef?: MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: MutableRefObject<Vector3>;
   /** Actual scene id (may be chk_campfire_night via inheritance). */
   sceneId?: SceneId;
 }
@@ -66,8 +66,8 @@ export function ChkForestZorgeVisual({
   const damp = useMemo(() => getIndustrialDampFloorSettings(dampSceneId), [dampSceneId]);
   const useWetBottle = allowsSelectiveMeshPhysicalWet(dampSceneId, selectedPreset, { coarsePointer });
   const wetBottle = useMemo(() => getWetGlassPhysicalParams('campfireBottleGlass'), []);
-  const fireLightRef = useRef<THREE.PointLight>(null);
-  const fireMeshRef = useRef<THREE.Mesh>(null);
+  const fireLightRef = useRef<PointLight>(null);
+  const fireMeshRef = useRef<Mesh>(null);
   const tRef = useRef(0);
 
   useFrameTick('misc', ({ delta }) => {
@@ -372,9 +372,9 @@ function ForestTree({
  * 3 draw calls total (trunks + two canopy layers) for ~46 trees (full) or ~24 (sparse).
  * A gap is left at the north path entrance (exit to park). */
 function InstancedTreeBelt({ density = 'full' }: { density?: 'full' | 'sparse' }) {
-  const trunkRef = useRef<THREE.InstancedMesh>(null);
-  const canopyLowRef = useRef<THREE.InstancedMesh>(null);
-  const canopyTopRef = useRef<THREE.InstancedMesh>(null);
+  const trunkRef = useRef<InstancedMesh>(null);
+  const canopyLowRef = useRef<InstancedMesh>(null);
+  const canopyTopRef = useRef<InstancedMesh>(null);
 
   const placements = useMemo(() => {
     const rng = seededRandom(density === 'sparse' ? 888002 : 777001);
@@ -395,7 +395,7 @@ function InstancedTreeBelt({ density = 'full' }: { density?: 'full' | 'sparse' }
   }, [density]);
 
   useLayoutEffect(() => {
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     scratchColor.set('#ffffff');
     const color = scratchColor;
     const trunk = trunkRef.current;
@@ -465,8 +465,8 @@ function NightSky() {
       positions[i * 3 + 1] = Math.cos(phi) * r * 0.65 + 6;
       positions[i * 3 + 2] = Math.sin(theta) * Math.sin(phi + 0.18) * r;
     }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
     return geo;
   }, []);
 
@@ -500,8 +500,8 @@ function NightSky() {
 const FIREFLY_COUNT = 36;
 
 function Fireflies() {
-  const pointsRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.PointsMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const materialRef = useRef<PointsMaterial>(null);
   const timeRef = useRef(0);
 
   const { basePositions, phases } = useMemo(() => {
@@ -520,8 +520,8 @@ function Fireflies() {
   }, []);
 
   const geometry = useOwnedBufferGeometry(() => {
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(basePositions.slice(), 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(basePositions.slice(), 3));
     return geo;
   }, [basePositions]);
 
@@ -530,7 +530,7 @@ function Fireflies() {
     const t = timeRef.current;
     const points = pointsRef.current;
     if (!points) return;
-    const attr = points.geometry.getAttribute('position') as THREE.BufferAttribute;
+    const attr = points.geometry.getAttribute('position') as BufferAttribute;
     const arr = attr.array as Float32Array;
     for (let i = 0; i < FIREFLY_COUNT; i++) {
       const p = phases[i];
@@ -553,7 +553,7 @@ function Fireflies() {
         sizeAttenuation
         transparent
         opacity={0.75}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
         depthWrite={false}
       />
     </points>
@@ -562,7 +562,7 @@ function Fireflies() {
 
 /* ─── Fallen logs, stumps, boulders, instanced underbrush ─── */
 function ForestFloorClutter() {
-  const bushRef = useRef<THREE.InstancedMesh>(null);
+  const bushRef = useRef<InstancedMesh>(null);
 
   const bushes = useMemo(() => {
     const rng = seededRandom(555333);
@@ -581,7 +581,7 @@ function ForestFloorClutter() {
   useLayoutEffect(() => {
     const mesh = bushRef.current;
     if (!mesh) return;
-    const dummy = new THREE.Object3D();
+    const dummy = new Object3D();
     bushes.forEach((b, i) => {
       dummy.position.set(b.x, b.s * 0.45, b.z);
       dummy.scale.set(b.s * 1.3, b.s, b.s * 1.3);
@@ -639,7 +639,7 @@ function ForestFloorClutter() {
   );
 }
 
-function createForestGroundTexture(): THREE.CanvasTexture {
+function createForestGroundTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -654,8 +654,8 @@ function createForestGroundTexture(): THREE.CanvasTexture {
     ctx.fillStyle = `rgb(${g - 10},${g + 20},${g - 15})`;
     ctx.fillRect(x, y, 1, 1);
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = tex.wrapT = RepeatWrapping;
   tex.repeat.set(6, 6);
   return tex;
 }

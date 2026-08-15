@@ -17,7 +17,7 @@
  */
 
 import { forwardRef, useMemo } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, Mesh, SphereGeometry } from 'three';
 import type { SceneId } from '@/shared/types/game';
 
 export interface GodRaysSunConfig {
@@ -111,13 +111,13 @@ interface GodRaysSunMeshProps {
 }
 
 /** Emissive sphere mesh that acts as the GodRays postprocessing sun source.
- *  Forwarded ref exposes the THREE.Mesh so ExplorationPostFX can pass it to
+ *  Forwarded ref exposes the Mesh so ExplorationPostFX can pass it to
  *  the <GodRays sun={...} /> effect. */
-export const GodRaysSunMesh = forwardRef<THREE.Mesh, GodRaysSunMeshProps>(
+export const GodRaysSunMesh = forwardRef<Mesh, GodRaysSunMeshProps>(
   function GodRaysSunMesh({ sceneId }, ref) {
     const config = getGodRaysSunConfig(sceneId);
 
-    const geometry = useMemo(() => new THREE.SphereGeometry(0.1, 8, 8), []);
+    const geometry = useMemo(() => new SphereGeometry(0.1, 8, 8), []);
 
     if (!config) return null;
 
@@ -137,7 +137,7 @@ export const GodRaysSunMesh = forwardRef<THREE.Mesh, GodRaysSunMeshProps>(
           transparent
           opacity={0.9}
           depthWrite={false}
-          blending={THREE.AdditiveBlending}
+          blending={AdditiveBlending}
           toneMapped={false}
         />
       </mesh>

@@ -1,12 +1,12 @@
-import * as THREE from 'three';
+import { Material, MeshStandardMaterial, MeshStandardMaterialParameters } from 'three';
 
 export interface AnimatedTerrainMaterialUniforms {
   uAnimTime: { value: number };
   uAnimTimeScale: { value: number };
 }
 
-export interface AnimatedTerrainMaterial extends THREE.MeshStandardMaterial {
-  userData: THREE.MeshStandardMaterial['userData'] & {
+export interface AnimatedTerrainMaterial extends MeshStandardMaterial {
+  userData: MeshStandardMaterial['userData'] & {
     animUniforms: AnimatedTerrainMaterialUniforms;
   };
 }
@@ -23,7 +23,7 @@ export function computeAnimatedTerrainWaveOffset(
 }
 
 export function createAnimatedTerrainMaterial(
-  options: Partial<THREE.MeshStandardMaterialParameters> & { timeScale?: number } = {},
+  options: Partial<MeshStandardMaterialParameters> & { timeScale?: number } = {},
 ): AnimatedTerrainMaterial {
   const { timeScale = 0.15, ...matParams } = options;
   const animUniforms: AnimatedTerrainMaterialUniforms = {
@@ -31,7 +31,7 @@ export function createAnimatedTerrainMaterial(
     uAnimTimeScale: { value: timeScale },
   };
 
-  const material = new THREE.MeshStandardMaterial(matParams) as AnimatedTerrainMaterial;
+  const material = new MeshStandardMaterial(matParams) as AnimatedTerrainMaterial;
   material.userData.animUniforms = animUniforms;
 
   material.onBeforeCompile = (shader) => {
@@ -61,7 +61,7 @@ export function createAnimatedTerrainMaterial(
   return material;
 }
 
-export function setAnimatedTerrainTime(material: THREE.Material, elapsedTime: number): void {
+export function setAnimatedTerrainTime(material: Material, elapsedTime: number): void {
   const uniforms = (material as AnimatedTerrainMaterial).userData?.animUniforms;
   if (!uniforms) return;
   uniforms.uAnimTime.value = elapsedTime;

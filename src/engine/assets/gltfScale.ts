@@ -3,7 +3,7 @@
  * All GLB loaders should normalize through these helpers instead of ad-hoc factors.
  */
 
-import * as THREE from 'three';
+import { Box3, Mesh, Object3D, SkinnedMesh, Vector3 } from 'three';
 import {
   PLAYER_GLB_TARGET_VISUAL_METERS,
   PLAYER_VISUAL_HEIGHT_FALLBACK_M,
@@ -26,9 +26,9 @@ export const CHARACTER_HEIGHT_FALLBACK_M = PLAYER_VISUAL_HEIGHT_FALLBACK_M;
 export const CHARACTER_MIN_TRUSTED_HEIGHT_M = 1.0;
 
 export interface GltfBounds {
-  size: THREE.Vector3;
-  min: THREE.Vector3;
-  max: THREE.Vector3;
+  size: Vector3;
+  min: Vector3;
+  max: Vector3;
 }
 
 export interface CharacterGltfFit {
@@ -39,7 +39,7 @@ export interface CharacterGltfFit {
 
 export type PropFitAxis = 'height' | 'width' | 'depth' | 'maxHorizontal' | 'maxExtent';
 
-export function measureGltfBounds(obj: THREE.Object3D): GltfBounds {
+export function measureGltfBounds(obj: Object3D): GltfBounds {
   obj.updateWorldMatrix(true, true);
   // Use manual union instead of setFromObject — setFromObject calls
   // computeBoundingBox on SkinnedMesh internally, which crashes when
@@ -49,23 +49,23 @@ export function measureGltfBounds(obj: THREE.Object3D): GltfBounds {
   return box;
 }
 
-const _meshBoundsScratch = new THREE.Box3();
+const _meshBoundsScratch = new Box3();
 
 /**
  * Humanoid GLB bounds — unions all SkinnedMesh slices after skeleton update.
  * Quaternius modular rigs export many skinned parts; `setFromObject` on the root
  * can measure a single slice (boots ≈0.19 m) and break scale/foot pivot on medium+.
  */
-export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
+export function measureCharacterGltfBounds(obj: Object3D): GltfBounds {
   // updateMatrixWorld(true) forces all children — including bones — to
   // recompute matrixWorld. This is needed for accurate SkinnedMesh bounds
   // because applyBoneTransform reads bone.matrixWorld. (Task 5-B #3.)
   obj.updateMatrixWorld(true);
-  const union = new THREE.Box3();
+  const union = new Box3();
   let hasUnion = false;
 
   obj.traverse((node) => {
-    if (node instanceof THREE.SkinnedMesh) {
+    if (node instanceof SkinnedMesh) {
       // Guard against null skeleton — some GLB exports (props, furniture)
       // can have SkinnedMesh without a bound skeleton, causing
       // "Cannot read properties of null (reading 'bones')" in
@@ -83,7 +83,7 @@ export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
         if (!node.boundingBox) return;
         _meshBoundsScratch.copy(node.boundingBox).applyMatrix4(node.matrixWorld);
       }
-    } else if (node instanceof THREE.Mesh) {
+    } else if (node instanceof Mesh) {
       _meshBoundsScratch.setFromObject(node);
     } else {
       return;
@@ -101,16 +101,16 @@ export function measureCharacterGltfBounds(obj: THREE.Object3D): GltfBounds {
     // No meshes found — return empty bounds instead of recursing.
     // Previously this called measureGltfBounds(obj) which called
     // measureCharacterGltfBounds → infinite recursion → stack overflow.
-    const empty = new THREE.Vector3();
-    return { size: empty, min: new THREE.Vector3(), max: new THREE.Vector3() };
+    const empty = new Vector3();
+    return { size: empty, min: new Vector3(), max: new Vector3() };
   }
 
-  const size = new THREE.Vector3();
+  const size = new Vector3();
   union.getSize(size);
   return { size, min: union.min.clone(), max: union.max.clone() };
 }
 
-function resolveCharacterHeightDim(size: THREE.Vector3): { heightDim: number; rotX: number } {
+function resolveCharacterHeightDim(size: Vector3): { heightDim: number; rotX: number } {
   let rotX = 0;
   let heightDim = size.y;
   if (size.z > size.y * 1.15) {

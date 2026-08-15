@@ -1,13 +1,13 @@
 /* Wake-room desk surface props — keyboard RGB + mouse sit on the tabletop. */
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { CanvasTexture, DoubleSide, SRGBColorSpace } from 'three';
 import {
   getSharedBoxGeometry,
   getSharedCylinderGeometry,
 } from '@/engine/three/moduleGeometryRegistry';
 
-function createRgbKeyboardTexture(): THREE.CanvasTexture {
+function createRgbKeyboardTexture(): CanvasTexture {
   const w = 256;
   const h = 96;
   const canvas = document.createElement('canvas');
@@ -38,8 +38,8 @@ function createRgbKeyboardTexture(): THREE.CanvasTexture {
       ctx.fillRect(x, y, keyW, 1);
     }
   }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.colorSpace = THREE.SRGBColorSpace;
+  const tex = new CanvasTexture(canvas);
+  tex.colorSpace = SRGBColorSpace;
   tex.anisotropy = 4;
   tex.needsUpdate = true;
   return tex;
@@ -138,7 +138,7 @@ export function DeskWallCurtain({
             color={i % 2 === 0 ? '#4a3a52' : '#5a4a62'}
             roughness={0.92}
             metalness={0.02}
-            side={THREE.DoubleSide}
+            side={DoubleSide}
           />
         </mesh>
       ))}

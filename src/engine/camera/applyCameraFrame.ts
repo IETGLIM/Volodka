@@ -1,4 +1,4 @@
-import * as THREE from 'three';
+import { MathUtils, Vector3 } from 'three';
 import {
   updateSpringCamera,
   applyEnhancedBreathingIdle,
@@ -26,12 +26,12 @@ import {
 } from '@/engine/SharedAudioContext';
 
 /** Pre-allocated temps for camera roll (avoid 4× Vector3 alloc per frame). */
-const _rollUp = new THREE.Vector3(0, 1, 0);
-const _rollForward = new THREE.Vector3();
-const _rollRight = new THREE.Vector3();
-const _rollRolledUp = new THREE.Vector3();
+const _rollUp = new Vector3(0, 1, 0);
+const _rollForward = new Vector3();
+const _rollRight = new Vector3();
+const _rollRolledUp = new Vector3();
 /** Pre-allocated temp for camera forward direction (backward-movement detection + listener orientation). */
-const _camFwd = new THREE.Vector3();
+const _camFwd = new Vector3();
 
 /* ── AudioListener frame throttle ──
  * Module-level counter so the listener update fires every 3rd frame
@@ -205,7 +205,7 @@ export function applyCameraFrame(
     spring.velocity.set(0, 0, 0);
     spring.lookAt.copy(targetLook);
     spring.roll = effectiveRoll;
-    spring.fov = THREE.MathUtils.lerp(spring.fov, targetFov, 1 - Math.exp(-3 * delta));
+    spring.fov = MathUtils.lerp(spring.fov, targetFov, 1 - Math.exp(-3 * delta));
   } else {
     updateSpringCamera(
       spring, targetPos, targetLook, targetFov, delta, effectiveRoll,
@@ -290,7 +290,7 @@ export function applyCameraFrame(
   const speed = playerVelocity.length();
   if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration && !isEffectiveReducedMotion()) {
     const thrust = Math.min(1, (speed - 5.2) / 1.8);
-    const fwd = new THREE.Vector3().subVectors(targetLook, targetPos).normalize();
+    const fwd = new Vector3().subVectors(targetLook, targetPos).normalize();
     targetPos.addScaledVector(fwd, thrust * 0.03);
     targetLook.addScaledVector(fwd, thrust * 0.02);
     // Subtle "air rush" FOV breathing — wind-in-face feel, synced with body bob.

@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
-import * as THREE from 'three';
+import { Texture } from 'three';
 import {
   getOrBakeHeroEnvMap,
   resolveHeroEnvKind,
@@ -46,7 +46,7 @@ function BakedOrPresetFallback({
 }: HeroEnvironmentProps) {
   const gl = useThree((s) => s.gl);
   const kind = resolveHeroEnvKind(sceneId);
-  const [map, setMap] = useState<THREE.Texture | null>(null);
+  const [map, setMap] = useState<Texture | null>(null);
 
   useEffect(() => {
     if (!kind) {

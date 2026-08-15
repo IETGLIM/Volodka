@@ -3,15 +3,15 @@
  * Built as DataTextures so unit tests and headless boots do not need a full Canvas2D.
  */
 
-import * as THREE from 'three';
+import { ColorSpace, DataTexture, LinearFilter, LinearMipmapLinearFilter, MeshStandardMaterial, NoColorSpace, RepeatWrapping, SRGBColorSpace, Vector2 } from 'three';
 import { seededRand } from '@/shared/utils/seededRand';
 
 export type SurfaceDetailKind = 'asphalt' | 'concrete' | 'plaster' | 'wood' | 'sidewalk';
 
 export interface SurfaceDetailMaps {
-  map: THREE.DataTexture;
-  normalMap: THREE.DataTexture;
-  roughnessMap: THREE.DataTexture;
+  map: DataTexture;
+  normalMap: DataTexture;
+  roughnessMap: DataTexture;
   /** Suggested tile repeat for a ~10m surface. */
   repeat: number;
 }
@@ -21,14 +21,14 @@ const cache = new Map<string, SurfaceDetailMaps>();
 function makeDataTexture(
   data: Uint8Array,
   size: number,
-  colorSpace: THREE.ColorSpace,
-): THREE.DataTexture {
-  const tex = new THREE.DataTexture(data, size, size);
+  colorSpace: ColorSpace,
+): DataTexture {
+  const tex = new DataTexture(data, size, size);
   tex.colorSpace = colorSpace;
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.magFilter = THREE.LinearFilter;
-  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
+  tex.magFilter = LinearFilter;
+  tex.minFilter = LinearMipmapLinearFilter;
   tex.generateMipmaps = true;
   tex.anisotropy = 4;
   tex.needsUpdate = true;
@@ -115,9 +115,9 @@ function buildAsphalt(size: number): SurfaceDetailMaps {
   }
 
   return {
-    map: makeDataTexture(albedo, size, THREE.SRGBColorSpace),
-    normalMap: makeDataTexture(heightToNormal(height, size, 0.55), size, THREE.NoColorSpace),
-    roughnessMap: makeDataTexture(rough, size, THREE.NoColorSpace),
+    map: makeDataTexture(albedo, size, SRGBColorSpace),
+    normalMap: makeDataTexture(heightToNormal(height, size, 0.55), size, NoColorSpace),
+    roughnessMap: makeDataTexture(rough, size, NoColorSpace),
     repeat: 8,
   };
 }
@@ -156,9 +156,9 @@ function buildConcrete(size: number): SurfaceDetailMaps {
   }
 
   return {
-    map: makeDataTexture(albedo, size, THREE.SRGBColorSpace),
-    normalMap: makeDataTexture(heightToNormal(height, size, 0.4), size, THREE.NoColorSpace),
-    roughnessMap: makeDataTexture(rough, size, THREE.NoColorSpace),
+    map: makeDataTexture(albedo, size, SRGBColorSpace),
+    normalMap: makeDataTexture(heightToNormal(height, size, 0.4), size, NoColorSpace),
+    roughnessMap: makeDataTexture(rough, size, NoColorSpace),
     repeat: 6,
   };
 }
@@ -209,9 +209,9 @@ function buildPlaster(size: number): SurfaceDetailMaps {
   }
 
   return {
-    map: makeDataTexture(albedo, size, THREE.SRGBColorSpace),
-    normalMap: makeDataTexture(heightToNormal(height, size, 0.36), size, THREE.NoColorSpace),
-    roughnessMap: makeDataTexture(rough, size, THREE.NoColorSpace),
+    map: makeDataTexture(albedo, size, SRGBColorSpace),
+    normalMap: makeDataTexture(heightToNormal(height, size, 0.36), size, NoColorSpace),
+    roughnessMap: makeDataTexture(rough, size, NoColorSpace),
     repeat: 4,
   };
 }
@@ -237,9 +237,9 @@ function buildWood(size: number): SurfaceDetailMaps {
   }
 
   return {
-    map: makeDataTexture(albedo, size, THREE.SRGBColorSpace),
-    normalMap: makeDataTexture(heightToNormal(height, size, 0.35), size, THREE.NoColorSpace),
-    roughnessMap: makeDataTexture(rough, size, THREE.NoColorSpace),
+    map: makeDataTexture(albedo, size, SRGBColorSpace),
+    normalMap: makeDataTexture(heightToNormal(height, size, 0.35), size, NoColorSpace),
+    roughnessMap: makeDataTexture(rough, size, NoColorSpace),
     repeat: 3,
   };
 }
@@ -262,7 +262,7 @@ function buildSidewalk(size: number): SurfaceDetailMaps {
   // Own textures so cache disposal never double-frees concrete entries.
   base.map.dispose();
   return {
-    map: makeDataTexture(albedo, size, THREE.SRGBColorSpace),
+    map: makeDataTexture(albedo, size, SRGBColorSpace),
     normalMap: base.normalMap,
     roughnessMap: base.roughnessMap,
     repeat: 5,
@@ -319,7 +319,7 @@ export function clearSurfaceDetailCache(): void {
 
 /** Apply tiled detail maps to a standard/physical material (mutates in place). */
 export function applySurfaceDetailMaps(
-  material: THREE.MeshStandardMaterial,
+  material: MeshStandardMaterial,
   kind: SurfaceDetailKind,
   textureScale: 0.25 | 0.5 | 1 = 1,
   repeatScale = 1,
@@ -327,10 +327,10 @@ export function applySurfaceDetailMaps(
   const maps = getCachedSurfaceDetailMaps(kind, textureScale);
   const repeat = maps.repeat * repeatScale;
 
-  const cloneMap = (src: THREE.DataTexture) => {
+  const cloneMap = (src: DataTexture) => {
     const t = src.clone();
-    t.wrapS = THREE.RepeatWrapping;
-    t.wrapT = THREE.RepeatWrapping;
+    t.wrapS = RepeatWrapping;
+    t.wrapT = RepeatWrapping;
     t.repeat.set(repeat, repeat);
     t.needsUpdate = true;
     return t;
@@ -338,7 +338,7 @@ export function applySurfaceDetailMaps(
 
   material.map = cloneMap(maps.map);
   material.normalMap = cloneMap(maps.normalMap);
-  material.normalScale = new THREE.Vector2(0.55, 0.55);
+  material.normalScale = new Vector2(0.55, 0.55);
   material.roughnessMap = cloneMap(maps.roughnessMap);
   material.needsUpdate = true;
 }

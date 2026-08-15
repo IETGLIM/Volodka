@@ -8,7 +8,7 @@
  */
 
 import { useRef, useMemo } from 'react';
-import * as THREE from 'three';
+import { AdditiveBlending, BufferAttribute, BufferGeometry, Points, ShaderMaterial, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useExplorationStore } from '@/store/stores/explorationStore';
 
@@ -83,8 +83,8 @@ export function RainEffect({
   windAngle = 0.2,
   bounds = DEFAULT_BOUNDS,
 }: RainEffectProps) {
-  const pointsRef = useRef<THREE.Points>(null);
-  const materialRef = useRef<THREE.ShaderMaterial>(null);
+  const pointsRef = useRef<Points>(null);
+  const materialRef = useRef<ShaderMaterial>(null);
   const fadeRef = useRef(0);
 
   const weatherEnabled = useExplorationStore((s) => s.weatherEnabled);
@@ -104,8 +104,8 @@ export function RainEffect({
       positions[i3 + 2] = (Math.random() - 0.5) * bz;
     }
 
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
     return geo;
   }, [clampedDensity, bounds[0], bounds[1], bounds[2]]);
 
@@ -115,7 +115,7 @@ export function RainEffect({
       uSpeed: { value: speed },
       uWindAngle: { value: windAngle },
       uFade: { value: 0 },
-      uBounds: { value: new THREE.Vector3(bounds[0], bounds[1], bounds[2]) },
+      uBounds: { value: new Vector3(bounds[0], bounds[1], bounds[2]) },
     }),
     [speed, windAngle, bounds[0], bounds[1], bounds[2]],
   );
@@ -149,7 +149,7 @@ export function RainEffect({
         uniforms={uniforms}
         transparent
         depthWrite={false}
-        blending={THREE.AdditiveBlending}
+        blending={AdditiveBlending}
       />
     </points>
   );

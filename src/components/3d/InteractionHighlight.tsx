@@ -7,7 +7,7 @@
 
 import { useRef, useEffect, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import * as THREE from 'three';
+import { BackSide, BoxGeometry, FrontSide, Group, Mesh, MeshBasicMaterial, Object3D, PointLight, SpotLight } from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { useSceneEnterEffect } from '@/hooks/useSceneEnterEffect';
 
@@ -18,15 +18,15 @@ interface ActiveHighlight {
 }
 
 interface SlotResources {
-  group: THREE.Group;
-  innerMesh: THREE.Mesh;
-  outerMesh: THREE.Mesh;
-  light: THREE.PointLight;
-  spotLight: THREE.SpotLight;
-  innerMat: THREE.MeshBasicMaterial;
-  outerMat: THREE.MeshBasicMaterial;
-  innerGeo: THREE.BoxGeometry;
-  outerGeo: THREE.BoxGeometry;
+  group: Group;
+  innerMesh: Mesh;
+  outerMesh: Mesh;
+  light: PointLight;
+  spotLight: SpotLight;
+  innerMat: MeshBasicMaterial;
+  outerMat: MeshBasicMaterial;
+  innerGeo: BoxGeometry;
+  outerGeo: BoxGeometry;
 }
 
 const MAX_HIGHLIGHTS = 12;
@@ -37,37 +37,37 @@ const HIGHLIGHT_GLOW_INTENSITY = 2.4;
 const HIGHLIGHT_COLOR = '#ffdc9a';
 
 function createSlot(): SlotResources {
-  const innerGeo = new THREE.BoxGeometry(1, 1, 1);
-  const outerGeo = new THREE.BoxGeometry(1, 1, 1);
+  const innerGeo = new BoxGeometry(1, 1, 1);
+  const outerGeo = new BoxGeometry(1, 1, 1);
 
-  const innerMat = new THREE.MeshBasicMaterial({
+  const innerMat = new MeshBasicMaterial({
     color: HIGHLIGHT_COLOR,
     transparent: true,
     opacity: 0,
-    side: THREE.FrontSide,
+    side: FrontSide,
     depthWrite: false,
   });
-  const outerMat = new THREE.MeshBasicMaterial({
+  const outerMat = new MeshBasicMaterial({
     color: HIGHLIGHT_COLOR,
     transparent: true,
     opacity: 0,
-    side: THREE.BackSide,
+    side: BackSide,
     depthWrite: false,
   });
 
-  const innerMesh = new THREE.Mesh(innerGeo, innerMat);
-  const outerMesh = new THREE.Mesh(outerGeo, outerMat);
+  const innerMesh = new Mesh(innerGeo, innerMat);
+  const outerMesh = new Mesh(outerGeo, outerMat);
 
-  const light = new THREE.PointLight(HIGHLIGHT_COLOR, 0, 4, 2);
+  const light = new PointLight(HIGHLIGHT_COLOR, 0, 4, 2);
   light.position.set(0, 0.5, 0);
 
-  const spotLight = new THREE.SpotLight(HIGHLIGHT_COLOR, 0, 5, 0.52, 0.85, 1);
+  const spotLight = new SpotLight(HIGHLIGHT_COLOR, 0, 5, 0.52, 0.85, 1);
   spotLight.position.set(0, 2.5, 0.2);
-  const spotTarget = new THREE.Object3D();
+  const spotTarget = new Object3D();
   spotTarget.position.set(0, 0, 0);
   spotLight.target = spotTarget;
 
-  const group = new THREE.Group();
+  const group = new Group();
   group.add(innerMesh);
   group.add(outerMesh);
   group.add(light);

@@ -2,7 +2,7 @@
 /* ─── Volodka RPG – Winter Street procedural 3D visual ─── */
 
 import { useMemo } from 'react';
-import * as THREE from 'three';
+import { BackSide, CanvasTexture, RepeatWrapping, Vector3 } from 'three';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, PropDistanceGate } from './lod/PropDistanceGate';
@@ -18,7 +18,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { WetStreetGround } from './WetStreetGround';
 
 interface StreetWinterVisualProps {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
 }
 
 /** Gothic/Noir winter street (25×25m) */
@@ -320,7 +320,7 @@ function StreetWinterSkyDome() {
       <sphereGeometry args={[62, 28, 14, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
       <meshBasicMaterial
         map={skyTexture}
-        side={THREE.BackSide}
+        side={BackSide}
         fog={false}
         depthWrite={false}
       />
@@ -334,7 +334,7 @@ function WinterClutterGate({
   maxDistance,
   children,
 }: {
-  livePlayerPositionRef?: React.MutableRefObject<THREE.Vector3>;
+  livePlayerPositionRef?: React.MutableRefObject<Vector3>;
   position: [number, number, number];
   maxDistance: number;
   children: React.ReactNode;
@@ -493,7 +493,7 @@ function WinterLamp({ position }: { position: [number, number, number] }) {
   );
 }
 
-function createWinterGroundTexture(): THREE.CanvasTexture {
+function createWinterGroundTexture(): CanvasTexture {
   const size = 256;
   const canvas = document.createElement('canvas');
   canvas.width = size;
@@ -525,9 +525,9 @@ function createWinterGroundTexture(): THREE.CanvasTexture {
   }
   ctx.globalAlpha = 1.0;
 
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = RepeatWrapping;
+  tex.wrapT = RepeatWrapping;
   tex.repeat.set(8, 8);
   return tex;
 }

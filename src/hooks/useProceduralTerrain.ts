@@ -7,7 +7,7 @@ import {
   createAnimatedTerrainMaterial,
   setAnimatedTerrainTime,
 } from '@/engine/three/animatedTerrainMaterial';
-import * as THREE from 'three';
+import { BufferAttribute, BufferGeometry, Mesh } from 'three';
 import FastNoiseLite from 'fastnoise-lite';
 
 /* ═══════════════════════════════════════════════════════════════════ */
@@ -194,9 +194,9 @@ export function useProceduralTerrain(config: TerrainConfig) {
     }
 
     // ── Create BufferGeometry ──
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    const geo = new BufferGeometry();
+    geo.setAttribute('position', new BufferAttribute(positions, 3));
+    geo.setIndex(new BufferAttribute(indices, 1));
     geo.computeVertexNormals();
 
     // ── Height query function (for gameplay: player positioning, collisions) ──
@@ -248,7 +248,7 @@ export function useProceduralTerrain(config: TerrainConfig) {
  */
 export function useAnimatedTerrain(config: TerrainConfig, timeScale = 0.15) {
   const { geometry, getHeightAt } = useProceduralTerrain(config);
-  const meshRef = useRef<THREE.Mesh>(null);
+  const meshRef = useRef<Mesh>(null);
   const material = useMemo(
     () => createAnimatedTerrainMaterial({ timeScale, roughness: 0.9 }),
     [timeScale],
