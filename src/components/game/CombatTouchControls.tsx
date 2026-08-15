@@ -5,6 +5,7 @@
 
 import { useCallback, useRef, type ReactNode, type TouchEvent } from 'react';
 import { LogOut, Shield, Sparkles, Sword } from 'lucide-react';
+import { hapticLight, hapticMedium, hapticHeavy } from '@/shared/utils/hapticFeedback';
 
 interface CombatTouchControlsProps {
   disabled: boolean;
@@ -24,18 +25,26 @@ function TouchActionButton({
   accent,
   disabled,
   onPress,
+  haptic = 'light',
 }: {
   label: string;
   icon: ReactNode;
   accent: string;
   disabled: boolean;
   onPress: () => void;
+  haptic?: 'light' | 'medium' | 'heavy';
 }) {
+  const handlePress = useCallback(() => {
+    if (haptic === 'heavy') hapticHeavy();
+    else if (haptic === 'medium') hapticMedium();
+    else hapticLight();
+    onPress();
+  }, [onPress, haptic]);
   return (
     <button
       type="button"
       disabled={disabled}
-      onClick={onPress}
+      onClick={handlePress}
       aria-label={label}
       className="flex flex-col items-center justify-center gap-1 min-h-12 min-w-12 flex-1 rounded-xl border font-mono text-[10px] uppercase tracking-wider transition-transform active:scale-95 disabled:opacity-40 disabled:pointer-events-none"
       style={{
@@ -100,6 +109,7 @@ export function CombatTouchControls({
         accent="#22d3ee"
         disabled={disabled}
         onPress={onAttack}
+        haptic="heavy"
       />
       <TouchActionButton
         label="Защита"
@@ -107,6 +117,7 @@ export function CombatTouchControls({
         accent="#34d399"
         disabled={disabled}
         onPress={onDefend}
+        haptic="medium"
       />
       <TouchActionButton
         label={poemOpen ? 'Стих ▲' : 'Стих'}
@@ -114,6 +125,7 @@ export function CombatTouchControls({
         accent="#fbbf24"
         disabled={disabled || poemDisabled}
         onPress={onPoemToggle}
+        haptic="medium"
       />
       <TouchActionButton
         label="Бежать"
