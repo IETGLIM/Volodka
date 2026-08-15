@@ -30,4 +30,25 @@ export default defineConfig({
       ),
     },
   },
+  build: {
+    // Target modern browsers — smaller output, modern JS features
+    target: "es2022",
+    // Aggressive minification
+    minify: "esbuild",
+    // Raise chunk size warning limit (singlefile inlines everything)
+    chunkSizeWarningLimit: 15000,
+    // No sourcemaps in production for smaller bundle
+    sourcemap: false,
+  },
+  optimizeDeps: {
+    // Pre-bundle heavy dependencies for faster dev startup
+    include: [
+      "three",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "@react-three/rapier",
+      "zustand",
+      "framer-motion",
+    ],
+  },
 });
