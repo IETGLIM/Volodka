@@ -59,7 +59,7 @@ import {
   createBuff, addBuff, sumBuffEffect, hasBuffEffect, tickBuffs,
   getEnemyDefenseReduction, getPlayerDamageMultiplier,
   getPlayerAttackBoost } from './combat/buffSystem';
-import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, getPlayerCritChance, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
+import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, getPlayerCritChance, getPlayerThoughtFleeBonus, getPlayerThoughtComboMultiplierBonus, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, computeEnemyScalingFactor } from './combat/combatDifficulty';
 import { getDifficultyStore } from '@/store/storeBindings';
@@ -458,7 +458,9 @@ export function playerAttack(): CombatState | null {
   /* ── Combo System: consecutive attacks increase damage ── */
   const newComboCount = cs.comboCount + 1;
   const comboMultiplier = getComboDamageMultiplier(newComboCount);
-  damage = Math.floor(damage * comboMultiplier);
+  // Thought-cabinet combo multiplier bonus (persuasion/rhythm thoughts)
+  const thoughtComboBonus = getPlayerThoughtComboMultiplierBonus();
+  damage = Math.floor(damage * (comboMultiplier + thoughtComboBonus));
 
   /* ── Perk outgoing damage multiplier (combat_veteran, stress_mastery,
      night_owl, code_poet) — conditional on stress/time/combo. ── */
@@ -767,6 +769,8 @@ export function playerFlee(): CombatState | null {
   if (karma >= 70) fleeChance += 0.05;
 
   fleeChance += getFleeChanceBonus();
+  // Thought-cabinet flee bonus (empathy thoughts → +5% per thought)
+  fleeChance += getPlayerThoughtFleeBonus() / 100;
   fleeChance += getDifficultyStore().difficultySettings.combatFleeBaseChance - 0.3;
 
   // Clamp to [0.15, 0.95]
@@ -1096,9 +1100,16 @@ function executeEnemyTurn() {
 
   const newPlayerHp = Math.max(0, workingState.playerHp - enemyDamage);
 
+  // Use enemy-specific attack bark if available (adds personality to combat)
+  const attackBarks = template.attackBarks;
+  const barkRng = SeededCombatRng.fromState(workingState.rng);
+  const barkText = attackBarks.length > 0
+    ? attackBarks[barkRng.nextInt(0, attackBarks.length - 1)]
+    : `${workingState.enemy.emoji} ${workingState.enemy.name} атакует!`;
+
   const enemyAttackLog: CombatLogEntry = {
     turn: workingState.turn,
-    text: `${workingState.enemy.emoji} ${workingState.enemy.name} атакует! -${enemyDamage} HP${statEffectText}`,
+    text: `${barkText} -${enemyDamage} HP${statEffectText}`,
     type: 'enemy_attack',
     damage: enemyDamage };
 
@@ -1185,6 +1196,11 @@ function handleVictory(): CombatState | null {
   const creditsGained = Math.max(1, Math.floor(computeCombatCredits(xpGained, comboBonus) * getDifficultyStore().difficultySettings.creditsMultiplier));
   dispatchGameAction({ type: 'player/addCredits', amount: creditsGained });
 
+  // Boss defeat flag — used by achievement system + story progression
+  if (isBossEnemyType(enemy.type)) {
+    dispatchGameAction({ type: 'player/setFlag', key: `${enemy.type}_defeated`, value: true });
+  }
+
   // Loot roll (higher combo = better loot chance)
   const lootChance = 0.6 + cs.maxCombo * 0.05;
   const lootItems: string[] = [];
@@ -1209,6 +1225,13 @@ function handleVictory(): CombatState | null {
     lootItems,
     skillXp };
 
+  // Enemy defeat bark — dramatic last words (if defined)
+  const defeatTemplate = ENEMY_TEMPLATES[enemy.type];
+  const defeatBarks = defeatTemplate?.defeatBarks ?? [];
+  const defeatBark = defeatBarks.length > 0
+    ? defeatBarks[victoryRng.nextInt(0, defeatBarks.length - 1)]
+    : null;
+
   combat.setState({
     ...cs,
     status: 'victory',
@@ -1217,6 +1240,7 @@ function handleVictory(): CombatState | null {
     rng: victoryRng.getState(),
     log: [
       ...cs.log,
+      ...(defeatBark ? [{ turn: cs.turn, text: `💀 ${defeatBark}`, type: 'defeat' as const }] : []),
       {
         turn: cs.turn,
         text: `🏆 Победа! +${karmaGained} кармы, +${xpGained} опыта, +${creditsGained} кредитов${lootItems.length > 0 ? `, найден предмет!` : ''}${cs.maxCombo >= 3 ? ` Макс. комбо: x${cs.maxCombo}!` : ''}`,

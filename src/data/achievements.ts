@@ -635,6 +635,43 @@ export const ACHIEVEMENTS: AchievementDefinition[] = [
       { type: 'setFlag', flag: 'all_achievements', flagValue: true },
     ],
   }),
+  // ── Boss achievements — act finales ──
+  ach({
+    id: 'boss_neuro_sys_defeated',
+    title: 'Падение НейроСис',
+    description: 'Победить НейроСис — главный ИИ корпорации, финал Акта 3',
+    icon: '🧠',
+    category: 'combat',
+    rarity: 'epic',
+    hidden: false,
+    conditionDescription: 'Победить босса НейроСис',
+    unlockFlag: 'boss_neuro_sys_defeated',
+    rewards: [{ type: 'addXp', value: 150 }, { type: 'addKarma', value: 10 }],
+  }),
+  ach({
+    id: 'boss_dream_eater_defeated',
+    title: 'Буждение Снов',
+    description: 'Победить Пожирателя Снов — сущность из Мира Снов, финал Акта 5',
+    icon: '🌑',
+    category: 'combat',
+    rarity: 'epic',
+    hidden: false,
+    conditionDescription: 'Победить босса Пожиратель Снов',
+    unlockFlag: 'boss_dream_eater_defeated',
+    rewards: [{ type: 'addXp', value: 200 }, { type: 'addKarma', value: 15 }],
+  }),
+  ach({
+    id: 'boss_final_code_defeated',
+    title: 'Последняя Строка',
+    description: 'Победить Финальный Код — последнее испытание, финал Акта 7',
+    icon: '💠',
+    category: 'combat',
+    rarity: 'legendary',
+    hidden: true,
+    conditionDescription: 'Победить финального босса',
+    unlockFlag: 'boss_final_code_defeated',
+    rewards: [{ type: 'addXp', value: 300 }, { type: 'addKarma', value: 25 }],
+  }),
 ];
 
 /** Quick lookup map by id */
