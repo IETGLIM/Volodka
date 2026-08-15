@@ -67,9 +67,12 @@ export async function init(): Promise<void> {
       }
     }
 
-    // Fallback: inline base64 (default from rapier.mjs)
+    // Fallback: inline base64 (default from rapier.mjs).
+    // Rapier 0.19+ requires a single options object — calling init() with no
+    // args triggers a deprecation warning ("pass a single object instead").
+    // Pass an empty object to use the bundled inline base64 WASM.
     try {
-      await (RapierOriginal as unknown as { init: () => Promise<void> }).init();
+      await (RapierOriginal as unknown as { init: (opts?: unknown) => Promise<void> }).init({});
       initMode = 'inline';
       if (process.env.NODE_ENV !== 'production') {
         console.log('[rapierCompat] ✓ Initialized with inline base64 WASM');
