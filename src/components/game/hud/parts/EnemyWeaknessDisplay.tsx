@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { subscribeToCombat } from '@/engine/CombatSystem';
 import type { CombatState, CombatEnemy } from '@/shared/types/game';
+import { getEnemyWeaknesses, getEnemyResistances, DAMAGE_CHANNEL_LABELS, DAMAGE_CHANNEL_COLORS } from '@/engine/combat/combatAffinities';
 
 const STAT_INFO: Record<string, { label: string; icon: string; color: string }> = {
   logic: { label: 'ЛОГИКА', icon: '🧠', color: 'text-cyan-400' },
@@ -32,6 +33,10 @@ const TYPE_COLORS: Record<string, string> = {
   corporate_drone: 'border-yellow-500/40',
   memory_wraith: 'border-pink-500/40',
   firewall_guardian: 'border-emerald-500/40',
+  // ── Bosses — distinct borders for cinematic presence ──
+  boss_neuro_sys: 'border-cyan-400/50',
+  boss_dream_eater: 'border-indigo-500/50',
+  boss_final_code: 'border-amber-400/60',
 };
 
 export function EnemyWeaknessDisplay() {
@@ -85,6 +90,44 @@ export function EnemyWeaknessDisplay() {
             transition={{ duration: 1.5, ease: 'easeOut' }}
           />
         </div>
+
+        {/* Affinity weaknesses / resistances — helps player choose poem powers strategically */}
+        {(() => {
+          const weaks = getEnemyWeaknesses(enemy.type);
+          const resists = getEnemyResistances(enemy.type);
+          if (weaks.length === 0 && resists.length === 0) return null;
+          return (
+            <div className="flex flex-col gap-1 mt-0.5">
+              {weaks.length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[8px] text-emerald-400/80 font-mono uppercase">Слаб:</span>
+                  {weaks.map((w) => (
+                    <span
+                      key={w.channel}
+                      className="text-[8px] font-mono font-bold px-1 rounded"
+                      style={{ color: DAMAGE_CHANNEL_COLORS[w.channel], textShadow: `0 0 4px ${DAMAGE_CHANNEL_COLORS[w.channel]}` }}
+                    >
+                      {DAMAGE_CHANNEL_LABELS[w.channel]} ×{w.multiplier}
+                    </span>
+                  ))}
+                </div>
+              )}
+              {resists.length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap">
+                  <span className="text-[8px] text-rose-400/80 font-mono uppercase">Стойк:</span>
+                  {resists.map((r) => (
+                    <span
+                      key={r.channel}
+                      className="text-[8px] font-mono px-1 rounded text-slate-400"
+                    >
+                      {DAMAGE_CHANNEL_LABELS[r.channel]} ×{r.multiplier}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })()}
       </motion.div>
     </AnimatePresence>
   );
