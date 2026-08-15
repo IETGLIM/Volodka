@@ -1429,6 +1429,30 @@ const ITEMS: ItemDefinition[] = [
     effects: [],
     questRelated: true,
   },
+  {
+    id: 'banned_book',
+    name: 'Сборник Мёртвых Серверов',
+    description: 'Книга, изъятая из всех архивов города. Каждая страница — стих, зашифрованный как алгоритм. Прочитать его — значит запустить код пробуждения.',
+    category: 'quest_item',
+    rarity: 'legendary',
+    icon: 'BookX',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
+  {
+    id: 'eye_blueprint',
+    name: 'Чертёж «Око»',
+    description: 'Секретный чертёж системы тотального наблюдения. Сеть из 47 000 камер, привязанных к ИИ-ядру НейроСис. Уничтожить или сохранить — решать тебе.',
+    category: 'quest_item',
+    rarity: 'legendary',
+    icon: 'Eye',
+    stackable: false,
+    maxStack: 1,
+    effects: [],
+    questRelated: true,
+  },
 
 ];
 
