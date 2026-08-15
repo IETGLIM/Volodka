@@ -144,9 +144,12 @@ export function AudioVisualizer() {
   }, []);
 
   /* ─── Canvas drawing loop ─── */
+  // Only run rAF when: visible AND music is enabled. When music is off, the
+  // analyser is null and the loop would just render fake data at 60fps for
+  // nothing — a pure waste of CPU/GPU. This is the #1 rAF optimization.
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !visible) return;
+    if (!canvas || !visible || !musicEnabled) return;
 
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
@@ -186,7 +189,7 @@ export function AudioVisualizer() {
       running = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [visible, mode, isMobile]);
+  }, [visible, mode, isMobile, musicEnabled]);
 
   if (!visible) return null;
 

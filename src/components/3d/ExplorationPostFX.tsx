@@ -539,9 +539,12 @@ function PostFXPipeline() {
   const useAgx = agxToneMapping && preset.id === 'ultra' && selectedPreset === 'ultra';
   const toneMappingMode = useAgx ? ToneMappingMode.AGX : ToneMappingMode.ACES_FILMIC;
   const agxExposureLift = useAgx ? 0.15 : 0;
-  // Ultra-only refinements: HUGE bloom kernel (softer filmic falloff), eskil
-  // vignette (photographic falloff) on hero scenes, higher DOF CoC resolution.
-  const bloomKernelSize = preset.id === 'ultra' ? KernelSize.HUGE : KernelSize.LARGE;
+  // Bloom kernel: HUGE on ultra (soft filmic), MEDIUM on high (perf-friendly),
+  // SMALL on medium/low. LARGE was too heavy for sustained 60fps on mid GPUs.
+  const bloomKernelSize =
+    preset.id === 'ultra' ? KernelSize.HUGE
+    : preset.id === 'high' ? KernelSize.MEDIUM
+    : KernelSize.SMALL;
   const vignetteEskil = preset.id === 'ultra' && HERO_POSTFX_SCENES.has(sceneId as SceneId);
   const dofHeight = preset.id === 'ultra' ? 720 : 480;
 
@@ -758,13 +761,14 @@ function PostFXPipeline() {
     effect.blendMode.opacity.value = t.current;
   });
 
-  // SMAA: Medium=LOW, High=MEDIUM, Ultra=MEDIUM (Session 8 — Ultra no longer uses SMAA HIGH by default).
+  // SMAA: Ultra=MEDIUM, High=LOW, Medium/Low=disabled.
+  // SMAA is GPU-heavy; on Medium it's not worth the cost vs. native browser AA.
   const wantsSmaa =
     !visualLite
     && !coarsePointer
-    && (preset.id === 'medium' || preset.id === 'high' || preset.id === 'ultra');
+    && (preset.id === 'high' || preset.id === 'ultra');
   const smaaPreset =
-    preset.id === 'ultra' || preset.id === 'high'
+    preset.id === 'ultra'
       ? SMAAPreset.MEDIUM
       : SMAAPreset.LOW;
 

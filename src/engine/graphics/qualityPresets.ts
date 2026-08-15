@@ -282,13 +282,13 @@ export function detectAutoQualityPreset(
   initBatteryQualityCapListener();
 
   let tier: Exclude<QualityPresetId, 'auto'>;
-  // Don't penalise desktop monitors with DPR 1.0 (standard 1080p) — only
-  // use 'low' for genuinely small viewports (mobile). Desktop browsers with
-  // 1080p / 1440p monitors have plenty of power for at least 'medium'.
+  // Conservative auto-tier: 'high' is the sweet spot for most desktops.
+  // 'ultra' (GodRays, HUGE bloom, DoF) only for very large screens (≥2560px)
+  // to avoid frame drops on mid-range GPUs at 1080p/1440p.
   const isMobileViewport = viewportWidth < 768;
   if (isMobileViewport) tier = 'low';
   else if (viewportWidth < 1024) tier = 'medium';
-  else if (viewportWidth < 1440) tier = 'high';
+  else if (viewportWidth < 2560) tier = 'high';
   else tier = 'ultra';
 
   const physicalPixels = computePhysicalPixelCount(
