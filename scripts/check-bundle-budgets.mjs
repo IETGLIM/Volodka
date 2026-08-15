@@ -16,6 +16,7 @@ import { gzipSync } from 'node:zlib';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const distAssets = join(root, 'dist', 'assets');
+const distHtml = join(root, 'dist', 'index.html');
 const reportOnly = process.argv.includes('--report');
 
 const budgets = JSON.parse(
@@ -44,9 +45,30 @@ function listTierChunks(chunks, patterns) {
   return chunks.filter((c) => matchesAny(c.file, patterns));
 }
 
+// Handle viteSingleFile: when dist/assets/ doesn't exist, measure dist/index.html
 if (!existsSync(distAssets)) {
-  console.error('[budgets] dist/assets not found — run `npm run build` first.');
-  process.exit(1);
+  if (!existsSync(distHtml)) {
+    console.error('[budgets] dist/ not found — run `npm run build` first.');
+    process.exit(1);
+  }
+  // viteSingleFile mode — everything inlined into index.html
+  const raw = readFileSync(distHtml).length;
+  const gzip = gzipBytes(distHtml);
+  console.log('[budgets] viteSingleFile mode — measuring dist/index.html');
+  console.log(`  index.html: ${formatKb(raw)} raw, ${formatKb(gzip)} gzip`);
+  const hardMax = budgets.bootJsGzipBytes?.hardMax ?? 2_000_000;
+  const target = budgets.bootJsGzipBytes?.target ?? 1_200_000;
+  console.log(`  Target: ${formatKb(target)} gzip | Hard max: ${formatKb(hardMax)} gzip`);
+  if (gzip > hardMax) {
+    console.error(`[budgets] ❌ EXCEEDS hard max (${formatKb(gzip)} > ${formatKb(hardMax)})`);
+    if (!reportOnly) process.exit(1);
+  } else {
+    console.log(`[budgets] ✓ Within hard max`);
+  }
+  if (gzip > target) {
+    console.warn(`[budgets] ⚠ Exceeds target (${formatKb(gzip)} > ${formatKb(target)})`);
+  }
+  process.exit(0);
 }
 
 const jsFiles = readdirSync(distAssets).filter((f) => f.endsWith('.js'));
