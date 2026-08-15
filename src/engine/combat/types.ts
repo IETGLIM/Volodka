@@ -55,6 +55,20 @@ export interface PoemCombatAbility {
 /** Maximum combat log entries — prevents unbounded memory growth */
 export const MAX_COMBAT_LOG = 50;
 
+/** Boss enemy types — cinematic multi-phase enemies, never spawned randomly.
+ *  Used to gate special UI treatment (boss health bar, intro splash, no flee). */
+const BOSS_ENEMY_TYPES: ReadonlySet<EnemyType> = new Set<EnemyType>([
+  'boss_neuro_sys',
+  'boss_dream_eater',
+  'boss_final_code',
+]);
+
+/** Whether this enemy type is a boss (act finale). Bosses cannot flee, have
+ *  cinematic intro splash, and use the larger health bar treatment. */
+export function isBossEnemyType(type: EnemyType): boolean {
+  return BOSS_ENEMY_TYPES.has(type);
+}
+
 /** Append entries to combat log, trimming oldest if over the limit */
 export function appendLog(current: CombatLogEntry[], ...entries: CombatLogEntry[]): CombatLogEntry[] {
   const combined = [...current, ...entries];

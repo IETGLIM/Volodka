@@ -36,7 +36,11 @@ export type EnemyType =
   | 'grief_echo'        // Act 2+: Эхо Скорби — grief manifestation
   | 'corporate_ai'      // Act 4+: Корпоративный ИИ — algorithmic oppressor
   | 'rust_sentinel'     // Act 1+: Ржавый Страж — degraded old-world protector
-  | 'memory_devourer';  // Act 5+: Пожиратель Памяти — erases identity
+  | 'memory_devourer'  // Act 5+: Пожиратель Памяти — erases identity
+  // ── BOSSES — unique multi-phase enemies with special mechanics ──
+  | 'boss_neuro_sys'        // Акт 3 финал: НейроСис — главный ИИ корпорации
+  | 'boss_dream_eater'      // Акт 5 финал: Пожиратель Снов — сущность из Мира Снов
+  | 'boss_final_code';      // Акт 7 финал: Финальный Код — последнее испытание
 
 export type CombatAction = 'attack' | 'defend' | 'poem_power' | 'flee' | 'use_item';
 

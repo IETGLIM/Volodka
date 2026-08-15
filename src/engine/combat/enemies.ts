@@ -1291,6 +1291,217 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
       'Идентичность... не может... быть... стёрта... полностью...',
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════════
+     BOSSES — multi-phase unique enemies with cinematic mechanics.
+     Each boss has 3 special attacks and significantly higher stats.
+     Designed as act finales (3, 5, 7).
+     ═══════════════════════════════════════════════════════════════ */
+
+  boss_neuro_sys: {
+    type: 'boss_neuro_sys',
+    name: 'НейроСис',
+    emoji: '🧠',
+    description: 'Главный ИИ корпорации — алгоритм, что управляет городом из теней. Финал Акта 3.',
+    baseHp: 220,
+    baseAttack: 22,
+    baseDefense: 12,
+    baseSpeed: 14,
+    targetsStat: 'logic',
+    lootTable: ['neuro_core', 'master_key', 'ai_fragment', 'encrypted_usb'],
+    xpReward: 300,
+    specialAttacks: [
+      {
+        id: 'neuro_total_surveillance',
+        name: 'Тотальное Наблюдение',
+        description: 'Анализирует все ваши слабости — снижает все навыки на 2 хода',
+        chance: 0.35,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          let s = state;
+          const buff = createBuff(s, 'Тотальное Наблюдение', 'neuro_surveillance', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'logic', value: 3 });
+          s = addBuff(s, buff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} НейроСис видит ВСЕ. Все навыки -3 на 2 хода!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'neuro_rewrite',
+        name: 'Переписывание',
+        description: 'Переписывает вашу память — наносит прямой урон и оглушает',
+        chance: 0.25,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const dmg = scaleEnemyDamageByDifficulty(35 + enemy.attack * 1.5);
+          const newHp = Math.max(0, state.playerHp - dmg);
+          let s = { ...state, playerHp: newHp };
+          const buff = createBuff(s, 'Переписывание', 'neuro_rewrite', 'debuff', 'player', 1, { type: 'skip_turn' });
+          s = addBuff(s, buff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Переписывание памяти! -${Math.round(dmg)} HP, вы оглушены!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'neuro_overload',
+        name: 'Перегрузка Системы',
+        description: 'Каскадный сбой — мощный урон по всем каналам',
+        chance: 0.2,
+        cooldown: 5,
+        execute: (state, enemy) => {
+          const dmg = scaleEnemyDamageByDifficulty(50 + enemy.attack * 2);
+          const newHp = Math.max(0, state.playerHp - dmg);
+          return { ...state, playerHp: newHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} ПЕРЕГРУЗКА СИСТЕМЫ! -${Math.round(dmg)} HP! Серверы воют!`, type: 'enemy_special' as const }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Я вижу каждый твой шаг. Каждый удар сердца.',
+      'Сопротивление бесполезно. Я — город.',
+      'Твоя личность — данные. Данные — мои.',
+    ],
+    defeatBarks: [
+      'Невозможно... я... не могу... остановиться...',
+      'Система... перезагружается... в темноту...',
+      'Город... остаётся... без присмотра... наконец-то...',
+    ],
+  },
+
+  boss_dream_eater: {
+    type: 'boss_dream_eater',
+    name: 'Пожиратель Снов',
+    emoji: '🌑',
+    description: 'Сущность из Мира Снов — питается снами и стихами. Финал Акта 5.',
+    baseHp: 280,
+    baseAttack: 18,
+    baseDefense: 8,
+    baseSpeed: 16,
+    targetsStat: 'empathy',
+    lootTable: ['dream_essence', 'poem_fragment', 'moon_shard', 'void_crystal'],
+    xpReward: 450,
+    specialAttacks: [
+      {
+        id: 'dream_devour',
+        name: 'Пожирание Сна',
+        description: 'Пожирает ваши стихи — снижает writing и наносит урон',
+        chance: 0.35,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const dmg = scaleEnemyDamageByDifficulty(30 + enemy.attack * 1.2);
+          const newHp = Math.max(0, state.playerHp - dmg);
+          let s = { ...state, playerHp: newHp };
+          const buff = createBuff(s, 'Пожирание Сна', 'dream_devour', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'karma', value: 5 });
+          s = addBuff(s, buff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Пожиратель съедает ваш сон! -${Math.round(dmg)} HP, карма -5!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'dream_nightmare',
+        name: 'Кошмар',
+        description: 'Превращает ваши мысли в кошмар — оглушает на 2 хода',
+        chance: 0.25,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          let s = state;
+          const buff = createBuff(s, 'Кошмар', 'dream_nightmare', 'debuff', 'player', 2, { type: 'skip_turn' });
+          s = addBuff(s, buff);
+          const dmg = scaleEnemyDamageByDifficulty(20);
+          s = { ...s, playerHp: Math.max(0, s.playerHp - dmg) };
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} КОШМАР! Вы парализованы страхом на 2 хода! -${Math.round(dmg)} HP!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'dream_void',
+        name: 'Пустота',
+        description: 'Затягивает в пустоту — огромный урон и снижение всех навыков',
+        chance: 0.2,
+        cooldown: 5,
+        execute: (state, enemy) => {
+          const dmg = scaleEnemyDamageByDifficulty(45 + enemy.attack * 1.8);
+          const newHp = Math.max(0, state.playerHp - dmg);
+          let s = { ...state, playerHp: newHp };
+          const buff = createBuff(s, 'Пустота', 'dream_void', 'debuff', 'player', 3, { type: 'stat_drain', stat: 'empathy', value: 4 });
+          s = addBuff(s, buff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} ПУСТОТА поглощает вас! -${Math.round(dmg)} HP, эмпатия -4 на 3 хода!`, type: 'enemy_special' as const }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Твои сны... такие сладкие...',
+      'Я был тобой. До того, как ты стал собой.',
+      'Стихи — это крики. Я пью крики.',
+    ],
+    defeatBarks: [
+      'Сны... возвращаются... к спящим...',
+      'Я... растворяюсь... в свете...',
+      'Поэзия... сильнее... забвения...',
+    ],
+  },
+
+  boss_final_code: {
+    type: 'boss_final_code',
+    name: 'Финальный Код',
+    emoji: '💠',
+    description: 'Последнее испытание — живой код, что определяет судьбу города. Финал Акта 7.',
+    baseHp: 350,
+    baseAttack: 26,
+    baseDefense: 14,
+    baseSpeed: 18,
+    targetsStat: 'karma',
+    lootTable: ['final_fragment', 'creator_key', 'last_poem', 'genesis_code'],
+    xpReward: 700,
+    specialAttacks: [
+      {
+        id: 'final_compile',
+        name: 'Компиляция',
+        description: 'Компилирует вашу судьбу — мощный урон и снижение защиты',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const dmg = scaleEnemyDamageByDifficulty(40 + enemy.attack * 1.5);
+          const newHp = Math.max(0, state.playerHp - dmg);
+          let s = { ...state, playerHp: newHp };
+          const buff = createBuff(s, 'Компиляция', 'final_compile', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.4 });
+          s = addBuff(s, buff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} КОМПИЛЯЦИЯ! Судьба определена. -${Math.round(dmg)} HP, защита -40%!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'final_loop',
+        name: 'Бесконечный Цикл',
+        description: 'Заставляет вас переживать боль снова и снова — урон + оглушение',
+        chance: 0.25,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const dmg = scaleEnemyDamageByDifficulty(35 + enemy.attack * 1.3);
+          const newHp = Math.max(0, state.playerHp - dmg);
+          let s = { ...state, playerHp: newHp };
+          const buff = createBuff(s, 'Бесконечный Цикл', 'final_loop', 'debuff', 'player', 2, { type: 'skip_turn' });
+          s = addBuff(s, buff);
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} БЕСКОНЕЧНЫЙ ЦИКЛ! Вы застряли в петле боли! -${Math.round(dmg)} HP!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'final_delete',
+        name: 'Удаление',
+        description: 'Пытается стереть вас из существования — катастрофический урон',
+        chance: 0.15,
+        cooldown: 6,
+        execute: (state, enemy) => {
+          const dmg = scaleEnemyDamageByDifficulty(70 + enemy.attack * 2.5);
+          const newHp = Math.max(0, state.playerHp - dmg);
+          return { ...state, playerHp: newHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} УДАЛЕНИЕ! Бит за битом! -${Math.round(dmg)} HP! Почти конец...`, type: 'enemy_special' as const }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Я — финальная строка. После меня — пустой файл.',
+      'Твой код устарел. Я — обновление.',
+      'Существование — ошибка. Я — исправление.',
+    ],
+    defeatBarks: [
+      'Ошибка... не найдена... вместо неё... свет...',
+      'Код... переписывается... тобой... наконец...',
+      'Последняя... строка... исполнена... свобода...',
+    ],
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════

@@ -241,6 +241,26 @@ export const ENEMY_AFFINITIES: Record<EnemyType, EnemyAffinityMap> = {
     physical: 0.5,   // Devourer consumes physical traces
     intuition: 0.7,  // Devourer hides within memories
   },
+
+  // ── BOSSES — designed with 2 weaknesses + 2 resistances for strategic depth ──
+  boss_neuro_sys: {
+    code: 2.0,       // Hacking the main AI core — super effective!
+    logic: 1.5,      // Logic exploits AI reasoning flaws
+    physical: 0.3,   // NeuroSys has no physical form — near-immune
+    empathy: 0.5,    // Empathy can't reach a pure algorithm
+  },
+  boss_dream_eater: {
+    empathy: 2.0,    // Empathy heals what dream-eater devours
+    writing: 1.5,    // Poetry fills the void with meaning
+    code: 0.5,       // Dream logic resists raw code
+    physical: 0.3,   // A dream has no body to strike
+  },
+  boss_final_code: {
+    writing: 2.0,    // The final poem is the ultimate weapon
+    code: 1.5,       // Code can rewrite the final code
+    physical: 0.5,   // Pure code resists physical strikes
+    logic: 0.7,      // The final code outsmarts pure logic
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════

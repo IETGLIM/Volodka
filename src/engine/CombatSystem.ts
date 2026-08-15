@@ -54,7 +54,7 @@ function snap() {
 
 // ── Sub-module imports ──
 import type { CombatState, CombatLogEntry, CombatBuff, EnemyType, CombatEnemy } from './combat/types';
-import { appendLog } from './combat/types';
+import { appendLog, isBossEnemyType } from './combat/types';
 import {
   createBuff, addBuff, sumBuffEffect, hasBuffEffect, tickBuffs,
   getEnemyDefenseReduction, getPlayerDamageMultiplier,
@@ -721,6 +721,19 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 export function playerFlee(): CombatState | null {
   const cs = combat.getState();
   if (!cs || !cs.isPlayerTurn || cs.status !== 'active') return null;
+
+  // Bosses cannot be fled — act finales are do-or-die.
+  if (isBossEnemyType(cs.enemy.type)) {
+    const logEntry: CombatLogEntry = {
+      turn: cs.turn,
+      text: '⚔ От босса нельзя сбежать — это решающая битва!',
+      type: 'info' as const,
+    };
+    const next = { ...cs, log: appendLog(cs.log, logEntry) };
+    combat.setState(next);
+    notifyNewCombatLogEntries(cs.log.length);
+    return next;
+  }
 
   const playerState = snap().playerState;
   const playerSpeed = playerState.skills.intuition + playerState.skills.logic;

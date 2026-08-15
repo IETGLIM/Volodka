@@ -50,6 +50,10 @@ const ENEMY_VISUAL_BY_TYPE: Record<EnemyType, EnemyVisualSpec> = {
   network_spy: { archetype: 'agent', scale: 1.0 },
   quantum_ghost: { archetype: 'ethereal', scale: 0.95 },
   rust_sentinel: { archetype: 'golem', scale: 1.2 },
+  // ── Bosses — larger scale for cinematic presence ──
+  boss_neuro_sys: { archetype: 'ethereal', scale: 1.4 },
+  boss_dream_eater: { archetype: 'ethereal', scale: 1.5 },
+  boss_final_code: { archetype: 'ethereal', scale: 1.3 },
 };
 
 export function resolveEnemyVisualSpec(enemyType: EnemyType): EnemyVisualSpec {
