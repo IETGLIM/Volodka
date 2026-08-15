@@ -227,6 +227,19 @@ export function CompassHUD() {
   const isOutdoor = SCENE_DEFINITIONS[sceneId]?.type === 'outdoor';
   const isVisible = mode === 'exploration' && isOutdoor;
 
+  // ARIA: announce current cardinal heading derived from player yaw.
+  const headingLabel = (() => {
+    const deg = ((rotation * 180) / Math.PI + 360) % 360;
+    if (deg < 22.5 || deg >= 337.5) return 'Север';
+    if (deg < 67.5) return 'Северо-восток';
+    if (deg < 112.5) return 'Восток';
+    if (deg < 157.5) return 'Юго-восток';
+    if (deg < 202.5) return 'Юг';
+    if (deg < 247.5) return 'Юго-запад';
+    if (deg < 292.5) return 'Запад';
+    return 'Северо-запад';
+  })();
+
   return (
     <AnimatePresence>
       {isVisible && (
@@ -238,6 +251,8 @@ export function CompassHUD() {
           className="compass-hud fixed left-1/2 -translate-x-1/2 pointer-events-none"
           data-exploration-ui
           data-testid="compass-hud"
+          role="img"
+          aria-label={`Компас: направление ${headingLabel}`}
           style={{ top: explorationCompassTopPx(), zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
         >
           {/* Glass-morphism container */}

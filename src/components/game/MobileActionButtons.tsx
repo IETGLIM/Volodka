@@ -175,8 +175,8 @@ export function MobileActionButtons() {
           >
             <Zap size={18} aria-hidden="true" />
           </button>
-          <span className={`mobile-action-btn__label ${runToggled ? '' : ''}`}>
-            {runToggled ? 'Бег' : 'Бег'}
+          <span className={`mobile-action-btn__label ${runToggled ? 'mobile-action-btn__label--active' : ''}`}>
+            {runToggled ? 'Бег вкл' : 'Бег выкл'}
           </span>
         </div>
       </div>

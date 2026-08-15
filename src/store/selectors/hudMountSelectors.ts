@@ -8,7 +8,7 @@
  * expected by each widget. All selectors are additive — no state writes.
  */
 
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { determineWeatherType } from '@/data/weatherEffects';
 import type { WeatherType as OverlayWeatherType, LocationType } from '@/components/game/hud/parts/EnvironmentalEffectsOverlay';
 import type { ActiveEffect } from '@/components/game/hud/parts/BuffDebuffTracker';
@@ -108,6 +108,16 @@ export function useEnvironmentalEffectsOverlayProps() {
  */
 export function useActiveEffects(): ActiveEffect[] {
   const poemPowers = useGameSelector((s) => s.poemPowers);
+  // Force a re-render every 500ms while at least one poem power is on cooldown
+  // so countdown timers tick down. Without this, useMemo([poemPowers]) would
+  // freeze — poemPowers ref is stable until a new power is used.
+  const hasActive = Object.keys(poemPowers).length > 0;
+  const [, bump] = useState(0);
+  useEffect(() => {
+    if (!hasActive) return;
+    const iv = window.setInterval(bump, 500);
+    return () => window.clearInterval(iv);
+  }, [hasActive]);
 
   return useMemo(() => {
     const entries = Object.entries(poemPowers);
@@ -134,7 +144,10 @@ export function useActiveEffects(): ActiveEffect[] {
           isWarning,
         };
       });
-  }, [poemPowers]);
+    // hasActive is not a real dependency but forces recompute when set flips;
+    // the 500ms bump via useState keeps now fresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poemPowers, hasActive]);
 }
 
 /* ─── SkillRechargeHUD selectors ─── */
@@ -146,6 +159,14 @@ export function useActiveEffects(): ActiveEffect[] {
  */
 export function useSkillSlots(): SkillSlot[] {
   const poemPowers = useGameSelector((s) => s.poemPowers);
+  // Force re-render every 500ms while any skill is on cooldown (see useActiveEffects).
+  const hasActive = Object.keys(poemPowers).length > 0;
+  const [, bump] = useState(0);
+  useEffect(() => {
+    if (!hasActive) return;
+    const iv = window.setInterval(bump, 500);
+    return () => window.clearInterval(iv);
+  }, [hasActive]);
 
   return useMemo(() => {
     const entries = Object.entries(poemPowers);
@@ -173,5 +194,6 @@ export function useSkillSlots(): SkillSlot[] {
           isActive: false,
         };
       });
-  }, [poemPowers]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poemPowers, hasActive]);
 }

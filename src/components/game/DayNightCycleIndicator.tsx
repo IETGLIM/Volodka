@@ -241,12 +241,23 @@ export function DayNightCycleIndicator() {
 
   const PhaseIcon = config.icon;
 
+  // ARIA: announce current time-of-day phase in Russian for screen readers.
+  const phaseRuLabel: Record<typeof phase, string> = {
+    morning: 'Утро',
+    day: 'День',
+    evening: 'Вечер',
+    night: 'Ночь',
+  };
+  const ariaLabel = `Время суток: ${phaseRuLabel[phase]}, ${formatTime(timeOfDay)}`;
+
   return (
     <>
       {/* Desktop: Full SVG arc widget */}
       <div
         className="fixed pointer-events-none hidden lg:block"
         style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
+        role="img"
+        aria-label={ariaLabel}
       >
       <motion.div
         className="pointer-events-auto rounded-lg border backdrop-blur-md overflow-hidden relative"
