@@ -140,6 +140,57 @@ export function GameAnnouncer() {
       }),
     );
 
+    // ── Extended coverage: poem powers, achievements, level-ups, karma ──
+
+    // Poem power used — announce the power name for combat context
+    unsubs.push(
+      eventBus.on('poem:power_used', (payload) => {
+        announce(`Стих-способность: ${payload.powerName}`);
+      }),
+    );
+
+    // Achievement unlocked — assertive (significant event)
+    unsubs.push(
+      eventBus.on('achievement:unlocked', (payload) => {
+        announce(`Достижение: ${payload.title}`, 'assertive');
+      }),
+    );
+
+    // Player level up — assertive
+    unsubs.push(
+      eventBus.on('player:levelup', (payload) => {
+        const lvl = payload.newLevel ?? payload.levelsGained;
+        announce(`Новый уровень! ${lvl ?? ''}`, 'assertive');
+      }),
+    );
+
+    // Karma shift — only announce significant changes (>10)
+    unsubs.push(
+      eventBus.on('player:karma_change', (payload) => {
+        const change = payload.delta ?? 0;
+        if (Math.abs(change) >= 10) {
+          const dir = change > 0 ? 'возросла' : 'упала';
+          announce(`Карма ${dir} на ${Math.abs(change)}`);
+        }
+      }),
+    );
+
+    // Skill level up
+    unsubs.push(
+      eventBus.on('skill:level_up', (payload) => {
+        const skillRu: Record<string, string> = {
+          logic: 'Логика',
+          intuition: 'Интуиция',
+          empathy: 'Эмпатия',
+          writing: 'Письмо',
+          energy: 'Энергия',
+          karma: 'Карма',
+        };
+        const skillName = skillRu[payload.skill] ?? payload.skill;
+        announce(`Навык повышен: ${skillName}, уровень ${payload.level}`);
+      }),
+    );
+
     return () => {
       for (const unsub of unsubs) unsub();
     };

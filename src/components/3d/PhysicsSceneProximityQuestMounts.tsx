@@ -8,6 +8,7 @@ import { ProximityReactivityRenderer } from './ProximityReactivityRenderer';
 import { SceneExitIndicator } from './SceneExitIndicator';
 import { QuestWaypoints } from './QuestWaypoints';
 import { ChoiceReactivity } from './ChoiceReactivity';
+import { EnvironmentalHazardTicker } from './EnvironmentalHazardTicker';
 import type * as THREE from 'three';
 
 export interface PhysicsSceneProximityQuestMountsProps {
@@ -23,6 +24,7 @@ export function PhysicsSceneProximityQuestMounts({
       <SceneExitIndicator livePlayerPositionRef={livePlayerPositionRef} />
       <QuestWaypoints livePlayerPositionRef={livePlayerPositionRef} />
       <ChoiceReactivity />
+      <EnvironmentalHazardTicker livePlayerPositionRef={livePlayerPositionRef} />
     </>
   );
 }

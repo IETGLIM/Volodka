@@ -3,7 +3,6 @@
  * OTS aids: quest bearing arrow, ambient vignette, NPC proximity whisper.
  */
 
-import { useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Save } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -14,9 +13,6 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
-import { useMiniMapState } from '@/store/selectors/explorationSelectors';
-import { useActiveQuests, getQuestMarker } from '@/store/questStore';
-import { SCENE_CONFIG } from '@/config/scenes';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { EnhancedCrosshairPrompt } from '@/components/game/EnhancedCrosshairPrompt';
@@ -40,8 +36,6 @@ import { AaaWorldMarkerSystem } from '@/components/game/hud/parts/AaaWorldMarker
 import { ObjectiveBeacon } from '@/components/game/hud/parts/ObjectiveBeacon';
 import { InteractableSparkle } from '@/components/game/hud/parts/InteractableSparkle';
 import { SceneEntryNudge } from '@/components/game/hud/parts/SceneEntryNudge';
-import { CyberpunkMinimap } from '@/components/game/hud/parts/CyberpunkMinimap';
-import type { MinimapMarker } from '@/components/game/hud/parts/CyberpunkMinimap';
 import { QuestObjectiveCard } from '@/components/game/hud/parts/QuestObjectiveCard';
 import { useActiveQuestCardData } from '@/components/game/hud/parts/questObjectiveCardAdapter';
 import { useGamePhase } from '@/store/selectors/uiSelectors';
@@ -106,32 +100,11 @@ export function ExplorationHUD(props: HUDProps) {
     && gamePhase === 'exploration'
     && activeQuestCardData !== null;
 
-  /* ── CyberpunkMinimap data ──
-     Derives player position, rotation, location name, and quest markers
-     from the exploration + quest stores. Gated on !isMobile (too small
-     on mobile viewports). */
-  const { playerPos, playerRotation, currentSceneId } = useMiniMapState();
-  const activeQuests = useActiveQuests();
-
-  const minimapMarkers: MinimapMarker[] = useMemo(() => {
-    if (isMobile) return [];
-    const result: MinimapMarker[] = [];
-    for (const q of activeQuests) {
-      const marker = getQuestMarker(q.questId);
-      if (!marker) continue;
-      result.push({
-        id: `quest-${q.questId}`,
-        type: 'quest',
-        worldPosition: [marker.position[0], marker.position[2]],
-        label: q.questId,
-        isActive: true,
-        priority: 10,
-      });
-    }
-    return result;
-  }, [activeQuests, isMobile]);
-
-  const minimapLocationName = SCENE_CONFIG[currentSceneId]?.name;
+  /* ── Minimap data is no longer derived here.
+     The rotating canvas minimap is mounted by OrchestratorGameplayLayer as
+     <GameplayMinimap> (MinimapComponent), which reads player position and
+     quest markers directly from the store. The duplicate CyberpunkMinimap
+     that used this data was removed to avoid double rAF + visual overlap. */
 
   const {
     photoModeOn,
@@ -239,22 +212,16 @@ export function ExplorationHUD(props: HUDProps) {
       <LootProximityIndicator />
       <PhysicsDegradedDevBadge />
 
-      {/* CyberpunkMinimap — top-right minimap showing player position + quest markers.
-          Hidden on mobile (too small viewport) and in photo mode. */}
+      {/* Difficulty indicator — top-right. The main rotating canvas minimap is
+          mounted separately by OrchestratorGameplayLayer as <GameplayMinimap>
+          (MinimapComponent), so we do NOT render a second <CyberpunkMinimap>
+          here to avoid duplicate rAF loops and visual overlap. */}
       {!isMobile && (
         <div
           className="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-auto hud-filmic-glow-breathe"
           style={{ zIndex: UI_LAYERS.HUD + 1 }}
         >
           <DifficultyIndicator onClick={() => {}} />
-          <CyberpunkMinimap
-            playerPosition={[playerPos[0], playerPos[2]]}
-            markers={minimapMarkers}
-            rotation={playerRotation}
-            locationName={minimapLocationName}
-            size={140}
-            position={{ top: 0, right: 0 }}
-          />
         </div>
       )}
 

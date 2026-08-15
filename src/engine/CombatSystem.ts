@@ -221,6 +221,8 @@ class CombatManager {
 }
 
 const combat = new CombatManager();
+/** Exposed for read-only consumers (e.g. ScreenEffects low-HP vignette). */
+export { combat };
 
 function notifyCombatDamage(entry: CombatLogEntry): void {
   if (!entry.damage || entry.damage <= 0) return;
@@ -241,6 +243,18 @@ function notifyCombatDamage(entry: CombatLogEntry): void {
     amount: entry.damage,
     source: entry.type,
     critical: isCritical });
+
+  // AAA combat feedback: critical hits trigger a white screen flash + brief
+  // hit-stop; boss special attacks trigger chromatic aberration + heavy shake.
+  if (isCritical) {
+    eventBus.emit('fx:flash', { color: '#ffffff', opacity: 0.35, duration: 120 });
+    eventBus.emit('combat:bullet_time', { duration: 0.18, intensity: 0.5, reason: 'critical_hit' });
+  }
+  if (entry.type === 'enemy_special') {
+    eventBus.emit('fx:chromatic', { intensity: 4, duration: 350 });
+    eventBus.emit('fx:shake', { intensity: 6, duration: 300 });
+    eventBus.emit('fx:damage_vignette', { intensity: 0.5, duration: 400 });
+  }
 }
 
 function notifyNewCombatLogEntries(beforeLen: number): void {

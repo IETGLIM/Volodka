@@ -13,6 +13,7 @@ import {
   getGamepadSelectedPoemIndex,
   subscribeToCombat,
 } from '@/engine/CombatSystem';
+import { isBossEnemyType } from '@/engine/combat/types';
 import type { CombatState } from '@/shared/types/game';
 import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
@@ -35,7 +36,7 @@ export function useCombatUiController() {
   const [screenShake, setScreenShake] = useState(false);
   const [flashColor, setFlashColor] = useState<string | null>(null);
   const [introVisible, setIntroVisible] = useState(false);
-  const [introMeta, setIntroMeta] = useState<{ emoji: string; name: string } | null>(null);
+  const [introMeta, setIntroMeta] = useState<{ emoji: string; name: string; isBoss?: boolean } | null>(null);
   const gamepadConnected = useGamepadConnected();
   const isTouchDevice = useTouchDevice();
   const [gamepadSelectedIdx, setGamepadSelectedIdx] = useState(0);
@@ -64,10 +65,11 @@ export function useCombatUiController() {
   const dismissIntro = useCallback(() => setIntroVisible(false), []);
 
   useEffect(() => {
-    const unsub = eventBus.on('combat:start', ({ encounterName, encounterEmoji }) => {
+    const unsub = eventBus.on('combat:start', ({ encounterName, encounterEmoji, enemyType }) => {
       setIntroMeta({
         emoji: encounterEmoji ?? '👾',
         name: encounterName ?? 'Противник',
+        isBoss: enemyType ? isBossEnemyType(enemyType) : false,
       });
       setIntroVisible(true);
     });

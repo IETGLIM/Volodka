@@ -285,13 +285,39 @@ export function ScreenEffects() {
 /* ── Persistent low-health vignette with pulse ── */
 function LowHealthVignette() {
   const { energy, stress } = useScreenEffectsVitals();
+  // Track combat HP ratio via combat:hit events (playerHp lives in CombatState,
+  // not the exploration store). When the player takes damage and HP drops low,
+  // we pulse a red heartbeat vignette.
+  const [combatHpRatio, setCombatHpRatio] = useState(1);
+  useEffect(() => {
+    const unsub = eventBus.on('combat:hit', (payload) => {
+      if (payload.isPlayerHit) {
+        // Read combat state to get current HP ratio — CombatSystem is the source of truth.
+        import('@/engine/CombatSystem').then(({ combat }) => {
+          const cs = combat.getState();
+          if (cs && cs.playerMaxHp > 0) {
+            setCombatHpRatio(cs.playerHp / cs.playerMaxHp);
+          }
+        }).catch(() => {});
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const isDanger = energy < 25 || stress > 70;
   const intensity = isDanger
     ? Math.min(0.5, (energy < 25 ? (25 - energy) / 25 : 0) * 0.3 + (stress > 70 ? (stress - 70) / 30 : 0) * 0.2)
     : 0;
 
-  if (intensity <= 0) return null;
+  // AAA low-HP heartbeat: when combat HP drops below 25%, a red vignette pulses
+  // faster as HP approaches 0. At <10% it's a critical emergency strobe.
+  const hpPct = combatHpRatio;
+  const hpDanger = hpPct < 0.25;
+  const hpCritical = hpPct < 0.1;
+  const hpIntensity = hpCritical ? 0.55 : hpDanger ? 0.35 * (1 - hpPct / 0.25) : 0;
+  const hpPulseRate = hpCritical ? '0.5s' : '0.9s';
+
+  if (intensity <= 0 && hpIntensity <= 0) return null;
 
   // Color shifts: red for low health, orange for high stress, purple for both
   const isCritical = energy < 15;
@@ -309,16 +335,34 @@ function LowHealthVignette() {
   const pulseRate = isCritical ? '0.8s' : isDanger ? '1.5s' : '2s';
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 pointer-events-none"
-      style={{
-        zIndex: UI_LAYERS.NOIR_OVERLAY + 1,
-        background: `radial-gradient(ellipse at center, transparent 35%, ${pulseColor} 100%)`,
-        animation: `healthPulse ${pulseRate} ease-in-out infinite`,
-      }}
-    />
+    <>
+      {intensity > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            zIndex: UI_LAYERS.NOIR_OVERLAY + 1,
+            background: `radial-gradient(ellipse at center, transparent 35%, ${pulseColor} 100%)`,
+            animation: `healthPulse ${pulseRate} ease-in-out infinite`,
+          }}
+        />
+      )}
+      {/* AAA low-HP heartbeat vignette — faster pulse as HP drops */}
+      {hpIntensity > 0 && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 pointer-events-none"
+          style={{
+            zIndex: UI_LAYERS.NOIR_OVERLAY + 2,
+            background: `radial-gradient(ellipse at center, transparent 25%, rgba(200,20,20,${hpIntensity}) 90%)`,
+            animation: `dangerPulse ${hpPulseRate} ease-in-out infinite`,
+          }}
+        />
+      )}
+    </>
   );
 }

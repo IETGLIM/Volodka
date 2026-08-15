@@ -41,6 +41,7 @@ export function CombatUI() {
               key={`${ui.introMeta.name}-${ui.introMeta.emoji}`}
               emoji={ui.introMeta.emoji}
               name={ui.introMeta.name}
+              isBoss={ui.introMeta.isBoss}
               onDone={ui.dismissIntro}
             />
           )}
