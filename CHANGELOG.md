@@ -661,3 +661,49 @@
 - Большой рефакторинг: typed EventBus с дедупликацией и приоритетами,
   GameActionDispatcher, ленивые narrative-паки по актам, бюджеты бандла в CI,
   валидатор контента, error boundaries с graceful degradation.
+
+## v4.3.1 (2025-12) — "Активация orchestrator + критические багфиксы"
+
+### Архитектура
+- **main.tsx** восстановлен на импорт `@/app/AppBootRoot` — orchestrator-архитектура
+  (R3F + Rapier + Zustand, ~340k LOC, 7-актная RPG) снова активна.
+  До этого с коммита `92528db` исполнялась только короткая vanilla Three.js сказка (~7k LOC).
+- `vite build`: 4432 модуля → 12 MB (gzip 3.4 MB), 0 ошибок typecheck.
+- Guard'ы `isAssetEffectiveShipped()` в `CesiumPlayerModel`, `VolodkaRoomVisual`,
+  `AuthoredInteriorShell` — отсутствие GLB-файлов больше не роняет сцену.
+
+### Combat (критические баги)
+- **Poem powers теперь учитывают affinity** — раньше 46 стиховых способностей игнорировали
+  систему сродства (Persona-style 6 каналов: code/logic/empathy/intuition/writing/physical).
+  Добавлен пост-процессинг в `playerUsePoemPower`.
+- **`physical: 0.0` (иммунитет) → `0.3`** для 6 ghost/wraith врагов — базовые атаки
+  перестали быть полностью бесполезными.
+- **`getPlayerCritChance()`** вместо `computeCritChance(writing)` — теперь учитываются
+  thought-cabinet бонусы к шансу крита.
+- **`POEM_DAMAGE_CHANNEL` расширен 23 → 46 стихов** (добавлены act 4–7 стихи).
+- `network_spy` special attack: id `'spy misinformation'` → `'spy_misinformation'`;
+  описание «снижая интуицию» → «снижая карму» (соответствует эффекту).
+- `AffinityMultiplier` тип: добавлено значение `0.3` («Почти иммунитет»).
+
+### NPC / Диалоги
+- **34 return-диалоговых узла** созданы в `src/data/dialogue/returnDialogues.ts`.
+  Раньше 27 из 34 NPC ломались при повторном разговоре («Не удалось загрузить диалог»),
+  потому что их `returnDialogueNodeId` указывал на несуществующие узлы.
+- **10 NPC добавлены в `HERO_NPC_IDS`**: viktor, kira, boris, tamara, grisha,
+  street_poet, marat_echo, guild_defector, chk_guest_devops, chk_guest_analyst.
+  Теперь они получают hero-tier визуальную обработку.
+
+### HUD / Accessibility
+- **BuffDebuffTracker / SkillRechargeHUD**: исправлен замороженный обратный отсчёт
+  кулдаунов — `useMemo([poemPowers])` с `Date.now()` никогда не пересчитывался.
+  Добавлен 500 ms interval.
+- **MobileActionButtons**: «Бег» → «Бег вкл» / «Бег выкл» (copy-paste bug).
+- **CompassHUD**: `role="img"` + `aria-label` с текущим направлением (С/В/Ю/З).
+- **DayNightCycleIndicator**: `role="img"` + `aria-label` с фазой и временем суток.
+
+### Очистка
+- Удалены 11 неиспользуемых npm-зависимостей: recharts, uuid, @hookform/resolvers,
+  tailwindcss-animate, react-day-picker, embla-carousel-react, vaul, cmdk,
+  react-hook-form, react-resizable-panels, input-otp.
+- Удалены 8 неиспользуемых shadcn/ui обёрток: chart, calendar, carousel, resizable,
+  form, command, drawer, input-otp.

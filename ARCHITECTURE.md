@@ -817,3 +817,69 @@ npm run assets:bootstrap # CC0 production placeholders (первый депло�
    → `deploy-archive/volodka-vercel-*.zip` (или `DEPLOY_ARCHIVE_DIR`).
 10. AA density / soft-lock / visual parity work — follow `docs/AA_QUALITY_ROADMAP.md`;
     do not claim 120 h playtime in player-facing copy.
+
+---
+
+## Состояние активации (декабрь 2025)
+
+### Что произошло
+
+В коммите `92528db` «Mega AI Update» (август 2026) `src/main.tsx` был переписан на
+импорт `./App` (короткая vanilla Three.js сказка, ~7k LOC), оставив orchestrator-архитектуру
+(~340k LOC, 7-актная RPG на R3F/Rapier/Zustand) неисполняемой. Последующие 11 коммитов
+(Round 2–11) продолжали развивать orchestrator, но он не подключался.
+
+### Что исправлено
+
+1. **`src/main.tsx`** восстановлен на импорт `@/app/AppBootRoot` (как до `92528db`) —
+   orchestrator снова активен. `vite build` собирает 4432 модуля в один `index.html`
+   (12 MB, gzip 3.4 MB).
+2. **`assetManifestShipped.generated.ts`** — `shipped` флаги оставлены `true` (модели
+   есть в репозитории на GitHub и подтянутся при деплое на Vercel).
+3. **Guard'ы ассетов** — `CesiumPlayerModel`, `VolodkaRoomVisual`, `AuthoredInteriorShell`
+   теперь проверяют `isAssetEffectiveShipped()` перед вызовом `useGLTF`, чтобы отсутствие
+   GLB-файлов на диске не роняло сцену в `RecoveryScreen`. Добавлены `ErrorBoundary`
+   с procedural-fallback для модельки игрока.
+
+### Критические баги, исправленные в этой итерации
+
+| # | Баг | Файл | Исправление |
+|---|-----|------|-------------|
+| 1 | 27/34 NPC ломались при повторном разговоре (`returnDialogueNodeId` → несуществующие узлы) | `src/data/dialogue/returnDialogues.ts` (новый) | Создано 34 return-узла с русскими приветствиями |
+| 2 | Poem powers обходили affinity-систему | `src/engine/CombatSystem.ts:627-648` | Пост-процессинг: пересчёт урона через `POEM_DAMAGE_CHANNEL` |
+| 3 | `physical: 0.0` (иммунитет) делал базовые атаки бесполезными против 6 типов врагов | `src/engine/combat/combatAffinities.ts` | Заменено на `0.3` («Почти иммунитет»), добавлен лейбл |
+| 5 | `playerAttack` игнорировал thought-bonuses к crit | `src/engine/CombatSystem.ts:462` | `getPlayerCritChance()` вместо `computeCritChance(writing)` |
+| 6 | `network_spy` special attack id содержал пробел | `src/engine/combat/enemies.ts:981` | `'spy misinformation'` → `'spy_misinformation'` |
+| 7 | Описание «Дезинформация» не соответствовало эффекту | `src/engine/combat/enemies.ts:983` | «снижая интуицию» → «снижая карму» |
+| 8 | 23 из 46 стихов не имели affinity-канала | `src/engine/combat/combatAffinities.ts:252-302` | `POEM_DAMAGE_CHANNEL` расширен до 46 стихов |
+| 14 | 10 сюжетных NPC не получали hero-tier визуал | `src/engine/npc/npcRenderTier.ts:8-46` | Добавлены viktor, kira, boris, tamara, grisha и др. |
+
+### HUD / a11y исправления
+
+- **BuffDebuffTracker / SkillRechargeHUD**: `useActiveEffects` / `useSkillSlots` зависели
+  от стабильного `poemPowers` ref → `useMemo` замораживал обратный отсчёт кулдаунов.
+  Добавлен 500 ms interval для принудительного re-render (`hudMountSelectors.ts`).
+- **MobileActionButtons**: «Бег» → «Бег вкл» / «Бег выкл» (copy-paste bug).
+- **CompassHUD**: добавлен `role="img"` + `aria-label` с текущим направлением (С/В/Ю/З).
+- **DayNightCycleIndicator**: добавлен `role="img"` + `aria-label` с фазой и временем суток.
+
+### Очистка зависимостей
+
+Удалены 11 неиспользуемых npm-пакетов (recharts, uuid, @hookform/resolvers,
+tailwindcss-animate, react-day-picker, embla-carousel-react, vaul, cmdk,
+react-hook-form, react-resizable-panels, input-otp) и 8 неиспользуемых shadcn/ui
+обёрток (chart, calendar, carousel, resizable, form, command, drawer, input-otp).
+Tree-shaking уже исключал их из бандла, но очистка уменьшает `node_modules` и
+ускоряет установку.
+
+### Известные ограничения
+
+- **Bundle 12 MB (gzip 3.4 MB)**: `viteSingleFile` инлайнит весь JS в `index.html`,
+  что сводит на нет code-splitting (219 dynamic import'ов становятся синхронными).
+  `import * as THREE` в 253 файлах мешает tree-shaking Three.js. Это главная точка
+  роста для будущей оптимизации (замена на named imports + отказ от viteSingleFile
+  или dual-mode build).
+- **3D-модели (411 MB)** не входят в sparse-checkout разработчика; procedural-fallback
+  покрывает отсутствие GLB. На Vercel модели подтянутся из репозитория.
+- **PAT для git push**: предоставленный токен оказался невалидным (401 Bad credentials).
+  Коммиты готовы локально; push требует обновлённого PAT.
