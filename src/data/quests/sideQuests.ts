@@ -733,4 +733,279 @@ export const QUESTS_SIDE: QuestDefinition[] = [
     linkedStoryNodeId: 'epilogue_monument_start',
     linkedStoryNodeIds: ['epilogue_monument_start', 'epilogue_monument_done'],
   },
+
+  /* ═══════════════════════════════════════════════════════════════
+     ACT 3 SIDE QUESTS — расширение контента (Factory/Basement/Library)
+     ═══════════════════════════════════════════════════════════════ */
+
+  {
+    id: 'factory_lost_engineer',
+    title: 'Потерянный Инженер',
+    description:
+      'Борис просит найти своего пропавшего коллегу — инженера Григория, который отправился на заброшенный завод и не вернулся. Завод давно молчит, но в его чреве что-то гудит.',
+    act: 3,
+    faction: 'tolpa',
+    questType: 'side',
+    difficulty: 'medium',
+    requiresQuests: ['chip_cafe_clearance'],
+    questGiverNpcId: 'boris',
+    hint: 'Борис → заброшенный завод → подвал → Григорий → его записи.',
+    objectives: [
+      {
+        id: 'accept_factory_search',
+        description: 'Принять просьбу Бориса',
+        type: 'flag_set',
+        target: 'factory_search_accepted',
+        completed: false,
+      },
+      {
+        id: 'enter_factory',
+        description: 'Войти на заброшенный завод',
+        type: 'location_visited',
+        target: 'abandoned_factory',
+        completed: false,
+      },
+      {
+        id: 'find_grigory_notes',
+        description: 'Найти записи Григория в цеху',
+        type: 'item_collected',
+        target: 'grigory_journal',
+        completed: false,
+      },
+      {
+        id: 'descend_basement',
+        description: 'Спуститься в подвал завода',
+        type: 'location_visited',
+        target: 'factory_basement',
+        completed: false,
+      },
+      {
+        id: 'rescue_grigory',
+        description: 'Найти и освободить Григория',
+        type: 'flag_set',
+        target: 'grigory_rescued',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 120 },
+      { type: 'addCredits', value: 200 },
+      { type: 'setFlag', flag: 'boris_gratitude', flagValue: true },
+    ],
+    rewardItems: [{ itemId: 'encrypted_usb', quantity: 1 }],
+  },
+
+  {
+    id: 'library_banned_book',
+    title: 'Запрещённая Книга',
+    description:
+      'Тамара, библиотекарь, шепчет о книге, что изъяли из всех архивов — «Сборник мёртвых серверов». В ней якобы спрятан код пробуждения. Найди её в закрытом хранилище.',
+    act: 3,
+    faction: 'resistance',
+    questType: 'side',
+    difficulty: 'medium',
+    requiresQuests: ['office_lobby_watch'],
+    questGiverNpcId: 'tamara',
+    hint: 'Тамара → библиотека → закрытое хранилище → обходной путь через подвал.',
+    objectives: [
+      {
+        id: 'hear_banned_book_rumor',
+        description: 'Услышать слух о книге от Тамары',
+        type: 'flag_set',
+        target: 'banned_book_rumor_heard',
+        completed: false,
+      },
+      {
+        id: 'find_basement_entrance',
+        description: 'Найти вход в подвал библиотеки',
+        type: 'location_visited',
+        target: 'library_basement',
+        completed: false,
+      },
+      {
+        id: 'bypass_security_lock',
+        description: 'Обойти замок хранилища (проверка логики)',
+        type: 'minigame_completed',
+        target: 'library_lockpick',
+        completed: false,
+      },
+      {
+        id: 'retrieve_banned_book',
+        description: 'Достать «Сборник мёртвых серверов»',
+        type: 'item_collected',
+        target: 'banned_book',
+        completed: false,
+      },
+      {
+        id: 'return_book_to_tamara',
+        description: 'Вернуть книгу Тамаре',
+        type: 'npc_talked',
+        target: 'tamara',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 150 },
+      { type: 'addStat', stat: 'logic', value: 2 },
+      { type: 'setFlag', flag: 'tamara_trust', flagValue: true },
+    ],
+    rewardItems: [{ itemId: 'banned_book', quantity: 1 }],
+  },
+
+  {
+    id: 'factory_secret_blueprint',
+    title: 'Секретный Чертёж',
+    description:
+      'В глубине заброшенного завода, среди ржавых станков, спрятан чертёж «Око» — системы тотального наблюдения, которую Володька когда-то стёр. Кто-то восстанавливает его.',
+    act: 3,
+    faction: 'resistance',
+    questType: 'side',
+    difficulty: 'hard',
+    requiresQuests: ['factory_lost_engineer'],
+    hint: 'Завод → дальний цех → тайник за станком → чертёж → уничтожить или сохранить?',
+    objectives: [
+      {
+        id: 'find_blueprint_cache',
+        description: 'Найти тайник с чертежом',
+        type: 'location_visited',
+        target: 'abandoned_factory_deep',
+        completed: false,
+      },
+      {
+        id: 'retrieve_blueprint',
+        description: 'Достать чертёж «Око»',
+        type: 'item_collected',
+        target: 'eye_blueprint',
+        completed: false,
+      },
+      {
+        id: 'decide_blueprint_fate',
+        description: 'Решить судьбу чертежа (уничтожить/оставить)',
+        type: 'flag_set',
+        target: 'blueprint_fate_decided',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 200 },
+      { type: 'addKarma', value: -15 },
+      { type: 'setFlag', flag: 'blueprint_quest_done', flagValue: true },
+    ],
+    rewardItems: [{ itemId: 'eye_blueprint', quantity: 1 }],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════
+     ACT 5 SIDE QUESTS — расширение контента (Dreamworld/Void)
+     ═══════════════════════════════════════════════════════════════ */
+
+  {
+    id: 'dreamworld_lost_child',
+    title: 'Потерянное Дитя',
+    description:
+      'В Мире Снов Володька встречает ребёнка, который не помнит своего имени. Ребёнок ищет дорогу домой, но каждый шаг размывает его воспоминания. Помоги — или отпусти.',
+    act: 5,
+    faction: 'resistance',
+    questType: 'side',
+    difficulty: 'hard',
+    requiresQuests: ['echo_of_vladimir'],
+    hint: 'Мир Снов → дитя у фонаря → три воспоминания → выбор: провести или отпустить.',
+    objectives: [
+      {
+        id: 'meet_dream_child',
+        description: 'Встретить дитя у фонаря',
+        type: 'flag_set',
+        target: 'dream_child_met',
+        completed: false,
+      },
+      {
+        id: 'recover_first_memory',
+        description: 'Восстановить первое воспоминание (о матери)',
+        type: 'item_collected',
+        target: 'child_memory_mother',
+        completed: false,
+      },
+      {
+        id: 'recover_second_memory',
+        description: 'Восстановить второе воспоминание (о школе)',
+        type: 'item_collected',
+        target: 'child_memory_school',
+        completed: false,
+      },
+      {
+        id: 'recover_third_memory',
+        description: 'Восстановить третье воспоминание (о стихах)',
+        type: 'item_collected',
+        target: 'child_memory_poems',
+        completed: false,
+      },
+      {
+        id: 'guide_child_home',
+        description: 'Провести дитя к выходу из сна',
+        type: 'flag_set',
+        target: 'dream_child_guided',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 250 },
+      { type: 'addKarma', value: 25 },
+      { type: 'addStat', stat: 'empathy', value: 3 },
+      { type: 'setFlag', flag: 'dream_child_saved', flagValue: true },
+    ],
+  },
+
+  {
+    id: 'void_echo_poem',
+    title: 'Эхо из Пустоты',
+    description:
+      'Из пустоты между мирами доносится шёпот — кто-то читает стих, которого Володька никогда не писал. Или писал, но забыл. Найди источник эха.',
+    act: 5,
+    faction: 'tolpa',
+    questType: 'side',
+    difficulty: 'hard',
+    requiresQuests: ['echo_of_vladimir'],
+    hint: 'Пустота → три источника эха → финальное стихотворение.',
+    objectives: [
+      {
+        id: 'hear_first_echo',
+        description: 'Услышать первое эхо у реки',
+        type: 'flag_set',
+        target: 'void_echo_river',
+        completed: false,
+      },
+      {
+        id: 'hear_second_echo',
+        description: 'Услышать второе эхо на крыше',
+        type: 'flag_set',
+        target: 'void_echo_roof',
+        completed: false,
+      },
+      {
+        id: 'hear_third_echo',
+        description: 'Услышать третье эхо в библиотеке',
+        type: 'flag_set',
+        target: 'void_echo_library',
+        completed: false,
+      },
+      {
+        id: 'confront_void_poet',
+        description: 'Встретить поэта из пустоты',
+        type: 'flag_set',
+        target: 'void_poet_met',
+        completed: false,
+      },
+      {
+        id: 'claim_void_poem',
+        description: 'Получить стих из пустоты',
+        type: 'poem_collected',
+        target: 'poem_32',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'collectPoem', poemId: 'poem_32' },
+      { type: 'addXp', value: 300 },
+      { type: 'addStat', stat: 'intuition', value: 3 },
+    ],
+  },
 ];
