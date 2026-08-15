@@ -24,6 +24,7 @@ export const COMBAT_CONSTANTS = {
   COMBO_DAMAGE_MULTIPLIER_1: 1.2,
   COMBO_DAMAGE_MULTIPLIER_2: 1.5,
   COMBO_DAMAGE_MULTIPLIER_3: 2,
+  COMBO_DAMAGE_MULTIPLIER_4: 2.5,  // Tier-4: sustained aggression reward
   DEFEND_DAMAGE_FACTOR: 0.5,
   DEFEND_DEFENSE_FACTOR: 0.3,
   SPIRITUAL_DAMAGE_REDUCTION_PER_LEVEL: 0.05,
@@ -112,6 +113,7 @@ export function applyCritMultiplier(damage: number): number {
 }
 
 export function getComboDamageMultiplier(comboCount: number): number {
+  if (comboCount >= 4) return COMBAT_CONSTANTS.COMBO_DAMAGE_MULTIPLIER_4;  // Sustained aggression
   if (comboCount >= 3) return COMBAT_CONSTANTS.COMBO_DAMAGE_MULTIPLIER_3;
   if (comboCount >= 2) return COMBAT_CONSTANTS.COMBO_DAMAGE_MULTIPLIER_2;
   if (comboCount >= 1) return COMBAT_CONSTANTS.COMBO_DAMAGE_MULTIPLIER_1;
