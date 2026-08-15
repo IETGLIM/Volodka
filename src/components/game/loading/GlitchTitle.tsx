@@ -35,7 +35,12 @@ export function GlitchTitle({ text, animate }: GlitchTitleProps) {
     };
   }, [animate]);
 
-  const titleClassName = `relative text-6xl sm:text-8xl font-black tracking-[0.2em] ${glitching ? 'title-glitch' : ''}`;
+  // Responsive title sizing: smaller on narrow viewports to prevent clipping.
+  // ВОЛОДЬКА (8 chars) at text-8xl + tracking-0.2em = ~902px — clips on
+  // viewports < 924px (e.g. when DevTools takes half the screen).
+  // text-5xl on mobile, text-6xl on sm, text-7xl on lg, text-8xl only on xl.
+  // Tracking reduced from 0.2em to 0.12em to save ~100px.
+  const titleClassName = `relative text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[0.12em] sm:tracking-[0.15em] lg:tracking-[0.2em] whitespace-nowrap ${glitching ? 'title-glitch' : ''}`;
   const titleStyle = {
     textShadow: glitching
       ? '-3px 0 #ff0000, 3px 0 #00ffff, 0 0 80px rgba(0,255,255,0.7)'
