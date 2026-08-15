@@ -72,7 +72,7 @@ export const DAMAGE_CHANNEL_COLORS: Record<DamageChannel, string> = {
    AFFINITY MULTIPLIERS
    ═══════════════════════════════════════════════════════════════ */
 
-export type AffinityMultiplier = 2.0 | 1.5 | 1.0 | 0.7 | 0.5 | 0.0;
+export type AffinityMultiplier = 2.0 | 1.5 | 1.0 | 0.7 | 0.5 | 0.3 | 0.0;
 
 export const AFFINITY_LABELS: Record<AffinityMultiplier, string> = {
   2.0: 'Суперэффективно!',
@@ -80,6 +80,7 @@ export const AFFINITY_LABELS: Record<AffinityMultiplier, string> = {
   1.0: '',
   0.7: 'Слабое сопротивление',
   0.5: 'Сильное сопротивление',
+  0.3: 'Почти иммунитет',
   0.0: 'Иммунитет',
 };
 
@@ -90,6 +91,7 @@ export const AFFINITY_EMPHASIS: Record<AffinityMultiplier, 'super' | 'strong' | 
   1.0: 'normal',
   0.7: 'weak',
   0.5: 'weak',
+  0.3: 'weak',
   0.0: 'immune',
 };
 
@@ -144,7 +146,7 @@ export const ENEMY_AFFINITIES: Record<EnemyType, EnemyAffinityMap> = {
   data_phantom: {
     code: 2.0,       // Exploits destabilize phantom data
     intuition: 1.5,  // Intuition senses phantom presence
-    physical: 0.0,   // Phantoms are immune to physical — they're data!
+    physical: 0.3,   // Phantoms strongly resist physical — they're data (was 0.0 immune)
     writing: 0.7,    // Poetry barely affects raw data constructs
   },
   code_inquisitor: {
@@ -156,13 +158,13 @@ export const ENEMY_AFFINITIES: Record<EnemyType, EnemyAffinityMap> = {
   data_wraith: {
     intuition: 2.0,  // Intuition reveals wraith patterns
     writing: 1.5,    // Creative expression disrupts data patterns
-    physical: 0.0,   // Wraiths are immune to physical — data entities
+    physical: 0.3,   // Wraiths strongly resist physical — data entities (was 0.0 immune)
     code: 0.7,       // Wraiths are evolved data, hard to hack
   },
   memory_wraith: {
     empathy: 2.0,    // Empathy heals fractured memories
     writing: 1.5,    // Poetry reconstructs lost memories
-    physical: 0.0,   // Memory wraiths are immune to physical
+    physical: 0.3,   // Memory wraiths strongly resist physical (was 0.0 immune)
     code: 0.7,       // Memory structures resist raw hacking
   },
 
@@ -198,7 +200,7 @@ export const ENEMY_AFFINITIES: Record<EnemyType, EnemyAffinityMap> = {
   void_echo: {
     intuition: 2.0,  // Intuition pierces void concealment
     writing: 1.5,    // Poetry fills the void with meaning
-    physical: 0.0,   // Void echoes are immune to physical
+    physical: 0.3,   // Void echoes strongly resist physical (was 0.0 immune)
     empathy: 0.7,    // Void suppresses emotional resonance
   },
 
@@ -212,14 +214,14 @@ export const ENEMY_AFFINITIES: Record<EnemyType, EnemyAffinityMap> = {
   quantum_ghost: {
     logic: 2.0,      // Logic resolves quantum uncertainty
     intuition: 1.5,  // Intuition senses quantum patterns
-    physical: 0.0,   // Quantum entities immune to physical
+    physical: 0.3,   // Quantum entities strongly resist physical (was 0.0 immune)
     code: 0.5,       // Quantum fluctuations resist hacking
   },
   grief_echo: {
     empathy: 2.0,    // Empathy heals grief — super effective!
     writing: 1.5,    // Poetry transforms grief into art
     logic: 0.7,      // Logic can't process grief
-    physical: 0.0,   // Grief echoes are immune to physical
+    physical: 0.3,   // Grief echoes strongly resist physical (was 0.0 immune)
   },
   corporate_ai: {
     logic: 1.5,      // Logic exploits AI reasoning bugs
@@ -273,6 +275,32 @@ export const POEM_DAMAGE_CHANNEL: Record<string, DamageChannel> = {
   poem_21: 'code',       // Белая Река, Чёрный Кабель — code stream
   poem_22: 'logic',      // Бесконечный Коридор — logical corridor
   poem_23: 'writing',    // Ветер Высот — written heights
+  // ── Act 4–5 poems (24–35): late-game powers — thematic channels ──
+  poem_24: 'code',       // Ночной Код — night code disruption
+  poem_25: 'empathy',    // Передышка — empathic rest
+  poem_26: 'logic',      // Срыв Цикла — logical cycle break
+  poem_27: 'intuition',  // Сигнал — intuitive signal
+  poem_28: 'code',       // 404 — code error strike
+  poem_29: 'writing',    // Черновик — written draft
+  poem_30: 'empathy',    // Чистилище — empathic purgatory
+  poem_31: 'code',       // Неоновый Дождь — code rain
+  poem_32: 'intuition',  // Пустой Возврат — intuitive void return
+  poem_33: 'code',       // След в Коде — code trace
+  poem_34: 'intuition',  // Вне Сети — out-of-network intuition
+  poem_35: 'writing',    // Древний Город — ancient written city
+  // ── Act 6 poems: resistance/CHK-themed ──
+  poem_tolpa:    'physical',   // Костёр ЧК — physical bonfire
+  poem_act6_01:  'code',       // Неоновый шёпот — code whisper
+  poem_act6_02:  'empathy',    // Тепло памяти — empathic warmth
+  poem_act6_03:  'writing',    // Стойкость строки — written resilience
+  poem_act6_04:  'logic',      // Щит Сопротивления — logical shield
+  poem_act6_05:  'physical',   // Удар Предательства — physical betrayal strike
+  poem_act6_06:  'logic',      // Высота правды — logical truth height
+  poem_act6_07:  'code',       // Конец Системы — system code end
+  poem_act6_08:  'writing',    // Свет строки — written light
+  // ── Act 7 finale poems ──
+  poem_act7_01:     'writing',  // Колыбельная тишины — written lullaby
+  poem_act7_ending: 'writing',  // Рассвет — written dawn finale
 };
 
 /* ═══════════════════════════════════════════════════════════════

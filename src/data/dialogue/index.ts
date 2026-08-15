@@ -2,6 +2,7 @@ import type { DialogueNode } from '@/shared/types/game';
 import { EXPANDED_DIALOGUE_NODES } from '../expandedDialogueNodes';
 import { CHK_DIALOGUE_NODES } from '../chkTolpa/dialogues';
 import { EXPLORATION_DIALOGUE_NODES } from '../explorationDialogueNodes';
+import { RETURN_DIALOGUE_NODES } from './returnDialogues';
 import { DIALOGUE_PART1 } from './part1-albert';
 import { ALBERT_EXPANDED_DIALOGUE } from './part1-albert-expanded';
 import { DIALOGUE_PART2 } from './part2-npcs';
@@ -27,4 +28,5 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   ...EXPANDED_DIALOGUE_NODES,
   ...CHK_DIALOGUE_NODES,
   ...EXPLORATION_DIALOGUE_NODES,
+  ...RETURN_DIALOGUE_NODES,
 };

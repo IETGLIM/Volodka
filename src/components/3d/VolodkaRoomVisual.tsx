@@ -4,6 +4,7 @@
 import { memo, useMemo, useRef, useEffect, Suspense, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { isAssetEffectiveShipped } from '@/config/assetManifest';
 import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
 import {
@@ -418,7 +419,8 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
   const { preset, selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
-  const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode);
+  const roomAssetsShipped = isAssetEffectiveShipped('interior_room_bedroom');
+  const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode) && roomAssetsShipped;
   // FIX S13-6: desk surface height. Poly Haven paintedWoodenTable GLB has its
   // tabletop at Y=0.958 (verified from the .gltf accessor max). At scale 1.02
   // → 0.977m. CraftedDeskShell (Low fallback) top is at 0.78. Previously all

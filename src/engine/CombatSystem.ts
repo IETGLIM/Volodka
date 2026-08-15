@@ -59,7 +59,7 @@ import {
   createBuff, addBuff, sumBuffEffect, hasBuffEffect, tickBuffs,
   getEnemyDefenseReduction, getPlayerDamageMultiplier,
   getPlayerAttackBoost } from './combat/buffSystem';
-import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, computeCritChance, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
+import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, getPlayerCritChance, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, computeEnemyScalingFactor } from './combat/combatDifficulty';
 import { getDifficultyStore } from '@/store/storeBindings';
@@ -458,8 +458,8 @@ export function playerAttack(): CombatState | null {
     damage = Math.max(1, Math.floor(damage * perkMods.outgoingDamageMultiplier));
   }
 
-  /* ── Critical Hit: 10% base + (writing skill * 2%) bonus, 1.8x damage ── */
-  const isCritical = seeded.rollCritical(computeCritChance(snap().playerState.skills.writing));
+  /* ── Critical Hit: 10% base + (writing skill * 2%) bonus + thought bonuses, 1.8x damage ── */
+  const isCritical = seeded.rollCritical(getPlayerCritChance());
   if (isCritical) {
     damage = applyCritMultiplier(damage);
   }
@@ -622,7 +622,30 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
 
   // Apply ability
   const logLenBefore = cs.log.length;
-  const abilityResult = amplifyPoemCombatResult(cs, ability.execute(cs));
+  let abilityResult = amplifyPoemCombatResult(cs, ability.execute(cs));
+
+  // ── Affinity for poem powers ──
+  // Poem abilities compute damage inside execute() and bypass the affinity
+  // system that playerAttack() uses. Post-process the result: if enemy HP
+  // dropped, re-derive the damage through the poem's affinity channel so
+  // resistances/immunities apply. This restores strategic depth (e.g. using
+  // a 'code' poem vs a code-immune enemy deals reduced damage).
+  const poemDealt = Math.max(0, cs.enemy.hp - abilityResult.enemy.hp);
+  if (poemDealt > 0) {
+    const poemChannel = resolveActionChannel('poem_power', poemId);
+    const poemAffinity = applyAffinityToDamage(poemDealt, cs.enemy.type, poemChannel);
+    if (poemAffinity.damage !== poemDealt) {
+      const adjustedHp = Math.max(0, cs.enemy.hp - poemAffinity.damage);
+      const affinityLogLine: CombatLogEntry | null = poemAffinity.label
+        ? { turn: cs.turn, text: `✦ ${ability.name}: ${poemAffinity.label}`, type: 'player_power' as const }
+        : null;
+      abilityResult = {
+        ...abilityResult,
+        enemy: { ...abilityResult.enemy, hp: adjustedHp },
+        log: affinityLogLine ? [...abilityResult.log, affinityLogLine] : abilityResult.log,
+      };
+    }
+  }
 
   // Check for poem power combos
   let comboLog: CombatLogEntry[] = [];

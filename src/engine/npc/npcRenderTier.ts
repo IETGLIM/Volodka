@@ -25,6 +25,18 @@ const HERO_NPC_IDS = new Set<string>([
   'anya',
   'fisherman_trofim',
   'baba_zina',
+  // Major story NPCs previously falling through to 'interactive' tier.
+  'viktor',
+  'kira',
+  'boris',
+  'tamara',
+  'grisha',
+  'street_poet',
+  'marat_echo',
+  'guild_defector',
+  // CHK guests — narrative participants in act 6.
+  'chk_guest_devops',
+  'chk_guest_analyst',
   'chk_ru',
   'chk_based',
   'chk_smert',

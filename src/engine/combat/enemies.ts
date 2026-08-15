@@ -978,9 +978,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         },
       },
       {
-        id: 'spy misinformation',
+        id: 'spy_misinformation',
         name: 'Дезинформация',
-        description: 'Создает ложные данные, снижая интуицию',
+        description: 'Создает ложные данные, снижая карму',
         chance: 0.25,
         cooldown: 4,
         execute: (state, enemy) => {

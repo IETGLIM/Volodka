@@ -3,6 +3,7 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { INTERIOR_SHELL_MODELS } from '@/config/interiorShellModels';
 import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
+import { isAssetEffectiveShipped } from '@/config/assetManifest';
 import {
   isExteriorBuildingShell,
   type InteriorShellModelId,
@@ -47,6 +48,28 @@ function resolveShellModelId(
   const entry = Object.entries(INTERIOR_SHELL_MODELS).find(([, path]) => path === url);
   if (!entry) return null;
   return entry[0] as InteriorShellModelId;
+}
+
+/** Map an InteriorShellModelId to its ASSET_MANIFEST id so we can verify the
+ *  processed GLB is actually present on disk. When the shell asset is not
+ *  shipped, AuthoredInteriorShell returns null and the caller falls back to
+ *  procedural geometry (floor/walls/ceiling built from shared box planes). */
+const SHELL_MODEL_TO_ASSET_ID: Partial<Record<InteriorShellModelId, string>> = {
+  volodkaBedroom: 'interior_room_bedroom',
+  cafe: 'interior_cafe',
+  office: 'interior_office',
+  library: 'interior_library',
+  factory: 'interior_factory',
+  basement: 'interior_basement',
+  pier: 'interior_pier',
+  forestClearing: 'interior_forest_clearing',
+};
+
+function isShellAssetShipped(shellId: InteriorShellModelId | null): boolean {
+  if (!shellId) return false;
+  const assetId = SHELL_MODEL_TO_ASSET_ID[shellId];
+  if (!assetId) return false;
+  return isAssetEffectiveShipped(assetId);
 }
 
 /**
@@ -231,6 +254,12 @@ export function AuthoredInteriorShell(props: AuthoredInteriorShellProps) {
   if (shellId && isExteriorBuildingShell(shellId)) {
     return null;
   }
+  // Ship gate: if the processed interior shell GLB is not on disk, bail out
+  // so the caller renders procedural floor/walls/ceiling instead of crashing
+  // the scene with a 404 → thrown error → RecoveryScreen.
+  if (!isShellAssetShipped(shellId)) {
+    return null;
+  }
 
   return (
     <Suspense fallback={null}>
@@ -248,6 +277,11 @@ const SHELL_PRELOAD_URLS = [
   INTERIOR_SHELL_MODELS.forestClearing,
 ];
 for (const url of SHELL_PRELOAD_URLS) {
+  // Only preload shells whose processed GLB is actually on disk — avoids
+  // a storm of 404s on deployments that don't ship the models/ directory.
+  const entry = Object.entries(INTERIOR_SHELL_MODELS).find(([, path]) => path === url);
+  const shellId = entry ? (entry[0] as InteriorShellModelId) : null;
+  if (!isShellAssetShipped(shellId)) continue;
   scheduleGltfPreload(
     url,
     () => useGLTF.preload(url, true, true, extendLoader),

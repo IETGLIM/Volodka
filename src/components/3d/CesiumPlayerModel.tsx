@@ -10,6 +10,8 @@ import { deplasticizeCharacterMaterials } from '@/engine/graphics/materials/depl
 import { useMixamoAnimationClips } from '@/hooks/useMixamoAnimationClips';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { isAssetEffectiveShipped } from '@/config/assetManifest';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import type { ProceduralPlayerModelProps } from './useProceduralPlayerAnimation';
 import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
 import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
@@ -17,7 +19,14 @@ import { eventBus } from '@/engine/EventBus';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
-useGLTF.preload(PLAYER_MODEL_URL, true, true, extendLoader);
+/** True when the Volodka hero GLB is actually present on disk. When false,
+ *  we skip useGLTF entirely and render the procedural lite model permanently —
+ *  this avoids 404 → thrown error → RecoveryScreen on deployments without
+ *  the models/ directory (e.g. local dev after a sparse checkout). */
+const PLAYER_MODEL_SHIPPED = isAssetEffectiveShipped('player_volodka');
+if (PLAYER_MODEL_SHIPPED) {
+  useGLTF.preload(PLAYER_MODEL_URL, true, true, extendLoader);
+}
 
 const ANIMATIONS_BASE = '/models/animations';
 /** Critical clips only — talking/working deferred to cut load hitch on New Game wake. */
@@ -31,7 +40,7 @@ const PLAYER_DEFERRED_ANIM_URLS = [
   `${ANIMATIONS_BASE}/talking.glb`,
   `${ANIMATIONS_BASE}/working.glb`,
 ];
-if (typeof window !== 'undefined') {
+if (typeof window !== 'undefined' && PLAYER_MODEL_SHIPPED) {
   for (const url of PLAYER_CRITICAL_ANIM_URLS) {
     useGLTF.preload(url, true, true, extendLoader);
   }
@@ -322,16 +331,32 @@ function CesiumPlayerModelInner({
 /** Cesium avatar with a lite procedural fallback while the GLB streams.
  *  Keeps the lite silhouette until the skinned clone is ready — avoids the
  *  mobile flash where Suspense resolves → null → GLB pop-in.
+ *
+ *  When the Volodka hero GLB is not shipped (PLAYER_MODEL_SHIPPED=false),
+ *  we render the procedural lite model permanently and skip useGLTF entirely
+ *  — this prevents 404 → thrown error → whole-tree crash on deployments that
+ *  don't ship the models/ directory. An ErrorBoundary is still wrapped around
+ *  the GLB path so any runtime GLB failure degrades gracefully to procedural.
  */
 export function CesiumPlayerModel(props: ProceduralPlayerModelProps) {
   const [glbReady, setGlbReady] = useState(false);
 
+  if (!PLAYER_MODEL_SHIPPED) {
+    return (
+      <group>
+        <ProceduralPlayerModelLite {...props} />
+      </group>
+    );
+  }
+
   return (
     <group>
       {!glbReady && <ProceduralPlayerModelLite {...props} />}
-      <Suspense fallback={null}>
-        <CesiumPlayerModelInner {...props} onReadyChange={setGlbReady} />
-      </Suspense>
+      <ErrorBoundary name="cesium-player-model" fallback={<ProceduralPlayerModelLite {...props} />}>
+        <Suspense fallback={null}>
+          <CesiumPlayerModelInner {...props} onReadyChange={setGlbReady} />
+        </Suspense>
+      </ErrorBoundary>
     </group>
   );
 }
