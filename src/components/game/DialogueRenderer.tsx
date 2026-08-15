@@ -241,11 +241,6 @@ function CheckTypeBadge({ checkType, isRetryable }: {
 /* ══════════════════════════════════════════════════════════════
    DIALOGUE HISTORY — tracks previous lines for scrolling
    ══════════════════════════════════════════════════════════════ */
-interface HistoryLine {
-  speaker: string;
-  text: string;
-  timestamp: number;
-}
 
 /* ── Component ── */
 export function DialogueRenderer() {
@@ -271,8 +266,9 @@ export function DialogueRenderer() {
   const diceRollActiveRef = useRef(false);
 
   // ── Dialogue history (local for in-session scrollback) ──
-  const [history, setHistory] = useState<HistoryLine[]>([]);
-  const [showHistory, _setShowHistory] = useState(false);
+  // Note: local history state removed — the persistent dialogue history slice
+  // (useDialogueHistoryStore / addDialogueEntry) is the canonical record and
+  // powers the showFullHistory overlay. The local copy was written but never read.
   // ── Persistent dialogue history overlay (from slice store) ──
   const dialogueHistoryEntries = useDialogueHistoryStore((s) => s.dialogueHistory);
   const [showFullHistory, setShowFullHistory] = useState(false);
@@ -421,8 +417,7 @@ export function DialogueRenderer() {
         const text = resolvedText;
         const sceneId = getLiveCurrentSceneId();
         const historyTimer = setTimeout(() => {
-          setHistory((prev) => [...prev, { speaker, text, timestamp: Date.now() }]);
-          // Also persist to the global dialogue history slice
+          // Persist to the global dialogue history slice (canonical record).
           const isPlayerChoice = false;
           addDialogueEntry({ speaker: speaker ?? '', text, timestamp: Date.now(), sceneId, isPlayerChoice });
         }, 0);
@@ -780,23 +775,6 @@ export function DialogueRenderer() {
               accentColor={portraitColors.primary}
             />
           )}
-          <AnimatePresence>
-            {showHistory && history.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="w-full max-w-2xl max-h-36 overflow-y-auto rounded-lg border border-white/10 bg-black/45 backdrop-blur-md p-3 mb-2 glass-panel"
-              >
-                {history.slice(-8).map((line) => (
-                  <div key={`${line.speaker}-${line.text.slice(0, 20)}`} className="mb-1.5 last:mb-0 text-sm text-slate-300/85">
-                    <span style={{ color: portraitColors.primary }}>{line.speaker}: </span>
-                    {line.text}
-                  </div>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
           <AnimatePresence>
             {diceRollState && (
               <motion.div
