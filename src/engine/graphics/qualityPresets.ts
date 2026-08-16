@@ -281,15 +281,17 @@ export function detectAutoQualityPreset(
 ): Exclude<QualityPresetId, 'auto'> {
   initBatteryQualityCapListener();
 
+  // AGGRESSIVE default: 'medium' for most desktops, 'low' for mobile/tablet.
+  // 'high' only for large screens (≥1440px). 'ultra' never by default.
+  // Previous 'high' default caused frame drops on RTX 3050/4060 due to 18
+  // PostFX passes (N8AO, DoF, ChromaticAberration, GodRays, SMAA, etc).
+  // 'medium' disables most heavy effects while keeping the atmosphere.
   let tier: Exclude<QualityPresetId, 'auto'>;
-  // Conservative auto-tier: 'high' is the sweet spot for most desktops.
-  // 'ultra' (GodRays, HUGE bloom, DoF) only for very large screens (≥2560px)
-  // to avoid frame drops on mid-range GPUs at 1080p/1440p.
-  const isMobileViewport = viewportWidth < 768;
+  const isMobileViewport = viewportWidth < 1024;
   if (isMobileViewport) tier = 'low';
-  else if (viewportWidth < 1024) tier = 'medium';
+  else if (viewportWidth < 1440) tier = 'medium';
   else if (viewportWidth < 2560) tier = 'high';
-  else tier = 'ultra';
+  else tier = 'high'; // ultra only via manual settings override
 
   const physicalPixels = computePhysicalPixelCount(
     viewportWidth,

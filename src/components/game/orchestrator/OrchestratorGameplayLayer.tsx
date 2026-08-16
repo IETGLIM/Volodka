@@ -11,7 +11,6 @@ import {
   GameplayExplorationHud,
   GameplayExplorationNotifications,
   GameplayMinigameLayer,
-  GameplayMobileExplorationHud,
   GameplayNarrativeOverlay,
   GameplaySceneBanner,
   GameplaySharedEffects,
@@ -92,7 +91,9 @@ export function OrchestratorGameplayLayer({
         hudSecondaryOpeners={hudSecondaryOpeners}
       />
       <GameplayStatsPanel onClose={panelClosers} />
-      <GameplayMobileExplorationHud onOpenInventory={panels.handleOpenInventory} onOpenJournal={panels.handleOpenJournal} />
+      {/* Mobile controls: VirtualJoystick (circular) + action buttons only.
+          D-pad (GameplayMobileExplorationHud) removed — it overlapped with
+          VirtualJoystick causing UI collision. Joystick is the primary control. */}
       <GameplayVirtualJoystick />
       <GameplayMobileActionButtons />
       <GameplayMinimap />
