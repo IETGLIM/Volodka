@@ -3,9 +3,9 @@
  * Non-repeating placements; used by procedural_aaa + hybrid street overlay.
  */
 
-import { Suspense, useMemo } from 'react';
+import { Suspense, useEffect, useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
-import { Mesh, Object3D } from 'three';
+import { Material, Mesh, Object3D } from 'three';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -43,7 +43,11 @@ const STREET_HYBRID_LANDMARKS: LandmarkDef[] = [
   { url: POLYHAVEN_MODELS.securityCamera, position: [10.6, 3.4, -12.2], rotationY: -Math.PI / 3, scale: 1.15 },
 ];
 
-function clonePreparedScene(source: Object3D, castShadow: boolean): Object3D {
+function clonePreparedScene(
+  source: Object3D,
+  castShadow: boolean,
+  clonedMaterials?: Set<Material>,
+): Object3D {
   const clone = source.clone(true);
   clone.traverse((obj) => {
     if (!(obj as Mesh).isMesh) return;
@@ -57,6 +61,19 @@ function clonePreparedScene(source: Object3D, castShadow: boolean): Object3D {
     }
   });
   weatherEnvironmentMaterials(clone, 'street');
+  // Финальный обход: собираем ВСЕ материалы клона. После clone(true) и
+  // weatherEnvironmentMaterials каждый материал — это клон (не shared с source
+  // GLTF), поэтому их можно безопасно dispose на unmount без ущерба для кэша useGLTF.
+  if (clonedMaterials) {
+    clone.traverse((obj) => {
+      if (!(obj as Mesh).isMesh) return;
+      const mesh = obj as Mesh;
+      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+      for (const m of mats) {
+        if (m) clonedMaterials.add(m);
+      }
+    });
+  }
   return clone;
 }
 
@@ -68,10 +85,24 @@ function LandmarkProp({
   castShadow,
 }: LandmarkDef & { castShadow: boolean }) {
   const gltf = useGLTF(url, true, true, extendLoader);
-  const scene = useMemo(
-    () => clonePreparedScene(gltf.scene, castShadow),
-    [gltf.scene, castShadow],
-  );
+  // Возвращаем и сцену, и Set клонированных материалов, чтобы cleanup-effect
+  // мог их освободить. Set меняет identity только при пересоздании сцены —
+  // это и есть триггер для cleanup.
+  const { scene, clonedMaterials } = useMemo(() => {
+    const set = new Set<Material>();
+    const s = clonePreparedScene(gltf.scene, castShadow, set);
+    return { scene: s, clonedMaterials: set };
+  }, [gltf.scene, castShadow]);
+
+  useEffect(() => {
+    return () => {
+      // Освобождаем только шейдеры клонированных материалов. Текстуры НЕ диспозим —
+      // они shared с source GLTF (кэш useGLTF), и их dispose сломал бы кэш и
+      // другие инстансы того же URL.
+      for (const m of clonedMaterials) m.dispose();
+    };
+  }, [clonedMaterials]);
+
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
       <primitive object={scene} />

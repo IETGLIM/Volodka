@@ -19,6 +19,7 @@ export interface HudSecondaryPanelOpeners {
   onOpenStats: () => void;
   onOpenSaveSlots: () => void;
   onOpenNpcCodex: () => void;
+  onOpenFactionReputation: () => void;
   onOpenAdventureLog: () => void;
   onOpenGameStats: () => void;
 }
@@ -47,6 +48,7 @@ export function useStableHudPanelOpeners(
       onOpenStats: () => dispatchRef.current('stats'),
       onOpenSaveSlots: () => dispatchRef.current('saveSlot'),
       onOpenNpcCodex: () => dispatchRef.current('npcCodex'),
+      onOpenFactionReputation: () => dispatchRef.current('factionReputation'),
       onOpenAdventureLog: () => dispatchRef.current('adventureLog'),
       onOpenGameStats: () => dispatchRef.current('gameStats'),
     }),

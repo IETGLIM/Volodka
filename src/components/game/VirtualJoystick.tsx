@@ -1,6 +1,12 @@
 /* ─── Volodka RPG – Virtual Analog Joystick for Touch Devices ───
  *
- * Floating joystick on the left side of the screen.
+ * Two modes:
+ *  1. Floating (default on touch): tap anywhere on the left half of the
+ *     screen → the joystick base appears under the finger and follows the
+ *     drag delta. Hides on release. Excludes touches that land on UI panels
+ *     (`[data-panel]` or `.panel-surface`) so modal dialogs remain usable.
+ *  2. Fixed (legacy): base is anchored bottom-left at all times.
+ *
  * - Inner thumb follows the finger within a circular boundary.
  * - Outputs normalized X/Y (-1 to 1) via joystickStore.
  * - CSS transition spring-back to center on release.
@@ -66,15 +72,29 @@ function getThumbStyle(offsetX: number, offsetY: number, active: boolean): React
   };
 }
 
-
-
 /* ─── Component ─── */
 
-export function VirtualJoystick() {
+export interface VirtualJoystickProps {
+  /**
+   * Floating mode: tap anywhere on the left half of the screen to summon the
+   * joystick base under the finger. Hides on release.
+   *
+   * - `true`  (default) — floating mode (recommended for touch)
+   * - `false`         — legacy fixed mode (anchored bottom-left)
+   *
+   * Defaults to `true`. The component is only rendered on touch devices
+   * anyway (see `useTouchDevice`), so the default fits the common case.
+   */
+  floating?: boolean;
+}
+
+export function VirtualJoystick({ floating = true }: VirtualJoystickProps) {
   const isTouchDevice = useTouchDevice();
+  const isFloating = floating;
 
   // Refs for pointer tracking
   const containerRef = useRef<HTMLDivElement>(null);
+  const floatingLayerRef = useRef<HTMLDivElement>(null);
   const activePointerId = useRef<number | null>(null);
   const centerRef = useRef({ x: 0, y: 0 });
 
@@ -84,6 +104,19 @@ export function VirtualJoystick() {
   const [active, setActive] = useState(false);
   const thumbRef = useRef<HTMLDivElement>(null);
 
+  // Floating-mode state: where the base is currently positioned (viewport
+  // coords) and whether it's visible. In fixed mode this is unused.
+  const [basePos, setBasePos] = useState<{ x: number; y: number; visible: boolean }>({
+    x: 0,
+    y: 0,
+    visible: false,
+  });
+
+  /* ── Hide the floating base (used by release / blur handlers) ── */
+  const hideFloatingBase = useCallback(() => {
+    setBasePos((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+  }, []);
+
   // ── Apply thumb offset directly to DOM (avoids re-render during drag) ──
   const applyThumbOffset = useCallback((dx: number, dy: number) => {
     if (thumbRef.current) {
@@ -91,7 +124,7 @@ export function VirtualJoystick() {
     }
   }, []);
 
-  // ── Compute center of the outer ring ──
+  // ── Compute center of the outer ring (fixed mode only) ──
   const updateCenter = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -158,6 +191,10 @@ export function VirtualJoystick() {
     }
   }, []);
 
+  /* ══════════════════════════════════════════════════════════════
+     FIXED-MODE HANDLERS (legacy)
+     ══════════════════════════════════════════════════════════════ */
+
   // ── Pointer down on outer ring ──
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
@@ -218,11 +255,107 @@ export function VirtualJoystick() {
     [releaseJoystick],
   );
 
+  /* ══════════════════════════════════════════════════════════════
+     FLOATING-MODE HANDLERS
+     The floating layer (left half of screen) captures the initial
+     pointerdown; subsequent move/up events are routed back to the
+     same layer via Pointer Capture.
+     ══════════════════════════════════════════════════════════════ */
+
+  // ── Defensive check: should this pointerdown activate the joystick? ──
+  const shouldAcceptFloatingTouch = useCallback((e: React.PointerEvent): boolean => {
+    if (e.button !== 0) return false;
+    // Multi-touch safety
+    if (activePointerId.current !== null) return false;
+    // Only the left half of the viewport
+    if (e.clientX >= window.innerWidth / 2) return false;
+    // Ignore touches that land on UI panels / dialog surfaces.
+    // (Panels sit above MOBILE_CONTROLS in z-index so this is mostly a
+    //  no-op, but it covers cases where a `.panel-surface` element is at
+    //  the same z-index or pointer-events misbehave.)
+    const target = e.target as Element | null;
+    if (target && typeof target.closest === 'function') {
+      if (target.closest('[data-panel], .panel-surface')) return false;
+    }
+    return true;
+  }, []);
+
+  const handleFloatingPointerDown = useCallback(
+    (e: React.PointerEvent) => {
+      if (!shouldAcceptFloatingTouch(e)) return;
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const layer = floatingLayerRef.current;
+      if (!layer) return;
+
+      layer.setPointerCapture(e.pointerId);
+      activePointerId.current = e.pointerId;
+
+      // Center the ring on the touch point so the thumb is under the finger.
+      // `position: fixed` is used for the base in floating mode so the
+      // wrapper's safe-area-inset padding doesn't shift it.
+      centerRef.current = { x: e.clientX, y: e.clientY };
+      setBasePos({ x: e.clientX, y: e.clientY, visible: true });
+      setActive(true);
+      processPointer(e.clientX, e.clientY);
+
+      hapticLight();
+    },
+    [shouldAcceptFloatingTouch, processPointer],
+  );
+
+  const handleFloatingPointerMove = useCallback(
+    (e: React.PointerEvent) => {
+      if (activePointerId.current === null) return;
+      if (e.pointerId !== activePointerId.current) return;
+      e.preventDefault();
+      processPointer(e.clientX, e.clientY);
+    },
+    [processPointer],
+  );
+
+  const handleFloatingPointerEnd = useCallback(
+    (e: React.PointerEvent) => {
+      if (activePointerId.current === null) return;
+      if (e.pointerId !== activePointerId.current) return;
+      e.preventDefault();
+      const layer = floatingLayerRef.current;
+      if (layer && layer.hasPointerCapture(e.pointerId)) {
+        layer.releasePointerCapture(e.pointerId);
+      }
+      releaseJoystick();
+      hideFloatingBase();
+    },
+    [releaseJoystick, hideFloatingBase],
+  );
+
+  const handleFloatingLostPointerCapture = useCallback(
+    (e: React.PointerEvent) => {
+      if (e.pointerId === activePointerId.current) {
+        releaseJoystick();
+        hideFloatingBase();
+      }
+    },
+    [releaseJoystick, hideFloatingBase],
+  );
+
+  /* ══════════════════════════════════════════════════════════════
+     SHARED LIFECYCLE (blur / visibility)
+     ══════════════════════════════════════════════════════════════ */
+
   // ── Reset on blur / visibility change ──
   useEffect(() => {
-    const onBlur = () => releaseJoystick();
+    const onBlur = () => {
+      releaseJoystick();
+      hideFloatingBase();
+    };
     const onVisibility = () => {
-      if (document.hidden) releaseJoystick();
+      if (document.hidden) {
+        releaseJoystick();
+        hideFloatingBase();
+      }
     };
     window.addEventListener('blur', onBlur);
     document.addEventListener('visibilitychange', onVisibility);
@@ -231,10 +364,37 @@ export function VirtualJoystick() {
       document.removeEventListener('visibilitychange', onVisibility);
       releaseJoystick();
     };
-  }, [releaseJoystick]);
+  }, [releaseJoystick, hideFloatingBase]);
 
   // ── Hidden on desktop ──
   if (!isTouchDevice) return null;
+
+  /* ── Base element style depends on mode ── */
+  const baseStyle: React.CSSProperties = isFloating
+    ? {
+        // Floating: position: fixed (viewport-relative, bypasses the
+        // wrapper's safe-area padding). Base is hidden until a touch lands.
+        position: 'fixed',
+        left: basePos.x - OUTER_SIZE / 2,
+        top: basePos.y - OUTER_SIZE / 2,
+        pointerEvents: 'none', // visual only — floating layer handles events
+        opacity: basePos.visible ? 1 : 0,
+        transition: 'opacity 0.12s ease',
+        touchAction: 'none',
+        animation: 'none',
+        ...outerRingBaseStyle,
+      }
+    : {
+        // Fixed (legacy): anchored bottom-left of wrapper.
+        position: 'absolute',
+        bottom: 24,
+        left: 24,
+        pointerEvents: 'auto',
+        touchAction: 'none',
+        animation: active ? 'none' : 'vj-pulse 3s ease-in-out infinite',
+        boxShadow: `0 0 20px rgba(${CYBER_CYAN_RGB}, 0.12), inset 0 0 24px rgba(${CYBER_CYAN_RGB}, 0.05)`,
+        ...outerRingBaseStyle,
+      };
 
   // Thumb always renders from React state; during drag the DOM is
   // updated directly for zero-lag, so the React style is just the fallback.
@@ -251,23 +411,39 @@ export function VirtualJoystick() {
       data-testid="virtual-joystick-layer"
       aria-hidden="true"
     >
+      {isFloating && (
+        /* Invisible left-half layer that captures the initial pointerdown
+         * and (via Pointer Capture) subsequent move/up events. */
+        <div
+          ref={floatingLayerRef}
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            width: '50%',
+            height: '100%',
+            pointerEvents: 'auto',
+            touchAction: 'none',
+            // Transparent — purely a touch surface, no visual.
+            background: 'transparent',
+          }}
+          data-testid="virtual-joystick-floating-layer"
+          aria-hidden="true"
+          onPointerDown={handleFloatingPointerDown}
+          onPointerMove={handleFloatingPointerMove}
+          onPointerUp={handleFloatingPointerEnd}
+          onPointerCancel={handleFloatingPointerEnd}
+          onLostPointerCapture={handleFloatingLostPointerCapture}
+        />
+      )}
       <div
         ref={containerRef}
-        style={{
-          position: 'absolute',
-          bottom: 24,
-          left: 24,
-          pointerEvents: 'auto',
-          touchAction: 'none',
-          animation: active ? 'none' : 'vj-pulse 3s ease-in-out infinite',
-          boxShadow: `0 0 20px rgba(${CYBER_CYAN_RGB}, 0.12), inset 0 0 24px rgba(${CYBER_CYAN_RGB}, 0.05)`,
-          ...outerRingBaseStyle,
-        }}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerEnd}
-        onPointerCancel={handlePointerEnd}
-        onLostPointerCapture={handleLostPointerCapture}
+        style={baseStyle}
+        onPointerDown={isFloating ? undefined : handlePointerDown}
+        onPointerMove={isFloating ? undefined : handlePointerMove}
+        onPointerUp={isFloating ? undefined : handlePointerEnd}
+        onPointerCancel={isFloating ? undefined : handlePointerEnd}
+        onLostPointerCapture={isFloating ? undefined : handleLostPointerCapture}
         role="slider"
         aria-label="Виртуальный джойстик — управление перемещением"
         aria-valuetext={active
@@ -286,8 +462,10 @@ export function VirtualJoystick() {
           aria-hidden="true"
         />
 
-        {/* Directional indicators (subtle crosshair arrows) */}
-        {!active && (
+        {/* Directional indicators (subtle crosshair arrows) — only in
+            fixed mode; in floating mode the base is hidden between touches
+            so the crosshair would flash on every tap. */}
+        {!isFloating && !active && (
           <svg
             className="absolute inset-0 pointer-events-none"
             viewBox={`0 0 ${OUTER_SIZE} ${OUTER_SIZE}`}

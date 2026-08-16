@@ -10,7 +10,7 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import {
   BookMarked, BookOpen, Search, Lock, MapPin,
-  ChevronRight, Star, Link2, BarChart3,
+  ChevronRight, Star, Link2, BarChart3, Scale,
 } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import type { LoreEntry, LoreCategory, LoreRarity } from '@/store/gameStore';
@@ -502,6 +502,17 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
             )}
           </div>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 text-[10px] text-cyan-400 hover:text-cyan-300 hover:bg-cyan-950/20 transition-colors"
+              onClick={() => eventBus.emit('ui:open_panel', { panel: 'factionReputation' })}
+              title="Открыть панель репутации фракций"
+              aria-label="Открыть панель репутации фракций"
+            >
+              <Scale className="size-3 mr-1" />
+              Фракции
+            </Button>
             <Button
               variant="ghost"
               size="sm"

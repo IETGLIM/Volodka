@@ -21,6 +21,7 @@ import { usePanelExitComplete } from '@/components/game/orchestrator/PanelExitCo
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useTransitionDirector } from '@/hooks/useTransitionDirector';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const PANEL_WRAPPER_LABELS = {
   close: 'Закрыть',
@@ -123,6 +124,7 @@ export function PanelWrapper({
   const reducedMotion = useEffectiveReducedMotion();
   const { phase: transitionPhase } = useTransitionDirector();
   const { closeButtonRef, dialogProps, titleProps } = usePanelDialog();
+  const isMobile = useIsMobile();
   const accent = ACCENT_MAP[accentColor];
   const panelId = usePanelId();
   const { isTopPanel } = usePanelStack();
@@ -311,10 +313,12 @@ export function PanelWrapper({
                   ref={closeButtonRef}
                   type="button"
                   onClick={handleClose}
-                  className="close-btn-glow w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150 hover:rotate-90"
+                  className={`close-btn-glow ${
+                    isMobile ? 'h-11 w-11' : 'h-7 w-7'
+                  } rounded-md flex items-center justify-center text-slate-400 hover:text-white transition-all duration-150 hover:rotate-90`}
                   aria-label={closeAriaLabel ?? PANEL_WRAPPER_LABELS.close}
                 >
-                  <X className="size-4" aria-hidden="true" />
+                  <X className={isMobile ? 'size-5' : 'size-4'} aria-hidden="true" />
                 </button>
               </div>
             </div>

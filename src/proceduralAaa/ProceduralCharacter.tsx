@@ -10,7 +10,7 @@
 
 import { useMemo, useRef, useEffect } from 'react';
 
-import { BufferGeometry, CapsuleGeometry, Color, Group, Mesh, MeshStandardMaterial, Object3D, Raycaster, ShaderMaterial, SphereGeometry, Vector3 } from 'three';
+import { BufferGeometry, CapsuleGeometry, Color, Group, Mesh, MeshStandardMaterial, Object3D, Raycaster, ShaderMaterial, SphereGeometry, Texture, Vector3 } from 'three';
 
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 
@@ -246,7 +246,7 @@ function createClothMaterial(color: string, seed: number): ShaderMaterial {
 
   const maps = generateDynamicTexturesSync('concrete', 512, seed + 77);
 
-  return new ShaderMaterial({
+  const mat = new ShaderMaterial({
 
     vertexShader: SKIN_VERT,
 
@@ -267,6 +267,12 @@ function createClothMaterial(color: string, seed: number): ShaderMaterial {
     },
 
   });
+
+  // Сохраняем динамические текстуры в userData, чтобы корректно освободить их
+  // вместе с материалом — иначе DataTexture утекают при unmount.
+  mat.userData.__ownedTextures = [maps.albedo, maps.roughness];
+
+  return mat;
 
 }
 
@@ -402,6 +408,9 @@ export interface ProceduralCharacterProps {
 
 }
 
+// Константное направление ходьбы — модульный синглтон вместо new Vector3 каждый кадр.
+const WALK_FORWARD = new Vector3(0, 0, -1);
+
 
 
 export function ProceduralCharacter({
@@ -444,6 +453,13 @@ export function ProceduralCharacter({
 
   const breathePhase = useRef(0);
 
+  // Scratch Vector3 — переиспользуем из кадра в кадр, чтобы не аллоцировать
+  // новые объекты в useFrameTick (walk-direction, raycast origins, IK targets).
+  const scratchRayL = useRef(new Vector3());
+  const scratchRayR = useRef(new Vector3());
+  const scratchIkTarget = useRef(new Vector3());
+  const scratchIkTip = useRef(new Vector3());
+
 
 
   const faceGeo = useMemo(() => buildHarmonicFace(0.155, 28), []);
@@ -481,6 +497,29 @@ export function ProceduralCharacter({
     [],
 
   );
+
+
+
+  // Dispose геометрий и материалов при unmount — ранее они утекали, поскольку
+  // useMemo держал их, а cleanup только отписывался от params changes.
+  useEffect(() => {
+    return () => {
+      const ownedTextureLists: Texture[][] = [];
+      const geos = [faceGeo, hairGeo, bodyGeo, shirtGeo, pantsGeo, limbGeo];
+      const mats: (ShaderMaterial | MeshStandardMaterial)[] = [skin, cloth, pantsMat, hairMat];
+      for (const g of geos) g.dispose();
+      for (const m of mats) {
+        // Подбираем текстуры, созданные createClothMaterial (см. userData.__ownedTextures).
+        if (m instanceof ShaderMaterial && Array.isArray(m.userData.__ownedTextures)) {
+          ownedTextureLists.push(m.userData.__ownedTextures as Texture[]);
+        }
+        m.dispose();
+      }
+      for (const list of ownedTextureLists) {
+        for (const t of list) t.dispose();
+      }
+    };
+  }, [faceGeo, hairGeo, bodyGeo, shirtGeo, pantsGeo, limbGeo, skin, cloth, pantsMat, hairMat]);
 
 
 
@@ -582,11 +621,16 @@ export function ProceduralCharacter({
 
     const origin = g.position;
 
+    // Переиспользуем scratch-векторы вместо origin.clone().add(new Vector3(...))
+    const rayL = scratchRayL.current.set(origin.x - 0.18, origin.y + 1.2, origin.z);
+
+    const rayR = scratchRayR.current.set(origin.x + 0.18, origin.y + 1.2, origin.z);
+
     const gyL = raycastGroundY(
 
       raycaster,
 
-      origin.clone().add(new Vector3(-0.18, 1.2, 0)),
+      rayL,
 
       meshes,
 
@@ -598,7 +642,7 @@ export function ProceduralCharacter({
 
       raycaster,
 
-      origin.clone().add(new Vector3(0.18, 1.2, 0)),
+      rayR,
 
       meshes,
 
@@ -618,7 +662,7 @@ export function ProceduralCharacter({
 
         p,
 
-        new Vector3(0, 0, -1),
+        WALK_FORWARD,
 
         gyL,
 
@@ -632,7 +676,9 @@ export function ProceduralCharacter({
 
         leftChain.current.joints[0]!.set(-0.12, 0.95, 0);
 
-        solveFabrik(leftChain.current, walk.current.leftTarget.clone().sub(origin), 10);
+        const ikTargetL = scratchIkTarget.current.copy(walk.current.leftTarget).sub(origin);
+
+        solveFabrik(leftChain.current, ikTargetL, 10);
 
         const mid = leftChain.current.joints[1]!;
 
@@ -642,7 +688,7 @@ export function ProceduralCharacter({
 
           leftLegRef.current.position.copy(mid);
 
-          leftLegRef.current.lookAt(tip.clone().add(origin));
+          leftLegRef.current.lookAt(scratchIkTip.current.copy(tip).add(origin));
 
         }
 
@@ -652,7 +698,9 @@ export function ProceduralCharacter({
 
         rightChain.current.joints[0]!.set(0.12, 0.95, 0);
 
-        solveFabrik(rightChain.current, walk.current.rightTarget.clone().sub(origin), 10);
+        const ikTargetR = scratchIkTarget.current.copy(walk.current.rightTarget).sub(origin);
+
+        solveFabrik(rightChain.current, ikTargetR, 10);
 
         const mid = rightChain.current.joints[1]!;
 
@@ -662,7 +710,7 @@ export function ProceduralCharacter({
 
           rightLegRef.current.position.copy(mid);
 
-          rightLegRef.current.lookAt(tip.clone().add(origin));
+          rightLegRef.current.lookAt(scratchIkTip.current.copy(tip).add(origin));
 
         }
 

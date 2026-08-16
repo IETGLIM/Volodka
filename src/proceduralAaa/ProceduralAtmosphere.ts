@@ -81,7 +81,8 @@ export function createVolumetricRayPlanes(
   return group;
 }
 
-/** Apply fog to Scene from params. */
+/** Apply fog to Scene from params.
+ *  Мутируем существующий FogExp2 in-place, чтобы не аллоцировать новый объект каждый кадр. */
 export function applyHeightDistanceFog(
   scene: Scene,
   params: ProceduralAaaParams,
@@ -89,5 +90,13 @@ export function applyHeightDistanceFog(
 ): void {
   const heightFactor = 1 + Math.max(0, cameraY) * params.fogHeightFalloff * 0.05;
   const dens = params.fogDensity * heightFactor;
-  scene.fog = new FogExp2('#2a3048', dens);
+  const existing = scene.fog;
+  if (existing instanceof FogExp2) {
+    // Переиспользуем уже созданный туман — обновляем только density и color.
+    existing.density = dens;
+    existing.color.set('#2a3048');
+  } else {
+    // Лишь при отсутствии подходящего тумана создаём новый (один раз).
+    scene.fog = new FogExp2('#2a3048', dens);
+  }
 }

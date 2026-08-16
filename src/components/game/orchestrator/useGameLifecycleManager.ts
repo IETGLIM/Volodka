@@ -55,6 +55,22 @@ function emitReactiveThought(text: string, sceneId: SceneId | string, duration =
 /** Autosave, TTL cleanup, daily resets, scene banners, guided story lifecycle. */
 export type { SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
 
+// Module-level autosave debounce. Scene-enter and combat:end both trigger an
+// autosave; without coalescing, rapid transitions (e.g. combat → scene:enter
+// back-to-back) fire synchronous localStorage.setItem calls on top of each
+// other. The 5-minute interval autosave is NOT debounced (kept as-is).
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
+
+function debouncedAutosave(fn: () => void, delay = 2000): void {
+  if (autosaveTimer !== null) {
+    clearTimeout(autosaveTimer);
+  }
+  autosaveTimer = setTimeout(() => {
+    autosaveTimer = null;
+    fn();
+  }, delay);
+}
+
 export function useGameLifecycleManager(mode: string) {
   const [sceneBanner, setSceneBanner] = useState<SceneBannerPresentation | null>(null);
   const sceneBannerTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -187,7 +203,7 @@ export function useGameLifecycleManager(mode: string) {
     scope.on('scene:enter', ({ sceneId }) => {
       const store = useGameStore.getState();
       if (readGamePhase(store) === 'exploration') {
-        store.saveGame({ source: 'auto' });
+        debouncedAutosave(() => store.saveGame({ source: 'auto' }));
       }
 
       // Scene-specific entry thought — reactive inner monologue.
@@ -215,7 +231,7 @@ export function useGameLifecycleManager(mode: string) {
       const store = useGameStore.getState();
       runGlobalCombatEnd(store.exploration.currentSceneId);
       if (readGamePhase(store) === 'exploration') {
-        store.saveGame({ source: 'auto' });
+        debouncedAutosave(() => store.saveGame({ source: 'auto' }));
       }
       reconcileGuidedStory();
     }, EventBusPriority.Orchestrator);
@@ -330,11 +346,24 @@ export function useGameLifecycleManager(mode: string) {
       }
     });
 
-    return withHmrCleanup(() => scope.dispose());
+    return withHmrCleanup(() => {
+      scope.dispose();
+      if (autosaveTimer !== null) {
+        clearTimeout(autosaveTimer);
+        autosaveTimer = null;
+      }
+    });
   }, []);
 
   useEffect(() => {
     const ttlInterval = setInterval(() => {
+      // No-op outside exploration (main menu, cutscenes, combat) and when the
+      // tab is hidden — avoids per-second TTL scans during cinematics / menus
+      // and when the player isn't even looking. Interval stays running so we
+      // don't have to tear it down / rebuild on every phase transition.
+      if (document.hidden) return;
+      const store = useGameStore.getState();
+      if (readGamePhase(store) !== 'exploration') return;
       processExpiredTTLFlags();
     }, 1000);
     return () => clearInterval(ttlInterval);

@@ -98,7 +98,7 @@ function TrophyToast({
         className="fixed pointer-events-auto cursor-pointer cyber-fade-in-up hud-filmic-achievement-burst"
         style={{
           zIndex: UI_LAYERS.TOASTS + 2,
-          bottom: `calc(7rem + ${notification.id.charCodeAt(5) % 3} * 5rem)`,
+          bottom: `calc(7rem + ${Array.from(notification.id).reduce((a, c) => a + c.charCodeAt(0), 0) % 3} * 5rem)`,
           left: '50%',
           transform: 'translateX(-50%)',
         }}

@@ -27,6 +27,10 @@ const buttonVariants = cva(
         sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
         lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
         icon: "size-9",
+        // Touch-optimized size — meets the 44×44px Apple HIG minimum.
+        // Use `size="touch"` for primary mobile actions (e.g. dialogue
+        // choices, combat actions, on-screen D-pad buttons).
+        touch: "h-11 min-w-11 px-4",
       },
     },
     defaultVariants: {

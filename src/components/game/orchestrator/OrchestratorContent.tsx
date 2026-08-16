@@ -10,6 +10,7 @@ import { OrchestratorPauseMenu } from './OrchestratorPauseMenu';
 import { OrchestratorQuestOverlays } from './OrchestratorQuestOverlays';
 import { useOrchestratorComposition } from './useOrchestratorComposition';
 import { GameAnnouncer } from '@/components/a11y/GameAnnouncer';
+import { ColorBlindFilters } from '@/components/a11y/ColorBlindFilters';
 
 /** Renders orchestrator layers from memoized prop bundles. */
 export function OrchestratorContent() {
@@ -44,6 +45,9 @@ export function OrchestratorContent() {
 
             {/* Screen reader announcements for game events */}
             <GameAnnouncer />
+
+            {/* Hidden SVG defs — color-blind correction filters referenced by RPGGameCanvas */}
+            <ColorBlindFilters />
           </OrchestratorDialogueFocusRoot>
         </PanelStackProvider>
       </CyberpunkThemeProvider>

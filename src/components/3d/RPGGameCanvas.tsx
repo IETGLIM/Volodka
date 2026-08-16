@@ -45,6 +45,8 @@ import { adoptCanvasWebGlRenderer } from '@/engine/canvas/webGlRendererSingleton
 import { markCanvasMounted, markFirstFrame } from '@/engine/performance/LoadingTimeline';
 import { isPostfxActive } from '@/engine/graphics/postfxActiveState';
 import { SCENE_OVERLAY_MS } from '@/shared/constants/transitionTimings';
+import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
+import { colorBlindModeToFilter } from '@/components/a11y/ColorBlindFilters';
 
 const LazyPhysicsSceneInner = lazy(() =>
   import('./PhysicsSceneInner').then((m) => ({ default: m.PhysicsSceneInner })),
@@ -421,6 +423,12 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
 
   const { preset } = useGraphicsQuality();
 
+  // Color-blind correction SVG filter applied to the canvas wrapper div.
+  // When `colorBlindMode` is set, the wrapper receives `filter: url(#<mode>-correct)`,
+  // referencing the SVG <filter> defs mounted by ColorBlindFilters in OrchestratorContent.
+  const { colorBlindMode } = useAccessibilitySettings();
+  const colorBlindFilter = colorBlindModeToFilter(colorBlindMode);
+
   // P3-FIX: Pause physics when game is in menu/intro mode to save CPU.
   // Read directly from slice stores — the facade flush uses RAF which
   // doesn't fire under 'demand' frameloop (chicken-and-egg problem).
@@ -490,6 +498,7 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
       ref={containerRef}
       tabIndex={focusable ? 0 : -1}
       data-game-canvas=""
+      data-color-blind-mode={colorBlindMode === 'none' ? undefined : colorBlindMode}
       role="application"
       aria-label="Игровой мир Володьки — исследование от первого лица"
       style={{
@@ -497,6 +506,11 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
         height: '100%',
         outline: 'none',
         position: 'relative',
+        // Color-blind correction SVG filter (Daltonization) — empty string when disabled.
+        // Applied to the wrapper so the WebGL canvas + CSS overlays (MatrixRain, GlitchEffect,
+        // NoirOverlay) are all corrected together. The SVG <filter> defs live in
+        // <ColorBlindFilters />, mounted once in OrchestratorContent.
+        filter: colorBlindFilter || undefined,
         // zIndex is handled by the parent wrapper in GameOrchestrator
         // to prevent double-stacking when Canvas is always-mounted
       }}

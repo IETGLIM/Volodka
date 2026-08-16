@@ -1483,6 +1483,10 @@ export const ACT3_STRUCTURE: Record<string, StoryNodeStructure> = {
         },
         "effects": [
           {
+            "type": "combat",
+            "enemyType": "boss_neuro_sys"
+          },
+          {
             "type": "addSkill",
             "skill": "coding",
             "value": 3

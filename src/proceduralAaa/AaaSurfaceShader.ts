@@ -269,7 +269,7 @@ export function createAaaSurfaceMaterial(
   const whiteAoTex = new DataTexture(whiteAoData, 1, 1);
   whiteAoTex.needsUpdate = true;
 
-  return new ShaderMaterial({
+  const material = new ShaderMaterial({
     vertexShader: VERT,
     fragmentShader: FRAG,
     uniforms: {
@@ -297,6 +297,42 @@ export function createAaaSurfaceMaterial(
       uTime: { value: 0 },
     },
   });
+  // Сохраняем fallback-текстуры, чтобы disposeAaaSurfaceMaterial() могла их
+  // корректно освободить — иначе DataTexture утекают при пересоздании материала.
+  material.userData.__fallbackTextures = [flatNormalTex, whiteAoTex];
+  return material;
+}
+
+/**
+ * Корректно освобождает AAA surface материал: dispose самого материала,
+ * fallback-текстур (flatNormalTex/whiteAoTex) и всех Texture в uniforms.*.value.
+ * Использовать в cleanup useEffect/useMemo вызывающего компонента.
+ */
+export function disposeAaaSurfaceMaterial(material: ShaderMaterial | null | undefined): void {
+  if (!material) return;
+  const disposed = new Set<Texture>();
+  const tryDispose = (tex: unknown): void => {
+    if (tex instanceof Texture && !disposed.has(tex)) {
+      disposed.add(tex);
+      tex.dispose();
+    }
+  };
+  // Fallback-текстуры, созданные в createAaaSurfaceMaterial.
+  const fallbacks = material.userData.__fallbackTextures as Texture[] | undefined;
+  if (Array.isArray(fallbacks)) {
+    for (const t of fallbacks) tryDispose(t);
+  }
+  // Любые текстуры, присвоенные в uniforms.
+  for (const key of Object.keys(material.uniforms)) {
+    const uniform = material.uniforms[key];
+    const value = uniform?.value;
+    if (Array.isArray(value)) {
+      for (const v of value) tryDispose(v);
+    } else {
+      tryDispose(value);
+    }
+  }
+  material.dispose();
 }
 
 export function updateAaaSurfaceFromParams(

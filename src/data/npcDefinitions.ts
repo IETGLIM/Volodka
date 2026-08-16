@@ -70,6 +70,13 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       glowColor: '#d4920a',
       silhouette: 'average',
     },
+    /* ── Пороги отношений, открывающие глубокие разговоры с Альбертом.
+       50 — «Доверие»: впервые говорит о страхе не успеть.
+       80 — «Близость»: раскрывает, что прятал стихи Марата в логах Гильдии. ── */
+    relationMilestones: [
+      { value: 50, dialogueNodeId: 'albert_milestone_50' },
+      { value: 80, dialogueNodeId: 'albert_milestone_80' },
+    ],
   },
 
   /* ─────────────── ZAREMA – caring friend ─────────────── */
@@ -132,6 +139,13 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       glowColor: '#e87a9f',
       silhouette: 'slim',
     },
+    /* ── Пороги отношений с Заремой.
+       50 — «Доверие»: впервые рассказывает о работе в столовой Гильдии.
+       80 — «Близость»: раскрывает наследие травницы своей бабки. ── */
+    relationMilestones: [
+      { value: 50, dialogueNodeId: 'zarema_milestone_50' },
+      { value: 80, dialogueNodeId: 'zarema_milestone_80' },
+    ],
   },
 
   /* ─────────────── CAFE BARISTA ─────────────── */
@@ -392,6 +406,13 @@ export const NPC_DEFINITIONS: NPCDefinition[] = [
       glowColor: '#40d0e0',
       silhouette: 'slim',
     },
+    /* ── Пороги отношений с Марией.
+       50 — «Доверие»: признаётся, что Виктория — маска, а её настоящее имя — Мария.
+       80 — «Близость»: раскрывает код «Ока» и свою семилетнюю миссию. ── */
+    relationMilestones: [
+      { value: 50, dialogueNodeId: 'maria_milestone_50' },
+      { value: 80, dialogueNodeId: 'maria_milestone_80' },
+    ],
   },
 
   /* ─────────────── DMITRY – senior developer ─────────────── */

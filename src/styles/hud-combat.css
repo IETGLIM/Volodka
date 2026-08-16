@@ -337,3 +337,29 @@
 .combat-vignette-active {
   box-shadow: inset 0 0 120px rgba(120, 0, 20, 0.35), inset 0 0 240px rgba(0, 0, 0, 0.45);
 }
+
+/* ─── Low-HP heartbeat: red box-shadow pulse at 0.8s intervals ───
+ *  Applied to CyberStatBar's container when value/max < 0.25.
+ *  Overrides `low-bar-pulse` / `low-bar-pulse-amber` (which pulse at 1s
+ *  with a weaker glow) so we don't have two animations competing for
+ *  `box-shadow`. Honours prefers-reduced-motion via reduced-motion.css. */
+@keyframes low-hp-heartbeat {
+  0%, 100% {
+    box-shadow:
+      inset 0 1px 2px rgba(0, 0, 0, 0.5),
+      0 1px 4px rgba(0, 0, 0, 0.35),
+      inset 0 0 4px rgba(255, 50, 50, 0.20),
+      0 0 4px rgba(255, 50, 50, 0.10);
+  }
+  50% {
+    box-shadow:
+      inset 0 1px 2px rgba(0, 0, 0, 0.5),
+      0 1px 4px rgba(0, 0, 0, 0.35),
+      inset 0 0 12px rgba(255, 50, 50, 0.55),
+      0 0 16px rgba(255, 50, 50, 0.35);
+  }
+}
+
+.low-hp-heartbeat {
+  animation: low-hp-heartbeat 0.8s ease-in-out infinite;
+}

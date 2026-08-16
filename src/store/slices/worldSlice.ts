@@ -38,6 +38,7 @@ import { applyFairmathRelation } from '@/shared/fairmath';
 import { scaleNpcRelationDelta } from '@/shared/skills/passiveSkillModifiers';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import { shouldSuppressQuestAcceptEmit } from '@/shared/quest/questAcceptDeferral';
+import { checkRelationMilestones } from '@/engine/npc/npcRelationMilestones';
 import type { GameStoreState } from '../types';
 import { getPlayerStore, getUIStore } from '../storeBindings';
 import {
@@ -84,6 +85,9 @@ export interface WorldSliceState {
     maxComboAchieved: number;
     hasCriticalHit: boolean;
     defeatedEnemyTypes: string[];
+    /** Integer counter for night-time ticks — drives nightTimeHours to avoid IEEE 754 drift. */
+    nightTimeTicks: number;
+    /** Derived: nightTimeTicks * 0.01. Kept for backward-compat reads. */
     nightTimeHours: number;
     poemPowerUsedInCombat: boolean;
     /** Consecutive story choices with positive karma */
@@ -186,6 +190,7 @@ export const createWorldSlice: StateCreator<
     maxComboAchieved: 0,
     hasCriticalHit: false,
     defeatedEnemyTypes: [],
+    nightTimeTicks: 0,
     nightTimeHours: 0,
     poemPowerUsedInCombat: false,
     goodKarmaStreak: 0,
@@ -414,14 +419,32 @@ export const createWorldSlice: StateCreator<
       const relations = [...state.npcRelations];
       const idx = findNpcRelationIndex(relations, canonicalId);
 
+      // Capture pre-mutation relation value so we can detect milestone
+      // crossings after the store has committed the new value. NPCs that
+      // don't yet have a relation row start at the neutral baseline of 50.
+      const oldRelation = idx >= 0 ? (relations[idx]?.value ?? 50) : 50;
+
+      let newRelation: number;
       if (idx >= 0) {
         const updated = { ...relations[idx], npcId: canonicalId };
         updated.value = clamp(applyFairmathRelation(updated.value, scaledDelta), 0, 100);
         relations[idx] = updated;
+        newRelation = updated.value;
       } else {
+        newRelation = clamp(applyFairmathRelation(50, scaledDelta), 0, 100);
         relations.push({
           npcId: canonicalId,
-          value: clamp(applyFairmathRelation(50, scaledDelta), 0, 100), // Start at neutral 50
+          value: newRelation, // Start at neutral 50
+        });
+      }
+
+      // Schedule milestone check AFTER the store commit so listeners
+      // (DialogueRenderer) read the fresh relation value when opening the
+      // milestone dialogue. runAfterStoreCommit uses queueMicrotask, matching
+      // the pattern used by emitPoemCollected / emitAchievementUnlocked.
+      if (oldRelation !== newRelation) {
+        runAfterStoreCommit(() => {
+          checkRelationMilestones(canonicalId, oldRelation, newRelation);
         });
       }
 
@@ -515,10 +538,17 @@ export const createWorldSlice: StateCreator<
       // -1 because meta-achievement itself hasn't been counted yet
       const store = get();
       if (!store.unlockedAchievements.some((a) => a.id === 'hidden_all_achievements')) {
-        // Defer to avoid recursive set() calls
-        setTimeout(() => {
-          get().unlockAchievement('hidden_all_achievements');
-        }, 100);
+        // Defer to avoid recursive set() calls. Use runAfterStoreCommit
+        // (queueMicrotask) instead of setTimeout(_, 100) so the meta-achievement
+        // fires in the same macrotask — no 100ms window where a tab close or
+        // resetGame could drop it. Guard again at fire-time in case state
+        // changed between scheduling and execution (e.g. resetGame ran).
+        runAfterStoreCommit(() => {
+          const current = get();
+          if (!current.unlockedAchievements.some((a) => a.id === 'hidden_all_achievements')) {
+            current.unlockAchievement('hidden_all_achievements');
+          }
+        });
       }
     }
 
@@ -744,7 +774,11 @@ export const createWorldSlice: StateCreator<
     set((state) => ({
       achievementProgress: {
         ...state.achievementProgress,
-        nightTimeHours: state.achievementProgress.nightTimeHours + 0.01,
+        // Use integer counter to avoid IEEE 754 drift across thousands of calls;
+        // derive nightTimeHours so existing readers (achievementProgressResolver,
+        // AchievementEngine) continue to work without changes.
+        nightTimeTicks: state.achievementProgress.nightTimeTicks + 1,
+        nightTimeHours: (state.achievementProgress.nightTimeTicks + 1) * 0.01,
       },
     })),
 
@@ -814,9 +848,11 @@ export const createWorldSlice: StateCreator<
       }
 
       if (updates.trackNightHour) {
+        // Mirror trackNightHour: integer counter + derived hours to avoid drift.
         nextProgress = {
           ...nextProgress,
-          nightTimeHours: nextProgress.nightTimeHours + 0.01,
+          nightTimeTicks: nextProgress.nightTimeTicks + 1,
+          nightTimeHours: (nextProgress.nightTimeTicks + 1) * 0.01,
         };
         changed = true;
       }

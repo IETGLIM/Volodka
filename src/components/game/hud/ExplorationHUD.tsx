@@ -37,6 +37,8 @@ import { ObjectiveBeacon } from '@/components/game/hud/parts/ObjectiveBeacon';
 import { InteractableSparkle } from '@/components/game/hud/parts/InteractableSparkle';
 import { SceneEntryNudge } from '@/components/game/hud/parts/SceneEntryNudge';
 import { QuestObjectiveCard } from '@/components/game/hud/parts/QuestObjectiveCard';
+import { QuestChainUnlockToast } from '@/components/game/hud/parts/QuestChainUnlockToast';
+import { ObjectiveCompleteVfx } from '@/components/game/hud/parts/ObjectiveCompleteVfx';
 import { useActiveQuestCardData } from '@/components/game/hud/parts/questObjectiveCardAdapter';
 import { useGamePhase } from '@/store/selectors/uiSelectors';
 
@@ -204,6 +206,16 @@ export function ExplorationHUD(props: HUDProps) {
       <ContextualHint hint={currentHint} onDismiss={dismissHint} />
       <AaaImmersiveGuide />
       <AaaWorldMarkerSystem />
+
+      {/* Quest chain unlock toast — top-center AAA card on story:quest_chain_unlock.
+          Polished gold/cyan glow + NPC portrait + scene name. Auto-dismisses 4s
+          or on click. Mounts its own AnimatePresence internally. */}
+      <QuestChainUnlockToast />
+
+      {/* Objective complete VFX — brief center-top checkmark + gold particle
+          burst + soft gold flash on quest:complete_objective. ~1.5s lifetime. */}
+      <ObjectiveCompleteVfx />
+
       <QuestDirectionArrow />
       {/* Subtle amber chevron at screen edge pointing toward objective —
           only shows after 15s of not finding the target. Show-don't-tell. */}

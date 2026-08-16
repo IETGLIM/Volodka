@@ -53,7 +53,17 @@ export function AmbientAtmosphereCaption() {
             {presentation.label}
           </p>
           <p className="sr-only">{presentation.accessibilityDescription}</p>
-          <p className="text-[11px] leading-snug text-slate-200/90" aria-hidden>
+          <p
+            className="text-[11px] leading-snug text-slate-200/90"
+            style={{
+              // Accessibility: scale ambient caption with the --subtitle-scale CSS var
+              // set by AccessibilityManager on <html> (default 1 = no scaling). Base
+              // size is 0.6875rem (Tailwind text-[11px]) so scale=1 preserves the
+              // original compact look.
+              fontSize: 'calc(0.6875rem * var(--subtitle-scale, 1))',
+            }}
+            aria-hidden
+          >
             {presentation.accessibilityDescription}
           </p>
         </div>

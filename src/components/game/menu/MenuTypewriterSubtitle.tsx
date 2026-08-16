@@ -29,6 +29,9 @@ export function MenuTypewriterSubtitle({ text, delay = 0, enabled = true }: { te
         background: 'linear-gradient(90deg, rgba(0,255,255,0.8), rgba(255,140,0,0.6), rgba(0,255,255,0.8))',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
+        // Accessibility: scale subtitle with the --subtitle-scale CSS var
+        // set by AccessibilityManager on <html> (default 1 = no scaling).
+        fontSize: 'calc(1rem * var(--subtitle-scale, 1))',
       }}
     >
       {displayed}

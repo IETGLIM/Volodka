@@ -192,7 +192,7 @@ const STATUS_EFFECTS: Record<string, StatusEffectConfig> = {
   stunned: { text: 'ОГЛУШЕНИЕ', color: { main: '#ffff00', glow: 'rgba(255, 255, 0, 0.8)', shadow: '0 0 8px rgba(255, 255, 0, 0.9), 1px 1px 2px rgba(0,0,0,0.6)' } },
   poisoned: { text: 'ОТРАВЛЕНИЕ', color: { main: '#44ff44', glow: 'rgba(68, 255, 68, 0.8)', shadow: '0 0 8px rgba(68, 255, 68, 0.9), 1px 1px 2px rgba(0,0,0,0.6)' } },
   bleeding: { text: 'КРОВОТЕЧЕНИЕ', color: { main: '#cc2222', glow: 'rgba(204, 34, 34, 0.8)', shadow: '0 0 8px rgba(204, 34, 34, 0.9), 1px 1px 2px rgba(0,0,0,0.6)' } },
-  shocked: { text: 'ПОКШЕНИЕ', color: { main: '#aaddff', glow: 'rgba(170, 221, 255, 0.9)', shadow: '0 0 10px rgba(170, 221, 255, 1), 1px 1px 2px rgba(0,0,0,0.6)' } },
+  shocked: { text: 'ПОРАЖЕНИЕ', color: { main: '#aaddff', glow: 'rgba(170, 221, 255, 0.9)', shadow: '0 0 10px rgba(170, 221, 255, 1), 1px 1px 2px rgba(0,0,0,0.6)' } },
 };
 
 /* ─── Helper Functions ───────────────────────────────────────────────── */

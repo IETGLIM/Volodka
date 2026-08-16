@@ -21,7 +21,8 @@ import {
 import { audioEngine } from '@/engine/AudioEngine';
 import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModifiers';
 import { eventBus } from '@/engine/EventBus';
-import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { consumeMilestoneDialogue } from '@/engine/npc/npcMilestoneDialogueDedup';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore as _getGameStore } from '@/store/gameStore';
 import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
@@ -206,7 +207,13 @@ function ThoughtInterjectionLine({ interjection, accentColor }: {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.15 }}
       className={`my-1.5 px-3 py-1.5 rounded-md border border-amber-500/20 bg-amber-950/15 backdrop-blur-sm hud-filmic-interjection ${colorClass} italic text-sm font-light`}
-      style={{ boxShadow: `0 0 8px ${accentColor}15` }}
+      style={{
+        boxShadow: `0 0 8px ${accentColor}15`,
+        // Accessibility: scale inner-voice subtitle with the --subtitle-scale CSS var
+        // set by AccessibilityManager on <html> (default 1 = no scaling). Base size
+        // is 0.875rem (Tailwind text-sm) so scale=1 preserves the original look.
+        fontSize: 'calc(0.875rem * var(--subtitle-scale, 1))',
+      }}
     >
       <span className="font-mono text-xs text-amber-400/70 not-italic mr-1">
         [{interjection.thoughtName}]
@@ -295,6 +302,60 @@ export function DialogueRenderer() {
       errorRef.current = null;
     }
   }, [currentNodeId]);
+
+  // ── Relation milestone → auto-open milestone dialogue ──
+  // When `checkRelationMilestones` (engine/npc/npcRelationMilestones) detects
+  // a threshold crossing, it emits `npc:relation_milestone`. DialogueRenderer
+  // listens and auto-opens the linked dialogue node so the player sees the
+  // deep conversation without manually re-talking to the NPC.
+  //
+  // Mid-dialogue milestones (player picks a choice that crosses a threshold):
+  // queued and opened after the current dialogue closes, so we never
+  // interrupt the active conversation.
+  // Out-of-dialogue milestones (e.g. from gifts): the orchestrator-level
+  // listener (useNpcMilestoneDialogueOpener) handles those because this
+  // component is only mounted while a dialogue is active.
+  const milestoneOpenRef = useRef(false);
+  const queuedMilestoneRef = useRef<string | null>(null);
+  // Keep milestoneOpenRef in sync with the live dialogue-open state so the
+  // event listener (registered once) always reads the current value.
+  useEffect(() => {
+    milestoneOpenRef.current = showStoryOverlay;
+  }, [showStoryOverlay]);
+  useEffect(() => {
+    const unsubscribe = eventBus.on('npc:relation_milestone', (payload) => {
+      // Dedup: the orchestrator-level listener may have already consumed
+      // this milestone. If so, skip — we don't want to double-open.
+      if (!consumeMilestoneDialogue(payload.npcId, payload.milestoneValue)) return;
+      // If a dialogue is currently open, queue the milestone to fire after
+      // the player closes the active conversation. Otherwise open it now.
+      if (milestoneOpenRef.current) {
+        queuedMilestoneRef.current = payload.dialogueNodeId;
+      } else {
+        openNarrativeOverlay(payload.dialogueNodeId, 'dialogue');
+      }
+    });
+    return () => {
+      unsubscribe();
+    };
+  }, []);
+
+  // ── Flush queued milestone when the active dialogue closes ──
+  // `showStoryOverlay` going false signals the dialogue overlay was closed
+  // (either by the player or by a node with `next: null`). If a milestone
+  // was queued while the dialogue was open, surface it now.
+  useEffect(() => {
+    if (!showStoryOverlay && queuedMilestoneRef.current) {
+      const nodeId = queuedMilestoneRef.current;
+      queuedMilestoneRef.current = null;
+      // Defer one frame so the close-overlay store write commits before we
+      // re-open — otherwise the open can be merged into the close and
+      // nothing surfaces.
+      requestAnimationFrame(() => {
+        openNarrativeOverlay(nodeId, 'dialogue');
+      });
+    }
+  }, [showStoryOverlay]);
 
   useEffect(() => {
     if (!currentNodeId || !isNarrativeGameDataLoaded()) return;

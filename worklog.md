@@ -2,6 +2,49 @@
 
 ---
 
+## Session: 2025-08-16 — "AAA Полировка: Боссы, Станы, Доступность"
+
+### Контекст
+Экспертный аудит кодовой базы в 15 этапов с 5 параллельными агентами по всем подсистемам
+(3D-рендеринг, бой, NPC/диалоги/квесты, HUD/UI/мобайл/аудио, состояние/данные/перформанс).
+Найдено 150+ багов, исправлены критические, добавлены новые AAA-фичи.
+
+### Критические исправления
+- **Боссы доступны**: 3 босса (boss_neuro_sys/dream_eater/final_code) встроены в акты 3/5/7 (раньше мёртвый код)
+- **Стан-способности работают**: skip_turn с duration 1 проверяется ДО tickBuffs; stun_immune блокирует incoming skip_turn
+- **Диалоги возврата**: 28 NPC имели сломанные return-узлы → mkReturn принимает явный entryId
+- **Кат-сцена Act1→Act2**: CSS var `var(--cyber-cyan)` → hex `#22d3ee`
+- **Утечки памяти 3D**: FogExp2 in-place, утилизация geo/mat/textures в ProceduralCharacter/AaaSurfaceShader/HybridGlbLandmarks
+- **Per-frame аллокации**: scratch Vector3 refs в ProceduralCharacter
+- **AchievementPopup NaN**: стабильный хеш вместо charCodeAt(5)
+- **interactionSfx throttle**: единая time origin (performance.now)
+- **voiceLinePlayer 404**: кэшированная HEAD-проверка
+- **Тройная тряска камеры**: useCombatOrchestrator не дублирует AaaCombatCinematic
+- **Погодные/спящие NPC barks**: учитывают weatherEnabled и schedule activity
+- **Facade double-flush**: сравнение slice-refs перед инвалидацией
+- **Автобеседка**: дебаунс 2с вместо синхронного localStorage
+- **Meta-достижение**: runAfterStoreCommit вместо setTimeout(100)
+- **nightTimeHours**: целочисленный nightTimeTicks-счётчик (устранён IEEE 754 дрейф)
+
+### Новые фичи
+- QuestChainUnlockToast + ObjectiveCompleteVfx (золотой бёрст, floating text)
+- Подарки NPC: 7 → 29 NPC с предпочтениями
+- Milestone-диалоги отношений (50 «Доверие», 80 «Близость») — 20 узлов для 4 героев
+- Плавающий джойстик (тап-где-угодно в левой половине)
+- HP damage preview (Dark Souls-style) + low-HP heartbeat
+- Mobile touch targets (44px)
+- Accessibility CSS: Daltonization-фильтры, high-contrast, focus-visible, subtitle-scale
+- 12 lore-записей (история Сети, тайна Гильдии, легенды ЧК, машина под городом, etc.)
+- Панель репутации фракций (5 фракций, агрегированные бары)
+
+### Технические детали
+- 72 файла изменено, 9 новых файлов, ~3500 строк добавлено
+- 0 ошибок TypeScript (tsc7 native typecheck)
+- Удалён мёртвый код: CyberpunkMinimap.tsx (922 строки)
+- Версия: 4.2.42 → 4.4.0
+
+---
+
 ## Session: 2025-07-21 — "Прорыв: Disco Elysium механики + контент"
 
 ### Контекст

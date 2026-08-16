@@ -97,8 +97,9 @@ export function playSfx(type: InteractionSfxType): void {
   if (!ctx || ctx.state !== 'running') return;
 
   const now = ctx.currentTime;
-  if (now - lastPlayTime * 0.001 < THROTTLE_MS * 0.001) return;
-  lastPlayTime = performance.now();
+  const perfNow = performance.now();
+  if (perfNow - lastPlayTime < THROTTLE_MS) return;
+  lastPlayTime = perfNow;
 
   try {
     const recipe = RECIPES[type];

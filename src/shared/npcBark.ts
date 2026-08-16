@@ -2,6 +2,10 @@
 
 import type { NpcEmotion } from '@/shared/types/definitions/npc';
 import type { SceneWeatherType } from '@/shared/types/ambientSound';
+// Value import of a leaf constants module — `npcRelationshipConstants` has no
+// imports of its own, so this shared→engine reference is acyclic and lets the
+// bark relation band stay in lock-step with the "Союзник" badge threshold.
+import { NPC_RELATION_ALLY_THRESHOLD } from '@/engine/npcRelationship/npcRelationshipConstants';
 
 /** Single line or a pool of variants — engine picks one at runtime. */
 export type NPCBarkBand = string | readonly string[];
@@ -196,13 +200,21 @@ export function pickNpcBarkLine(band: NPCBarkBand): string {
   return band[index] ?? band[0];
 }
 
-/** Relation bands: ≤30 hostile, ≥70 friendly, otherwise neutral. */
+/**
+ * Relation bands: ≤ NPC_RELATION_ENEMY_THRESHOLD (30) hostile,
+ * ≥ NPC_RELATION_ALLY_THRESHOLD (65) friendly, otherwise neutral.
+ *
+ * The friendly threshold MUST match `NPC_RELATION_ALLY_THRESHOLD` so an NPC
+ * that shows the "Союзник" badge (relation ≥ 65) also gets friendly bark
+ * lines — previously this used a hard-coded `70`, leaving the 65–69 range
+ * showing ally UI but neutral mutterings.
+ */
 export function resolveNpcBarkForRelation(
   barkTexts: NPCBarkTexts,
   relationValue: number,
 ): string {
   if (relationValue <= 30) return pickNpcBarkLine(barkTexts.hostile);
-  if (relationValue >= 70) return pickNpcBarkLine(barkTexts.friendly);
+  if (relationValue >= NPC_RELATION_ALLY_THRESHOLD) return pickNpcBarkLine(barkTexts.friendly);
   return pickNpcBarkLine(barkTexts.neutral);
 }
 

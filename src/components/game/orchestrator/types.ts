@@ -31,6 +31,7 @@ export const PANEL_IDS = [
   'poemJournal',
   'adventureLog',
   'gameStats',
+  'factionReputation',
 ] as const;
 
 export type NonNullPanelType = (typeof PANEL_IDS)[number];

@@ -161,6 +161,13 @@ export const EXPANDED_NPCS: NPCDefinition[] = [
       glowColor: '#ffb8d0',
       silhouette: 'slim',
     },
+    /* ── Пороги отношений с Солныш.
+       50 — «Доверие»: впервые говорит о ежедневном страхе за Володьку.
+       80 — «Близость»: раскрывает тайну матери-подпольщицы и её тетради стихов. ── */
+    relationMilestones: [
+      { value: 50, dialogueNodeId: 'solnysh_milestone_50' },
+      { value: 80, dialogueNodeId: 'solnysh_milestone_80' },
+    ],
   },
 
   /* ─────────────── ЛЁНЯ (ЛЕОНИД) – бариста, муж Алины ─────────────── */

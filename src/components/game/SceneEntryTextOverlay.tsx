@@ -142,6 +142,9 @@ export function SceneEntryTextOverlay() {
                 fontFamily: '"Georgia", "Times New Roman", serif',
                 color: 'rgba(214, 211, 209, 0.72)',
                 textShadow: '0 1px 8px rgba(0,0,0,0.7)',
+                // Accessibility: scale subtitle with the --subtitle-scale CSS var
+                // set by AccessibilityManager on <html> (default 1 = no scaling).
+                fontSize: 'calc(1rem * var(--subtitle-scale, 1))',
               }}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

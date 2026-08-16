@@ -1,4 +1,4 @@
-export { getCombinedGameState, invalidateCombinedGameStateCache } from './storeBindings';
+export { getCombinedGameState, invalidateCombinedGameStateCache, invalidateCombinedGameStateCacheIfStale } from './storeBindings';
 export { applyCombinedPatch } from './patchState';
 import type { StoreApi } from 'zustand';
 import { usePlayerStore } from './stores/playerStore';

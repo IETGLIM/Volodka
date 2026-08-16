@@ -630,3 +630,132 @@ button:hover [data-keyboard-hint]::after {
     animation: none !important;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   ACCESSIBILITY: Task 4d — Functional a11y settings
+   (high-contrast, color-blind filters, subtitle scale, focus ring)
+   ══════════════════════════════════════════════════════════════
+   The AccessibilityManager sets data-high-contrast / data-color-blind-mode
+   attributes and the --subtitle-scale CSS var on <html>. The rules below
+   make those settings actually do something visible. */
+
+/* ── Global focus-visible ring ──
+   Per task spec. The fallback `#22d3ee` matches the cyber-cyan family
+   used throughout the design system; the existing `--cyber-cyan`
+   variable (defined in tokens.css) overrides it on supported browsers. */
+:focus-visible {
+  outline: 2px solid var(--cyber-cyan, #22d3ee);
+  outline-offset: 2px;
+}
+
+/* High-contrast: thicker, pure-white focus ring on EVERY focusable element. */
+[data-high-contrast="true"] :focus-visible {
+  outline-color: #fff;
+  outline-width: 3px;
+  outline-offset: 2px;
+}
+
+/* ── High-contrast mode: solid backgrounds + white-on-black text ──
+   Panels and dialogs in the default theme rely on translucent backgrounds
+   (bg-black/40, bg-slate-950/60, backdrop-blur-sm, etc.) for the cyberpunk
+   "glass" look. In high-contrast mode we force opaque dark backgrounds so
+   text is always rendered on a solid black plate, maximizing contrast. */
+[data-high-contrast="true"] [role="dialog"],
+[data-high-contrast="true"] [data-panel],
+[data-high-contrast="true"] .cyber-panel,
+[data-high-contrast="true"] .panel-scanlines,
+[data-high-contrast="true"] [class*="backdrop-blur"] {
+  background-color: #000000 !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+/* Any other element using a translucent black/slate background gets the
+   same opaque-black treatment. Targets Tailwind's bg-black/<n> and
+   bg-slate-*/<n> utilities by class-substring match. */
+[data-high-contrast="true"] [class*="bg-black/"],
+[data-high-contrast="true"] [class*="bg-slate-"],
+[data-high-contrast="true"] [class*="bg-zinc-"],
+[data-high-contrast="true"] [class*="bg-stone-"],
+[data-high-contrast="true"] [class*="bg-neutral-"] {
+  background-color: #000000 !important;
+  background-image: none !important;
+}
+
+/* Text on those opaque plates becomes pure white / light grey for body copy. */
+[data-high-contrast="true"] [role="dialog"] *,
+[data-high-contrast="true"] [data-panel] *,
+[data-high-contrast="true"] .cyber-panel * {
+  text-shadow: none !important;
+}
+
+/* ── High-contrast: disable subtle gradients & glows that reduce contrast ──
+   Linear/radial gradients used as decorative overlays or text fills are
+   replaced with solid colors. Text gradients (WebkitBackgroundClip: text)
+   fall back to inherit + a solid color so the text is still readable. */
+[data-high-contrast="true"] [style*="background: linear-gradient"],
+[data-high-contrast="true"] [style*="background:linear-gradient"],
+[data-high-contrast="true"] [style*="background: radial-gradient"],
+[data-high-contrast="true"] [style*="background:radial-gradient"] {
+  background-image: none !important;
+}
+
+[data-high-contrast="true"] [style*="WebkitBackgroundClip: text"],
+[data-high-contrast="true"] [style*="-webkit-background-clip: text"] {
+  -webkit-background-clip: initial !important;
+  background-clip: initial !important;
+  -webkit-text-fill-color: currentColor !important;
+  color: #ffffff !important;
+}
+
+/* Cyberpunk glow filters (box-shadow halos) reduce edge contrast — already
+   disabled globally via `box-shadow: none !important` in the Round 8b block,
+   but we restate it here for the elements this section newly targets so the
+   intent is explicit. */
+[data-high-contrast="true"] [role="dialog"],
+[data-high-contrast="true"] [data-panel] {
+  box-shadow: none !important;
+}
+
+/* ── Color-blind mode: canvas wrapper filter hook ──
+   The SVG <filter> defs (protanopia-correct / deuteranopia-correct /
+   tritanopia-correct) are mounted by <ColorBlindFilters /> in
+   OrchestratorContent. RPGGameCanvas applies `filter: url(#<mode>-correct)`
+   inline when the mode is active — this CSS hook is a belt-and-suspenders
+   fallback for any other element that opts into the same data attribute. */
+[data-color-blind-mode="protanopia"] [data-game-canvas] {
+  filter: url(#protanopia-correct);
+}
+[data-color-blind-mode="deuteranopia"] [data-game-canvas] {
+  filter: url(#deuteranopia-correct);
+}
+[data-color-blind-mode="tritanopia"] [data-game-canvas] {
+  filter: url(#tritanopia-correct);
+}
+
+/* ── Subtitle scale CSS variable ──
+   The AccessibilityManager sets `--subtitle-scale` on <html>. Reader
+   components use it via `font-size: calc(<base>rem * var(--subtitle-scale, 1))`.
+   Default to 1 when unset so unrelated CSS that reads the variable (e.g.
+   `--subtitle-scale` in narrativeSubtitleStyle()) gets a safe fallback. */
+:root {
+  --subtitle-scale: 1;
+}
+
+/* ── High-contrast: dialogue / narrative overrides ──
+   The cinematic narrative frame uses rgba() text colors tuned for the
+   dark glass background; in high-contrast mode the background is now
+   solid black, so we promote the text to pure white for max contrast. */
+[data-high-contrast="true"] .narrative-speaker-nameplate,
+[data-high-contrast="true"] .dialogue-speaker-nameplate {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}
+
+[data-high-contrast="true"] .hud-filmic-quote {
+  color: #ffffff !important;
+  text-shadow: none !important;
+}

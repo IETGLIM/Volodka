@@ -24,6 +24,7 @@ import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
 import { InteractionRippleEffect } from '@/components/game/InteractionRippleEffect';
 import { SkillCheckDisplay } from '@/components/game/SkillCheckDisplay';
 import { FirstMinutesDirector } from '@/components/game/firstMinutes/FirstMinutesDirector';
+import { useNpcMilestoneDialogueOpener } from '@/hooks/useNpcMilestoneDialogueOpener';
 
 type Props = {
   gameDataReady: boolean;
@@ -56,6 +57,11 @@ export function OrchestratorGameplayLayer({
   hudSecondaryOpeners,
 }: Props) {
   const { mode } = useOrchestratorShell();
+  // Always-mounted listener for `npc:relation_milestone` events — opens the
+  // milestone dialogue node when a gift or out-of-dialogue relation change
+  // crosses a threshold. Mid-dialogue milestones are queued by the
+  // DialogueRenderer's own listener (both share the dedup utility).
+  useNpcMilestoneDialogueOpener();
 
   const panelOpeners = useMemo(
     () => ({

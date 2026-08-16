@@ -556,6 +556,9 @@ export function CutsceneOverlay() {
                     ? 'rgba(220, 210, 200, 0.7)'
                     : 'rgba(200, 210, 230, 0.6)',
                   textShadow: `0 0 20px ${accentColor}20`,
+                  // Accessibility: scale subtitle with the --subtitle-scale CSS var
+                  // set by AccessibilityManager on <html> (default 1 = no scaling).
+                  fontSize: 'calc(1rem * var(--subtitle-scale, 1))',
                 }}
               >
                 {subtitle}

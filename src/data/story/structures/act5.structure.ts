@@ -2488,6 +2488,10 @@ export const ACT5_STRUCTURE: Record<string, StoryNodeStructure> = {
         "next": "explore_mode",
         "effects": [
           {
+            "type": "combat",
+            "enemyType": "boss_dream_eater"
+          },
+          {
             "type": "addSkill",
             "skill": "writing",
             "value": 2

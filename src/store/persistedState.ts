@@ -98,6 +98,7 @@ export function createDefaultPersistedState(): Pick<GameStoreState, PersistedSto
       maxComboAchieved: 0,
       hasCriticalHit: false,
       defeatedEnemyTypes: [],
+      nightTimeTicks: 0,
       nightTimeHours: 0,
       poemPowerUsedInCombat: false,
       goodKarmaStreak: 0,

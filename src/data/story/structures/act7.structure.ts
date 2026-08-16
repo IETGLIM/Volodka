@@ -1631,6 +1631,10 @@ export const ACT7_STRUCTURE: Record<string, StoryNodeStructure> = {
         "goldenPath": true,
         "effects": [
           {
+            "type": "combat",
+            "enemyType": "boss_final_code"
+          },
+          {
             "type": "addKarma",
             "value": 10
           },

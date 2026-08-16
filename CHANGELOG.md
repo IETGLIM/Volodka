@@ -1,4 +1,120 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.4.0 (2025-08-16) — "AAA Полировка: Боссы, Станы, Доступность"
+
+Крупное обновление: экспертный аудит кодовой базы (150+ багов найдено), исправление критических игровых багов и добавление новых AAA-фич. Проведено в 15 этапов изучения кода с параллельными агентами по всем подсистемам.
+
+### Критические исправления багов
+
+**Боссы теперь доступны (Combat H1)**
+- 3 босса (boss_neuro_sys, boss_dream_eater, boss_final_code) были определены, но никогда не triggered — мёртвый код
+- boss_neuro_sys встроен в осаду хранилища (Акт 3, `act3_vault_siege`)
+- boss_dream_eater встроен во вход в сон (Акт 5, `sleep_dream_entrance`)
+- boss_final_code встроен в истинную концовку (Акт 7, `act7_true_end`)
+- Достижения за победу над боссами теперь реально доступны
+
+**Стан-способности работают (Combat H2, H3)**
+- `skip_turn` с длительностью 1 удалялся ДО проверки пропуска хода — 8+ стихов-сил игрока не работали
+- Проверка skip_turn теперь выполняется ДО tickBuffs (на входящем состоянии)
+- `stun_immune` больше не удаляется при наложении нового `skip_turn` — иммунитет реально защищает от стан-лока
+- incoming `skip_turn` блокируется при активном `stun_immune`
+
+**Диалоги возврата исправлены (NPC B1)**
+- 28 NPC имели сломанные возвратные диалоги — выбор «Расскажи что-нибудь новое» вёл к несуществующим узлам и ошибке «Не удалось загрузить диалог»
+- `mkReturn` теперь принимает явный `entryId` (реальный `dialogueNodeId` NPC)
+- Все 34 возвратных узла исправлены
+
+**Кат-сцена Act1→Act2 (NPC B3)**
+- `textAccentColor: 'var(--cyber-cyan)'` не парсился THREE.Color/canvas → заменён на hex `#22d3ee`
+
+### Исправления производительности 3D
+
+**Устранены утечки памяти**
+- `ProceduralAtmosphere.ts`: `applyHeightDistanceFog` теперь мутирует существующий `FogExp2` in-place вместо `new FogExp2()` каждый кадр
+- `ProceduralCharacter.tsx`: добавлена утилизация 6 геометрий + 4 материалов + DataTextures при unmount
+- `AaaSurfaceShader.ts`: fallback-текстуры утилизируются через `disposeAaaSurfaceMaterial()` (материал + все uniform-текстуры)
+- `HybridGlbLandmarks.tsx`: клонированные материалы утилизируются при unmount
+- `ProceduralSdfWorldMesh.tsx`: useMemo deps исправлены — все параметры влияют на перегенерацию (раньше твик-панель не работала)
+
+**Уменьшены per-frame аллокации**
+- `ProceduralCharacter.tsx`: 8+ Vector3 clone/new за кадр заменены на scratch-refs
+
+### Исправления HUD и аудио
+
+- `AchievementPopup.tsx`: `charCodeAt(5)` на коротких id давал NaN → стабильный хеш через reduce
+- `DamageFloatSystem.tsx`: опечатка «ПОКШЕНИЕ» → «ПОРАЖЕНИЕ»
+- `CombatLogPanel.tsx`: `aria-label="Combat log"` → «Боевой журнал»
+- `interactionSfx.ts`: throttle смешивал `ctx.currentTime` (секунды) и `performance.now()` (мс) → единая time origin
+- `voiceLinePlayer.ts`: каждый диалог вызывал HTTP 404 на `/audio/vo/` → кэшированная HEAD-проверка, no-op при отсутствии VO
+- Удалён мёртвый код: `CyberpunkMinimap.tsx` (922 строки, никогда не монтировался), `_activeFilterLabel` в Inventory
+
+### Исправления NPC и диалогов
+
+- `npcAmbientBarkSystem.ts`: погодные реплики больше не играют при `weatherEnabled === false`
+- Спящие NPC больше не издают ambient-реплики (проверка schedule activity === 'sleep')
+- Порог «союзника» выровнен: `npcRelationshipConstants` (65) и `shared/npcBark.ts` (раньше 70) теперь используют единый `NPC_RELATION_ALLY_THRESHOLD`
+
+### Исправления состояния и производительности
+
+- `worldSlice.ts`: meta-достижение `hidden_all_achievements` использует `runAfterStoreCommit` вместо `setTimeout(100)` (гонка сохранения устранена)
+- `nightTimeHours`: IEEE 754 дрейф от `+ 0.01` → целочисленный `nightTimeTicks`-счётчик
+- `useGameLifecycleManager.ts`: автобеседа на scene:enter/combat:end теперь дебаунсится (2с) вместо синхронного localStorage.setItem
+- TTL-интервал (1с) теперь no-op вне exploration-фазы и при `document.hidden`
+- `combinedState.ts`: устранён двойной flush фасада (микротаск + rAF боролись) — сравнение slice-refs перед инвалидацией кэша
+- Тройная тряска камеры при крите устранена — `useCombatOrchestrator` больше не дублирует `AaaCombatCinematic`
+
+### Новые AAA-фичи
+
+**Quest Chain Unlock Toast**
+- `QuestChainUnlockToast.tsx`: полированный тост при разблокировке цепочки квестов (золотая рамка, иконка, портрет NPC, название сцены, авто-закрытие 4с)
+
+**Objective Complete VFX**
+- `ObjectiveCompleteVfx.tsx`: при выполнении цели — анимированная галочка, 8-искровой золотой бёрст, золотая вспышка экрана, floating text «✓ Цель выполнена»
+
+**Подарки NPC для всех (4b)**
+- `NPC_GIFT_PREFERENCES` расширено с 7 до 29 NPC (все расширенные + ЧК/ТОЛПА)
+- Каждому NPC — 5 уровней предпочтений (loved/liked/neutral/disliked/hated) по личности
+
+**Milestone-диалоги отношений (4b)**
+- Поле `relationMilestones` в NPCDefinition
+- `npcRelationMilestones.ts`: эмитит `npc:relation_milestone` при пересечении порога (50 «Доверие», 80 «Близость»)
+- 20 глубоких диалоговых узлов для Альберта, Заремы, Марии, Солныш
+- Авто-открытие milestone-диалога при достижении порога
+
+**Плавающий джойстик (4c)**
+- `VirtualJoystick.tsx`: режим `floating` — тап в левой половине экрана → джойстик появляется под пальцем (как в Fortnite mobile)
+- Fixed-режим сохранён как fallback
+
+**HP damage preview + heartbeat (4c)**
+- `CyberStatBar.tsx`: сегмент «отложенного урона» (как Dark Souls) — светло-красный дренируется за 500мс
+- Низкий HP (<25%): пульсация box-shadow красным с интервалом 0.8с
+
+**Mobile touch targets (4c)**
+- Button: добавлен `touch`-вариант (h-11 = 44px)
+- PanelWrapper: кнопка закрытия h-11 на мобиле (было 28px)
+- Checkbox/Slider: увеличены до size-5
+
+**Accessibility CSS (4d)**
+- `ColorBlindFilters.tsx`: SVG Daltonization-фильтры (протанопия/дейтеранопия/тританопия) применяются к canvas
+- High-contrast mode: твёрдые фоны, 2px границы, белый текст, отключение градиентов
+- Global `:focus-visible` ring (cyan, 3px white в high-contrast)
+- `--subtitle-scale` применяется к диалогам, субтитрам, ambient-подписям, thought-interjections
+
+**Контент: 12 lore-записей (4e)**
+- История Сети, старые поэты, тайна Гильдии, легенды ЧК, сонная болезнь, запретные строки, машина под городом, происхождение Марии
+
+**Панель репутации фракций (4e)**
+- `FactionReputationPanel.tsx`: агрегированная репутация по 5 фракциям (Сеть/Гильдия/Сопротивление/Нейтральные/ТОЛПА)
+- Анимированные бары, tier-метки, счётчик встреченных NPC
+- `factionReputationSelectors.ts`: memoized-селектор
+- Интегрирована в Кодекс
+
+### Технические детали
+- 30+ файлов изменено, ~3500 строк добавлено
+- 0 ошибок TypeScript (tsc7 native typecheck)
+- Все видимые тексты на русском
+- 5 параллельных Explore-агентов изучили кодовую базу в 15 этапов
+- Экспертный аудит: 47 багов в 3D, 25 в бою, 18 в NPC/диалогах, 20 в HUD/аудио, 18 в состоянии/перформансе
+
 ## v4.3.0 (2025-07-21) — "Прорыв: Disco Elysium механики + контент"
 
 Крупное обновление: выход из цикла багфиксов, добавление трёх новых систем и значительное расширение контента Акта 1.

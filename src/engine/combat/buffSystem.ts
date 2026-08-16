@@ -63,11 +63,24 @@ export function addBuff(state: CombatState, buff: CombatBuff): CombatState {
     ? { ...buff, duration: buff.duration }
     : buff;
 
-  // Mutual exclusion: stun_immune and skip_turn are incompatible on the same target
+  // Stun immunity: if the target already has stun_immune, incoming skip_turn
+  // debuffs are BLOCKED entirely (not added). This prevents stun-lock: the
+  // immunity granted after being stunned once must actually protect the next
+  // turn. Previously mutual exclusion removed stun_immune when a new skip_turn
+  // arrived — the opposite of intended behavior.
+  if (
+    buff.effect.type === 'skip_turn' &&
+    filtered.some((b) => b.target === buff.target && b.effect.type === 'stun_immune')
+  ) {
+    return state;
+  }
+
+  // Mutual exclusion: stun_immune clears an existing skip_turn (the target
+  // recovers). skip_turn no longer touches stun_immune (handled above).
   const MUTUALLY_EXCLUSIVE: Record<BuffEffect['type'], BuffEffect['type'][]> = {
     defense_reduction: [],
     damage_multiplier: [],
-    skip_turn: ['stun_immune'],
+    skip_turn: [],
     stun_immune: ['skip_turn'],
     stat_drain: [],
     defense_boost: [],

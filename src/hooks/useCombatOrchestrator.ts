@@ -4,7 +4,6 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
-import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { startCombat } from '@/engine/CombatSystem';
 import { getItemDefinition } from '@/data/items';
 import { audioEngine } from '@/engine/audio/AudioEngine';
@@ -64,14 +63,11 @@ export function useCombatOrchestrator() {
 
     scope.on('combat:hit', ({ isPlayerHit, damage }) => {
       audioEngine.playSfx('combat_hit');
-      // Differentiated shake: crit-tier hits, player stagger, normal swings
-      if (isPlayerHit) {
-        triggerCameraShake(damage >= 20 ? 0.55 : 0.5, 5);
-      } else if (damage >= 25) {
-        triggerCameraShake(0.8, 4);
-      } else {
-        triggerCameraShake(0.3, 6);
-      }
+      // NOTE: Camera shake is handled exclusively by AaaCombatCinematic, which
+      // listens to combat:action + combat:hit + combat:bullet_time with
+      // differentiated intensities (crit / super-effective / combo / normal).
+      // Duplicating the shake here stacked 2-3 shakes per hit and felt jarring.
+      void isPlayerHit; void damage;
     }, EventBusPriority.FX);
 
     return withHmrCleanup(() => scope.dispose());

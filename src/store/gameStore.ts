@@ -11,7 +11,7 @@ import { wrapStoreSubscribeIfDev } from './dev/storeSubscribeProfiler';
 import { registerGameActionBridge, type GameSnapshotSubscribeOptions, type GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
-import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCache, scheduleAfterSliceStoresSettle } from './combinedState';
+import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCacheIfStale, scheduleAfterSliceStoresSettle } from './combinedState';
 import { usePlayerStore } from './stores/playerStore';
 import { useWorldStore } from './stores/worldStore';
 import { getCachedGameSnapshot } from './gameSnapshotCache';
@@ -33,7 +33,11 @@ function flushFacadeState(): void {
 }
 
 function syncMarkFacadeDirty(): void {
-  invalidateCombinedGameStateCache();
+  // Guard: if the facade was already synchronously flushed (slice refs match
+  // the cached refs), skip the invalidation. This prevents the microtask-based
+  // subscriber from nuking a cache that `flushFacadeState()` just rebuilt,
+  // which would force a redundant rebuild in the subsequent rAF flush.
+  invalidateCombinedGameStateCacheIfStale();
   facadeDirty = true;
 }
 

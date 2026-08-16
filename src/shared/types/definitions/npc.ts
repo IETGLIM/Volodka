@@ -95,4 +95,24 @@ export interface NPCDefinition {
    *  When an emotion overrides the idle, the emotion's variant takes priority.
    */
   readonly idleVariant?: NpcIdleVariant;
+  /**
+   * Relation thresholds that trigger a one-shot milestone dialogue when
+   * crossed. `checkRelationMilestones(npcId, oldRelation, newRelation)`
+   * walks this list whenever the relation value changes and emits
+   * `npc:relation_milestone` for any threshold that was crossed in either
+   * direction (rising: oldRelation < value <= newRelation;
+   * falling: oldRelation > value >= newRelation).
+   *
+   * Each entry links a relation `value` to a `dialogueNodeId` registered in
+   * the dialogue registry (typically authored in `milestoneDialogues.ts`).
+   */
+  readonly relationMilestones?: readonly RelationMilestone[];
+}
+
+/** A relation threshold that unlocks a milestone dialogue when crossed. */
+export interface RelationMilestone {
+  /** Relation value (0–100) at which the milestone fires. */
+  readonly value: number;
+  /** Dialogue node id to open when the milestone is crossed. */
+  readonly dialogueNodeId: string;
 }

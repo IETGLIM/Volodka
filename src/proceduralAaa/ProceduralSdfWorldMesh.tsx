@@ -10,6 +10,7 @@ import { buildSdfWorldLod } from './ProceduralSdfWorld';
 import { generateDynamicTexturesSync } from './DynamicTextureGenerator';
 import {
   createAaaSurfaceMaterial,
+  disposeAaaSurfaceMaterial,
   ensureTangents,
   updateAaaSurfaceFromParams,
 } from './AaaSurfaceShader';
@@ -41,6 +42,31 @@ export function ProceduralSdfWorldMesh({
   const [params, setParams] = useState<ProceduralAaaParams>(getProceduralAaaParams);
 
   useEffect(() => onProceduralAaaParamsChange(setParams), []);
+
+  // Ключ генерации: кодируем ВСЕ параметры, влияющие на геометрию/текстуры/шейдер.
+  // Ранее deps-массив упускал buildingDensity, rockDensity, ruinDensity, terrainAmp,
+  // perlinDisplace, sdfSmoothK, parallaxScale, anisotropyStrength, wearAmount —
+  // твики из панели не пересоздавали мир. Один JSON-ключ покрывает всё разом.
+  const genKey = JSON.stringify({
+    generationKey,
+    seed: params.seed,
+    sdfResolution: params.sdfResolution,
+    textureSize: params.textureSize,
+    buildingDensity: params.buildingDensity,
+    rockDensity: params.rockDensity,
+    ruinDensity: params.ruinDensity,
+    terrainAmp: params.terrainAmp,
+    perlinDisplace: params.perlinDisplace,
+    sdfSmoothK: params.sdfSmoothK,
+    parallaxScale: params.parallaxScale,
+    parallaxLayers: params.parallaxLayers,
+    anisotropyStrength: params.anisotropyStrength,
+    wearAmount: params.wearAmount,
+    dirtAmount: params.dirtAmount,
+    rainWash: params.rainWash,
+    skinScatter: params.skinScatter,
+    presetId: preset.id,
+  });
 
   const { geometry, material } = useMemo(() => {
     const texSize = resolveTextureSizeForQuality(preset.id, params.textureSize);
@@ -101,14 +127,15 @@ export function ProceduralSdfWorldMesh({
     mat.uniforms.uAlbedoB = { value: asphalt.albedo };
     mat.uniforms.uNormalB = { value: asphalt.normal };
     return { geometry: geo, material: mat };
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- regenerate on key/seed/res/quality
-  }, [generationKey, params.seed, params.sdfResolution, params.textureSize, preset.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- пересоздаём по полному genKey (см. выше)
+  }, [genKey]);
 
   useEffect(() => {
     matRef.current = material;
     return () => {
       geometry.dispose();
-      material.dispose();
+      // dispose материала + всех его текстур (fallback + uniforms).
+      disposeAaaSurfaceMaterial(material);
     };
   }, [geometry, material]);
 

@@ -38,4 +38,18 @@ export interface NpcEvents {
    * this event fires on any transition — including decay → neutral.
    */
   'npc:emotion_change': { npcId: string; emotion: NpcEmotion; previousEmotion: NpcEmotion };
+  /**
+   * Emitted by `checkRelationMilestones` when an NPC's relation value
+   * crosses a `relationMilestones` threshold defined on its NPCDefinition.
+   * The DialogueRenderer listens and auto-opens `dialogueNodeId` so the
+   * player sees the milestone conversation without manually re-talking to
+   * the NPC. `direction` indicates whether the crossing was rising
+   * (relation gained) or falling (relation lost).
+   */
+  'npc:relation_milestone': {
+    npcId: string;
+    milestoneValue: number;
+    dialogueNodeId: string;
+    direction: 'rising' | 'falling';
+  };
 }

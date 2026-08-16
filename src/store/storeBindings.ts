@@ -127,6 +127,21 @@ export function invalidateCombinedGameStateCache(): void {
   cachedSliceRefs = null;
 }
 
+/**
+ * Invalidate the combined-state cache only if the current slice refs differ
+ * from the cached ones. If the facade was already synchronously flushed
+ * (e.g. by `useGameStore.setState`'s `flushFacadeState()`), the cached refs
+ * match the live refs and this is a no-op — avoids the double-rebuild that
+ * happens when the `subscribeAllStores` microtask fires after a sync flush.
+ */
+export function invalidateCombinedGameStateCacheIfStale(): void {
+  if (!cachedCombined || !cachedSliceRefs) return; // already invalidated
+  const refs = readSliceRefs();
+  if (sliceRefsEqual(cachedSliceRefs, refs)) return; // cache still fresh
+  cachedCombined = null;
+  cachedSliceRefs = null;
+}
+
 /** Test harness — drop cached combined object between cases. */
 export function resetCombinedGameStateCacheForTests(): void {
   invalidateCombinedGameStateCache();

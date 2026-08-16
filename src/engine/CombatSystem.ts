@@ -53,7 +53,7 @@ function snap() {
 }
 
 // ── Sub-module imports ──
-import type { CombatState, CombatLogEntry, CombatBuff, EnemyType, CombatEnemy } from './combat/types';
+import type { CombatState, CombatLogEntry, CombatBuff, EnemyType, CombatEnemy, EnemyTemplate } from './combat/types';
 import { appendLog, isBossEnemyType } from './combat/types';
 import {
   createBuff, addBuff, sumBuffEffect, hasBuffEffect, tickBuffs,
@@ -903,7 +903,56 @@ function endPlayerTurn(): CombatState {
 function transitionToPlayerTurn(state: CombatState): void {
   if (!combat.getState()) return;
 
-  // ── Tick player buffs ──
+  // ── Check if player is stunned (skip_turn debuff) BEFORE ticking ──
+  // A skip_turn with duration 1 applied during the enemy's turn must fire
+  // on the player's turn. tickBuffs decrements duration first, which would
+  // remove a duration-1 skip_turn before this check ever runs. Checking on
+  // the incoming (un-ticked) state ensures the stun actually takes effect.
+  if (hasBuffEffect(state, 'player', 'skip_turn')) {
+    // Remove the skip_turn buff since it's been consumed
+    const consumed = state.buffs.filter(
+      (b) => !(b.target === 'player' && b.effect.type === 'skip_turn'),
+    );
+    // Tick remaining buffs (stat_drain, hp_drain, etc.) so they still progress
+    const { state: afterTick, expiredLog } = tickBuffs({ ...state, buffs: consumed }, 'player');
+    // Apply stun immunity for 1 turn so the player cannot be stun-locked
+    const immuneBuff = createBuff(afterTick, 'Иммунитет к оглушению', 'stun_recovery_player', 'buff', 'player', 1, { type: 'stun_immune' });
+    const withImmune = addBuff(afterTick, immuneBuff);
+    const workingState: CombatState = {
+      ...withImmune,
+      turn: afterTick.turn + 1,
+      enemyDefending: false,
+      doubleAttack: false,
+      playerDefending: false,
+      enemyDefenseReduction: getEnemyDefenseReduction(afterTick),
+      _sideEffects: [],
+      log: [
+        ...withImmune.log,
+        ...expiredLog,
+        { turn: afterTick.turn + 1, text: '😵 Вы оглушены и пропускаете ход!', type: 'info' },
+        { turn: afterTick.turn + 1, text: '🛡️ Вы получаете иммунитет к оглушению на 1 ход.', type: 'info' },
+      ] };
+
+    combat.setState({
+      ...workingState,
+      isPlayerTurn: true, // Briefly show it's "your turn" before skipping
+    });
+
+    const stunnedTurn = combat.getState()!;
+    eventBus.emit('combat:turn', { turn: stunnedTurn.turn, isPlayerTurn: true });
+    combat.notifyListeners();
+
+    // Auto-skip after a brief delay
+    combat.schedule(800, () => {
+      if (combat.getState()?.status === 'active') {
+        endPlayerTurn();
+      }
+    });
+
+    return;
+  }
+
+  // ── Normal path: tick player buffs ──
   const { state: afterBuffTick, expiredLog } = tickBuffs(state, 'player');
 
   // ── Process stat drain debuffs on player ──
@@ -946,7 +995,7 @@ function transitionToPlayerTurn(state: CombatState): void {
     }
   }
 
-  let workingState: CombatState = {
+  const workingState: CombatState = {
     ...afterBuffTick,
     playerHp: playerHpAfterDrain,
     turn: afterBuffTick.turn + 1,
@@ -964,44 +1013,6 @@ function transitionToPlayerTurn(state: CombatState): void {
     _sideEffects: [],
     log: [...afterBuffTick.log, ...expiredLog, ...drainLog] };
 
-  // ── Check if player is stunned (skip_turn debuff) ──
-  if (hasBuffEffect(workingState, 'player', 'skip_turn')) {
-    // Remove the skip_turn buff since it's been consumed
-    const remaining = workingState.buffs.filter(
-      (b) => !(b.target === 'player' && b.effect.type === 'skip_turn'),
-    );
-    // Apply stun immunity for 1 turn so the player cannot be stun-locked
-    // (mirrors the enemy stun_immune logic in executeEnemyTurn)
-    const immuneBuff = createBuff(workingState, 'Иммунитет к оглушению', 'stun_recovery_player', 'buff', 'player', 1, { type: 'stun_immune' });
-    const withImmune = addBuff({ ...workingState, buffs: remaining }, immuneBuff);
-    workingState = {
-      ...withImmune,
-      log: [
-        ...withImmune.log,
-        { turn: workingState.turn, text: '😵 Вы оглушены и пропускаете ход!', type: 'info' },
-        { turn: workingState.turn, text: '🛡️ Вы получаете иммунитет к оглушению на 1 ход.', type: 'info' },
-      ] };
-
-    // Set state and auto-skip after a brief delay for visual feedback
-    combat.setState({
-      ...workingState,
-      isPlayerTurn: true, // Briefly show it's "your turn" before skipping
-    });
-
-    const stunnedTurn = combat.getState()!;
-    eventBus.emit('combat:turn', { turn: stunnedTurn.turn, isPlayerTurn: true });
-    combat.notifyListeners();
-
-    // Auto-skip after a brief delay
-    combat.schedule(800, () => {
-      if (combat.getState()?.status === 'active') {
-        endPlayerTurn();
-      }
-    });
-
-    return;
-  }
-
   // Normal: enable player turn
   combat.setState({
     ...workingState,
@@ -1016,31 +1027,32 @@ function executeEnemyTurn() {
   const cs = combat.getState();
   if (!cs || cs.status !== 'active') return;
 
-  // ── Tick enemy buffs ──
-  const { state: afterBuffTick, expiredLog } = tickBuffs(cs, 'enemy');
-
-  // ── Check if enemy is stunned (skip_turn debuff on enemy) ──
-  if (hasBuffEffect(afterBuffTick, 'enemy', 'skip_turn')) {
-    // Remove the skip_turn buff since it's been consumed
-    const remaining = afterBuffTick.buffs.filter(
+  // ── Check if enemy is stunned (skip_turn debuff on enemy) BEFORE ticking ──
+  // Same fix as transitionToPlayerTurn: a duration-1 skip_turn applied during
+  // the player's turn must fire on the enemy's turn. Checking before tickBuffs
+  // ensures the stun takes effect instead of being decremented away.
+  if (hasBuffEffect(cs, 'enemy', 'skip_turn')) {
+    const consumed = cs.buffs.filter(
       (b) => !(b.target === 'enemy' && b.effect.type === 'skip_turn'),
     );
-    // Apply stun immunity for 1 turn so the enemy cannot be stun-locked
-    const immuneBuff = createBuff(afterBuffTick, 'Иммунитет к оглушению', 'stun_recovery', 'buff', 'enemy', 1, { type: 'stun_immune' });
-    const withImmune = addBuff({ ...afterBuffTick, buffs: remaining }, immuneBuff);
+    const { state: afterTick, expiredLog } = tickBuffs({ ...cs, buffs: consumed }, 'enemy');
+    const immuneBuff = createBuff(afterTick, 'Иммунитет к оглушению', 'stun_recovery', 'buff', 'enemy', 1, { type: 'stun_immune' });
+    const withImmune = addBuff(afterTick, immuneBuff);
     combat.setState({
       ...withImmune,
       log: [
         ...withImmune.log,
         ...expiredLog,
-        { turn: afterBuffTick.turn, text: `${afterBuffTick.enemy.emoji} ${afterBuffTick.enemy.name} дезориентирован и пропускает ход!`, type: 'info' },
-        { turn: afterBuffTick.turn, text: `${afterBuffTick.enemy.emoji} ${afterBuffTick.enemy.name} получает иммунитет к оглушению на 1 ход.`, type: 'info' },
+        { turn: afterTick.turn, text: `${afterTick.enemy.emoji} ${afterTick.enemy.name} дезориентирован и пропускает ход!`, type: 'info' },
+        { turn: afterTick.turn, text: `${afterTick.enemy.emoji} ${afterTick.enemy.name} получает иммунитет к оглушению на 1 ход.`, type: 'info' },
       ] });
 
-    // Transition to player turn (handles buff processing and skip_turn check)
     transitionToPlayerTurn(combat.getState()!);
     return;
   }
+
+  // ── Normal path: tick enemy buffs ──
+  const { state: afterBuffTick, expiredLog } = tickBuffs(cs, 'enemy');
 
   // Player buffs and stat drain are now processed at the start of the player's turn (see transitionToPlayerTurn)
 
@@ -1049,11 +1061,15 @@ function executeEnemyTurn() {
     log: [...afterBuffTick.log, ...expiredLog] };
 
   const template = ENEMY_TEMPLATES[workingState.enemy.type];
+  // Null-guard: at runtime a new EnemyType could be added to the union without
+  // a matching ENEMY_TEMPLATES entry. Fall back to a basic-attack-only template
+  // so the special-attack length check below doesn't crash.
+  const safeTemplate: EnemyTemplate = template ?? { specialAttacks: [], attackBarks: [] };
   const enemySpecialCooldown = workingState.enemy.specialCooldown;
 
-  if (enemySpecialCooldown <= 0 && template.specialAttacks.length > 0) {
+  if (enemySpecialCooldown <= 0 && safeTemplate.specialAttacks.length > 0) {
     const specialRng = SeededCombatRng.fromState(workingState.rng);
-    for (const special of template.specialAttacks) {
+    for (const special of safeTemplate.specialAttacks) {
       if (specialRng.roll(special.chance)) {
         workingState = { ...workingState, rng: specialRng.getState() };
         const logLenBefore = workingState.log.length;
@@ -1101,7 +1117,7 @@ function executeEnemyTurn() {
   const newPlayerHp = Math.max(0, workingState.playerHp - enemyDamage);
 
   // Use enemy-specific attack bark if available (adds personality to combat)
-  const attackBarks = template.attackBarks;
+  const attackBarks = safeTemplate.attackBarks;
   const barkRng = SeededCombatRng.fromState(workingState.rng);
   const barkText = attackBarks.length > 0
     ? attackBarks[barkRng.nextInt(0, attackBarks.length - 1)]

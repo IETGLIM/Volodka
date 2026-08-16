@@ -45,6 +45,8 @@ import type { SceneWeatherType } from '@/shared/types/ambientSound';
 import { getNpcEmotion } from '@/engine/npc/npcEmotionalReactions';
 import { resolveEmotionBehavior } from '@/engine/npc/npcEmotionalReactions';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { buildScheduleContext, type ScheduleContext } from '@/shared/scheduleContext';
+import { getNPCLocationForTime } from '@/shared/schedule/ScheduleEngine';
 
 /** Min seconds between ambient barks for the same NPC (base). */
 export const NPC_AMBIENT_BARK_COOLDOWN_S = 25;
@@ -118,6 +120,16 @@ export function tickNpcAmbientBarks(params: {
   weatherType?: SceneWeatherType;
   /** Optional RNG override for the 30 % weather-bark gate (test-injectable). */
   weatherRng?: () => number;
+  /**
+   * Optional schedule context — when provided together with `currentHour`,
+   * sleeping NPCs (schedule activity `'sleep'`) are skipped so they don't
+   * mutter ambient barks. Built once per tick by the caller (see
+   * `buildScheduleContext` from `@/shared/scheduleContext`) and reused across
+   * all NPCs in the scan.
+   */
+  scheduleContext?: ScheduleContext;
+  /** Optional current in-game hour (0–23). Paired with `scheduleContext`. */
+  currentHour?: number;
 }): void {
   const {
     playerPosition,
@@ -131,6 +143,8 @@ export function tickNpcAmbientBarks(params: {
     interactionTargetNpcId: interactionTargetNpcIdParam = getInteractionTargetNPCId(),
     weatherType,
     weatherRng = Math.random,
+    scheduleContext: scheduleCtx,
+    currentHour,
   } = params;
 
   // Hard gate: never emit ambient barks during active interaction (cutscene,
@@ -169,6 +183,15 @@ export function tickNpcAmbientBarks(params: {
     const dz = pos.z - playerPosition.z;
     const distSq = dx * dx + dy * dy + dz * dz;
     if (distSq > radiusSq) continue;
+
+    // Sleeping NPCs don't mutter ambient barks — when a schedule context and
+    // current hour were supplied, look up the NPC's activity and skip if it's
+    // `'sleep'`. The schedule engine caches lookups internally keyed by
+    // (npcId, hour, ctxHash), so this is cheap even when scanned per NPC.
+    if (scheduleCtx !== undefined && currentHour !== undefined) {
+      const entry = getNPCLocationForTime(npcId, currentHour, scheduleCtx);
+      if (entry?.activity === 'sleep') continue;
+    }
 
     // Eligible: pick a band and a line (emotion-aware).
     const roll = rng();
@@ -246,9 +269,16 @@ export function useNpcAmbientBarkSystem(
       // snow / fog / storm). `deriveSceneWeather` is a pure function over the
       // scene id + time of day — same derivation used by the HUD/weather
       // indicator, so barks stay consistent with what the player sees.
+      //
+      // Respect the player's `weatherEnabled` graphics setting: when the
+      // player has disabled weather FX, the HUD shows clear skies and rain/
+      // snow particles are off, so ambient barks shouldn't reference weather
+      // either. We force the weather band to 'clear' in that case.
       const sceneId = snap.exploration.currentSceneId;
       const timeOfDay = snap.exploration.timeOfDay;
-      const weatherType: SceneWeatherType = deriveSceneWeather(sceneId, timeOfDay).type;
+      const weatherType: SceneWeatherType = snap.weatherEnabled
+        ? deriveSceneWeather(sceneId, timeOfDay).type
+        : 'clear';
 
       tickNpcAmbientBarks({
         playerPosition: livePlayerPositionRef.current,
@@ -256,6 +286,11 @@ export function useNpcAmbientBarkSystem(
         interactionLocked: false,
         interactionTargetNpcId: getInteractionTargetNPCId(),
         weatherType,
+        // Pass the schedule context + current hour so sleeping NPCs (activity
+        // === 'sleep') are skipped. Built once per scan — the context cache
+        // itself is memoised inside `buildScheduleContext`, so this is cheap.
+        scheduleContext: buildScheduleContext(snap),
+        currentHour: timeOfDay,
       });
     },
     { label: 'NpcAmbientBarkSystem', phase: 'pre_render', enabled },
