@@ -1208,4 +1208,118 @@ export const NARRATIVE_EXPANSION_TRIGGER_ZONES: TriggerZone[] = [
     interactionType: 'talk',
     interactionLabel: 'Собрать комплект для Ритки',
   },
+
+  /* ═══════════════════════════════════════════════════════════════
+     Task 4f-A — 4 new exploration trigger zones for underserved scenes.
+     Short atmospheric Russian dialogues that fire on zone enter.
+     One-time examine interactions with examineData for richer flavour.
+     Scenes: factory_roof (×2), library_basement, underground_bunker.
+     ═══════════════════════════════════════════════════════════════ */
+
+  /* ── Крыша завода — ветряные колокольчики из старых проводов ── */
+  {
+    id: 'aaa_factory_roof_wind_chimes',
+    sceneId: 'factory_roof',
+    position: [2.5, 2.0, 0],
+    size: [1.2, 1.4, 1.2],
+    enterToast: 'На краю крыши — самодельные колокольчики из медных проводов звенят на ветру.',
+    requiredAct: 5,
+    hiddenWhenFlag: 'aaa_factory_roof_wind_chimes_examined',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Прислушаться к колокольчикам',
+    examineData: {
+      title: 'Колокольчики из проводов',
+      description:
+        'Кто-то сплёл из старых медных жил музыкальный инструмент. Каждый ветер играет новую мелодию.',
+      detailText:
+        'Колокольчики настроены в пентатонике. На одном из проводов — бирка: «Б.З., 1987». Баба Зина паяла музыку из мусора ещё до твоего рождения. Город — контрапункт. Бетон поёт, если его правильно слушать.',
+      icon: '🎐',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'aaa_factory_roof_wind_chimes_examined', flagValue: true },
+      { type: 'addSkill', skill: 'intuition', value: 1 },
+    ],
+  },
+
+  /* ── Крыша завода — граффити на парапете с именами исчезнувших ── */
+  {
+    id: 'aaa_factory_roof_graffiti',
+    sceneId: 'factory_roof',
+    position: [-2.5, 1.2, -3.0],
+    size: [1.6, 1.4, 0.4],
+    enterToast: 'На парапете — выцарапанные имена. Некоторые зачёркнуты. Все — знакомые по архивам.',
+    requiredAct: 5,
+    hiddenWhenFlag: 'aaa_factory_roof_graffiti_examined',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать имена на парапете',
+    examineData: {
+      title: 'Имена на бетоне',
+      description:
+        'Семнадцать имён. Гвоздём. По свежему бетону. Пять — зачёркнуты грубо. Двенадцать — обведены кругом.',
+      detailText:
+        'Среди зачёркнутых — «Марат». Среди обведённых — «Володька». Твоя строка — самая свежая. Бетон ещё крошится под пальцем. Кто-то знал, что ты поднимешься сюда. Кто-то — ждёт. Город пишет имена раньше, чем их дают. Иногда — наоборот.',
+      icon: '🧱',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'aaa_factory_roof_graffiti_examined', flagValue: true },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+      { type: 'showThought', thought: 'Семнадцать имён. Моё — среди них. Я — не выбирал. Я — принял.' },
+    ],
+  },
+
+  /* ── Подвал библиотеки — старая пишущая машинка в углу ── */
+  {
+    id: 'aaa_library_basement_typewriter',
+    sceneId: 'library_basement',
+    position: [-3.0, 0.5, -3.0],
+    size: [1.2, 1.0, 1.2],
+    enterToast: 'В дальнем углу подвала — пишущая машинка с листом, вставленным на ночь.',
+    requiredAct: 3,
+    hiddenWhenFlag: 'aaa_library_basement_typewriter_examined',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Прочитать, что напечатано',
+    examineData: {
+      title: 'Пишущая машинка «Москва»',
+      description:
+        'Картридж с краской давно высох. Лист — желтоватый, к машинке не прикасались месяцами — но на нём напечатан стих.',
+      detailText:
+        'Стих — без подписи. Семь строк. Последняя — твоя фамилия. Не как обращение — как эпитафия. Не как угроза — как приглашение. Машина молчит. Лист — шуршит. Катя проходит мимо каждый день и не трогает. Ждёт — тебя.',
+      icon: '⌨️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'aaa_library_basement_typewriter_examined', flagValue: true },
+      { type: 'addSkill', skill: 'writing', value: 1 },
+      { type: 'showThought', thought: 'Кто-то напечатал мою фамилию на машинке, которой давно не касались. Кто-то — кроме меня — знает, что я приду сюда.' },
+    ],
+  },
+
+  /* ── Бункер — стена старых сообщений от пропавших связных ── */
+  {
+    id: 'aaa_underground_bunker_messages',
+    sceneId: 'underground_bunker',
+    position: [3.0, 1.5, -1.0],
+    size: [1.8, 1.8, 0.4],
+    enterToast: 'Стена исписана обрывками сообщений от связных, которые давно не выходят на связь.',
+    requiredAct: 6,
+    hiddenWhenFlag: 'aaa_underground_bunker_messages_examined',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Изучить стену сообщений',
+    examineData: {
+      title: 'Стена потерянных голосов',
+      description:
+        'Двадцать три бумажки. Разные почерки. Разные даты. Все — адресованы кому-то, кто уже не ответит.',
+      detailText:
+        'Самая старая — 1989-й. Самая свежая — вчера. Между ними — тридцать пять лет тишины и сорок семь имён. Каждое имя — обещание, которое кто-то не смог сдержать. Аня каждое утро добавляет новую строку: «Бункер — ждёт. Сеть — дышит». Так — все эти годы. Так — будет — и дальше.',
+      icon: '📜',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'aaa_underground_bunker_messages_examined', flagValue: true },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      { type: 'discoverLore', loreId: 'lore_chk_network_role' },
+    ],
+  },
 ];

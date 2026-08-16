@@ -7,6 +7,9 @@ import { CombatIntroSplash } from '@/components/game/combatUi/CombatIntroSplash'
 import { CombatScreenFlash, DamageNumber } from '@/components/game/combatUi/CombatDamageFx';
 import { CombatDamageNumbers } from '@/components/game/CombatDamageNumbers';
 import { CombatEnemyPanel } from '@/components/game/combatUi/CombatEnemyPanel';
+import { BossHealthBar } from '@/components/game/combatUi/BossHealthBar';
+import { BossIntroCinematic } from '@/components/game/combatUi/BossIntroCinematic';
+import { BossDefeatCinematic } from '@/components/game/combatUi/BossDefeatCinematic';
 import { CombatActionBar } from '@/components/game/combatUi/CombatActionBar';
 import { CombatPlayerCard } from '@/components/game/combatUi/CombatPlayerCard';
 import { CombatOutcomeChrome } from '@/components/game/combatUi/CombatOutcomeChrome';
@@ -35,6 +38,14 @@ export function CombatUI() {
         className={`fixed inset-0 flex flex-col pointer-events-none ${ui.screenShake ? 'combat-shake' : ''} ${isActive ? 'combat-vignette-active' : ''}`}
         style={{ zIndex: UI_LAYERS.COMBAT }}
       >
+        {/* Boss intro letterbox cinematic — listens to combat:start for boss
+         *  enemy types and renders a 3-second dramatic intro overlay. */}
+        <BossIntroCinematic />
+
+        {/* Boss defeat cinematic — listens to combat:victory for boss fights
+         *  and renders a 2-second slow-mo + dissolve + «ПОВЕРЖЕН» overlay. */}
+        <BossDefeatCinematic />
+
         <AnimatePresence mode="wait">
           {ui.introVisible && ui.introMeta && (
             <CombatIntroSplash
@@ -51,6 +62,11 @@ export function CombatUI() {
 
         {/* Rich typed damage numbers (poison/burn/freeze/stun/heal/miss) */}
         <CombatDamageNumbers events={ui.richDamageEvents} />
+
+        {/* Dedicated full-width boss health bar — only renders when the enemy
+         *  is a boss. Hidden while the boss intro cinematic is playing (the
+         *  intro already shows the boss name + title). */}
+        <BossHealthBar enemy={combatState.enemy} hidden={ui.introVisible} />
 
         <CombatEnemyPanel
           combatState={combatState}

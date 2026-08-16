@@ -66,15 +66,31 @@ export function useCombatUiController() {
 
   useEffect(() => {
     const unsub = eventBus.on('combat:start', ({ encounterName, encounterEmoji, enemyType }) => {
+      const isBoss = enemyType ? isBossEnemyType(enemyType) : false;
+      // For boss fights, the BossIntroCinematic component handles the dramatic
+      // letterbox intro — we suppress the regular CombatIntroSplash by leaving
+      // introMeta null, but still set introVisible=true so isPlayerTurn stays
+      // false during the 3s cinematic (matching the boss intro runtime).
+      if (isBoss) {
+        setIntroMeta(null);
+        setIntroVisible(true);
+        // Auto-dismiss introVisible after the boss intro cinematic completes
+        // (3s — matches BOSS_INTRO_TOTAL_MS in BossIntroCinematic.tsx). The
+        // regular CombatIntroSplash would normally call dismissIntro via its
+        // own timer, but we don't render it for bosses, so we schedule our
+        // own dismissal here.
+        scheduleTimeout(() => setIntroVisible(false), 3000);
+        return;
+      }
       setIntroMeta({
         emoji: encounterEmoji ?? '👾',
         name: encounterName ?? 'Противник',
-        isBoss: enemyType ? isBossEnemyType(enemyType) : false,
+        isBoss: false,
       });
       setIntroVisible(true);
     });
     return unsub;
-  }, []);
+  }, [scheduleTimeout]);
 
   useEffect(() => {
     const unsub = subscribeToCombat(setCombatState);
