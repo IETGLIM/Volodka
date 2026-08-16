@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect } from 'react';
-import { Hand, Zap, FlaskConical } from 'lucide-react';
+import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen } from 'lucide-react';
 import { useGamePhase, useHotbarSlots } from '@/store/selectors';
 import { useConsumableActions, useInventory } from '@/store/selectors';
 import { usePlayerLevel } from '@/store/selectors/playerSelectors';
@@ -37,6 +37,19 @@ export function MobileActionButtons() {
   const virtualControlsRef = useVirtualControlsRef();
   const [runToggled, setRunToggled] = useState(false);
   const lastTapAtRef = useRef(0);
+
+  /* ── Jump handler — writes to shared virtual controls ── */
+  const handleJump = useCallback(() => {
+    if (!areSharedVirtualControlsWritable()) return;
+    virtualControlsRef.current.jump = 1;
+    // Reset after one frame — engine reads this in the next physics step
+    requestAnimationFrame(() => { virtualControlsRef.current.jump = 0; });
+  }, [virtualControlsRef]);
+
+  /* ── Open panel via synthetic keyboard event (I=inventory, J=journal) ── */
+  const openPanelViaKey = useCallback((code: string) => {
+    window.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true }));
+  }, []);
 
   /* ── Onboarding gate: hide during first minutes ── */
   const level = usePlayerLevel();
@@ -178,6 +191,59 @@ export function MobileActionButtons() {
           <span className={`mobile-action-btn__label ${runToggled ? 'mobile-action-btn__label--active' : ''}`}>
             {runToggled ? 'Бег вкл' : 'Бег выкл'}
           </span>
+        </div>
+
+        {/* Jump */}
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            className="mobile-action-btn mobile-action-btn--secondary"
+            aria-label="Прыжок"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              makeTapHandler(handleJump)();
+            }}
+          >
+            <ArrowUp size={18} aria-hidden="true" />
+          </button>
+          <span className="mobile-action-btn__label">Прыжок</span>
+        </div>
+
+        {/* Inventory */}
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            className="mobile-action-btn mobile-action-btn--secondary"
+            aria-label="Инвентарь"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              hapticLight();
+              openPanelViaKey('KeyI');
+            }}
+          >
+            <Package size={18} aria-hidden="true" />
+          </button>
+          <span className="mobile-action-btn__label">Сумка</span>
+        </div>
+
+        {/* Journal */}
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            className="mobile-action-btn mobile-action-btn--secondary"
+            aria-label="Журнал"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              hapticLight();
+              openPanelViaKey('KeyJ');
+            }}
+          >
+            <BookOpen size={18} aria-hidden="true" />
+          </button>
+          <span className="mobile-action-btn__label">Журнал</span>
         </div>
       </div>
     </div>
