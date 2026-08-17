@@ -5474,7 +5474,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
   {
-    id: 'forest_clearing_old_campfire',
+    id: 'forest_clearing_stone_hearth',
     sceneId: 'forest_clearing',
     position: [2.5, 0.2, 3.0],
     size: [1.5, 0.4, 1.5],
@@ -5488,7 +5488,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
       icon: '🔥',
     },
     effects: [
-      { type: 'setFlag', flag: 'examined_forest_clearing_old_campfire', flagValue: true },
+      { type: 'setFlag', flag: 'examined_forest_clearing_stone_hearth', flagValue: true },
       { type: 'addKarma', value: 3 },
       { type: 'addSkill', skill: 'logic', value: 1 },
       {
