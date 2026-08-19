@@ -76,7 +76,7 @@ npm run assets:status            # сводка pipeline и пропусков
 
 ## Качество и визуальный бар
 
-Текущая версия пакета: **4.2.42** (`package.json` / `APP_VERSION`).
+Текущая версия пакета: **4.4.1** (`package.json` / `APP_VERSION`).
 
 - `npm run lint` — ESLint для `src`.
 - `npm run typecheck` — TypeScript gate.
@@ -101,13 +101,25 @@ npm run assets:status            # сводка pipeline и пропусков
 
 ## Vercel Deploy
 
-`vercel.json` настроен для SPA rewrites, immutable-кэша `/assets/` и `/models/`, security headers, CSP Report-Only и Permissions-Policy.
+`vercel.json` настроен для SPA: фреймворк Vite, команда сборки `npm run build:vercel`
+(vite build + `prune-deploy-assets`), вывод в `dist/`, install через `npm install`, SPA
+rewrite `(.*) → /index.html`.
+
+Команда `build:vercel` обязательна для деплоя: `vite build` копирует весь `public/`
+(~480 МБ моделей, текстур, HDRI) в `dist/`, а `prune-deploy-assets` убирает
+неподключённые ассеты (−184 МБ → ~309 МБ итог). Использование plain `vite build`
+даёт негабаритный бандл и ломает деплой.
+
+Rapier WASM (`/rapier/rapier_wasm3d_bg.wasm`, ~1.5 МБ) закоммичен в `public/` —
+раньше runtime HEAD-probe возвращал 404 и физика падала на inline base64
+(+2 МБ в HTML, +1.5 с таймаута на каждой загрузке).
 
 ```bash
-npm run check
+npm run build:vercel   # production build в dist/ + prune
 ```
 
-Перед promotion проверьте preview: New Game, загрузка 3D-сцен, отсутствие 404 на `.glb`, `.gltf`, `.bin`, `.jpg`, `.hdr`.
+Перед promotion проверьте preview: New Game, загрузка 3D-сцен, отсутствие 404 на
+`.glb`, `.gltf`, `.bin`, `.jpg`, `.hdr`, `.wasm`.
 
 Environment variables:
 

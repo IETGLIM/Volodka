@@ -516,7 +516,7 @@ function WorldSpaceLabelsComponent({
     <div
       className="fixed inset-0 overflow-hidden pointer-events-none"
       style={{ zIndex: UI_LAYERS.WORLD_LABELS }}
-      aria-label="World space entity labels"
+      aria-label="Мировые метки сущностей"
       role="region"
       aria-live="polite"
     >

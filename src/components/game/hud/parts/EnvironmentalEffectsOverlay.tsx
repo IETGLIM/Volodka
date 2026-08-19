@@ -1131,7 +1131,7 @@ const EnvironmentalEffectsOverlay = memo<EnvironmentalEffectsOverlayProps>((prop
     <div
       className="fixed inset-0 overflow-hidden pointer-events-none"
       role="presentation"
-      aria-label="Environmental effects overlay"
+      aria-label="Слой эффектов окружения"
       style={{ zIndex: UI_LAYERS.HUD, isolation: 'isolate' }}
     >
       {/* Layer 1: Time-of-day vignette (bottom layer) */}

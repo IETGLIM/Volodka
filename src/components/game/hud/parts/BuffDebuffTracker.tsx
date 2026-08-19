@@ -643,7 +643,7 @@ const BuffDebuffTracker = memo(function BuffDebuffTracker({
         ease: [0.22, 1, 0.36, 1],
       }}
       role="status"
-      aria-label="Active status effects"
+      aria-label="Активные эффекты статуса"
       aria-live="polite"
     >
       {/* Hide scrollbar CSS */}

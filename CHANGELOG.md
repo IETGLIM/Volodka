@@ -1,4 +1,46 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.4.1 (2026-08-19) — "Харденинг деплоя, бой и локализация"
+
+Целевые исправления критических багов рендера, боевой системы, локализации и блокировщиков деплоя на Vercel. Аудит проведён статическим анализом (без dev-сервера и браузера) тремя параллельными Explore-агентами по подсистемам 3D/физики, геймплея и UI/HUD/деплоя.
+
+### Рендер
+
+- **Shadow frustum坍塌 в 30×30 м** (`Lighting.tsx`): `config.dimensions` не заполняется генератором сцен (он flattens в `config.size = [width, depth]`), поэтому фрустум теневого направленного света всегда схлопывался в 15×15 м. В маленьких интерьерах — пиксельные тени, на краях уличных сцен — тени пропадали вовсе. Теперь fallback на `config.size`.
+- **Утечка `SphereGeometry` в `GodRaysSunMesh`** (`GodRaysSunMesh.tsx`): геометрия из `useMemo` не диспоузилась при размонтировании (R3F авто-диспоузит только JSX-геометрии). Компонент перемонтируется на каждой смене сцены → по одной утечке за переход. Добавлен `useEffect(() => () => geometry.dispose(), [geometry])`.
+- **`AtmosphericDust` в неправильных границах** (`AtmosphericDust.tsx`): та же ошибка `config.dimensions ?? [10,3,10]` → пыль занимала неправильный объём во всех сценах. Теперь fallback на `config.size`.
+
+### Бой
+
+- **`combatBonus` экипировки был мёртв в формулах урона** (`formulas.ts`): `getPlayerAttack` / `getPlayerDefense` / `getPlayerCritChance` читали `skills` напрямую и игнорировали `combatBonus` предметов. 13+ предметов (Ring of Focus, Armor of Empathy, и др.) показывали «+2 coding» в карточке, но бонус не влиял на урон. Теперь `applyEquipmentBonusToSkill` применяется к coding/logic/empathy/writing. Чтение `equippedItems` идёт из live-store (`getPlayerStore`) с try/catch — combat-снапшот намеренно редуцирован и не содержит экипировки.
+- **Боссы игнорировали пользовательскую сложность** (`combatDifficulty.ts`, `enemyTurn.ts`, `bindApplicationLayers.ts`): basic attacks получали и legacy combatDifficulty (3-level localStorage, default `normal`=1.0), и difficultySlice (5-level, пользовательский, выставляется в SettingsPanel), а боссы — только combatDifficulty (=1.0), т.е. вообще не реагировали на выбор игрока. Унифицировано: `scaleEnemyDamageByDifficulty` предпочитает difficultySlice через зарегистрированный геттер в bootstrap-слое (без нарушения engine→store layering, безопасно для unit-тестов). Удалено дублирующее применение в `enemyTurn.ts`.
+
+### Локализация и доступность
+
+- `CombatDamageFx.tsx`: «CRIT» → «КРИТ».
+- `useHUDController.ts`: «XP» → «Опыт» (остальные статы — Карма/Энергия/Стресс — уже были на русском).
+- `SceneTopBarHud.tsx`: `aria-hidden="true"` → `role="region"` + `aria-label` (вся верхняя HUD-панель была скрыта от скринридеров).
+- `EnvironmentalEffectsOverlay`, `BuffDebuffTracker`, `WorldSpaceLabels`: английские `aria-label` → русские.
+
+### Деплой на Vercel
+
+- **`vercel.json`**: `buildCommand` «vite build» → «npm run build:vercel» (vite build + `prune-deploy-assets`). Раньше `dist/` собирался как копия всего `public/` (~493 МБ) и ломал деплой. Prune убирает 184 МБ неподключённых ассетов → ~309 МБ. `installCommand` «bun install» → «npm install» (репозиторий использует npm, `package-lock.json` закоммичен; bun без `bun.lockb` недетерминирован).
+- **Rapier WASM** закоммичен в `public/rapier/rapier_wasm3d_bg.wasm` (~1.5 МБ): раньше runtime HEAD-probe возвращал 404 → fallback на inline base64 (+2 МБ в HTML + 1.5 с таймаута на каждой загрузке).
+- **`tsx`** добавлен в `devDependencies`: нужен для `prune-deploy-assets.ts` (раньше полагались на `npx`-скачивание в рантайме сборки).
+- Добавлен npm-скрипт `build:vercel`.
+
+### Верификация
+
+- `tsc7 --noEmit` — 0 ошибок.
+- `vite build` — успешно (4454 модуля, 37 с).
+- `vitest run` для `combatDifficulty.test.ts` + `enemyTurn.test.ts` — 25/25 тестов проходят.
+- `prune-deploy-assets.ts` — отработал, убрал 101 файл (184 МБ).
+
+### Замечание
+
+Предоставленный GitHub PAT признан невалидным (GitHub API возвращает 401). Изменения закоммичены локально; для пуша в `origin/main` требуется действующий PAT с правом `Contents: write` на `IETGLIM/Volodka`.
+
+---
+
 ## v4.4.0 (2025-08-16) — "AAA Полировка: Боссы, Станы, Доступность"
 
 Крупное обновление: экспертный аудит кодовой базы (150+ багов найдено), исправление критических игровых багов и добавление новых AAA-фич. Проведено в 15 этапов изучения кода с параллельными агентами по всем подсистемам.
