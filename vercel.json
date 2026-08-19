@@ -1,8 +1,8 @@
 {
   "framework": "vite",
-  "buildCommand": "vite build",
+  "buildCommand": "npm run build:vercel",
   "outputDirectory": "dist",
-  "installCommand": "bun install",
+  "installCommand": "npm install",
   "devCommand": "vite",
   "rewrites": [
     {

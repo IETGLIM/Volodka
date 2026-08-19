@@ -54,7 +54,8 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
       data-testid="scene-top-bar-hud"
       className="fixed left-0 right-0 top-0 pointer-events-none"
       style={{ zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
-      aria-hidden="true"
+      role="region"
+      aria-label="Верхняя панель интерфейса: сцена, уровень, опыт, компас и время"
     >
       {/* Top-left: scene context chip */}
       <motion.div

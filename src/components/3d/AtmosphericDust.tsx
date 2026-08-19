@@ -94,8 +94,10 @@ export function AtmosphericDust() {
   // Texture (shared, created once)
   const texture = useMemo(() => createDustTexture(), []);
 
-  // Scene dimensions for bounds
-  const dims = useMemo(() => config.dimensions ?? [10, 3, 10], [config.dimensions]);
+  // Scene dimensions for bounds. config.dimensions is rarely populated by the
+  // scene generator (it flattens to config.size = [width, depth]); fall back to
+  // size so dust bounds match the real scene footprint.
+  const dims = useMemo(() => config.dimensions ?? [config.size[0], 3, config.size[1]], [config.dimensions, config.size]);
 
   // Initialize velocities and geometry
   useEffect(() => {

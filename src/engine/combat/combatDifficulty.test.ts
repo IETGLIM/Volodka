@@ -44,13 +44,17 @@ describe('combatDifficulty', () => {
 
   it('story mode softens enemy damage and improves flee', () => {
     writeCombatDifficulty('story');
-    expect(scaleEnemyDamageByDifficulty(100)).toBe(65);
+    // Pass the legacy id explicitly: scaleEnemyDamageByDifficulty honors the
+    // 3-level combatDifficulty profile when an id is given. When id is omitted
+    // it now prefers the user-facing 5-level difficultySlice (registered at app
+    // boot), which isn't bound in this unit test.
+    expect(scaleEnemyDamageByDifficulty(100, readCombatDifficulty())).toBe(65);
     expect(getFleeChanceBonus()).toBe(0.2);
   });
 
   it('hard mode increases enemy damage', () => {
     writeCombatDifficulty('hard');
-    expect(scaleEnemyDamageByDifficulty(100)).toBe(125);
+    expect(scaleEnemyDamageByDifficulty(100, readCombatDifficulty())).toBe(125);
     expect(getFleeChanceBonus()).toBe(-0.05);
   });
 

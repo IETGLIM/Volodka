@@ -185,9 +185,14 @@ export function ExplorationLighting() {
       ?? OUTDOOR_READABILITY_AMBIENT[resolveDerivedSceneId(sceneId)])
     : null;
 
-  // Scene-dimension-aware shadow camera frustum sizing
-  const shadowHalfW = Math.max(15, (config.dimensions?.[0] ?? 15) * 0.6);
-  const shadowHalfD = Math.max(15, (config.dimensions?.[2] ?? 15) * 0.6);
+  // Scene-dimension-aware shadow camera frustum sizing.
+  // config.dimensions rarely populated by scene generator (it flattens to
+  // config.size = [width, depth]); fall back to size so the frustum matches the
+  // real scene footprint instead of collapsing to a 30×30m default that either
+  // pixelates shadows in tiny rooms or drops shadows at outdoor scene edges.
+  const sceneDims = config.dimensions ?? [config.size[0], 3, config.size[1]];
+  const shadowHalfW = Math.max(15, sceneDims[0] * 0.6);
+  const shadowHalfD = Math.max(15, sceneDims[2] * 0.6);
 
   return (
     <>

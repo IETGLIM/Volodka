@@ -72,8 +72,7 @@ export function scaleEnemyDamageByDifficulty(
   actNumber?: number,
   playerLevel?: number,
 ): number {
-  const profile = getCombatDifficultyProfile(id);
-  const difficultyFactor = profile.enemyDamageMultiplier;
+  const difficultyFactor = resolveDifficultyMultiplier(id);
 
   // Act scaling: +15% per act beyond the first
   const actFactor = 1 + 0.15 * Math.max(0, (actNumber ?? 1) - 1);
@@ -98,4 +97,44 @@ export function computeEnemyScalingFactor(actNumber: number, playerLevel: number
 
 export function getFleeChanceBonus(id: CombatDifficultyId = readCombatDifficulty()): number {
   return getCombatDifficultyProfile(id).fleeChanceBonus;
+}
+
+// ── User-facing difficulty integration ──────────────────────────────────────
+// The 5-level difficultySlice (saved with the game, set via SettingsPanel) is
+// the user-facing difficulty system. The 3-level combatDifficulty above is
+// legacy (localStorage; no in-game UI writes it, so it stays at 'normal'=1.0).
+//
+// Previously scaleEnemyDamageByDifficulty used ONLY the legacy 3-level factor,
+// while basic attacks additionally applied the difficultySlice multiplier
+// (enemyTurn.ts). Net effect: boss specials completely ignored the user's
+// chosen difficulty, and basic attacks were scaled by both systems.
+//
+// To fix this with a single source of truth — without a hard store import that
+// would violate engine→store layering and break unit-test isolation — the store
+// layer registers a multiplier getter here at app boot (see
+// bindApplicationLayers). When no legacy `id` is explicitly passed, the
+// registered getter is consulted so the user's chosen difficulty scales ALL
+// enemy damage (basic attacks AND boss specials) uniformly.
+
+let difficultySliceMultiplierGetter: (() => number) | null = null;
+
+/** Register a getter for the user-facing 5-level difficulty multiplier.
+ *  Called once at app boot from the bootstrap layer. Pass null to unregister
+ *  (used by test reset helpers). */
+export function registerDifficultySliceMultiplierGetter(getter: (() => number) | null): void {
+  difficultySliceMultiplierGetter = getter;
+}
+
+function resolveDifficultyMultiplier(id?: CombatDifficultyId): number {
+  // Explicit legacy id (tests, explicit callers) → 3-level profile.
+  if (id !== undefined) return getCombatDifficultyProfile(id).enemyDamageMultiplier;
+  // Otherwise prefer the user-facing 5-level difficultySlice.
+  if (difficultySliceMultiplierGetter) {
+    try {
+      return difficultySliceMultiplierGetter();
+    } catch {
+      // store not bound yet (tests, early boot) → fall through to safe default
+    }
+  }
+  return 1; // safe default (normal)
 }

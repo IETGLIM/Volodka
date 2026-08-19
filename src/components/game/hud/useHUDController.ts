@@ -217,7 +217,7 @@ export function useHUDController(props: HUDProps) {
       prevXp.current = xp;
       if (delta > 0) {
         floatXP(delta);
-        showStatChange('XP', delta, '#22d3ee');
+        showStatChange('Опыт', delta, '#22d3ee');
         setLastXpDelta(delta);
         scheduleTimeout(() => setXpPulse(true), 0);
         scheduleTimeout(() => setXpPulse(false), 700);

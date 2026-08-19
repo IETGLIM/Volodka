@@ -44,7 +44,7 @@ export const DamageNumber = React.memo(function DamageNumber({
       {isHeal ? '+' : '-'}
       {damage}
       {isCritical && (
-        <span className="ml-1 text-sm font-mono tracking-widest text-yellow-200/90">CRIT</span>
+        <span className="ml-1 text-sm font-mono tracking-widest text-yellow-200/90">КРИТ</span>
       )}
     </motion.div>
   );

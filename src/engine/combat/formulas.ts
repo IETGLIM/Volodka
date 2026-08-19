@@ -5,6 +5,9 @@ import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatch
 import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { resolveThoughtCombatEffects, type ThoughtCombatEffect } from './thoughtCombatModifiers';
 import { THOUGHT_CABINET_MAP } from '@/data/thoughtCabinet';
+import { applyEquipmentBonusToSkill } from './EquipmentBonusCalculator';
+import { getPlayerStore } from '@/store/storeBindings';
+import type { EquipmentSlot } from '@/shared/types/game';
 
 /* ═══════════════════════════════════════════════════════════════
    Damage formulas — centralized combat math
@@ -95,7 +98,11 @@ export function computeCritChance(writingSkill: number): number {
  *  Wraps computeCritChance and adds thought crit bonus (as percentage). */
 export function getPlayerCritChance(): number {
   const s = snap();
-  const baseChance = computeCritChance(s.playerState.skills.writing);
+  const eq = getEquippedItemsSafe();
+  // Apply equipment bonus to writing (some accessories grant +writing, which
+  // scales crit chance via computeCritChance).
+  const writing = applyEquipmentBonusToSkill(s.playerState.skills.writing, eq, 'writing');
+  const baseChance = computeCritChance(writing);
   const thoughtEffects = resolveThoughtEffects();
   // critChanceBonus is in percentage points (e.g. 3 = 3%), convert to 0–1 range.
   return Math.min(
@@ -145,6 +152,20 @@ function snap() {
   return getGameSnapshot();
 }
 
+/** Read the player's equipped items from the live store.
+ *  The combat snapshot (getGameSnapshot) intentionally carries a reduced
+ *  playerState for determinism/serialization — it has skills/energy/thoughts
+ *  but NOT equippedItems. The live store does. Wrapped in try/catch so pure
+ *  unit tests (where the store isn't bound) get an empty set → no equipment
+ *  bonus, matching pre-fix behavior. */
+function getEquippedItemsSafe(): Partial<Record<EquipmentSlot, { id: string } | null>> {
+  try {
+    return getPlayerStore().playerState.equippedItems ?? {};
+  } catch {
+    return {};
+  }
+}
+
 /** Resolve equipped thought combat effects from the current game state.
  *  Reads equippedThoughtIds from the snapshot and maps them to
  *  ThoughtCabinetItem definitions using THOUGHT_CABINET_MAP. */
@@ -159,7 +180,14 @@ function resolveThoughtEffects(): ThoughtCombatEffect {
 export function getPlayerAttack(): number {
   const s = snap();
   const { skills } = s.playerState;
-  const base = skills.coding + skills.logic;
+  const eq = getEquippedItemsSafe();
+  // Apply equipment combat bonuses per-skill. Items advertise combatBonus for
+  // coding/logic/empathy/etc.; previously these were computed for the combat UI
+  // card but never applied to actual damage — equipping a +2 coding ring showed
+  // "+2" in the card yet did nothing in the damage formula. Now wired in.
+  const coding = applyEquipmentBonusToSkill(skills.coding, eq, 'coding');
+  const logic = applyEquipmentBonusToSkill(skills.logic, eq, 'logic');
+  const base = coding + logic;
   // Perk flat attack bonus (e.g. code_rage +4 when stress > 60).
   const perks = resolveCombatPerkModifiers(s.playerState.progression?.unlockedPerks ?? [], {
     stress: s.playerState.stress,
@@ -173,7 +201,10 @@ export function getPlayerAttack(): number {
 export function getPlayerDefense(): number {
   const s = snap();
   const { skills, energy } = s.playerState;
-  const base = skills.empathy + Math.floor(energy / 10);
+  const eq = getEquippedItemsSafe();
+  // Apply equipment combat bonus to empathy (armor/accessories can grant +empathy).
+  const empathy = applyEquipmentBonusToSkill(skills.empathy, eq, 'empathy');
+  const base = empathy + Math.floor(energy / 10);
   // Perk flat defense bonus (e.g. combat_meditation +3 when stress < 30).
   const perks = resolveCombatPerkModifiers(s.playerState.progression?.unlockedPerks ?? [], {
     stress: s.playerState.stress,

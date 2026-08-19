@@ -16,7 +16,7 @@
  * postprocessing rays emanate from the same origin as the mesh-based shafts.
  */
 
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useEffect, useMemo } from 'react';
 import { AdditiveBlending, Mesh, SphereGeometry } from 'three';
 import type { SceneId } from '@/shared/types/game';
 
@@ -118,6 +118,13 @@ export const GodRaysSunMesh = forwardRef<Mesh, GodRaysSunMeshProps>(
     const config = getGodRaysSunConfig(sceneId);
 
     const geometry = useMemo(() => new SphereGeometry(0.1, 8, 8), []);
+
+    // R3F auto-disposes geometries declared via JSX (<sphereGeometry/>), but NOT
+    // geometries passed as a prop from useMemo. This component re-mounts on every
+    // scene transition (it lives inside ManagedEffectComposer keyed by pipelineKey
+    // containing sceneId), so without explicit disposal each transition would leak
+    // one SphereGeometry. Dispose on unmount.
+    useEffect(() => () => geometry.dispose(), [geometry]);
 
     if (!config) return null;
 
