@@ -76,7 +76,7 @@ npm run assets:status            # сводка pipeline и пропусков
 
 ## Качество и визуальный бар
 
-Текущая версия пакета: **4.4.1** (`package.json` / `APP_VERSION`).
+Текущая версия пакета: **4.4.2** (`package.json` / `APP_VERSION`).
 
 - `npm run lint` — ESLint для `src`.
 - `npm run typecheck` — TypeScript gate.

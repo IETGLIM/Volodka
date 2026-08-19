@@ -1,4 +1,80 @@
 # Changelog — ВОЛОДЬКА RPG
+## v4.4.2 (2026-08-19) — "Полная оптимизация моделей: 493МБ → 135МБ"
+
+Тотальная оптимизация 3D-ассетов через `@gltf-transform`. Игра стала грузиться в ~3.7 раза быстрее, dist/ уменьшен на 73% (−358МБ). Все оптимизации используют уже настроенные в лоадере декодеры (Draco + Meshopt + WebP через `gltfPipeline.ts`).
+
+### Что сжато
+
+**Статичные props (Draco + WebP):** геометрия → Draco, текстуры PNG → WebP.
+- `server_fragment.glb`: 19.7МБ → 2.0МБ (×9.8)
+- `digital_amulet.glb`: 9.6МБ → 0.9МБ (×10.7)
+- `neural_filter.glb`: 8.8МБ → сжато
+- `encrypted_scroll.glb`: 8.1МБ → сжато
+- `poetic_compiler.glb`: 3.7МБ → 1.3МБ
+- Всего: 5 моделей, 49.9МБ → ~6МБ
+
+**Скелетные риги NPC (Meshopt + WebP):** Meshopt сохраняет skinned animation (Draco ломает).
+- 21 риг (`_rigs/male_01..11`, `female_01..09`): 1.4–2.0МБ → 0.7–0.8МБ
+- `fps_arms.glb`: 2.1МБ → 0.5МБ
+- Всего: 22 модели, ~33МБ → ~16МБ
+
+**Poly Haven props (Draco + WebP, gltf→glb):** 33 модели конвертированы из .gltf+.bin+.jpg в single-file .glb.
+- `modular_urban_apartments_facade`: 48МБ → 1.2МБ (×39)
+- `painted_wooden_table`: 8.7МБ → 0.13МБ (×65)
+- `modular_fire_escape`: 20МБ → 0.58МБ (×35)
+- Всего: 209.6МБ → 12.5МБ (−197МБ, 94%)
+- Удалены 33 .gltf + 33 .bin + все textures/ папки. `polyhavenAssets.ts` обновлён (.gltf → .glb).
+
+**PBR-текстуры пола/стен (JPG → WebP):** 28 текстур Poly Haven (asphalt, wood_floor, concrete, metal, plaster).
+- normal maps: quality 92 (без артефактов для освещения)
+- diff/rough/ao: quality 85
+- Всего: 34МБ → 13МБ (−21МБ)
+- `getPolyHavenMapUrl` обновлён (.jpg → .webp)
+
+**Вегетация (Draco + WebP):** `pine_lod0.glb` 8.3МБ → 56КБ (×148 — текстуры были PNG 2048×2048). Удалены неиспользуемые `pine.draco.glb`, `pine.meshopt.glb`, `pine_lod1`, `pine_lod2`.
+
+**art/ изображения (PNG → WebP):** 7 файлов (boot, портреты NPC, hero-bg). 19.4МБ → 2.3МБ.
+
+### Итоговые размеры
+
+| До | После | Экономия |
+|---|---|---|
+| dist/ 493МБ | dist/ 135МБ | −358МБ (−73%) |
+| public/models/ 414МБ | public/models/ 105МБ | −309МБ (−75%) |
+| public/textures/ 35МБ | public/textures/ 14МБ | −21МБ |
+| public/art/ 20МБ | public/art/ 2.4МБ | −17МБ |
+
+### Скрипты
+
+Добавлены npm-скрипты для повторной оптимизации:
+- `npm run assets:optimize-models` — props + риги + fps_arms + interiors
+- `npm run assets:optimize-polyhaven` — polyhaven .gltf → .glb (draco+webp)
+- `npm run assets:optimize-textures` — PBR-текстуры JPG → WebP
+
+### Совместимость
+
+- **GLTFLoader** уже поддерживает `EXT_texture_webp` автоматически (three.js регистрирует расширение по умолчанию).
+- **Draco-декодер** настроен в `gltfPipeline.ts` (`DRACOLoader`, WASM, путь `/draco/gltf/`).
+- **Meshopt-декодер** настроен там же (`MeshoptDecoder`, pure JS).
+- **WebP** поддерживается всеми современными браузерами и `useTexture` из drei.
+- Никаких runtime-изменений не требуется — только URL-свапы в config и бинарная замена GLB.
+
+### Верификация
+
+- `tsc7 --noEmit` — 0 ошибок.
+- `vite build` — успешно (4454 модуля, 36с).
+- `prune-deploy-assets` — отработал (40 файлов, 12МБ вырезано).
+- `gltf-transform validate` — все оптимизированные GLB прошли валидацию.
+
+### Что осталось (135МБ)
+
+- `models/npcs/` 69МБ — ~100 NPC по 0.7МБ, все уже meshopt-compressed. Дальнейшее сжатие рискованно (skinned animation).
+- `hdri/` 9.7МБ — HDR-окружение для IBL, уже 1k/2k.
+- `textures/` 14МБ — PBR-текстуры, уже WebP.
+- `index.html` 12МБ (gzip 3.4МБ) — singlefile bundle.
+
+---
+
 ## v4.4.1 (2026-08-19) — "Харденинг деплоя, бой и локализация"
 
 Целевые исправления критических багов рендера, боевой системы, локализации и блокировщиков деплоя на Vercel. Аудит проведён статическим анализом (без dev-сервера и браузера) тремя параллельными Explore-агентами по подсистемам 3D/физики, геймплея и UI/HUD/деплоя.

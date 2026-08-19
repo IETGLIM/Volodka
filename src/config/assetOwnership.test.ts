@@ -64,7 +64,7 @@ describe('assetOwnership', () => {
       expect.arrayContaining([
         '/models/interiors/apartment_envelope.glb',
         '/models/interiors/cafe_interior.glb',
-        '/models/polyhaven/street_lamp_01/street_lamp_01_1k.gltf',
+        '/models/polyhaven/street_lamp_01/street_lamp_01_1k.glb',
       ]),
     );
   });
