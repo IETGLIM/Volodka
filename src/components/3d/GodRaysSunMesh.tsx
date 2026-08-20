@@ -16,7 +16,7 @@
  * postprocessing rays emanate from the same origin as the mesh-based shafts.
  */
 
-import { forwardRef, useEffect, useMemo } from 'react';
+import { forwardRef, useEffect, useLayoutEffect, useMemo } from 'react';
 import { AdditiveBlending, Mesh, SphereGeometry } from 'three';
 import type { SceneId } from '@/shared/types/game';
 
@@ -108,13 +108,18 @@ export const GODRAYS_POST_SCENES = new Set<SceneId>(
 
 interface GodRaysSunMeshProps {
   sceneId: SceneId;
+  /** Fired from a useLayoutEffect once the mesh ref has been committed, so the
+   *  parent can gate the <GodRays> effect mount on a non-null sun ref. This
+   *  prevents GodRaysEffect from being constructed with a null lightSource
+   *  (which crashes the EffectComposer render loop → black screen). */
+  onMount?: () => void;
 }
 
 /** Emissive sphere mesh that acts as the GodRays postprocessing sun source.
  *  Forwarded ref exposes the Mesh so ExplorationPostFX can pass it to
  *  the <GodRays sun={...} /> effect. */
 export const GodRaysSunMesh = forwardRef<Mesh, GodRaysSunMeshProps>(
-  function GodRaysSunMesh({ sceneId }, ref) {
+  function GodRaysSunMesh({ sceneId, onMount }, ref) {
     const config = getGodRaysSunConfig(sceneId);
 
     const geometry = useMemo(() => new SphereGeometry(0.1, 8, 8), []);
@@ -125,6 +130,14 @@ export const GodRaysSunMesh = forwardRef<Mesh, GodRaysSunMeshProps>(
     // containing sceneId), so without explicit disposal each transition would leak
     // one SphereGeometry. Dispose on unmount.
     useEffect(() => () => geometry.dispose(), [geometry]);
+
+    // Signal readiness synchronously after commit so the parent can mount the
+    // <GodRays> effect on the next render with a guaranteed non-null sun ref.
+    // useLayoutEffect (not useEffect) so it fires before the browser paints —
+    // otherwise a render tick could sneak in with the effect still unmounted.
+    useLayoutEffect(() => {
+      onMount?.();
+    }, [onMount]);
 
     if (!config) return null;
 

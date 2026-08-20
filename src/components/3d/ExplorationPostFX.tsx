@@ -718,6 +718,21 @@ function PostFXPipeline() {
     && GODRAYS_POST_SCENES.has(sceneId as SceneId);
 
   const godRaysSunRef = useRef<Mesh | null>(null);
+  // Track whether the GodRaysSunMesh has mounted and its ref is populated.
+  // The @react-three/postprocessing GodRays wrapper creates GodRaysEffect in a
+  // useMemo that reads sun.current at construction. If the effect mounts before
+  // the sun mesh commits (React 19 concurrent mode under stress), sun.current
+  // is null → GodRaysEffect.update() throws every frame ("Cannot read parent of
+  // null") → EffectComposer render loop crashes → scene goes black.
+  // We gate the <GodRays> effect behind a state flip that becomes true once the
+  // sun mesh ref is set (via onMount callback below), so the effect is never
+  // constructed with a null light source.
+  const [godRaysSunReady, setGodRaysSunReady] = useState(false);
+  // Reset ready state when the sun mesh should unmount (scene change / gate flip)
+  // so a stale ref from a previous scene can't feed a null/wrong sun to GodRays.
+  useEffect(() => {
+    if (!wantsGodRaysPost) setGodRaysSunReady(false);
+  }, [wantsGodRaysPost, sceneId]);
   const godRaysRef = useRef<GodRaysEffect | null>(null);
   const godRaysTransitionRef = useRef({
     current: 0,
@@ -876,21 +891,31 @@ function PostFXPipeline() {
           for the effect — positioned at the scene's practical light origin. */}
       {wantsGodRaysPost ? (
         <>
-          <GodRaysSunMesh ref={godRaysSunRef} sceneId={sceneId as SceneId} />
-          <GodRays
-            ref={godRaysRef as any}
-            sun={godRaysSunRef as any}
-            samples={60}
-            density={0.96}
-            decay={0.92}
-            weight={0.4}
-            exposure={0.6}
-            clampMax={1}
-            blur
-            kernelSize={KernelSize.SMALL}
-            resolutionScale={0.5}
-            blendFunction={BlendFunction.SCREEN}
+          <GodRaysSunMesh
+            ref={godRaysSunRef}
+            sceneId={sceneId as SceneId}
+            // Flip ready state once the mesh commits so the <GodRays> effect
+            // below is constructed with a non-null sun ref. This runs in a
+            // useLayoutEffect inside GodRaysSunMesh (via forwardRef), so it
+            // fires before the next render pass that mounts GodRays.
+            onMount={() => setGodRaysSunReady(true)}
           />
+          {godRaysSunReady && godRaysSunRef.current ? (
+            <GodRays
+              ref={godRaysRef as any}
+              sun={godRaysSunRef.current}
+              samples={60}
+              density={0.96}
+              decay={0.92}
+              weight={0.4}
+              exposure={0.6}
+              clampMax={1}
+              blur
+              kernelSize={KernelSize.SMALL}
+              resolutionScale={0.5}
+              blendFunction={BlendFunction.SCREEN}
+            />
+          ) : null}
         </>
       ) : null as any}
       <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} eskil={vignetteEskil} blendFunction={BlendFunction.NORMAL} />

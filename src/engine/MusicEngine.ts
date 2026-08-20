@@ -766,6 +766,14 @@ class MusicEngine {
 
   /** Lazily get the shared AudioContext (P1-3.5 FIX) */
   private initContext(): void {
+    // Drop stale references to a closed context (can happen after HMR dispose
+    // of SharedAudioContext, or if the browser closed the context under memory
+    // pressure). Without this, this.ctx stays non-null but ctx.currentTime /
+    // createGain() throw InvalidStateError → silent music with no error surfaced.
+    if (this.ctx && this.ctx.state === 'closed') {
+      this.ctx = null;
+      this.masterGainNode = null;
+    }
     if (this.ctx) return;
     this.ctx = getSharedAudioContext();
     if (this.ctx) {
@@ -876,6 +884,21 @@ class MusicEngine {
     if (this.disposed) return;
     this.initContext();
     this.resume();
+
+    // Chrome autoplay policy: AudioContext can't start without a user gesture.
+    // If the context isn't ready yet (playSceneMusic is called from a scene
+    // transition triggered by a React click handler — which fires BEFORE the
+    // window-level resumeOnce gesture handler), defer via whenAudioReady so the
+    // scene's music bed starts once the context is actually running. Without
+    // this, startMusicForScene would early-return on null ctx → silent music.
+    if (!this.ctx) {
+      whenAudioReady(() => {
+        if (this.disposed) return;
+        // Re-check scene — user may have transitioned again before the gesture
+        this.playSceneMusic(sceneId);
+      });
+      return;
+    }
 
     // Same scene — no change needed
     if (this.currentScene === sceneId) return;
