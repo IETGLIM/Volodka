@@ -1,5 +1,6 @@
 /** NPC dialogue, animation, gifts — DialogueRenderer, useNPCAnimation. */
 import type { NpcEmotion } from '@/engine/npc/npcEmotionTypes';
+import type { SceneId } from '@/config/sceneIds';
 
 export interface NpcEvents {
   'npc:talked': { npcId: string; dialogueNodeId?: string };
@@ -52,4 +53,30 @@ export interface NpcEvents {
     dialogueNodeId: string;
     direction: 'rising' | 'falling';
   };
+  /**
+   * Запуск анимации ухода NPC из сцены.
+   * NpcTransitionAnimator плавно перемещает NPC к ближайшему краю
+   * и после завершения генерирует событие npc:despawn.
+   */
+  'npc:exit_start': { npcId: string; sceneId: SceneId };
+  /**
+   * Запуск анимации появления NPC в сцене.
+   * NPC появляется на краю сцены и идёт к целевой позиции,
+   * после чего генерируется событие npc:entry_complete.
+   */
+  'npc:entry_start': {
+    npcId: string;
+    targetPosition: [number, number, number];
+    sceneId: SceneId;
+  };
+  /**
+   * NPC достиг края сцены и должен быть удалён из рендера.
+   * Слушается системами управления появлением NPC.
+   */
+  'npc:despawn': { npcId: string };
+  /**
+   * NPC достиг целевой позиции после входа в сцену.
+   * Переход в обычное поведение (патруль / ожидание).
+   */
+  'npc:entry_complete': { npcId: string };
 }
