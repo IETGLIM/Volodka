@@ -32,6 +32,7 @@ export default tseslint.config(
       '@typescript-eslint/no-empty-object-type': 'off',
       'prefer-const': 'warn',
       'no-empty': ['warn', { allowEmptyCatch: true }],
+      'no-console': ['warn', { allow: ['error'] }],
     },
   },
   {

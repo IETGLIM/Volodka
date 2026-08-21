@@ -1,8 +1,10 @@
 
 /* ─── Volodka RPG – Mini-map (AAA+ Overhaul) ───
    Cardinal directions (N, S, E, W), scene exit indicators,
-   NPC colored dots, player direction triangle, pulsing glow,
-   backdrop-blur transparent background.
+   NPC colored dots with nearby labels, player direction triangle,
+   pulsing glow, backdrop-blur transparent background,
+   scene boundary outline, quest objective diamonds,
+   north arrow indicator, 5m/10m distance rings.
 */
 
 import { useRef, useEffect, useMemo } from 'react';
@@ -149,14 +151,28 @@ export function MiniMap() {
         drawSize,
       );
 
-      // Border — subtle cyberpunk cyan frame
-      ctx.strokeStyle = cyberCyan(0.2);
-      ctx.lineWidth = 1;
+      // Border — scene boundary outline (prominent cyberpunk frame)
+      ctx.save();
+      ctx.shadowColor = 'rgba(34, 211, 238, 0.25)';
+      ctx.shadowBlur = 4;
+      ctx.strokeStyle = cyberCyan(0.45);
+      ctx.lineWidth = 1.5;
       ctx.strokeRect(
         MAP_PADDING + INNER_PADDING - 1,
         MAP_PADDING + INNER_PADDING - 1,
         drawSize + 2,
         drawSize + 2,
+      );
+      ctx.restore();
+
+      // Inner scene-boundary fill accent (subtle)
+      ctx.strokeStyle = cyberCyan(0.12);
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(
+        MAP_PADDING + INNER_PADDING + 1,
+        MAP_PADDING + INNER_PADDING + 1,
+        drawSize - 2,
+        drawSize - 2,
       );
 
       // Grid lines — subtle cyan reference grid
@@ -253,7 +269,14 @@ export function MiniMap() {
         ctx.restore();
       }
 
-      // ── NPC dots (colored per NPC) ──
+      // ── Live player pose (shared mirrors — store pos/rot are transition/save only) ──
+      const livePos = sharedPlayerPositionRef.current;
+      const liveX = Number.isFinite(livePos.x) ? livePos.x : playerPosRef.current[0];
+      const liveZ = Number.isFinite(livePos.z) ? livePos.z : playerPosRef.current[2];
+      const liveYaw = sharedPlayerRotationRef.current;
+
+      // ── NPC dots (colored per NPC) with nearby name labels ──
+      const NPC_LABEL_RANGE = 10; // metres — show label when NPC is within this range
       for (const npc of npcsInSceneRef.current) {
         const nx = toMapX(npc.position[0]);
         const ny = toMapY(npc.position[2]);
@@ -270,14 +293,26 @@ export function MiniMap() {
         ctx.beginPath();
         ctx.arc(nx, ny, 2.5, 0, Math.PI * 2);
         ctx.fill();
+
+        // Name label for nearby NPCs (within NPC_LABEL_RANGE metres)
+        const dx = npc.position[0] - liveX;
+        const dz = npc.position[2] - liveZ;
+        const dist = Math.sqrt(dx * dx + dz * dz);
+        if (dist < NPC_LABEL_RANGE) {
+          const labelAlpha = Math.max(0.35, 1 - dist / NPC_LABEL_RANGE);
+          ctx.save();
+          ctx.font = '8px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillStyle = `rgba(200, 215, 240, ${labelAlpha})`;
+          ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+          ctx.shadowBlur = 3;
+          ctx.fillText(npc.name, nx, ny - 6);
+          ctx.restore();
+        }
       }
 
       // ── Player breadcrumb trail (fading dots) ──
-      // Live pose from shared mirrors (store pos/rot are transition/save only).
-      const livePos = sharedPlayerPositionRef.current;
-      const liveX = Number.isFinite(livePos.x) ? livePos.x : playerPosRef.current[0];
-      const liveZ = Number.isFinite(livePos.z) ? livePos.z : playerPosRef.current[2];
-      const liveYaw = sharedPlayerRotationRef.current;
 
       trailFrameCountRef.current++;
       if (trailFrameCountRef.current % TRAIL_SAMPLE_INTERVAL === 0) {
@@ -355,16 +390,36 @@ export function MiniMap() {
       ctx.fill();
       ctx.restore();
 
-      // ── Cardinal direction labels ──
+      // ── North arrow indicator (Север) ──
+      const northX = MAP_PADDING + INNER_PADDING + drawSize - 10;
+      const northY = MAP_PADDING + INNER_PADDING + 8;
+      ctx.save();
+      ctx.shadowColor = 'rgba(34, 211, 238, 0.4)';
+      ctx.shadowBlur = 4;
+      // Arrow triangle pointing up (north)
+      ctx.fillStyle = cyberCyan(0.7);
+      ctx.beginPath();
+      ctx.moveTo(northX, northY - 5);         // tip
+      ctx.lineTo(northX - 3.5, northY + 2);   // bottom-left
+      ctx.lineTo(northX + 3.5, northY + 2);   // bottom-right
+      ctx.closePath();
+      ctx.fill();
+      // 'С' label below the arrow
+      ctx.shadowBlur = 0;
+      ctx.font = 'bold 7px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
+      ctx.fillStyle = cyberCyan(0.6);
+      ctx.fillText('С', northX, northY + 4);
+      ctx.restore();
+
+      // ── Cardinal direction labels (secondary, subtle) ──
       const centerX = MAP_PADDING + INNER_PADDING + drawSize / 2;
       const centerY = MAP_PADDING + INNER_PADDING + drawSize / 2;
       ctx.font = '9px monospace';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
 
-      // С (North)
-      ctx.fillStyle = cyberCyan(0.5);
-      ctx.fillText('С', centerX, MAP_PADDING - 2);
       // Ю (South)
       ctx.fillStyle = cyberCyan(0.3);
       ctx.fillText('Ю', centerX, MAP_SIZE - MAP_PADDING + 4);
@@ -398,6 +453,29 @@ export function MiniMap() {
       ctx.moveTo(MAP_PADDING + INNER_PADDING + drawSize - 3, centerY);
       ctx.lineTo(MAP_PADDING + INNER_PADDING + drawSize + 2, centerY);
       ctx.stroke();
+
+      // ── Distance rings (5m and 10m) around player ──
+      const ringRadii = [5, 10];
+      for (const radiusM of ringRadii) {
+        const rx = radiusM * scaleX;
+        const ry = radiusM * scaleZ;
+        ctx.save();
+        ctx.strokeStyle = cyberCyan(0.12);
+        ctx.lineWidth = 0.5;
+        ctx.setLineDash([2, 3]);
+        ctx.beginPath();
+        ctx.ellipse(px, py, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Distance label at the right edge of the ring
+        ctx.font = '6px monospace';
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = cyberCyan(0.2);
+        ctx.fillText(`${radiusM}м`, px + rx + 2, py);
+        ctx.restore();
+      }
 
       // Only continue rAF loop when minimap is visible
       if (isVisibleRef.current) {
