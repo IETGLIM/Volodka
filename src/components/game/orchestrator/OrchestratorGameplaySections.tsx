@@ -624,13 +624,17 @@ export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorat
 export const GameplayVirtualJoystick = memo(function GameplayVirtualJoystick() {
   const profile = useGameplayPresentationProfile();
   const isMobile = useMobileDetection();
-  if (!isMobile || !isExplorationHudProfile(profile)) return null;
+  // Hooks must run unconditionally — keep a derived `active` flag and gate the effect body,
+  // so hook order is stable across mobile↔desktop transitions (Rules of Hooks).
+  const active = isMobile && isExplorationHudProfile(profile);
 
   useEffect(() => {
+    if (!active) return;
     startVirtualJoystickBridge();
     return () => { stopVirtualJoystickBridge(); };
-  }, []);
+  }, [active]);
 
+  if (!active) return null;
   return <VirtualJoystick />;
 });
 

@@ -81,8 +81,17 @@ for (const rel of requiredPublicPaths) {
 const indexHtml = existsSync(path.join(distDir, 'index.html'))
   ? readFileSync(path.join(distDir, 'index.html'), 'utf8')
   : '';
-if (indexHtml && !indexHtml.includes('/assets/')) {
-  issues.push('index.html does not reference bundled /assets/ chunks');
+// With viteSingleFile(), the entire bundle (JS+CSS) is inlined into index.html
+// as one large <script type="module">…</script> — there is no /assets/ path.
+// With a traditional code-split build, index.html references /assets/*.js chunks.
+// Accept either form so `npm run check` / `verify:deploy` works in both modes.
+const hasAssetsChunks = indexHtml.includes('/assets/');
+const hasInlinedBundle = indexHtml.length > 500_000 && indexHtml.includes('<script');
+if (indexHtml && !hasAssetsChunks && !hasInlinedBundle) {
+  issues.push(
+    'index.html references neither /assets/ chunks nor an inlined bundle (viteSingleFile). ' +
+      'Build may be misconfigured — check vite.config.ts and vite-plugin-singlefile.',
+  );
 }
 
 const distMb = dirSizeBytes(distDir) / (1024 * 1024);

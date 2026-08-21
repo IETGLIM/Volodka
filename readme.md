@@ -105,10 +105,12 @@ npm run assets:status            # сводка pipeline и пропусков
 (vite build + `prune-deploy-assets`), вывод в `dist/`, install через `npm install`, SPA
 rewrite `(.*) → /index.html`.
 
-Команда `build:vercel` обязательна для деплоя: `vite build` копирует весь `public/`
-(~480 МБ моделей, текстур, HDRI) в `dist/`, а `prune-deploy-assets` убирает
-неподключённые ассеты (−184 МБ → ~309 МБ итог). Использование plain `vite build`
-даёт негабаритный бандл и ломает деплой.
+Команда `build:vercel` обязательна для деплоя: `vite build` (с `vite-plugin-singlefile`)
+инлайнит весь JS+CSS+WASM в один `dist/index.html` (~12 МБ / ~3.4 МБ gzip), а
+`prune-deploy-assets` убирает неподключённые ассеты из `dist/` (−~12 МБ). Итоговый
+`dist/` ≈ **135 МБ** (модели NPC ~79 МБ + текстуры ~14 МБ + HDRI ~10 МБ + index.html ~12 МБ).
+Сборка не требует сети (`assets:prepare` в `build:vercel` не вызывается) и укладывается
+в лимиты Vercel Hobby. Использование plain `vite build` пропускает prune.
 
 Rapier WASM (`/rapier/rapier_wasm3d_bg.wasm`, ~1.5 МБ) закоммичен в `public/` —
 раньше runtime HEAD-probe возвращал 404 и физика падала на inline base64

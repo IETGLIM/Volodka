@@ -245,12 +245,12 @@ export function FootstepDust() {
 
   // AAA Phase B: extra cinematic sprint-start dust kick (when player crosses into sprint)
   // This gives satisfying "launch" visual weight, synced with the locomotion system.
-  let lastSprintState = false;
+  const lastSprintStateRef = useRef(false);
   useEffect(() => {
     const unsub = eventBus.on('exploration:footstep', ({ position, yaw, isSprinting, runWeight, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       const nowSprinting = !!isSprinting || (runWeight ?? 0) > 0.85;
-      if (nowSprinting && !lastSprintState) {
+      if (nowSprinting && !lastSprintStateRef.current) {
         // Big satisfying launch puff on sprint entry
         const count = 7;
         const upward = PARTICLE_UPWARD_VEL * 1.35;
@@ -260,7 +260,7 @@ export function FootstepDust() {
           if (materialRef.current) materialRef.current.color.copy(col);
         } catch {}
       }
-      lastSprintState = nowSprinting;
+      lastSprintStateRef.current = nowSprinting;
     });
     return unsub;
   }, []);
@@ -333,31 +333,31 @@ export function FootstepDust() {
 
   // AAA Phase B: sustained sprint "wind trail" — beautiful forward dust cone while running fast.
   // Gives the feeling of real momentum and air displacement. High-class filmic detail.
-  let sprintTrailTimer = 0;
-  let lastKnownYaw = 0;
-  let lastKnownPos: [number, number, number] = [0, 0, 0];
-  let lastRunWeight = 0;
+  const sprintTrailTimerRef = useRef(0);
+  const lastKnownYawRef = useRef(0);
+  const lastKnownPosRef = useRef<[number, number, number]>([0, 0, 0]);
+  const lastRunWeightRef = useRef(0);
 
   useEffect(() => {
     const unsub = eventBus.on('exploration:footstep', (p: any) => {
-      if (p.yaw !== undefined) lastKnownYaw = p.yaw;
-      if (p.position) lastKnownPos = p.position;
-      lastRunWeight = Math.max(0, Math.min(1, p.runWeight ?? (p.isSprinting ? 1 : 0)));
+      if (p.yaw !== undefined) lastKnownYawRef.current = p.yaw;
+      if (p.position) lastKnownPosRef.current = p.position;
+      lastRunWeightRef.current = Math.max(0, Math.min(1, p.runWeight ?? (p.isSprinting ? 1 : 0)));
     });
     return unsub;
   }, []);
 
   useFrameTick('weather', ({ delta }) => {
-    if (!pointsRef.current || lastRunWeight < 0.65) return; // only when really sprinting
+    if (!pointsRef.current || lastRunWeightRef.current < 0.65) return; // only when really sprinting
 
-    sprintTrailTimer += delta;
+    sprintTrailTimerRef.current += delta;
     const interval = 0.058; // ultra dense luxurious wind trail
-    if (sprintTrailTimer > interval) {
-      sprintTrailTimer = 0;
+    if (sprintTrailTimerRef.current > interval) {
+      sprintTrailTimerRef.current = 0;
 
-      const fwdX = Math.sin(lastKnownYaw);
-      const fwdZ = Math.cos(lastKnownYaw);
-      const intensity = lastRunWeight;
+      const fwdX = Math.sin(lastKnownYawRef.current);
+      const fwdZ = Math.cos(lastKnownYawRef.current);
+      const intensity = lastRunWeightRef.current;
 
       // Ultra dense cinematic forward trail + nice lateral spread (real air kick)
       const trailCount = Math.round(3.2 + intensity * 4.2);
@@ -365,10 +365,10 @@ export function FootstepDust() {
       // Main trailing cloud slightly behind feet
       spawnBurst(
         poolRef.current,
-        lastKnownPos[0] - fwdX * 0.32,
-        (lastKnownPos[1] || 0.02) + 0.022,
-        lastKnownPos[2] - fwdZ * 0.32,
-        lastKnownYaw,
+        lastKnownPosRef.current[0] - fwdX * 0.32,
+        (lastKnownPosRef.current[1] || 0.02) + 0.022,
+        lastKnownPosRef.current[2] - fwdZ * 0.32,
+        lastKnownYawRef.current,
         trailCount,
         0.32 + intensity * 0.55
       );
@@ -378,10 +378,10 @@ export function FootstepDust() {
         for (let i = 0; i < 3; i++) {
           spawnBurst(
             poolRef.current,
-            lastKnownPos[0] - fwdX * (0.08 + i * 0.07) + (Math.random() - 0.5) * 0.8,
-            (lastKnownPos[1] || 0.02) + 0.05 + i * 0.01,
-            lastKnownPos[2] - fwdZ * (0.08 + i * 0.07) + (Math.random() - 0.5) * 0.8,
-            lastKnownYaw + (Math.random() - 0.5) * 1.6,
+            lastKnownPosRef.current[0] - fwdX * (0.08 + i * 0.07) + (Math.random() - 0.5) * 0.8,
+            (lastKnownPosRef.current[1] || 0.02) + 0.05 + i * 0.01,
+            lastKnownPosRef.current[2] - fwdZ * (0.08 + i * 0.07) + (Math.random() - 0.5) * 0.8,
+            lastKnownYawRef.current + (Math.random() - 0.5) * 1.6,
             1.5 + Math.random() * 1.5,
             0.55 + intensity * 0.35
           );

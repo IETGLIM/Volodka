@@ -94,3 +94,8 @@ src-tree.txt
 # Keep out of git so clones stay lean; `npm run assets:bootstrap` re-downloads when needed.
 public/models/khronos/
 qa-screenshots/
+
+# Lockfile policy: this project uses npm (CI runs `npm ci`).
+# bun.lock / bun.lockb should not be committed — they drift from package-lock.json.
+bun.lock
+bun.lockb

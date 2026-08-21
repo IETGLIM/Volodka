@@ -165,7 +165,7 @@ export const BreatheZoomTransition = memo(function BreatheZoomTransition({
    DATA_STREAM — Matrix-style data cascade effect
    ══════════════════════════════════════════════════════════════ */
 
-const DATA_STREAM_CHARS = '01アイウエオカキクケコ{}[]<>/\|=+-_*&%$#@!АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
+const DATA_STREAM_CHARS = '01アイウエオカキクケコ{}[]<>/|=+-_*&%$#@!АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЩЭЮЯ';
 
 interface DataStreamColumn {
   id: number;

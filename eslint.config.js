@@ -5,9 +5,12 @@ import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 /**
- * TS7 side-by-side: `typescript` is aliased to @typescript/typescript6 in package.json
- * so that tools like typescript-eslint (which need the Compiler API absent in TS7)
- * still work. The TS7 tsc is available as `tsc7` via the @typescript/native alias.
+ * TypeScript: stable `typescript@^5.9` is used for both typechecking (`tsc --noEmit`)
+ * and typescript-eslint. The previous dual TS6-alias + TS7-native-Go setup caused
+ * `@typescript/typescript6` to circular-require itself (lib/typescript.js →
+ * require("@typescript/old") → @typescript/typescript6 again → empty exports {}),
+ * which crashed ESLint with `TypeError: Cannot read properties of undefined
+ * (reading 'Cjs')`. Switched to a single stable TS to unblock the lint gate.
  */
 
 export default tseslint.config(

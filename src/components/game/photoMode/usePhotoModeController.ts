@@ -83,9 +83,9 @@ export function usePhotoModeController() {
     setLiveAnnouncement(PHOTO_MODE_LABELS.exited);
     eventBus.emit(PHOTO_EVENTS.inactive, PHOTO_EMPTY_PAYLOAD);
     // Reset lighting on exit
-    eventBus.emit('photo:lighting_boost' as any, { active: false });
+    eventBus.emit('photo:lighting_boost', { active: false });
     // Re-enable motion blur
-    eventBus.emit('photo:motion_blur' as any, { enabled: true });
+    eventBus.emit('photo:motion_blur', { enabled: true });
   }, []);
 
   const enterPhotoMode = useCallback(() => {
@@ -97,11 +97,11 @@ export function usePhotoModeController() {
     setLiveAnnouncement(PHOTO_MODE_LABELS.entered);
     eventBus.emit(PHOTO_EVENTS.active, PHOTO_EMPTY_PAYLOAD);
     // Boost ambient lighting for photo mode
-    eventBus.emit('photo:lighting_boost' as any, { active: true });
+    eventBus.emit('photo:lighting_boost', { active: true });
     // Disable motion blur for crisp screenshots
-    eventBus.emit('photo:motion_blur' as any, { enabled: false });
+    eventBus.emit('photo:motion_blur', { enabled: false });
     // Request highest DPR for screenshot quality
-    eventBus.emit('photo:dpr_request' as any, { dpr: 2 });
+    eventBus.emit('photo:dpr_request', { dpr: 2 });
     setLiveAnnouncement(PHOTO_MODE_LABELS.lightingBoost);
   }, []);
 
@@ -293,9 +293,9 @@ export function usePhotoModeController() {
       }
       activeRef.current = false;
       setPhotoModeActive(false);
-      eventBus.emit('photo:lighting_boost' as any, { active: false });
-      eventBus.emit('photo:motion_blur' as any, { enabled: true });
-      eventBus.emit('photo:dpr_request' as any, { dpr: 1 });
+      eventBus.emit('photo:lighting_boost', { active: false });
+      eventBus.emit('photo:motion_blur', { enabled: true });
+      eventBus.emit('photo:dpr_request', { dpr: 1 });
     };
   }, []);
 

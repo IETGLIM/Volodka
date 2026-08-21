@@ -1459,7 +1459,7 @@ const ITEMS: ItemDefinition[] = [
   {
     id: 'crystal_blade',
     name: 'Кристальный клинок',
-    description: 'Легендарный меч, выкованный из сплава редкой руды, осколка кристалла и драконьей чешуи. Лёгкий, как перо, но режет броню, как масло. В темноте излучает слабое голубое свечение.',
+    description: 'Кристальный осколок, извлечённый из ядра Матрицы. При активации через нейроинтерфейс накладывает на владельца тактический боевой оверлей — противник читается как открытый код, слабые точки подсвечиваются голубым. В темноте пульсирует, реагируя на угрозы.',
     category: 'equipment',
     rarity: 'legendary',
     icon: 'Sword',
@@ -1467,7 +1467,7 @@ const ITEMS: ItemDefinition[] = [
     maxStack: 1,
     effects: [],
     combatBonus: [{ skill: undefined, value: 15, type: 'flat' }],
-    equipmentSlot: 'weapon',
+    equipmentSlot: 'accessory',
     questRelated: false,
   },
   {
@@ -1642,7 +1642,7 @@ export const EQUIPMENT_SLOTS: Record<string, string> = {
   'echo_headband': 'head',
   'resistance_helmet': 'head',
   'crown_of_verses': 'head',
-  'crystal_blade': 'weapon',
+  'crystal_blade': 'accessory',
   'shadow_amulet': 'accessory',
 };
 

@@ -18,7 +18,7 @@ export function AaaCombatCinematic() {
         // Slight chromatic kick for crits — handled in postfx via stress factor already,
         // but we also emit a custom event for HUDChromaticEdge to catch
         if (isCritical) {
-          eventBus.emit('fx:chromatic_burst' as any, { intensity: 0.65, duration: 220 } as any);
+          eventBus.emit('fx:chromatic_burst', { intensity: 0.65, duration: 220 });
         }
       }),
       eventBus.on('combat:hit', ({ isPlayerHit, damage }) => {
@@ -26,7 +26,7 @@ export function AaaCombatCinematic() {
           // Player takes damage — heavier, downward shake
           const intensity = Math.min(0.85, 0.25 + (damage ?? 0) * 0.018);
           triggerCameraShake(intensity, 5.2);
-          eventBus.emit('fx:screen_flash' as any, { color: 'rgba(180,40,40,0.12)', duration: 180 } as any);
+          eventBus.emit('fx:screen_flash', { color: 'rgba(180,40,40,0.12)', duration: 180 });
         } else {
           // Enemy hit — light punch
           triggerCameraShake(0.16, 7);

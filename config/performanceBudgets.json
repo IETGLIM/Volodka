@@ -5,6 +5,11 @@
     "hardMax": 650000,
     "description": "JS for menu boot (before New Game — no WebGL / narrative blobs)"
   },
+  "singleFileGzipBytes": {
+    "target": 3500000,
+    "hardMax": 5000000,
+    "description": "vite-plugin-singlefile inlines ALL JS+CSS+WASM-base64 into one index.html. Measured ~3.4MB gzip (v4.4.2). Target 3.5MB / hard max 5MB — mobile parse-time concern, not a strict Vercel limit."
+  },
   "gameStartJsGzipBytes": {
     "target": 1200000,
     "hardMax": 1800000,

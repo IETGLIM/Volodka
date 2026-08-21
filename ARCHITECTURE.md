@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.5.0** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.4.2** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -879,7 +879,8 @@ Tree-shaking уже исключал их из бандла, но очистка
   `import * as THREE` в 253 файлах мешает tree-shaking Three.js. Это главная точка
   роста для будущей оптимизации (замена на named imports + отказ от viteSingleFile
   или dual-mode build).
-- **3D-модели (411 MB)** не входят в sparse-checkout разработчика; procedural-fallback
+- **3D-модели (~105 МБ в `dist/` после prune; `public/models/` оптимизирован в v4.4.2
+  с ~493 МБ до ~135 МБ)** не входят в sparse-checkout разработчика; procedural-fallback
   покрывает отсутствие GLB. На Vercel модели подтянутся из репозитория.
 - **PAT для git push**: предоставленный токен оказался невалидным (401 Bad credentials).
   Коммиты готовы локально; push требует обновлённого PAT.

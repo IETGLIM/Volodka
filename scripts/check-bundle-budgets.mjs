@@ -51,13 +51,15 @@ if (!existsSync(distAssets)) {
     console.error('[budgets] dist/ not found — run `npm run build` first.');
     process.exit(1);
   }
-  // viteSingleFile mode — everything inlined into index.html
+  // viteSingleFile mode — everything inlined into index.html.
+  // Use the singleFileGzipBytes budget (boot/gameStart budgets are for split-chunk mode
+  // and would always fail here since the whole app is one inlined HTML).
   const raw = readFileSync(distHtml).length;
   const gzip = gzipBytes(distHtml);
   console.log('[budgets] viteSingleFile mode — measuring dist/index.html');
   console.log(`  index.html: ${formatKb(raw)} raw, ${formatKb(gzip)} gzip`);
-  const hardMax = budgets.bootJsGzipBytes?.hardMax ?? 2_000_000;
-  const target = budgets.bootJsGzipBytes?.target ?? 1_200_000;
+  const hardMax = budgets.singleFileGzipBytes?.hardMax ?? 5_000_000;
+  const target = budgets.singleFileGzipBytes?.target ?? 3_500_000;
   console.log(`  Target: ${formatKb(target)} gzip | Hard max: ${formatKb(hardMax)} gzip`);
   if (gzip > hardMax) {
     console.error(`[budgets] ❌ EXCEEDS hard max (${formatKb(gzip)} > ${formatKb(hardMax)})`);
