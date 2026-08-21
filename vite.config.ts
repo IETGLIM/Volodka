@@ -29,6 +29,15 @@ export default defineConfig({
         "./node_modules/@dimforge/rapier3d-compat/rapier.mjs",
       ),
     },
+    // Force a single instance of rapier3d-compat across the dependency tree.
+    // @react-three/rapier bundles its own nested copy under
+    // node_modules/@react-three/rapier/node_modules/@dimforge/rapier3d-compat.
+    // Without dedupe, Vite may resolve the nested copy separately from our
+    // top-level alias → TWO independent rapierCompat module instances →
+    // initPromise is not shared → <Physics> re-triggers rapier.init() AFTER
+    // preloadPhysicsChunk already did, causing the duplicate 'rapier:init-start'
+    // perf mark and ~1.3s of wasted WASM-compile work on every boot.
+    dedupe: ["@dimforge/rapier3d-compat"],
   },
   build: {
     // Target modern browsers — smaller output, modern JS features

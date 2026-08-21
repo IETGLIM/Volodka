@@ -61,6 +61,16 @@ export function preloadPhysicsChunk(): Promise<void> {
       const jsChunkMs = jsEnd - jsStart;
       measure('physics:js-chunk', 'physics:js-start', 'physics:js-end');
 
+      // INP-CRITICAL: yield to the main thread between the two heaviest
+      // blocking phases (JS chunk parse ~2s + WASM compile ~500ms). Without
+      // this yield, any user interaction queued during the JS import waits
+      // for BOTH the import AND the WASM compile to finish before its handler
+      // can run — easily 2.5s+ of INP on its own. A single setTimeout(0)
+      // flushes the input/paint queue between phases, halving the worst-case
+      // interaction delay. (requestIdleCallback is too slow here — we still
+      // want physics to init promptly so the 3D scene can mount.)
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+
       // Phase 2: WASM init
       mark('physics:wasm-start');
       const wasmStart = typeof performance !== 'undefined' ? performance.now() : Date.now();
