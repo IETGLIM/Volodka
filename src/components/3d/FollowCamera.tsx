@@ -26,7 +26,6 @@ import {
   ZOOM_SPRING_SNAP,
   FIRST_PERSON_ENABLED,
   ZOOM_SMOOTH_SPEED,
-  CAMERA_LAG_FACTOR,
 } from '@/engine/camera/cameraConstants';
 import { shouldUseFirstPersonExploration } from '@/engine/camera/cinematicPresentation';
 import { eventBus } from '@/engine/EventBus';

@@ -1671,7 +1671,6 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           damage = scaleEnemyDamageByDifficulty(damage, undefined, ckSnapshot.playerState.progression.currentAct, ckSnapshot.playerState.progression.level);
           const playerDmgReduction = getPlayerDamageReduction(nextState);
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
           const buff = createBuff(nextState, 'Удар Гробницы', 'catacombs_tomb_strike', 'debuff', 'player', 1, { type: 'skip_turn' });
           const s = addBuff(nextState, buff);
           return { ...s, playerHp: Math.max(0, s.playerHp - damage), log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Удар Гробницы! -${damage} HP, вы оглушены на 1 ход!`, type: 'enemy_special' as const, damage }] };
@@ -1709,7 +1708,6 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
           const playerVulnerability = getPlayerVulnerability(nextState);
           if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
-          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
           const eBuff = createBuff(nextState, 'Ярость', 'catacombs_enrage_buff', 'buff', 'enemy', 3, { type: 'attack_boost', value: 8 });
           const s = addBuff(nextState, eBuff);
           return { ...s, playerHp: Math.max(0, s.playerHp - damage), log: [...s.log, { turn: state.turn, text: `${enemy.emoji} ЯРОСТЬ ХРАНИТЕЛЯ! -${damage} HP, враг +8 атака на 3 хода!`, type: 'enemy_special' as const, damage }] };

@@ -4,8 +4,7 @@
  * Uses the existing useFrameTick budget system for GPU-friendly updates.
  */
 
-import { useRef, useMemo, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useRef, useMemo, useEffect } from 'react';
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Group, ShaderMaterial } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 
@@ -166,8 +165,6 @@ function ParticleSystemInner({ type, position = [0, 0, 0], visible = true }: Par
     geo.setAttribute('aSize', sizeAttr);
     geo.setAttribute('aColor', colAttr);
     geo.setDrawRange(0, 0);
-
-    const baseColor = new Color(config.color);
 
     const mat = new ShaderMaterial({
       transparent: true,
@@ -359,20 +356,8 @@ function ParticleSystemInner({ type, position = [0, 0, 0], visible = true }: Par
 
 /** 3D particle system rendered inside a Canvas (R3F). */
 export function ParticleEffects(props: ParticleEffectsProps) {
-  return (
-    <AnimatePresence>
-      {props.visible !== false && (
-        <motion.group
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.5, ease: 'easeInOut' }}
-        >
-          <ParticleSystemInner {...props} visible={props.visible !== false} />
-        </motion.group>
-      )}
-    </AnimatePresence>
-  );
+  if (props.visible === false) return null;
+  return <ParticleSystemInner {...props} />;
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -390,11 +375,9 @@ export interface UseParticleSystemOptions {
  *  Then render <ParticleEffects {...particles} /> inside R3F Canvas.
  */
 export function useParticleSystem(options: UseParticleSystemOptions): ParticleEffectsProps {
-  const [visible, setVisible] = useState(options.visible ?? true);
-
   return {
     type: options.type,
     position: options.position,
-    visible,
+    visible: options.visible ?? true,
   };
 }

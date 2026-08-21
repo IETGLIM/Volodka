@@ -5,7 +5,6 @@
  * the initial JS bundle size.
  */
 
-import type { ComponentType } from 'react';
 
 type DisposeFn = () => void;
 type ReviveFn = () => void;

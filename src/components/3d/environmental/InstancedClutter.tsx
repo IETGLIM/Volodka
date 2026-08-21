@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useEffect, useMemo } from 'react';
-import { InstancedMesh, Object3D, type BufferGeometry, type Material } from 'three';
+import { Color, InstancedMesh, Object3D, type BufferGeometry, type Material } from 'three';
 
 /** Per-instance transform data for an InstancedClutter item. */
 export interface InstancedClutterItem {
@@ -81,7 +81,7 @@ export function InstancedClutter({ items, geometry, material, colors }: Instance
     if (!mesh || !colors || colors.length === 0) return;
 
     for (let i = 0; i < Math.min(colors.length, instanceCount); i++) {
-      mesh.setColorAt(i, colors[i]);
+      mesh.setColorAt(i, new Color(colors[i]));
     }
 
     if (mesh.instanceColor) {

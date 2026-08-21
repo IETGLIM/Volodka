@@ -30,9 +30,6 @@ export function breathingOffset(time: number): number {
    HEAD LOOK-AT
    ══════════════════════════════════════════════════════════════ */
 
-/** Max angle in radians (30 degrees) */
-const MAX_HEAD_ANGLE_RAD = (30 * Math.PI) / 180;
-
 const _tmpForward = new Vector3();
 const _tmpToTarget = new Vector3();
 const _tmpUp = new Vector3(0, 1, 0);

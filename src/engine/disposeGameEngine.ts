@@ -9,7 +9,7 @@
 import { disposeEventBus, reviveEventBus } from '@/engine/EventBus';
 import { disposeGuidedStoryManager, reviveGuidedStoryManager } from '@/engine/GuidedStoryManager';
 import { disposeQuestTracker, reviveQuestTracker } from '@/engine/QuestTracker';
-import { disposeCombatSystemLazy, reviveCombatSystemLazy, preloadCombatSystem } from '@/engine/combat/lazyCombatSystem';
+import { disposeCombatSystemLazy, reviveCombatSystemLazy } from '@/engine/combat/lazyCombatSystem';
 import { disposeWorldEventDirector, reviveWorldEventDirector } from '@/engine/world/WorldEventDirector';
 import { disposeNavMeshLayer, reviveNavMeshLayer } from '@/engine/world/NavMeshLayer';
 import { disposeWorldStreamManager, reviveWorldStreamManager } from '@/engine/world/WorldStreamManager';

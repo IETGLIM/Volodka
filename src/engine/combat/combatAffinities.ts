@@ -261,6 +261,26 @@ export const ENEMY_AFFINITIES: Record<EnemyType, EnemyAffinityMap> = {
     physical: 0.5,   // Pure code resists physical strikes
     logic: 0.7,      // The final code outsmarts pure logic
   },
+
+  // ── Новые враги v4.5.0 ──
+  ranged_strelkov: {
+    physical: 1.5,   // Стрелки уязвимы в ближнем бою
+    code: 0.7,       // Дальнобойные слабы к код-атакам
+    logic: 1.2,      // Логические уязвимости
+  },
+  dark_mage: {
+    physical: 0.5,   // Маги устойчивы к физическому урону
+    code: 1.5,       // Код нарушает их заклинания
+    writing: 1.8,    // Поэзия разрушает магические барьеры
+    empathy: 0.7,    // Маги холодны к эмпатии
+  },
+  boss_catacombs_keeper: {
+    physical: 0.6,   // Босс устойчив к обычным атакам
+    code: 1.2,       // Код-эксплойты эффективны
+    writing: 2.0,    // Стихи — главное оружие против Хранителя
+    empathy: 1.3,    // Эмпатия пробивает его броню
+    logic: 0.8,      // Хранитель сопротивляется логике
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════

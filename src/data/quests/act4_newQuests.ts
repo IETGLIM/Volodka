@@ -47,8 +47,8 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
       {
         id: 'kill_dark_mage',
         description: 'Победить тёмного мага в глубине катакомб',
-        type: 'npc_killed',
-        target: 'dark_mage_catacombs',
+        type: 'flag_set',
+        target: 'dark_mage_killed',
         completed: false,
       },
     ],
@@ -69,7 +69,7 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
     act: 4,
     faction: 'merchant_guild',
     questType: 'side',
-    difficulty: 'normal',
+    difficulty: 'medium',
     hint: 'Ищи следы телеги на дороге к лесной опушке. Ящик — с торговой печатью Бориса.',
     objectives: [
       {
@@ -97,7 +97,7 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
     rewards: [
       { type: 'addXp', value: 100 },
       { type: 'addCredits', value: 50 },
-      { type: 'addItem', itemId: 'night_vision_potion', count: 2 },
+      { type: 'addItem', itemId: 'night_vision_potion', value: 2 },
     ],
     questGiverNpcId: 'merchant_boris',
   },
@@ -110,7 +110,7 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
     act: 4,
     faction: 'streltsy',
     questType: 'side',
-    difficulty: 'normal',
+    difficulty: 'medium',
     hint: 'Сергей знает, где хранятся записи. Поговори с ним перед тем, как идти к капитану.',
     objectives: [
       {
@@ -192,8 +192,8 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
     ],
     rewards: [
       { type: 'addXp', value: 120 },
-      { type: 'addItem', itemId: 'crystal_blade', count: 1 },
-      { type: 'addSkill', skill: 'crafting', value: 3 },
+      { type: 'addItem', itemId: 'crystal_blade', value: 1 },
+      { type: 'addSkill', skill: 'coding', value: 3 },
     ],
     questGiverNpcId: 'blacksmith_ignat',
   },

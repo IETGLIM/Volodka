@@ -16,7 +16,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
  *  - Purple (text-purple-400): magic / affinity attacks (affinity_super, dark_mage specials)
  *  - Fuchsia (text-fuchsia-400): poem combo
  *  - Cyan (text-cyan-300): default fallback for player attacks */
-function resolveDamageColor(type: string, isCritical: boolean): string {
+function _resolveDamageColor(type: string, isCritical: boolean): string {
   // Critical hits always get yellow
   if (isCritical) return 'text-yellow-300';
   // Healing

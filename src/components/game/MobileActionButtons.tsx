@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect } from 'react';
-import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen, Shield } from 'lucide-react';
+import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen } from 'lucide-react';
 import { useGamePhase, useHotbarSlots } from '@/store/selectors';
 import { useConsumableActions, useInventory } from '@/store/selectors';
 import { usePlayerLevel } from '@/store/selectors/playerSelectors';

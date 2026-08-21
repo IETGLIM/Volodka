@@ -151,10 +151,10 @@ export function useContextualHints() {
 
   // Interaction proximity hint
   useEffect(() => {
-    const unsub = eventBus.on('interaction:in_range', () => {
+    const unsub = eventBus.on('interaction:hint', (payload) => {
       enqueueHint({
         id: 'interact_hint',
-        text: 'Нажмите E для взаимодействия',
+        text: payload.label ? `Нажмите ${payload.key} для: ${payload.label}` : 'Нажмите E для взаимодействия',
         category: 'interaction',
         duration: 3000,
       });

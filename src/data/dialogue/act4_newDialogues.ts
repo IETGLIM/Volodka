@@ -93,7 +93,7 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'addCredits', value: 50 },
-          { type: 'addItem', itemId: 'night_vision_potion', count: 2 },
+          { type: 'addItem', itemId: 'night_vision_potion', value: 2 },
           { type: 'addXp', value: 100 },
         ],
       },
@@ -317,9 +317,9 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
         text: 'Это... потрясающе. Спасибо, Игнат.',
         next: null,
         effects: [
-          { type: 'addItem', itemId: 'crystal_blade', count: 1 },
+          { type: 'addItem', itemId: 'crystal_blade', value: 1 },
           { type: 'addXp', value: 120 },
-          { type: 'addSkill', skill: 'crafting', value: 3 },
+          { type: 'addSkill', skill: 'coding', value: 3 },
         ],
       },
     ],
@@ -339,7 +339,7 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
         next: 'dying_old_man_gratitude',
         effects: [
           { type: 'triggerQuest', questId: 'last_wish' },
-          { type: 'addItem', itemId: 'sealed_letter', count: 1 },
+          { type: 'addItem', itemId: 'sealed_letter', value: 1 },
           { type: 'addKarma', value: 3 },
         ],
       },
@@ -348,7 +348,7 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
         next: 'dying_old_man_details',
         effects: [
           { type: 'triggerQuest', questId: 'last_wish' },
-          { type: 'addItem', itemId: 'sealed_letter', count: 1 },
+          { type: 'addItem', itemId: 'sealed_letter', value: 1 },
         ],
       },
     ],
