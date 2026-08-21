@@ -8,31 +8,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Flame } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
-/** Resolve damage number color class based on log entry type.
- *  - White (text-slate-100): normal player attack
- *  - Red (text-red-400): enemy attack / enemy special
- *  - Yellow (text-yellow-300): critical hit (overrides other colors)
- *  - Green (text-emerald-400): healing (player_power with positive damage)
- *  - Purple (text-purple-400): magic / affinity attacks (affinity_super, dark_mage specials)
- *  - Fuchsia (text-fuchsia-400): poem combo
- *  - Cyan (text-cyan-300): default fallback for player attacks */
-function _resolveDamageColor(type: string, isCritical: boolean): string {
-  // Critical hits always get yellow
-  if (isCritical) return 'text-yellow-300';
-  // Healing
-  if (type === 'player_power') return 'text-emerald-400';
-  // Enemy damage to player
-  if (type === 'enemy_attack' || type === 'enemy_special') return 'text-red-400';
-  // Magic / dark affinity
-  if (type === 'affinity_super' || type === 'enemy_special') return 'text-purple-400';
-  // Poem combo
-  if (type === 'poem_combo') return 'text-fuchsia-400';
-  // Normal player attack — white
-  if (type === 'player_attack' || type === 'critical_hit' || type === 'combo_hit') return 'text-slate-100';
-  // Default fallback
-  return 'text-cyan-300';
-}
-
 export const DamageNumber = React.memo(function DamageNumber({
   damage,
   type,
