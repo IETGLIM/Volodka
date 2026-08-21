@@ -105,11 +105,29 @@ export function getCombinedGameState(): GameStoreState {
   }
 
   cachedSliceRefs = refs;
-  // Zustand slice stores contain action functions alongside data.
-  // structuredClone cannot clone functions — strip them first, keeping only
-  // plain serializable data for the facade cache.
-  const raw = Object.assign(
-    {} as Record<string, unknown>,
+  // Shallow-merge all 9 Zustand slice stores into the facade state.
+  //
+  // IMPORTANT: we keep BOTH data AND action functions. The previous
+  // implementation filtered out functions + structuredClone'd the rest,
+  // which (a) stripped every action (setFlag, addKarma, addSkill,
+  // setExplorationNPCStates, pushNotification, ~50+ more) — breaking 98
+  // call-sites that do `useGameStore.getState().someAction(...)` — and
+  // (b) structuredClone cannot clone functions anyway.
+  //
+  // Shallow merge is safe because Zustand slice stores enforce immutable
+  // updates: every `set()` creates a new state object. The facade therefore
+  // never holds a stale reference to a slice's *previous* state — when a
+  // slice changes, `subscribeAllStores` invalidates the cache (see
+  // gameStore.ts syncMarkFacadeDirty → invalidateCombinedGameStateCache),
+  // and the next getState() rebuilds from fresh slice refs.
+  //
+  // Nested objects (e.g. playerState.inventory) are shared by reference
+  // with the owning slice store — but Zustand immutability means those
+  // references are replaced, never mutated in place. Direct mutation of
+  // facade state is an architectural error that must be fixed at the
+  // call-site, not papered over with deep cloning.
+  const combined = Object.assign(
+    {} as GameStoreState,
     refs[0],
     refs[1],
     refs[2],
@@ -120,10 +138,6 @@ export function getCombinedGameState(): GameStoreState {
     refs[7],
     refs[8],
   );
-  const dataOnly = Object.fromEntries(
-    Object.entries(raw).filter(([, v]) => typeof v !== 'function'),
-  );
-  const combined = structuredClone(dataOnly) as unknown as GameStoreState;
   cachedCombined = combined;
   return combined;
 }

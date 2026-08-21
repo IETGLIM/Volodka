@@ -1,6 +1,7 @@
 /* ─── Volodka RPG – diagnostic snapshot for error recovery ─── */
 
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { APP_VERSION } from '@/shared/constants/appVersion';
 import type { ErrorRecoveryContext } from './errorRecoveryTypes';
 
 const SESSION_STARTED_AT =
@@ -24,7 +25,7 @@ export function buildErrorRecoveryContext(error?: Error | null): ErrorRecoveryCo
       typeof performance !== 'undefined'
         ? Math.round(performance.now() - SESSION_STARTED_AT)
         : undefined,
-    gameVersion: '4.2.2',
+    gameVersion: APP_VERSION,
   };
 
   if (error) {
