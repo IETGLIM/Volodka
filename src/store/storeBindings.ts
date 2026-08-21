@@ -105,20 +105,25 @@ export function getCombinedGameState(): GameStoreState {
   }
 
   cachedSliceRefs = refs;
-  const combined: GameStoreState = structuredClone(
-    Object.assign(
-      {} as GameStoreState,
-      refs[0],
-      refs[1],
-      refs[2],
-      refs[3],
-      refs[4],
-      refs[5],
-      refs[6],
-      refs[7],
-      refs[8],
-    ),
+  // Zustand slice stores contain action functions alongside data.
+  // structuredClone cannot clone functions — strip them first, keeping only
+  // plain serializable data for the facade cache.
+  const raw = Object.assign(
+    {} as Record<string, unknown>,
+    refs[0],
+    refs[1],
+    refs[2],
+    refs[3],
+    refs[4],
+    refs[5],
+    refs[6],
+    refs[7],
+    refs[8],
   );
+  const dataOnly = Object.fromEntries(
+    Object.entries(raw).filter(([, v]) => typeof v !== 'function'),
+  );
+  const combined = structuredClone(dataOnly) as unknown as GameStoreState;
   cachedCombined = combined;
   return combined;
 }
