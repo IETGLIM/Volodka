@@ -939,3 +939,38 @@ attackCooldown. Состояния: idle → patrol → chase → attack → ret
 - `engine/three/webglContextLoss.ts` — обработка потери WebGL контекста
 - `engine/combat/lazyCombatSystem.ts` — ленивая загрузка боевой системы
 - `shared/persistence/quotaCheck.ts` — проверка квоты localStorage
+
+---
+
+## v4.6.0 — Новые модули
+
+### Каскадные тени (`components/3d/CascadedShadowMaps.tsx`)
+
+2 дополнительных DirectionalLight (intensity=0, shadow-only) для средних (15-35м)
+и дальних (35-60м) дистанций. Gated на quality >= high, desktop only, outdoor only.
+Per-frame слежение за игроком через useFrameTick('misc').
+
+### Motion Blur (`components/3d/MotionBlurEffect.tsx`)
+
+Кастомный postprocessing Effect с GLSL шейдером радиального блюра.
+8 сэмплов, distance-weighted через smoothstep. Активируется через
+`setMotionBlurStrength()` из `engine/camera/motionBlurState.ts`.
+Gated на ultra (always) или high+ (during cutscene/dialogue).
+Плавный переход 0.4s easeInOutCubic.
+
+### Визуальная одежда (`components/3d/ClothingVisualOverlay.tsx`)
+
+Читает visualTag экипированной одежды из store, маппит на цвет/эмиссию.
+Рендерит полупрозрачные box-оверлеи на 6 зонах тела (head, body, legs,
+feet, hands, accessory). 20 палитр в постсоветском киберпанк стиле.
+
+### NPC переходы (`engine/npc/npcSceneTransition.ts`, `components/3d/NpcTransitionAnimator.tsx`)
+
+Система анимированного входа/выхода NPC. 4 новых EventBus события:
+`npc:exit_start`, `npc:entry_start`, `npc:despawn`, `npc:entry_complete`.
+NPC идёт к краю сцены перед исчезновением, появляется с края при входе.
+
+### UI крафта (`components/game/crafting/CraftingPanel.tsx`)
+
+Полноценная панель крафта: категории, поиск, детали рецепта,
+кнопка крафта с проверкой ингредиентов. Все тексты на русском.
