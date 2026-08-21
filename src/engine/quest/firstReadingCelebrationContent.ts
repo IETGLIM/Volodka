@@ -2,6 +2,7 @@ import { getPoemById } from '@/data/gameDataLoader';
 import { getQuoteByTrigger } from '@/data/matrixQuotes';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { getPoemPower } from '@/engine/PoemPowerSystem';
+import { devWarn } from '@/shared/utils/devLog';
 import {
   formatPoemExcerptText,
   getPoemExcerpt,
@@ -37,10 +38,10 @@ export function prepareFirstReadingCelebrationContent(): FirstReadingCelebration
   const questDef = QUEST_DEFINITIONS.find((d) => d.id === FIRST_READING_QUEST_ID) ?? null;
 
   if (!poem) {
-    if (import.meta.env.DEV) console.warn(`[FirstReadingCelebration] Poem "${FIRST_READING_POEM_ID}" not found`);
+    if (import.meta.env.DEV) devWarn(`[FirstReadingCelebration] Poem "${FIRST_READING_POEM_ID}" not found`);
   }
   if (!questDef) {
-    if (import.meta.env.DEV) console.warn(`[FirstReadingCelebration] Quest "${FIRST_READING_QUEST_ID}" not found`);
+    if (import.meta.env.DEV) devWarn(`[FirstReadingCelebration] Quest "${FIRST_READING_QUEST_ID}" not found`);
   }
 
   const excerpt = getPoemExcerpt(poem?.lines ?? [], POEM_EXCERPT_LINE_COUNT);

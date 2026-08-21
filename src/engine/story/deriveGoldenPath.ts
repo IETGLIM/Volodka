@@ -13,6 +13,7 @@ import type { GuidedStoryObjectiveType } from '@/engine/guidedStory/guidedStoryT
 import { isStoryGraphEdge } from '@/engine/story/storyGraphTraversal';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 
+import { devWarn } from '@/shared/utils/devLog';
 export interface DeriveGoldenPathOptions {
   /** Spine start node (default: `start`). */
   startNodeId?: string;
@@ -90,7 +91,7 @@ function warnAmbiguousGoldenPathNodes(nodes: readonly AmbiguousGoldenPathNode[])
     if (loggedAmbiguousGoldenPath.has(nodeId)) continue;
     loggedAmbiguousGoldenPath.add(nodeId);
     const targetList = targets.map((target) => `"${target}"`).join(', ');
-    console.warn(
+    devWarn(
       `[deriveGoldenPath] story node "${nodeId}" has ${targets.length} choices marked goldenPath (→ ${targetList}) — spine cannot pick automatically; fix content or rely on fallback spine`,
     );
   }

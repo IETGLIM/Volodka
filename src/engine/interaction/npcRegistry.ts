@@ -5,6 +5,7 @@ import type { NpcBehaviorState } from '@/engine/npc/npcStateMachine';
 import { isValidNpcBehaviorTransition } from '@/engine/npc/npcStateMachine';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
 
+import { devWarn } from '@/shared/utils/devLog';
 /**
  * Global registry mapping npcId → { group, sceneId }.
  * This allows the interaction system to look up any NPC's world-space
@@ -78,7 +79,7 @@ export function setNpcBehaviorState(npcId: string, next: NpcBehaviorState): bool
   if (current === next) return false;
   if (!isValidNpcBehaviorTransition(current, next)) {
     if (import.meta.env.DEV) {
-      console.warn(
+      devWarn(
         `[npcRegistry] Invalid NPC behavior transition for "${npcId}": ${current} → ${next}`,
       );
     }

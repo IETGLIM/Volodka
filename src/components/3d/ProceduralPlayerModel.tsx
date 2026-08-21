@@ -27,6 +27,7 @@ import {
   type ProceduralPlayerModelProps,
 } from './useProceduralPlayerAnimation';
 import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
+import { ClothingVisualOverlay } from './ClothingVisualOverlay';
 
 export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
   modelScale,
@@ -463,6 +464,8 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
         </mesh>
       </group>
 
+      {/* Визуальный оверлей экипировки */}
+      <ClothingVisualOverlay />
     </group>
   );
 });

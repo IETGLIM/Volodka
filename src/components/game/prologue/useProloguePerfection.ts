@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { PROLOGUE_PERFECTION, type ProloguePhase } from './prologuePerfectionConstants';
 
+import { devWarn } from '@/shared/utils/devLog';
 interface UseProloguePerfectionReturn {
   phase: ProloguePhase;
   progress: number;
@@ -50,7 +51,7 @@ export function useProloguePerfection(onComplete: () => void): UseProloguePerfec
           setIsPreloading(false);
         }
       } catch (e) {
-        console.warn('[ProloguePerfection] preload failed, will fallback', e);
+        devWarn('[ProloguePerfection] preload failed, will fallback', e);
         if (!cancelled) {
           setProgress(1);
           setIsPreloading(false);

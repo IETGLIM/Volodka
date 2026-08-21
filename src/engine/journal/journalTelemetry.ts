@@ -1,3 +1,4 @@
+import { devWarn, devInfo } from '@/shared/utils/devLog';
 export type JournalTelemetryAction =
   | 'open'
   | 'tab_change'
@@ -26,12 +27,12 @@ function getReporter(): JournalReporter | undefined {
 export const journalTelemetry = {
   track(event: JournalTelemetryEvent): void {
     if (import.meta.env.DEV) {
-      console.info('[JournalTelemetry]', event);
+      devInfo('[JournalTelemetry]', event);
     }
     try {
       getReporter()?.(event);
     } catch (error) {
-      console.warn('[JournalTelemetry] Reporter failed:', error);
+      devWarn('[JournalTelemetry] Reporter failed:', error);
     }
   },
 };

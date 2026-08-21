@@ -26,6 +26,7 @@ import { clearAutoCloseTimers } from '@/shared/explorationAutoCloseTimers';
 import { resolveSaveFromStorage, writeSaveToLocalStorage } from './saveStorage';
 import { isInteractionLockedFromStore, resetSceneLoadedGateFromStore } from '../storeEngineHost';
 
+import { devWarn } from '@/shared/utils/devLog';
 export interface SaveSliceState {
   // lastSaveTimestamp lives in UISlice, not here — but save actions need it
 }
@@ -85,15 +86,15 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
     //   active interaction — confusing but not game-breaking.
     const state = getCombinedGameState();
     if (state.activeCutsceneId) {
-      console.warn('[saveGame] Skipping save during cutscene');
+      devWarn('[saveGame] Skipping save during cutscene');
       return;
     }
     if (state.combatActive) {
-      console.warn('[saveGame] Skipping save during combat');
+      devWarn('[saveGame] Skipping save during combat');
       return;
     }
     if (isInteractionLockedFromStore()) {
-      console.warn('[saveGame] Skipping save during NPC interaction');
+      devWarn('[saveGame] Skipping save during NPC interaction');
       return;
     }
     const source = options?.source ?? 'manual';
@@ -158,7 +159,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
           return;
 
         case 'recovered-from-backup':
-          console.warn(
+          devWarn(
             '[loadGame] Primary save corrupt, restored from backup:',
             resolved.primaryError,
           );

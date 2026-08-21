@@ -1,5 +1,6 @@
 import type { SceneId } from '@/shared/types/game';
 
+import { devWarn } from '@/shared/utils/devLog';
 export type SceneTransitionRequest = (
   targetScene: SceneId,
   spawnAt?: [number, number, number],
@@ -27,7 +28,7 @@ export function requestSceneTransitionFromBridge(
     // Queue the transition instead of silently dropping — it will fire once bound
     pendingTransition = { targetScene, spawnAt };
     if (import.meta.env?.DEV) {
-      console.warn('[SceneTransitionBridge] request before bind — queued:', targetScene);
+      devWarn('[SceneTransitionBridge] request before bind — queued:', targetScene);
     }
     return;
   }

@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 /**
  * Generic object pool — reuse transient combat VFX / projectiles instead of
  * allocating new Three.js objects every action.
@@ -45,7 +46,7 @@ export class ObjectPool<T> {
       if (this.disposeOverflow) {
         this.disposeOverflow(item);
       } else {
-        console.warn(
+        devWarn(
           '[ObjectPool] Pool at capacity and disposeOverflow is unset — item was dropped and may leak GPU resources.',
         );
       }

@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 export const CHUNK_RELOAD_SESSION_KEY = 'volodka-chunk-reload-attempt';
 
 /**
@@ -70,7 +71,7 @@ export function recoverFromStaleChunk(err: unknown): never {
     if (!sessionStorage.getItem(CHUNK_RELOAD_SESSION_KEY)) {
       isReloading = true;
       sessionStorage.setItem(CHUNK_RELOAD_SESSION_KEY, '1');
-      console.warn('[chunkLoadRecovery] Stale chunk detected, reloading…', err);
+      devWarn('[chunkLoadRecovery] Stale chunk detected, reloading…', err);
       window.location.reload();
       // Return a never-resolving promise to stop execution while the page
       // reloads. Without this, the calling code (retryImport) would catch

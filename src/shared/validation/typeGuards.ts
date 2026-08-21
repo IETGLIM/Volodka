@@ -3,6 +3,7 @@
 import type { LegacyGamePhase, TrainablePlayerSkill } from '@/shared/types/game';
 import type { GamePhase } from '@/shared/gamePhase';
 
+import { devWarn } from '@/shared/utils/devLog';
 const LEGACY_GAME_PHASES: readonly LegacyGamePhase[] = [
   'menu',
   'intro',
@@ -42,6 +43,6 @@ export function isTrainablePlayerSkill(v: unknown): v is TrainablePlayerSkill {
 /** Log a dev warning when a guard rejects a value (never silent in dev). */
 export function warnInvalidValue(context: string, value: unknown): void {
   if (import.meta.env.DEV) {
-    console.warn(`[TypeGuard] Invalid ${context}: ${JSON.stringify(value)}`);
+    devWarn(`[TypeGuard] Invalid ${context}: ${JSON.stringify(value)}`);
   }
 }

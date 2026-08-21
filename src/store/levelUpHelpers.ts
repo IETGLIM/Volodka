@@ -7,6 +7,7 @@ import { DEFAULT_SKILLS } from '@/data/constants';
 import { applyXpGain } from './shared';
 import { scheduleLevelUpEvent } from './storeEffects';
 
+import { devWarn } from '@/shared/utils/devLog';
 export interface LevelUpPlayerSnapshot {
   prevSkills: PlayerSkills;
   prevKarma: number;
@@ -42,7 +43,7 @@ export function applyXpToProgression(
   }
 
   if (!playerSnapshot) {
-    console.warn('[levelUp] applyXpToProgression without player snapshot — summary diffs may be incomplete');
+    devWarn('[levelUp] applyXpToProgression without player snapshot — summary diffs may be incomplete');
   }
 
   return {

@@ -48,6 +48,7 @@ import {
   validateAmbientSoundDefs,
   validateSceneAmbienceCoverage } from '@/data/ambientSounds';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
+import { devWarn } from '@/shared/utils/devLog';
 import {
   QUEST_START_ITEMS,
   QUEST_REQUIRED_ITEMS,
@@ -891,7 +892,7 @@ export function validateContentPipeline(): ValidationReport {
 export function logValidationReport(report: ValidationReport, prefix = '[ContentPipeline]'): boolean {
   for (const i of report.issues) {
     const tag = i.severity === 'error' ? 'ERROR' : 'WARN';
-    console.warn(`${prefix} [${tag}] ${i.category} ${i.path}: ${i.message}`);
+    devWarn(`${prefix} [${tag}] ${i.category} ${i.path}: ${i.message}`);
   }
   return report.errorCount === 0;
 }

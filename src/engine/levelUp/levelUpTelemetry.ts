@@ -1,3 +1,4 @@
+import { devWarn, devInfo } from '@/shared/utils/devLog';
 export type LevelUpTelemetryEvent = {
   action: 'level_up_shown' | 'level_up_dismissed';
   newLevel: number;
@@ -20,12 +21,12 @@ function getReporter(): LevelUpReporter | undefined {
 export const levelUpTelemetry = {
   track(event: LevelUpTelemetryEvent): void {
     if (import.meta.env.DEV) {
-      console.info('[LevelUpTelemetry]', event);
+      devInfo('[LevelUpTelemetry]', event);
     }
     try {
       getReporter()?.(event);
     } catch (error) {
-      console.warn('[LevelUpTelemetry] Reporter failed:', error);
+      devWarn('[LevelUpTelemetry] Reporter failed:', error);
     }
   },
 };

@@ -22,6 +22,7 @@ import {
   isDistrictScene } from './worldRegistry';
 import { getSpawnDirector } from './SpawnDirector';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { devWarn } from '@/shared/utils/devLog';
 import {
   isWorldComputeWorkerAvailable,
   requestWorldChunkDiff,
@@ -135,7 +136,7 @@ export class WorldStreamManager {
         const diff = this.applyWorkerChunkDiff(response);
         return this.commitChunkDiff(diff, world.x, world.z);
       } catch (err) {
-        console.warn('[WorldStreamManager] worker chunk diff failed, falling back to main thread', err);
+        devWarn('[WorldStreamManager] worker chunk diff failed, falling back to main thread', err);
       }
     }
 

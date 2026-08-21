@@ -1,3 +1,4 @@
+import { devLog } from '@/shared/utils/devLog';
 let physicsPreloadPromise: Promise<unknown> | null = null;
 
 type WasmMetrics = {
@@ -89,7 +90,7 @@ export function preloadPhysicsChunk(): Promise<void> {
       };
 
       if (process.env.NODE_ENV !== 'production') {
-        console.log(`[physics] WASM ready in ${totalMs.toFixed(0)}ms (js:${jsChunkMs.toFixed(0)}ms wasm:${wasmInitMs.toFixed(0)}ms) mode:${mode}`);
+        devLog(`[physics] WASM ready in ${totalMs.toFixed(0)}ms (js:${jsChunkMs.toFixed(0)}ms wasm:${wasmInitMs.toFixed(0)}ms) mode:${mode}`);
       }
 
       // Expose for RuntimeBudgetMonitor

@@ -1,5 +1,6 @@
 import type { NonNullPanelType } from './panelStackReducer';
 
+import { devWarn } from '@/shared/utils/devLog';
 type PanelCleanupFn = () => void;
 
 const cleanups = new Map<NonNullPanelType, Set<PanelCleanupFn>>();
@@ -26,7 +27,7 @@ export function runPanelCleanup(panelId: NonNullPanelType): void {
     try {
       fn();
     } catch (err) {
-      console.warn(`[panelLifecycle] cleanup failed for ${panelId}:`, err);
+      devWarn(`[panelLifecycle] cleanup failed for ${panelId}:`, err);
     }
   }
   cleanups.delete(panelId);
@@ -55,7 +56,7 @@ export function runOverlayCleanup(scope: string): void {
     try {
       fn();
     } catch (err) {
-      console.warn(`[panelLifecycle] overlay cleanup failed for ${scope}:`, err);
+      devWarn(`[panelLifecycle] overlay cleanup failed for ${scope}:`, err);
     }
   }
   overlayCleanups.delete(scope);

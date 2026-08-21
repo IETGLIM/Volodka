@@ -21,6 +21,7 @@ import { disposeAllModuleMaterials } from '@/engine/three/moduleMaterialRegistry
 import { disposeProceduralLutCache } from '@/engine/graphics/proceduralLutTextures';
 import { resetGpuResourceBudgetTracker } from '@/engine/performance/GpuResourceBudgetTracker';
 
+import { devWarn } from '@/shared/utils/devLog';
 export type GpuDisposeReason = 'engine' | 'hmr';
 
 const gpuHmrHandlers = new Set<() => void>();
@@ -48,7 +49,7 @@ function runRegisteredGpuHandlers(reason: GpuDisposeReason): void {
     try {
       handler();
     } catch (err) {
-      console.warn(`[gpuResourceLifecycle] handler failed (${reason}):`, err);
+      devWarn(`[gpuResourceLifecycle] handler failed (${reason}):`, err);
     }
   }
 }
@@ -59,7 +60,7 @@ export function disposeAllEngineGpuResources(reason: GpuDisposeReason = 'engine'
     try {
       forceDisposeOrphanedWebGLResources(`gpu-lifecycle:${reason}`);
     } catch (err) {
-      console.warn('[gpuResourceLifecycle] forceDisposeOrphanedWebGLResources failed:', err);
+      devWarn('[gpuResourceLifecycle] forceDisposeOrphanedWebGLResources failed:', err);
     }
   }
 

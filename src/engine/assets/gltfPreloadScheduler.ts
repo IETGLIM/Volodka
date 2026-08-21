@@ -5,6 +5,7 @@
 
 import { eventBus } from '@/engine/EventBus';
 
+import { devWarn } from '@/shared/utils/devLog';
 export enum GltfPreloadPriority {
   Critical = 0,
   High = 1,
@@ -116,7 +117,7 @@ function drainBatch(gen: number): void {
     try {
       entry.run();
     } catch (err) {
-      console.warn('[gltfPreloadScheduler] preload failed:', url, err);
+      devWarn('[gltfPreloadScheduler] preload failed:', url, err);
     }
     processed += 1;
   }

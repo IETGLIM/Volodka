@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 /* ─── Volodka RPG – Dynamic AI NPC Chat via FreeRouter API ─── */
 /* Client-side utility that generates dynamic Russian NPC responses
  * using the FreeRouter chat completions endpoint.
@@ -119,7 +120,7 @@ export async function generateNpcResponse(params: FreeRouterChatParams): Promise
     });
 
     if (!response.ok) {
-      console.warn(`[freeRouterAiChat] API returned ${response.status}`);
+      devWarn(`[freeRouterAiChat] API returned ${response.status}`);
       return getFallbackResponse();
     }
 
@@ -127,7 +128,7 @@ export async function generateNpcResponse(params: FreeRouterChatParams): Promise
     const content: string | undefined = data?.choices?.[0]?.message?.content;
 
     if (!content || typeof content !== 'string') {
-      console.warn('[freeRouterAiChat] Unexpected API response structure');
+      devWarn('[freeRouterAiChat] Unexpected API response structure');
       return getFallbackResponse();
     }
 
@@ -140,7 +141,7 @@ export async function generateNpcResponse(params: FreeRouterChatParams): Promise
 
     return final;
   } catch (err) {
-    console.warn('[freeRouterAiChat] API call failed:', err);
+    devWarn('[freeRouterAiChat] API call failed:', err);
     return getFallbackResponse();
   }
 }

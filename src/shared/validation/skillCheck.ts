@@ -3,6 +3,7 @@
 import { z } from 'zod';
 import type { MinSkillCheck, PlayerSkills, TrainablePlayerSkill } from '@/shared/types/game';
 
+import { devWarn } from '@/shared/utils/devLog';
 export const SKILL_CHECK_DIFFICULTY_MIN = 1;
 export const SKILL_CHECK_DIFFICULTY_MAX = 20;
 
@@ -36,7 +37,7 @@ export function parseSkillCheckDifficulty(
   if (result.success) return result.data;
 
   if (import.meta.env.DEV) {
-    console.warn(
+    devWarn(
       `[SkillCheck] Invalid difficulty ${JSON.stringify(raw)} in ${context} (expected integer ${SKILL_CHECK_DIFFICULTY_MIN}–${SKILL_CHECK_DIFFICULTY_MAX})`,
       result.error.issues,
     );
@@ -52,7 +53,7 @@ export function validateMinSkillCheck(
   if (result.success) return result.data as MinSkillCheck;
 
   if (import.meta.env.DEV) {
-    console.warn(`[SkillCheck] Invalid minSkillCheck in ${context}`, result.error.issues);
+    devWarn(`[SkillCheck] Invalid minSkillCheck in ${context}`, result.error.issues);
   }
   return null;
 }

@@ -1,3 +1,4 @@
+import { devWarn, devInfo } from '@/shared/utils/devLog';
 export type KarmaPoemTelemetryAction = 'open' | 'tab_change' | 'close';
 
 export type KarmaPoemTelemetryEvent = {
@@ -18,12 +19,12 @@ function getReporter(): KarmaPoemReporter | undefined {
 export const karmaPoemTelemetry = {
   track(event: KarmaPoemTelemetryEvent): void {
     if (import.meta.env.DEV) {
-      console.info('[KarmaPoemTelemetry]', event);
+      devInfo('[KarmaPoemTelemetry]', event);
     }
     try {
       getReporter()?.(event);
     } catch (error) {
-      console.warn('[KarmaPoemTelemetry] Reporter failed:', error);
+      devWarn('[KarmaPoemTelemetry] Reporter failed:', error);
     }
   },
 };

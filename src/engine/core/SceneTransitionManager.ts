@@ -21,6 +21,7 @@ import {
 } from './combatStartGate';
 import { runGlobalSceneUnload } from './GlobalCleanupService';
 import { ensureSceneLoadedBridge, scheduleSceneLoaded } from './sceneLoadedGate';
+import { devWarn } from '@/shared/utils/devLog';
 import {
   isSyncSceneTransitionInProgress,
   setAsyncSceneTransitionInProgress,
@@ -65,7 +66,7 @@ export function unbindDeferredCombatStartListener(): void {
 export function bindCombatStartGateTimeout(): void {
   registerCombatStartGateTimeoutHandler(() => {
     if (import.meta.env.DEV) {
-      console.warn(
+      devWarn(
         '[SceneTransitionManager] combatStartGate timeout — forcing deferred combat flush',
         COMBAT_START_GATE_TIMEOUT_MS,
       );
@@ -92,7 +93,7 @@ export interface SceneTransitionPayload {
 export function performSceneTransition(payload: SceneTransitionPayload): void {
   if (isSyncSceneTransitionInProgress()) {
     if (import.meta.env.DEV) {
-      console.warn(
+      devWarn(
         '[SceneTransitionManager] Dropped re-entrant transition to',
         payload.targetScene,
       );

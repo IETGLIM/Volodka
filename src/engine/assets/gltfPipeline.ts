@@ -25,6 +25,7 @@ import type { WebGLRenderer } from 'three';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
 
+import { devLog, devWarn } from '@/shared/utils/devLog';
 /** Copy from node_modules/three/examples/jsm/libs/basis/ → public/basis/ */
 const DRACO_DECODER_PATH = '/draco/gltf/';
 const BASIS_TRANSCODER_PATH = '/basis/';
@@ -88,7 +89,7 @@ export function configureGltfPipeline(renderer: WebGLRenderer): void {
   }
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[gltfPipeline] Draco WASM configured at ${DRACO_DECODER_PATH} in ${pipelineMetrics.dracoInitMs.toFixed(0)}ms`);
+    devLog(`[gltfPipeline] Draco WASM configured at ${DRACO_DECODER_PATH} in ${pipelineMetrics.dracoInitMs.toFixed(0)}ms`);
   }
 
   // Expose metrics for RuntimeBudgetMonitor
@@ -126,12 +127,12 @@ async function ensureKtx2Loader(): Promise<unknown | null> {
     }
 
     if (process.env.NODE_ENV !== 'production') {
-      console.log(`[gltfPipeline] KTX2/Basis WASM transcoder ready at ${BASIS_TRANSCODER_PATH} in ${pipelineMetrics.ktx2InitMs.toFixed(0)}ms`);
+      devLog(`[gltfPipeline] KTX2/Basis WASM transcoder ready at ${BASIS_TRANSCODER_PATH} in ${pipelineMetrics.ktx2InitMs.toFixed(0)}ms`);
     }
 
     return loader;
   } catch (err) {
-    console.warn('⚠ KTX2Loader dynamic import failed — KTX2 textures will not load:', err);
+    devWarn('⚠ KTX2Loader dynamic import failed — KTX2 textures will not load:', err);
     mark('gltf:ktx2-error');
     return null;
   }

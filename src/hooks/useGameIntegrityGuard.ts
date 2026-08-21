@@ -4,6 +4,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { readGamePhase } from '@/shared/gamePhase';
 import { getCombatState } from '@/engine/CombatSystem';
 
+import { devWarn } from '@/shared/utils/devLog';
 /**
  * Dev-only consistency sentinel — logs drift between store slices every 30s.
  * No-op in production builds.
@@ -45,7 +46,7 @@ export function useGameIntegrityGuard(enabled: boolean): void {
       }
 
       if (issues.length > 0) {
-        console.warn('[GameIntegrityGuard]', issues.join('; '));
+        devWarn('[GameIntegrityGuard]', issues.join('; '));
       }
     }, 30_000);
 

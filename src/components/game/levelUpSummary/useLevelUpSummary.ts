@@ -6,6 +6,7 @@ import { levelUpSummaryTelemetry } from '@/engine/levelUp/levelUpSummaryTelemetr
 import { useLevelUpSkipInput } from '@/components/game/levelUp/useLevelUpEffect';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
+import { devWarn } from '@/shared/utils/devLog';
 export function useLevelUpSummary() {
   const reducedMotion = useEffectiveReducedMotion();
   const [summary, setSummary] = useState<LevelUpSummaryData | null>(null);
@@ -25,7 +26,7 @@ export function useLevelUpSummary() {
     const id = `levelup-summary-${Date.now()}-${sequenceRef.current}-${payload.newLevel}`;
     const data = toLevelUpSummaryData(payload, id);
     if (!data) {
-      console.warn('[LevelUpSummary] Incomplete level-up payload — snapshot fields missing');
+      devWarn('[LevelUpSummary] Incomplete level-up payload — snapshot fields missing');
       return;
     }
     setSummary(data);

@@ -5,6 +5,7 @@
 
 import type { SceneId } from '@/shared/types/game';
 
+import { devWarn } from '@/shared/utils/devLog';
 export type GlobalCleanupReason = 'scene-unload' | 'combat-end' | 'unmount';
 
 export interface GlobalCleanupContext {
@@ -52,7 +53,7 @@ export function runGlobalCleanup(ctx: GlobalCleanupContext): void {
     try {
       handler(ctx);
     } catch (err) {
-      console.warn('[GlobalCleanupService] handler failed:', err);
+      devWarn('[GlobalCleanupService] handler failed:', err);
     }
   }
 }

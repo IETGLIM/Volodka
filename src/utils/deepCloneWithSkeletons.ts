@@ -15,6 +15,7 @@
 
 import { Bone, Group, Mesh, Object3D, Skeleton, SkinnedMesh } from 'three';
 
+import { devWarn } from '@/shared/utils/devLog';
 export interface DeepCloneOptions {
   /** When true, dispose GPU resources on the source after cloning (default false). */
   disposeSource?: boolean;
@@ -117,7 +118,7 @@ export function deepCloneWithSkeletons(
       // not match amount of bones"). Skip this mesh's skeleton fix rather
       // than crashing — the clone will still render, just without proper
       // skinning on this particular mesh.
-      console.warn(
+      devWarn(
         `[deepCloneWithSkeletons] Failed to clone skeleton for "${srcMesh.name}", skipping:`,
         err,
       );

@@ -8,6 +8,7 @@ import type { EncounterSource } from '@/engine/combat/encounterTypes';
 import type { EnemyType, SceneId } from '@/shared/types/game';
 import { isSceneTransitionInProgress } from './sceneTransitionGuard';
 
+import { devWarn } from '@/shared/utils/devLog';
 export interface DeferredCombatStartOptions {
   encounterName?: string;
   encounterSource?: EncounterSource;
@@ -72,7 +73,7 @@ export function deferCombatStartIfTransitionBusy(
 
   if (pending) {
     if (import.meta.env.DEV) {
-      console.warn(
+      devWarn(
         '[CombatStartGate] Ignored duplicate deferral — transition already has pending combat',
         { existing: pending.enemyType, incoming: enemyType },
       );
@@ -91,7 +92,7 @@ export function deferCombatStartIfTransitionBusy(
   }
 
   if (import.meta.env.DEV) {
-    console.warn(
+    devWarn(
       '[CombatStartGate] Deferred combat until scene transition completes',
       { enemyType, sceneId: pending.sceneId },
     );
@@ -109,7 +110,7 @@ export function flushDeferredCombatStart(): void {
   const currentSceneId = getGameSnapshot().exploration.currentSceneId;
   if (currentSceneId !== req.sceneId) {
     if (import.meta.env.DEV) {
-      console.warn(
+      devWarn(
         '[CombatStartGate] Dropped deferred combat — scene changed',
         req.sceneId,
         '→',

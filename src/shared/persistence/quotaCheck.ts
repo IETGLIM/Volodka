@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 /**
  * localStorage quota utilities.
  *
@@ -86,7 +87,7 @@ export function warnIfStorageNearLimit(): boolean {
     import('@/engine/ToastManager').then(({ toastManager }) => {
       toastManager.addToast('energy', message);
     }).catch(() => {
-      console.warn(`[quotaCheck] ${message}`);
+      devWarn(`[quotaCheck] ${message}`);
     });
 
     return true;

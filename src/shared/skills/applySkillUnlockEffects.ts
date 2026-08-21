@@ -3,6 +3,7 @@ import { SKILL_EFFECT_MAP } from '@/data/skillTree';
 import { getPassiveSkillFlagsToSet } from '@/shared/skills/passiveSkillModifiers';
 import { warnInvalidValue } from '@/shared/validation/typeGuards';
 
+import { devWarn } from '@/shared/utils/devLog';
 export interface SkillUnlockStatDelta {
   skill: TrainablePlayerSkill;
   amount: number;
@@ -46,7 +47,7 @@ export function resolveSkillUnlockEffects(skillId: string): SkillUnlockApplyResu
 export function warnUnmatchedSkillEffectParts(skillId: string, parts: string[]): void {
   if (parts.length === 0) return;
   if (import.meta.env.DEV) {
-    console.warn(
+    devWarn(
       `[applySkillEffect] Unmatched effect parts for "${skillId}": ${parts.join('; ')}`,
     );
   } else {

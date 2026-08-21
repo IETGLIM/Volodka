@@ -67,6 +67,7 @@ import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers'
 import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { applyExplorationPoemCombatBridge } from '@/engine/poemEffects/poemTTLRuntime';
 import { ENEMY_TEMPLATES, resolveEnemyType } from './combat/enemies';
+import { devWarn } from '@/shared/utils/devLog';
 import {
   POEM_COMBAT_ABILITIES,
   consumeSideEffects,
@@ -198,7 +199,7 @@ class CombatManager {
   pushReturnNode(nodeId: string): void {
     if (this.returnStack.length >= MAX_RETURN_STACK_DEPTH) {
       const dropped = this.returnStack.shift();
-      console.warn(
+      devWarn(
         `[CombatSystem] returnStack capped at ${MAX_RETURN_STACK_DEPTH}; dropped oldest entry "${dropped}"`,
       );
     }
@@ -213,7 +214,7 @@ class CombatManager {
   discardOrphanedReturnNode(): void {
     const orphaned = this.popReturnNode();
     if (orphaned) {
-      console.warn(`[CombatSystem] Discarded orphaned return node "${orphaned}" from interrupted combat`);
+      devWarn(`[CombatSystem] Discarded orphaned return node "${orphaned}" from interrupted combat`);
     }
   }
 

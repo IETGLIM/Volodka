@@ -16,6 +16,7 @@ import { resetGpuResourceBudgetTracker } from '@/engine/performance/GpuResourceB
 import { disposeAllModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
 import { disposeAllModuleMaterials } from '@/engine/three/moduleMaterialRegistry';
 
+import { devWarn, devInfo } from '@/shared/utils/devLog';
 const CONTEXT_LOST_MESSAGE = 'Потеряно соединение с видеокартой. Ожидание восстановления...';
 
 let overlayElement: HTMLDivElement | null = null;
@@ -61,7 +62,7 @@ function handleContextLost(event: Event): void {
   if (gameLoopPaused) return;
   gameLoopPaused = true;
 
-  console.warn('[webglContextLoss] WebGL context lost — pausing game loop');
+  devWarn('[webglContextLoss] WebGL context lost — pausing game loop');
 
   markCanvasFirstFrameSessionLost(event.currentTarget as HTMLCanvasElement);
   eventBus.emit('canvas:context-lost', {});
@@ -72,7 +73,7 @@ function handleContextRestored(_event: Event): void {
   if (!gameLoopPaused) return;
   gameLoopPaused = false;
 
-  console.info('[webglContextLoss] WebGL context restored — reinitializing resources');
+  devInfo('[webglContextLoss] WebGL context restored — reinitializing resources');
 
   // Reinitialize GPU budget tracker baseline (resource counts are stale after context loss)
   resetGpuResourceBudgetTracker();
@@ -86,7 +87,7 @@ function handleContextRestored(_event: Event): void {
     disposeAllModuleGeometries();
     disposeAllModuleMaterials();
   } catch (err) {
-    console.warn('[webglContextLoss] error reinitializing module GPU resources:', err);
+    devWarn('[webglContextLoss] error reinitializing module GPU resources:', err);
   }
 
   eventBus.emit('canvas:context-restored', {});

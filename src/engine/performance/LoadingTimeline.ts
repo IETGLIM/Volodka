@@ -4,6 +4,7 @@
 
 import { settleGpuResourceBaseline } from '@/engine/performance/GpuResourceBudgetTracker';
 
+import { devInfo } from '@/shared/utils/devLog';
 export const LOADING_MARKS = {
   appStart: 'volodka:app-start',
   orchestratorMount: 'volodka:orchestrator-mount',
@@ -95,7 +96,7 @@ function tryCompleteFirstScenePlayable(): void {
 
   if (import.meta.env.DEV) {
     const snap = getLoadingTimelineSnapshot();
-    console.info(
+    devInfo(
       `[perf] First scene playable: ${snap.firstScenePlayableMs?.toFixed(0) ?? '?'} ms`,
     );
   }

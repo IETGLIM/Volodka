@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 /**
  * Generation-guarded session for controller classes and orchestrator hooks.
  * Async callbacks capture generation at schedule time and no-op when stale/disposed.
@@ -36,7 +37,7 @@ export class ControllerSession {
       try {
         cb();
       } catch (err) {
-        console.warn('[ControllerSession] Dispose callback failed:', err);
+        devWarn('[ControllerSession] Dispose callback failed:', err);
       }
     }
     this.disposeCallbacks = [];

@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 /**
  * Canonical NPC ids are short registry keys in ALL_NPC_DEFINITIONS (e.g. `kate`, `maria`).
  * Legacy `npc_*` asset/source ids and old save keys map here — do not use them in new content.
@@ -47,7 +48,7 @@ export function warnUnknownNpcId(npcId: string, isKnownCanonical: boolean): void
   if (npcId in NPC_ID_ALIASES) return;
   if (loggedUnknownNpcIds.has(npcId)) return;
   loggedUnknownNpcIds.add(npcId);
-  console.warn(`[NPC] unknown id "${npcId}" — not in registry or NPC_ID_ALIASES`);
+  devWarn(`[NPC] unknown id "${npcId}" — not in registry or NPC_ID_ALIASES`);
 }
 
 /** Test hook — clear deduped dev warnings between cases. */

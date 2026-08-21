@@ -18,6 +18,7 @@ import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useThree } from '@react-three/fiber';
 import { computeTimeOfDayLighting } from '@/engine/graphics/TimeOfDayLighting';
+import { CascadedShadowMaps } from './CascadedShadowMaps';
 import { Color, DirectionalLight, HemisphereLight, PointLight } from 'three';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
@@ -213,6 +214,9 @@ export function ExplorationLighting() {
         shadow-bias={SHADOW_BIAS}
         shadow-normalBias={SHADOW_NORMAL_BIAS}
       />
+
+      {/* Cascaded shadow maps — mid/far range shadow detail for outdoor scenes */}
+      {!isIndoor && <CascadedShadowMaps />}
 
       {/* Hemisphere light for ambient fill — reduced for indoor noir */}
       <hemisphereLight

@@ -10,6 +10,7 @@
  */
 
 import type { SceneId } from '@/shared/types/game';
+import { devWarn } from '@/shared/utils/devLog';
 import type {
   WorldCell,
   WorldCellId,
@@ -379,7 +380,7 @@ export const WORLD_LOCATIONS: Partial<Record<SceneId, WorldLocation>> = {
 /** Safe defaults when a SceneId is not yet registered in WORLD_LOCATIONS. */
 function createFallbackWorldLocation(sceneId: SceneId): WorldLocation {
   if (import.meta.env.DEV) {
-    console.warn(
+    devWarn(
       `[worldRegistry] Unknown scene "${sceneId}" — using fallback location (volodka_city:downtown)`,
     );
   }
@@ -468,7 +469,7 @@ for (const [sceneId, coord] of Object.entries(SCENE_CHUNK_COORD) as [SceneId, Wo
   if (SCENE_BY_CHUNK.has(key)) {
     if (import.meta.env.DEV && !CHUNK_COLLISION_WARNED.has(key)) {
       CHUNK_COLLISION_WARNED.add(key);
-      console.warn(
+      devWarn(
         `[worldRegistry] SCENE_CHUNK_COORD collision at (${key}): ` +
           `"${SCENE_BY_CHUNK.get(key)}" wins over "${sceneId}"`,
       );

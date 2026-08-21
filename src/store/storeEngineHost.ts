@@ -1,5 +1,6 @@
 import type { SceneId } from '@/shared/types/game';
 
+import { devWarn } from '@/shared/utils/devLog';
 type SpawnTuple = [number, number, number];
 
 /** Engine callbacks invoked from store slices — bound at bootstrap. */
@@ -26,7 +27,7 @@ export function requestSceneTransitionFromStore(
 ): void {
   if (!host) {
     if (import.meta.env?.DEV) {
-      console.warn('[StoreEngineHost] requestSceneTransition before bind — dropped:', targetScene);
+      devWarn('[StoreEngineHost] requestSceneTransition before bind — dropped:', targetScene);
     }
     return;
   }

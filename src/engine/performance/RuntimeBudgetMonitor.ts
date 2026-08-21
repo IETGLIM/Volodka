@@ -12,6 +12,7 @@ import {
 } from '@/config/performanceBudgets';
 import type { FrameProfilerSnapshot } from '@/engine/frame/FrameProfilerState';
 import { emitRuntimeBudgetViolations } from '@/engine/performance/runtimeBudgetEvents';
+import { devWarn } from '@/shared/utils/devLog';
 import {
   getGpuResourceBudgetSnapshot,
   notifyGpuResourceSceneChange,
@@ -287,7 +288,7 @@ export function publishRuntimeBudgetCheck(
   ) {
     lastEmitMs = now;
     for (const v of snapshot.violations.filter((x) => x.severity === 'fail')) {
-      console.warn(`[perf:budget] ${v.message}`);
+      devWarn(`[perf:budget] ${v.message}`);
     }
   }
 

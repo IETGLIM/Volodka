@@ -50,6 +50,7 @@ import {
 import { QUEST_BOARD_MAX_ACTIVE_MISSIONS } from '@/shared/quest/questBoardConstants';
 import { questCanRetry } from '@/shared/quest/questRetry';
 import { parseTrainablePlayerSkill } from '../skillHelpers';
+import { devWarn } from '@/shared/utils/devLog';
 import {
   batchAddCredits,
   batchAddKarma,
@@ -311,7 +312,7 @@ export const createWorldSlice: StateCreator<
 
   completeQuest: (questId) => {
     if (import.meta.env.DEV) {
-      console.warn(
+      devWarn(
         `[worldSlice] completeQuest("${questId}") skips reward batch — dispatch quest/complete instead`,
       );
     }

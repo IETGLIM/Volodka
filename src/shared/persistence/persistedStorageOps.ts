@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 export const SAVE_KEY = 'volodka_save';
 export const SAVE_BACKUP_KEY = `${SAVE_KEY}_backup`;
 export const SAVE_SLOT_COUNT = 3;
@@ -21,7 +22,7 @@ export function clearAllPersistedGameData(
       storage.removeItem(getSaveSlotKey(slot));
     }
   } catch (error) {
-    console.warn('[persistedStorageOps] clearAllPersistedGameData failed:', error);
+    devWarn('[persistedStorageOps] clearAllPersistedGameData failed:', error);
   }
 }
 
@@ -36,7 +37,7 @@ export function removePersistedKeys(
     try {
       storage.removeItem(key);
     } catch (error) {
-      console.warn(`[persistedStorageOps] Failed to remove "${key}":`, error);
+      devWarn(`[persistedStorageOps] Failed to remove "${key}":`, error);
     }
   }
 }

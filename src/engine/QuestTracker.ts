@@ -18,6 +18,7 @@ import {
   REAL_MS_PER_GAME_HOUR,
 } from '@/engine/quest/questTimeLimits';
 import { questCanRetry } from '@/shared/quest/questRetry';
+import { devWarn, devInfo } from '@/shared/utils/devLog';
 import {
   canBypassRetryLock,
   resolveQuestDependencyStatus,
@@ -556,14 +557,14 @@ export class QuestTracker {
   private onMinigameCompleted(gameType: string): void {
     if (!gameType || typeof gameType !== 'string') {
       if (import.meta.env.DEV) {
-        console.warn('[QuestTracker] minigame:complete received invalid gameType:', gameType);
+        devWarn('[QuestTracker] minigame:complete received invalid gameType:', gameType);
       }
       return;
     }
 
     if (!isKnownMinigameId(gameType)) {
       if (import.meta.env.DEV) {
-        console.warn(
+        devWarn(
           `[QuestTracker] Unknown minigame id "${gameType}" — no quest objectives will match. ` +
             'Check quest targets against src/shared/constants/minigames.ts.',
         );
@@ -667,7 +668,7 @@ export class QuestTracker {
 
       if (isQuestTimedOut(newElapsed, definition.timeLimitHours)) {
         if (import.meta.env.DEV) {
-          console.info(
+          devInfo(
             `[QuestTracker] Quest "${quest.questId}" expired after ${newElapsed.toFixed(2)}h (limit ${definition.timeLimitHours}h)`,
           );
         }

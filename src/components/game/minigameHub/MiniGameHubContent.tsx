@@ -20,6 +20,7 @@ import {
 import { toast } from '@/hooks/use-toast';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
+import { devWarn } from '@/shared/utils/devLog';
 type MiniGameHubContentProps = {
   onClose: () => void;
 };
@@ -39,7 +40,7 @@ export function MiniGameHubContent({ onClose }: MiniGameHubContentProps) {
       const result = requestMinigameLaunch(gameType);
       if (!result.ok) {
         if (import.meta.env.DEV) {
-          console.warn('[MiniGameHub] launch failed:', result.reason, gameType);
+          devWarn('[MiniGameHub] launch failed:', result.reason, gameType);
         }
         toast({
           title: MINIGAME_HUB_LABELS.unavailableTitle,

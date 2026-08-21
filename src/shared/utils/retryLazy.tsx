@@ -1,6 +1,7 @@
 import { lazy, type ComponentType, type LazyExoticComponent } from 'react';
 import { isChunkLoadError, recoverFromStaleChunk } from '@/shared/chunk/chunkLoadRecovery';
 
+import { devWarn } from '@/shared/utils/devLog';
 async function retryImport<T>(
   importFn: () => Promise<T>,
   chunkName: string,
@@ -22,7 +23,7 @@ async function retryImport<T>(
     }
     if (maxRetries <= 0) throw err;
     if (import.meta.env.DEV) {
-      console.warn(
+      devWarn(
         `[retryLazy] Import failed for ${chunkName}, retrying… (${maxRetries} left)`,
         err instanceof Error ? err.message : err,
       );

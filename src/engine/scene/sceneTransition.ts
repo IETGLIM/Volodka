@@ -12,7 +12,7 @@ import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineO
 import { eventBus } from '@/engine/EventBus';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { resetSceneTransitionGuard } from '@/engine/core/SceneTransitionManager';
-import { devWarn } from '@/shared/utils/devLog';
+import { devWarn } from '@/shared/utils/devLog';;
 import type { SceneId } from '@/shared/types/game';
 
 type SpawnTuple = [number, number, number];
@@ -122,7 +122,7 @@ export function forceReloadCurrentScene(spawnAt?: SpawnTuple): boolean {
     eventBus.emit('scene:transition', { targetScene: currentSceneId, spawnAt: spawn });
     return true;
   } catch (error) {
-    console.warn('[sceneTransition] forceReloadCurrentScene failed:', error);
+    devWarn('[sceneTransition] forceReloadCurrentScene failed:', error);
     return false;
   }
 }
@@ -139,7 +139,7 @@ export function restartCurrentSceneAtDefaultSpawn(): boolean {
     eventBus.emit('scene:transition', { targetScene: currentSceneId, spawnAt: spawn });
     return true;
   } catch (error) {
-    console.warn('[sceneTransition] restartCurrentSceneAtDefaultSpawn failed:', error);
+    devWarn('[sceneTransition] restartCurrentSceneAtDefaultSpawn failed:', error);
     return false;
   }
 }

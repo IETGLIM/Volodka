@@ -13,6 +13,7 @@ import type { GamePhase } from '@/shared/gamePhase';
 import type { NotificationType } from '@/shared/types/notifications';
 import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 
+import { devWarn } from '@/shared/utils/devLog';
 export interface ActiveTTLFlagSnapshot {
   key: string;
   poemId: string;
@@ -215,7 +216,7 @@ export function registerGameActionBridge(next: GameActionBridge): void {
 export function dispatchGameAction(action: GameAction): void {
   if (!bridge) {
     if (import.meta.env?.DEV) {
-      console.warn('[GameActionBridge] No bridge registered — action dropped:', action.type);
+      devWarn('[GameActionBridge] No bridge registered — action dropped:', action.type);
     }
     return;
   }

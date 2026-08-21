@@ -1,3 +1,4 @@
+import { devWarn } from '@/shared/utils/devLog';
 /**
  * Vite HMR helpers — tear down singletons / effect cleanups when a module is
  * invalidated. React Fast Refresh may skip useEffect unmount when only a hook
@@ -16,7 +17,7 @@ function ensureBeforeUpdateHook(): void {
       try {
         cleanup();
       } catch (err) {
-        console.warn('[hmrDispose] beforeUpdate cleanup failed:', err);
+        devWarn('[hmrDispose] beforeUpdate cleanup failed:', err);
       }
     }
   });

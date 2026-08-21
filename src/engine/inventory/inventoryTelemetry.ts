@@ -1,3 +1,4 @@
+import { devWarn, devInfo } from '@/shared/utils/devLog';
 export type InventoryTelemetryAction =
   | 'open'
   | 'use'
@@ -28,12 +29,12 @@ function getReporter(): InventoryReporter | undefined {
 export const inventoryTelemetry = {
   track(event: InventoryTelemetryEvent): void {
     if (import.meta.env.DEV) {
-      console.info('[InventoryTelemetry]', event);
+      devInfo('[InventoryTelemetry]', event);
     }
     try {
       getReporter()?.(event);
     } catch (error) {
-      console.warn('[InventoryTelemetry] Reporter failed:', error);
+      devWarn('[InventoryTelemetry] Reporter failed:', error);
     }
   },
 };

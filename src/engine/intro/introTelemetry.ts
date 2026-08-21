@@ -1,3 +1,4 @@
+import { devWarn, devInfo } from '@/shared/utils/devLog';
 export type IntroFinishReason = 'complete' | 'skip' | 'timeout' | 'missing_poem';
 
 export type IntroTelemetryEvent = {
@@ -35,13 +36,13 @@ export const introTelemetry = {
     };
 
     if (import.meta.env.DEV) {
-      console.info('[IntroTelemetry]', payload);
+      devInfo('[IntroTelemetry]', payload);
     }
 
     try {
       getReporter()?.(payload);
     } catch (error) {
-      console.warn('[IntroTelemetry] Reporter failed:', error);
+      devWarn('[IntroTelemetry] Reporter failed:', error);
     }
   },
 

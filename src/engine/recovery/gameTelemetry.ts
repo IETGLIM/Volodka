@@ -2,6 +2,7 @@
 
 import type { ErrorTelemetryPayload } from './errorRecoveryTypes';
 
+import { devWarn } from '@/shared/utils/devLog';
 export const gameTelemetry = {
   captureException(error: Error, payload: ErrorTelemetryPayload = {}): void {
     console.error('[GameTelemetry] captureException:', error, payload);
@@ -15,7 +16,7 @@ export const gameTelemetry = {
     try {
       globalReporter?.(error, payload);
     } catch (reportError) {
-      console.warn('[GameTelemetry] External reporter failed:', reportError);
+      devWarn('[GameTelemetry] External reporter failed:', reportError);
     }
   },
 };

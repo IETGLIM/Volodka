@@ -5,6 +5,7 @@
 
 import type { ApplicationEventMap, ApplicationEventName } from './applicationEventMap';
 
+import { devWarn } from '@/shared/utils/devLog';
 export type AppEventUnsubscribe = () => void;
 
 export interface AppEventBusBinding {
@@ -44,7 +45,7 @@ export function emitAppEvent<E extends ApplicationEventName>(
   if (!binding) {
     preBindQueue.push({ event, payload });
     if (import.meta.env?.DEV) {
-      console.warn('[AppEventBus] emit before bind — queued:', event);
+      devWarn('[AppEventBus] emit before bind — queued:', event);
     }
     return;
   }
@@ -57,7 +58,7 @@ export function onAppEvent<E extends ApplicationEventName>(
 ): AppEventUnsubscribe {
   if (!binding) {
     if (import.meta.env?.DEV) {
-      console.warn('[AppEventBus] on before bind — no-op:', event);
+      devWarn('[AppEventBus] on before bind — no-op:', event);
     }
     return () => undefined;
   }

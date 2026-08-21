@@ -7,6 +7,7 @@ import {
 } from '@/components/game/inventory/inventoryConstants';
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 
+import { devWarn } from '@/shared/utils/devLog';
 const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
   logic: '🧠 Логика',
   coding: '💻 Кодирование',
@@ -178,7 +179,7 @@ export function buildInventoryTooltipContent(
   const { item, def, isUnknown, rarity, displayName, displayDescription } = view;
 
   if (isUnknown && import.meta.env.DEV) {
-    console.warn('[InventoryTooltip] Missing item definition:', item.id);
+    devWarn('[InventoryTooltip] Missing item definition:', item.id);
   }
 
   const categoryKey = def?.category ?? 'misc';

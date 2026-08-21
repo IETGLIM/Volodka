@@ -17,6 +17,7 @@ import { ProceduralPlayerModelLite } from './ProceduralPlayerModelLite';
 import { ProceduralAviatorGlasses } from './sceneVisuals/volodkaRoom/AviatorGlasses';
 import { eventBus } from '@/engine/EventBus';
 
+import { devLog } from '@/shared/utils/devLog';
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 const PLAYER_MODEL_URL = getPlayerVolodkaModelUrl();
 /** True when the Volodka hero GLB is actually present on disk. When false,
@@ -98,7 +99,7 @@ function CesiumPlayerModelInner({
     });
 
     if (import.meta.env.DEV) {
-      console.log('[CesiumPlayerModel] fit:', {
+      devLog('[CesiumPlayerModel] fit:', {
         scale: scale.toFixed(3),
         rotX: rotX.toFixed(3),
         footY: footY.toFixed(3),

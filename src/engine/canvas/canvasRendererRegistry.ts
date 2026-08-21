@@ -16,6 +16,7 @@ import {
 } from '@/engine/three/disposeThreeResources';
 import { releaseCanvasWebGlRenderer } from '@/engine/canvas/webGlRendererSingleton';
 
+import { devWarn } from '@/shared/utils/devLog';
 let registeredGl: THREE.WebGLRenderer | null = null;
 let registeredScene: THREE.Scene | null = null;
 
@@ -57,13 +58,13 @@ export function forceDisposeOrphanedWebGLResources(source?: string): void {
       gl.dispose();
       releaseCanvasWebGlRenderer(gl);
     } catch (err) {
-      console.warn(`[forceDisposeOrphanedWebGLResources${tag}] renderer dispose failed:`, err);
+      devWarn(`[forceDisposeOrphanedWebGLResources${tag}] renderer dispose failed:`, err);
     }
     registeredGl = null;
     registeredScene = null;
     invalidateCanvasFirstFrame();
   } catch (err) {
-    console.warn(`[forceDisposeOrphanedWebGLResources${tag}]`, err);
+    devWarn(`[forceDisposeOrphanedWebGLResources${tag}]`, err);
   }
 }
 

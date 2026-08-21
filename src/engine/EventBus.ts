@@ -17,6 +17,7 @@ import {
 import { EventBusScope, type EventBusScopeHost } from '@/engine/eventBusScope';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
+import { devLog, devWarn } from '@/shared/utils/devLog';
 export { EventBusPriority } from '@/engine/eventBusPriority';
 export { EventBusScope, bindEventBusScope } from '@/engine/eventBusScope';
 export type { EventBusScopeHost } from '@/engine/eventBusScope';
@@ -144,7 +145,7 @@ export class EventBusClass<TMap extends object = EventMap>
     // is safe — the bus has already been cleared by dispose().
     this.autoReviveCount++;
     if (process.env.NODE_ENV !== 'production') {
-      console.warn(
+      devWarn(
         `[EventBus] Auto-revive #${this.autoReviveCount} on ${operation}(). ` +
         'A handler was subscribed on a disposed bus. This is expected in React ' +
         'Strict Mode (child effect before parent revive). If you see this outside ' +
@@ -177,7 +178,7 @@ export class EventBusClass<TMap extends object = EventMap>
       console.error(message, err);
     } catch {
       try {
-        console.warn(message);
+        devWarn(message);
       } catch {
         // Swallow — must not prevent remaining handlers from running
       }
@@ -280,7 +281,7 @@ export class EventBusClass<TMap extends object = EventMap>
     const dispatchGeneration = this.lifecycleGeneration;
 
     if (this.debug) {
-      console.log(`[EventBus] ${String(event)}`, payload);
+      devLog(`[EventBus] ${String(event)}`, payload);
     }
 
     const eventStr = String(event);
@@ -288,7 +289,7 @@ export class EventBusClass<TMap extends object = EventMap>
       const now = Date.now();
       if (this.shouldSuppressDedup(eventStr, payload, now)) {
         if (this.debug) {
-          console.log(`[EventBus] Deduped ${eventStr} (within ${DEDUP_WINDOW_MS}ms window)`);
+          devLog(`[EventBus] Deduped ${eventStr} (within ${DEDUP_WINDOW_MS}ms window)`);
         }
         return;
       }
