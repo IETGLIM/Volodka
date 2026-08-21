@@ -11,7 +11,11 @@ import {
   LOOK_AHEAD_LERP_SPEED,
   FIRST_PERSON_ENABLED,
   FIRST_PERSON_EYE_HEIGHT,
+  CAMERA_LAG_FACTOR,
+  CROUCH_CAMERA_HEIGHT_OFFSET,
+  BLOCK_CAMERA_HEIGHT_OFFSET,
 } from '../cameraConstants';
+import { sharedPlayerCrouchRef, sharedPlayerBlockRef } from '@/engine/PlayerRotationState';
 import { applyShoulderOffset } from '../cameraShoulder';
 import {
   RUN_FOV_BOOST,
@@ -206,15 +210,37 @@ export const explorationStrategy: CameraModeStrategy = {
       ctx.lookAheadOffset.set(0, 0, 0);
     }
 
+    // Crouch/block camera height offsets (read from shared state written by player movement)
+    let stanceOffset = 0;
+    if (sharedPlayerCrouchRef.current) stanceOffset += CROUCH_CAMERA_HEIGHT_OFFSET;
+    if (sharedPlayerBlockRef.current) stanceOffset += BLOCK_CAMERA_HEIGHT_OFFSET;
+
     let targetPos = desiredPos.set(
       playerPos.x + offset.x,
-      playerPos.y + LOOK_HEIGHT + offset.y + heightOffset,
+      playerPos.y + LOOK_HEIGHT + offset.y + heightOffset + stanceOffset,
       playerPos.z + offset.z,
     );
 
+    // ── Camera lag lerp: smooth interpolation toward target for cinematic weight ──
+    // The spring already provides smoothing, but this additional lag factor
+    // adds a tangible "heavy camera" feel — the camera drifts behind fast
+    // player movement and settles smoothly. Configurable via CAMERA_LAG_FACTOR.
+    if (CAMERA_LAG_FACTOR > 0 && ctx.delta > 0) {
+      const lagT = 1 - Math.exp(-CAMERA_LAG_FACTOR * ctx.delta * 60);
+      const springPos = ctx.spring.position;
+      // Only lag when there's meaningful displacement (not at init)
+      const dx = targetPos.x - springPos.x;
+      const dz = targetPos.z - springPos.z;
+      const horizontalDist = Math.sqrt(dx * dx + dz * dz);
+      if (horizontalDist > 0.05) {
+        // Lerp target back toward spring (spring chases a closer target = lag)
+        targetPos.lerp(springPos, lagT * 0.35);
+      }
+    }
+
     const targetLook = lookTarget.set(
       playerPos.x + ctx.lookAheadOffset.x,
-      playerPos.y + LOOK_HEIGHT + heightOffset + ctx.lookAheadOffset.y * 0.3,
+      playerPos.y + LOOK_HEIGHT + heightOffset + stanceOffset + ctx.lookAheadOffset.y * 0.3,
       playerPos.z + ctx.lookAheadOffset.z,
     );
 

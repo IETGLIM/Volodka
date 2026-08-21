@@ -1293,6 +1293,140 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
   },
 
   /* ═══════════════════════════════════════════════════════════════
+     Task 4b-C1: New combat enemy types — ranged, caster, and multi-phase boss.
+     ═══════════════════════════════════════════════════════════════ */
+  ranged_strelkov: {
+    type: 'ranged_strelkov',
+    name: 'Стрелок',
+    emoji: '🏹',
+    description: 'Дальний боец — стреляет снарядами издалека, быстрая атака, хрупкое тело',
+    baseHp: 40,
+    baseAttack: 11,
+    baseDefense: 3,
+    baseSpeed: 13,
+    targetsStat: 'logic',
+    lootTable: ['arrow_bundle', 'nano_patch', 'circuit_board'],
+    xpReward: 36,
+    specialAttacks: [
+      {
+        id: 'strelkov_volley',
+        name: 'Залп Стрел',
+        description: 'Выпускает град снарядов — несколько ударов подряд',
+        chance: 0.35,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const roll1 = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 0.7 });
+          let dmg1 = roll1.damage;
+          const roll2 = rollEnemyDamage(roll1.state, { attack: effectiveAttack, multiplier: 0.5 });
+          let dmg2 = roll2.damage;
+          const nextState = roll2.state;
+          const sSnapshot = getGameSnapshot();
+          dmg1 = scaleEnemyDamageByDifficulty(dmg1, undefined, sSnapshot.playerState.progression.currentAct, sSnapshot.playerState.progression.level);
+          dmg2 = scaleEnemyDamageByDifficulty(dmg2, undefined, sSnapshot.playerState.progression.currentAct, sSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) { dmg1 = scaleDamageByFraction(dmg1, playerDmgReduction, 'reduction'); dmg2 = scaleDamageByFraction(dmg2, playerDmgReduction, 'reduction'); }
+          const totalDamage = dmg1 + dmg2;
+          const newPlayerHp = Math.max(0, nextState.playerHp - totalDamage);
+          return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Залп Стрел! Двойной выстрел: -${dmg1} + -${dmg2} = -${totalDamage} HP!`, type: 'enemy_special' as const, damage: totalDamage }] };
+        },
+      },
+      {
+        id: 'strelkov_aimed_shot',
+        name: 'Меткий Выстрел',
+        description: 'Прицельный выстрел — высокий урон и снижение защиты',
+        chance: 0.25,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.6 });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const aSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, aSnapshot.playerState.progression.currentAct, aSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const buff = createBuff(nextState, 'Меткий Выстрел', 'strelkov_aimed_shot', 'debuff', 'player', 1, { type: 'defense_reduction', value: 0.2 });
+          const s = addBuff(nextState, buff);
+          const newPlayerHp = Math.max(0, s.playerHp - damage);
+          return { ...s, playerHp: newPlayerHp, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Меткий Выстрел! -${damage} HP, защита -20% на 1 ход!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Одна стрела — один труп.',
+      'Беги — не уйдёшь.',
+    ],
+    defeatBarks: [
+      'Колчан... пуст... стрелы... кончились...',
+      'Стрелок... падает... снайпер... уничтожен...',
+    ],
+  },
+  dark_mage: {
+    type: 'dark_mage',
+    name: 'Тёмный Маг',
+    emoji: '🔮',
+    description: 'Маг тьмы — использует зонный урон, пурпурные тёмные эффекты, среднее здоровье',
+    baseHp: 60,
+    baseAttack: 14,
+    baseDefense: 5,
+    baseSpeed: 8,
+    targetsStat: 'empathy',
+    lootTable: ['dark_crystal', 'poem_fragment', 'nano_patch'],
+    xpReward: 48,
+    specialAttacks: [
+      {
+        id: 'mage_shadow_zone',
+        name: 'Зона Тьмы',
+        description: 'Создаёт зону тьмы — урон по площади и дрейн эмпатии',
+        chance: 0.35,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.3 });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const mSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, mSnapshot.playerState.progression.currentAct, mSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const buff = createBuff(nextState, 'Зона Тьмы', 'mage_shadow_zone', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'empathy', value: 3 });
+          const s = addBuff(nextState, buff);
+          const newPlayerHp = Math.max(0, s.playerHp - damage);
+          return { ...s, playerHp: newPlayerHp, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Зона Тьмы! Пурпурная тьма: -${damage} HP, эмпатия -3 на 2 хода!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+      {
+        id: 'mage_dark_bolt',
+        name: 'Тёмная Молния',
+        description: 'Мощный магический удар — высокий урон, снижение атаки игрока',
+        chance: 0.25,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.8 });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const mSnapshot2 = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, mSnapshot2.playerState.progression.currentAct, mSnapshot2.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+          return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Тёмная Молния! Пурпурная вспышка: -${damage} HP!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Тьма — моя стихия. Свет — ваша слабость.',
+      'Вас поглотит пурпурная бездна.',
+    ],
+    defeatBarks: [
+      'Тьма... отступает... маг... угасает...',
+      'Пурпурное... пламя... гаснет...',
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════
      BOSSES — multi-phase unique enemies with cinematic mechanics.
      Each boss has 3 special attacks and significantly higher stats.
      Designed as act finales (3, 5, 7).
@@ -1502,6 +1636,97 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
       'Последняя... строка... исполнена... свобода...',
     ],
   },
+
+  /* ═══════════════════════════════════════════════════════════════
+     Task 4b-C1/C2: Босс Хранитель Катакомб — 3-фазовый босс (500 HP).
+     Фаза 1 (100–60%): ближний бой, стандартные атаки.
+     Фаза 2 (60–30%): призыв приспешников, усиление.
+     Фаза 3 (30–0%): ярость, увеличенный урон и скорость.
+     ═══════════════════════════════════════════════════════════════ */
+  boss_catacombs_keeper: {
+    type: 'boss_catacombs_keeper',
+    name: 'Хранитель Катакомб',
+    emoji: '💀',
+    description: 'Древний страж подземелий — трёхфазовый босс катакомб. 500 HP, три фазы.',
+    baseHp: 500,
+    baseAttack: 20,
+    baseDefense: 14,
+    baseSpeed: 10,
+    targetsStat: 'karma',
+    lootTable: ['catacombs_key', 'ancient_shield', 'dark_crystal', 'void_crystal'],
+    xpReward: 550,
+    specialAttacks: [
+      {
+        id: 'catacombs_tomb_strike',
+        name: 'Удар Гробницы',
+        description: 'Тяжёлый удар — высокий урон, оглушение',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const ckSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, ckSnapshot.playerState.progression.currentAct, ckSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+          const buff = createBuff(nextState, 'Удар Гробницы', 'catacombs_tomb_strike', 'debuff', 'player', 1, { type: 'skip_turn' });
+          const s = addBuff(nextState, buff);
+          return { ...s, playerHp: Math.max(0, s.playerHp - damage), log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Удар Гробницы! -${damage} HP, вы оглушены на 1 ход!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+      {
+        id: 'catacombs_summon_shades',
+        name: 'Призыв Теней',
+        description: 'Призывает теневых приспешников — снижает защиту и энергию игрока',
+        chance: 0.3,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          let s = state;
+          const buff1 = createBuff(s, 'Теневое Давление', 'catacombs_shadow_pressure', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.25 });
+          s = addBuff(s, buff1);
+          const eBuff = createBuff(s, 'Тени: атака', 'catacombs_shades_atk', 'buff', 'enemy', 2, { type: 'attack_boost', value: 6 });
+          s = addBuff(s, eBuff);
+          return { ...s, _sideEffects: [{ type: 'addEnergy' as const, value: -10 }], log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Призыв Теней! Теневые приспешники: ваша защита -25%, враг +6 атака, энергия -10!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'catacombs_enrage',
+        name: 'Ярость Хранителя',
+        description: 'Вход в ярость — огромный урон, усиление скорости и атаки',
+        chance: 0.25,
+        cooldown: 5,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 2.0 });
+          let damage = rolled.damage;
+          const nextState = rolled.state;
+          const ceSnapshot = getGameSnapshot();
+          damage = scaleEnemyDamageByDifficulty(damage, undefined, ceSnapshot.playerState.progression.currentAct, ceSnapshot.playerState.progression.level);
+          const playerDmgReduction = getPlayerDamageReduction(nextState);
+          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const playerVulnerability = getPlayerVulnerability(nextState);
+          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+          const newPlayerHp = Math.max(0, nextState.playerHp - damage);
+          const eBuff = createBuff(nextState, 'Ярость', 'catacombs_enrage_buff', 'buff', 'enemy', 3, { type: 'attack_boost', value: 8 });
+          const s = addBuff(nextState, eBuff);
+          return { ...s, playerHp: Math.max(0, s.playerHp - damage), log: [...s.log, { turn: state.turn, text: `${enemy.emoji} ЯРОСТЬ ХРАНИТЕЛЯ! -${damage} HP, враг +8 атака на 3 хода!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+    ],
+    attackBarks: [
+      'Катакомбы — моя территория. Вам не выбраться.',
+      'Я храню эти стены тысячелетия. Вы — пыль.',
+      'Тени моих предков жаждут вашей крови.',
+    ],
+    defeatBarks: [
+      'Катакомбы... обрушиваются... хранитель... пал...',
+      'Тысячи лет... стражи... окончены...',
+      'Тени... освобождены... покой... наконец...',
+    ],
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1543,6 +1768,9 @@ export function resolveEnemyType(requestedType: EnemyType): EnemyType {
     quantum_ghost: { minLevel: 4, minAct: 3 },       // Act 3+: advanced data entities
     corporate_ai: { minLevel: 5, minAct: 4 },        // Act 4+: late-game AI
     memory_devourer: { minLevel: 6, minAct: 5 },     // Act 5+: endgame identity threat
+    // Task 4b-C1: New enemy availability
+    ranged_strelkov: { minLevel: 2, minAct: 1 },        // Act 1+: ranged attacker, available early
+    dark_mage: { minLevel: 4, minAct: 2 },              // Act 2+: dark caster, mid-game
   };
 
   const unlock = PHASE_UNLOCKS[requestedType];
@@ -1578,17 +1806,18 @@ export function pickEnemyForCurrentState(): EnemyType {
   // Base pool — always available (Phase 11: +rust_sentinel as degraded old tech)
   const pool: EnemyType[] = ['system_daemon', 'corporate_golem', 'corporate_drone', 'rust_sentinel'];
 
-  // Act 1+ level 2+
-  if (level >= 2) pool.push('censor_drone');
+  // Act 1+ level 2+ (Task 4b-C1: +ranged_strelkov)
+  if (level >= 2) { pool.push('censor_drone'); pool.push('ranged_strelkov'); }
 
   // Act 1+ level 3+
   if (level >= 3) pool.push('shadow_agent');
 
-  // Act 2+ enemies (Phase 11: +network_spy, grief_echo)
+  // Act 2+ enemies (Phase 11: +network_spy, grief_echo; Task 4b-C1: +dark_mage)
   if (act >= 2) {
     pool.push('data_phantom', 'code_inquisitor', 'data_wraith', 'memory_wraith');
     if (level >= 2) pool.push('network_spy');
     pool.push('grief_echo');
+    pool.push('dark_mage');
     if (level >= 5) pool.push('poetry_hunter');
   }
 

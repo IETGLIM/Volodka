@@ -383,7 +383,7 @@ export function MinimapComponent() {
         ctx.fill();
       }
 
-      // ── Quest markers (amber diamonds) ──
+      // ── Quest markers (pulsing yellow dot for current objective) ──
       for (const marker of questMarkersRef.current) {
         const [mx, my] = worldToMap(marker.worldX, marker.worldZ, playerX, playerZ, yaw);
         const [clx, cly] = clampToCircle(mx, my);
@@ -393,15 +393,22 @@ export function MinimapComponent() {
         if (!visualLite && !reducedMotion) {
           ctx.rotate((pulsePhaseRef.current * 1.2) % (Math.PI * 2));
         }
-        // Glow ring
+        // Glow ring — pulsing yellow
         if (!visualLite) {
-          ctx.strokeStyle = `rgba(${CYBER_CYAN_RGB}, ${0.2 + pulse * 0.15})`;
+          const questPulse = Math.sin(pulsePhaseRef.current * 2.5) * 0.5 + 0.5;
+          ctx.strokeStyle = `rgba(251, 191, 36, ${0.3 + questPulse * 0.4})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, dSize + 2 + questPulse * 2, 0, Math.PI * 2);
+          ctx.stroke();
+          // Outer pulse ring
+          ctx.strokeStyle = `rgba(251, 191, 36, ${0.15 + questPulse * 0.15})`;
           ctx.lineWidth = 1;
           ctx.beginPath();
-          ctx.arc(0, 0, dSize + 2 + pulse, 0, Math.PI * 2);
+          ctx.arc(0, 0, dSize + 5 + questPulse * 3, 0, Math.PI * 2);
           ctx.stroke();
         }
-        // Diamond
+        // Diamond (solid yellow)
         ctx.fillStyle = '#fbbf24';
         ctx.beginPath();
         ctx.moveTo(0, -dSize);
@@ -498,6 +505,18 @@ export function MinimapComponent() {
       }
 
       ctx.restore(); // undo circular clip
+
+      // ── Radial gradient fade-out edge mask ──
+      if (!visualLite) {
+        const fadeGrad = ctx.createRadialGradient(cx, cy, r * 0.65, cx, cy, r);
+        fadeGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        fadeGrad.addColorStop(0.7, 'rgba(0,0,0,0)');
+        fadeGrad.addColorStop(1, 'rgba(4,8,18,0.92)');
+        ctx.fillStyle = fadeGrad;
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.fill();
+      }
 
       // ── Outer ring border ──
       ctx.strokeStyle = cyberCyan(0.25);
@@ -673,22 +692,24 @@ export function MinimapComponent() {
               }}
             />
 
-            {/* Collapse indicator when hovered */}
-            <div
-              className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-none opacity-50"
-              aria-hidden="true"
-            >
-              <kbd
-                className="text-[7px] font-mono px-1 py-0.5 rounded"
-                style={{
-                  color: cyberCyan(0.6),
-                  border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',
-                  background: 'rgba(0, 0, 0, 0.4)',
-                }}
+            {/* M key hint — hidden on touch devices */}
+            {!isMobile && (
+              <div
+                className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-none opacity-50"
+                aria-hidden="true"
               >
-                M
-              </kbd>
-            </div>
+                <kbd
+                  className="text-[7px] font-mono px-1 py-0.5 rounded"
+                  style={{
+                    color: cyberCyan(0.6),
+                    border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',
+                    background: 'rgba(0, 0, 0, 0.4)',
+                  }}
+                >
+                  M
+                </kbd>
+              </div>
+            )}
           </div>
         </motion.div>
       )}

@@ -18,6 +18,7 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
 }) {
   const pct = max > 0 ? Math.max(0, (current / max) * 100) : 0;
   const isCritical = pct <= 30;
+  const isLowHealth = pct <= 25;
   const color = isPlayer
     ? pct > 60
       ? 'from-emerald-500 to-cyan-400'
@@ -52,6 +53,11 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
         ? '#f97316'
         : '#eab308';
 
+  // Player HP uses green gradient (#22c55e → #16a34a) when healthy
+  const playerGradientStyle = isPlayer && pct > 60
+    ? { background: 'linear-gradient(90deg, #22c55e, #16a34a)' }
+    : undefined;
+
   return (
     <div className={`flex flex-col ${isPlayer ? 'items-start' : 'items-end'} w-full`}>
       <div className="data-bar-label text-[10px] text-slate-400 mb-0.5 font-mono uppercase tracking-wider">{label}</div>
@@ -61,17 +67,28 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
         aria-valuemin={0}
         aria-valuemax={max}
         aria-label={ariaLabel || (isPlayer ? 'Здоровье игрока' : 'Здоровье противника')}
-        className={`data-bar w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative ${isCritical && isPlayer ? 'combat-hp-critical-pulse' : ''}`}
+        className={`data-bar w-full h-3.5 bg-black/80 border border-slate-700/40 rounded-sm overflow-hidden relative ${isCritical && isPlayer ? 'combat-hp-critical-pulse' : ''} ${isLowHealth && isPlayer ? 'combat-hp-low-pulse' : ''}`}
       >
+        {/* Red flash overlay on low HP for player */}
+        {isLowHealth && isPlayer && (
+          <motion.div
+            className="absolute inset-0 rounded-sm pointer-events-none"
+            style={{ background: 'rgba(239, 68, 68, 0.25)' }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.6, 0] }}
+            transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}
+            aria-hidden="true"
+          />
+        )}
         <motion.div
           className={`data-bar-fill h-full bg-gradient-to-r ${color} ${glowColor} shadow-sm rounded-sm combat-hp-bar-shimmer`}
-          style={{ boxShadow: `0 0 8px ${glowHex}40` }}
+          style={playerGradientStyle ? { ...playerGradientStyle, boxShadow: `0 0 8px ${glowHex}40` } : { boxShadow: `0 0 8px ${glowHex}40` }}
           initial={false}
           animate={{ width: `${pct}%` }}
-          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
+          transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
         />
         <div className="absolute inset-0 flex items-center justify-center text-[9px] text-white font-mono font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-          {Math.max(0, current)} / {max}
+          {Math.max(0, Math.round(current))} / {max}
         </div>
       </div>
     </div>

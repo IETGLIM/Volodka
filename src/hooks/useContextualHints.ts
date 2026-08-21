@@ -149,7 +149,53 @@ export function useContextualHints() {
   // Hover interaction prompts are handled by the crosshair caption; duplicating
   // them here made every nearby NPC feel like a tutorial popup.
 
-  // Combat start: "Враг близко!"
+  // Interaction proximity hint
+  useEffect(() => {
+    const unsub = eventBus.on('interaction:in_range', () => {
+      enqueueHint({
+        id: 'interact_hint',
+        text: 'Нажмите E для взаимодействия',
+        category: 'interaction',
+        duration: 3000,
+      });
+    });
+    return () => { unsub(); };
+  }, [enqueueHint]);
+
+  // Startup hint: movement controls shown once
+  const startupHintShown = useRef(false);
+  useEffect(() => {
+    if (startupHintShown.current) return;
+    if (!currentSceneId) return;
+    startupHintShown.current = true;
+    const timer = setTimeout(() => {
+      enqueueHint({
+        id: 'startup_movement',
+        text: 'Shift — бег, Ctrl — крадение',
+        category: 'tutorial',
+        duration: 5000,
+      });
+    }, 3000);
+    return () => clearTimeout(timer);
+  }, [currentSceneId, enqueueHint]);
+
+  // Combat control hint on first combat
+  const combatHintShown = useRef(false);
+  useEffect(() => {
+    const unsub = eventBus.on('combat:start', () => {
+      if (combatHintShown.current) return;
+      combatHintShown.current = true;
+      enqueueHint({
+        id: 'combat_controls',
+        text: 'ЛКМ — атака, ПКМ — блок',
+        category: 'combat',
+        duration: 5000,
+      });
+    });
+    return () => { unsub(); };
+  }, [enqueueHint]);
+
+  // Combat start
   useEffect(() => {
     const unsubStart = eventBus.on('combat:start', (payload) => {
       enqueueHint({

@@ -24,12 +24,16 @@ export const TOAST_TYPE_LABELS: Record<ToastType, string> = {
   poem: 'Стих',
   quest: 'Квест',
   crafting: 'Крафт',
+  item: 'Предмет',
+  achievement: 'Достижение',
 };
 
 export type NotificationToastStyleConfig = {
   icon: string;
   /** Screen-reader label for decorative icon */
   iconLabel: string;
+  /** Special CSS class for golden achievement styling */
+  variant?: 'default' | 'golden';
 };
 
 export const NOTIFICATION_TOAST_ICONS: Record<ToastType, NotificationToastStyleConfig> = {
@@ -40,4 +44,6 @@ export const NOTIFICATION_TOAST_ICONS: Record<ToastType, NotificationToastStyleC
   poem: { icon: '✒', iconLabel: 'Стих' },
   quest: { icon: '⚑', iconLabel: 'Квест' },
   crafting: { icon: '⚒', iconLabel: 'Крафт' },
+  item: { icon: '◆', iconLabel: 'Предмет' },
+  achievement: { icon: '★', iconLabel: 'Достижение', variant: 'golden' },
 };

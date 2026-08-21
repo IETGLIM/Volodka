@@ -105,17 +105,19 @@ export function getCombinedGameState(): GameStoreState {
   }
 
   cachedSliceRefs = refs;
-  const combined = Object.assign(
-    {} as GameStoreState,
-    refs[0],
-    refs[1],
-    refs[2],
-    refs[3],
-    refs[4],
-    refs[5],
-    refs[6],
-    refs[7],
-    refs[8],
+  const combined: GameStoreState = structuredClone(
+    Object.assign(
+      {} as GameStoreState,
+      refs[0],
+      refs[1],
+      refs[2],
+      refs[3],
+      refs[4],
+      refs[5],
+      refs[6],
+      refs[7],
+      refs[8],
+    ),
   );
   cachedCombined = combined;
   return combined;

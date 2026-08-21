@@ -31,3 +31,4 @@ export {
   type TextMood,
   type CinematicTextOverlayProps,
 } from './CinematicTextOverlay';
+export { Letterbox, type LetterboxProps } from './LetterboxBars';

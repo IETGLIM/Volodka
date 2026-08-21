@@ -116,8 +116,10 @@ class CombatManager {
   private returnStack: string[] = [];
   private generation = 0;
   private timers = new Set<ReturnType<typeof setTimeout>>();
+  private _disposed = false;
 
   getState(): CombatState | null {
+    if (this._disposed) return null;
     return this._state;
   }
 
@@ -142,6 +144,7 @@ class CombatManager {
 
   /** Start a new combat session — invalidates pending async work from prior sessions. */
   beginSession(): void {
+    this._disposed = false;
     this.clearPendingTimers();
     this.clearExitTimer();
     this.generation += 1;
@@ -181,9 +184,15 @@ class CombatManager {
 
   /** Cancel timers and drop listener refs (unmount / HMR). */
   dispose(): void {
+    this._disposed = true;
     this.endSession();
     this.listeners.clear();
     this.returnStack.length = 0;
+  }
+
+  /** Re-arm after orchestrator remount (React StrictMode). */
+  undispose(): void {
+    this._disposed = false;
   }
 
   pushReturnNode(nodeId: string): void {
@@ -273,8 +282,9 @@ export function disposeCombatSystem(): void {
   combat.dispose();
 }
 
-/** Re-arm after orchestrator remount (React StrictMode). CombatManager has no disposed gate. */
+/** Re-arm after orchestrator remount (React StrictMode). */
 export function reviveCombatSystem(): void {
+  combat.undispose();
   bindCombatGamepadListeners();
 }
 

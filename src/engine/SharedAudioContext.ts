@@ -127,7 +127,7 @@ function registerGestureResumeHandlers(): void {
   if (typeof window === 'undefined') return;
   window.addEventListener('click', resumeOnce, { once: true });
   window.addEventListener('keydown', resumeOnce, { once: true });
-  window.addEventListener('touchstart', resumeOnce, { once: true });
+  window.addEventListener('touchstart', resumeOnce, { once: true, passive: true });
 }
 
 let tabVisibilityHandlersRegistered = false;

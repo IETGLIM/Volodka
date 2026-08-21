@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.2.42** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.5.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -883,3 +883,59 @@ Tree-shaking уже исключал их из бандла, но очистка
   покрывает отсутствие GLB. На Vercel модели подтянутся из репозитория.
 - **PAT для git push**: предоставленный токен оказался невалидным (401 Bad credentials).
   Коммиты готовы локально; push требует обновлённого PAT.
+
+## Новые модули v4.5.0
+
+### Система фракций (`shared/types/definitions/faction.ts` + `engine/factionReputation.ts`)
+
+5 фракций с репутацией −100…+100. Модульный движок: `addReputation()`,
+`getFactionTitle()`, `isQuestAvailableForFaction()`, `getPriceModifier()`.
+Слушатели через `onFactionReputationChange(fn)`. Интеграция с квестовой
+системой через поле `faction` в QuestDefinition.
+
+### Система фаз боссов (`engine/combat/bossPhases.ts`)
+
+Определяет пороги HP (100→60→30%), меняет множители урона/скорости,
+управляет неуязвимостью при переходе между фазами. Экспортирует
+`getBossPhase(hpPercent, maxHp)` и `createBossPhaseTransition(hpPercent)`.
+
+### Экологические опасности (`engine/combat/environmentalHazards.ts`)
+
+Опасные зоны: огонь (красный), яд (зелёный), электричество (голубой).
+Каждая зона: position, radius, damagePerSecond, damageType, statusEffect.
+Функция `checkPlayerInHazards(playerPos, hazards)` — чистая, вызывается
+в игровом цикле.
+
+### ИИ врагов (`engine/combat/enemyAiBehaviors.ts`)
+
+Конфигурация ИИ по типам: aggroRange (12), leashRange (20), kitingDistance,
+attackCooldown. Состояния: idle → patrol → chase → attack → return.
+Функция `updateEnemyAi(enemy, playerPos, dt)` — возвращает действие.
+
+### FreeRouter AI чат (`engine/npc/freeRouterAiChat.ts`)
+
+Клиентский вызов FreeRouter API (OpenAI-compatible) для генерации
+динамических ответов NPC. Кэш 60с. Fallback на русском при ошибке.
+Модель: qwen3.8-max. API key хранится в коде (для browser-only игры).
+
+### Визуальные эффекты (`components/3d/environmental/`)
+
+- `ParticleEffects.tsx` — 4 типа частиц (пыль, светлячки, угольки, снег), max 200
+- `PuddleReflections.tsx` — отражающие лужи с пульсацией
+- `InstancedClutter.tsx` — батчинг до 500 объектов в 1 draw call
+
+### Процедурные анимации (`engine/player/proceduralAnimations.ts`)
+
+Чистые функции: `breathingOffset(t)`, `headLookAt(head, target, maxAngle)`,
+`idleShift(t)`. Без побочных эффектов, используются в render-цикле.
+
+### Кинематографика (`components/game/cinematic/LetterboxBars.tsx`)
+
+Чёрные полосы top/bottom (10dvh) с анимацией через framer-motion.
+Используется при кат-сценах и важных диалогах.
+
+### Производительность
+
+- `engine/three/webglContextLoss.ts` — обработка потери WebGL контекста
+- `engine/combat/lazyCombatSystem.ts` — ленивая загрузка боевой системы
+- `shared/persistence/quotaCheck.ts` — проверка квоты localStorage

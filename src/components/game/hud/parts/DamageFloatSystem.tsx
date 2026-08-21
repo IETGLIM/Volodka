@@ -447,9 +447,9 @@ const DamageFloatItem = memo(function DamageFloatItem({
 
     switch (event.hitType) {
       case 'miss':
-        return 'PROMAX!';
+        return 'ПРОМАХ!';
       case 'resist':
-        return 'COПPOTИВЛЕНИЕ';
+        return 'СОПРОТИВЛЕНИЕ';
       case 'block':
         return 'БЛОК';
       case 'evade':

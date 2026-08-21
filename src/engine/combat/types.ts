@@ -61,6 +61,7 @@ const BOSS_ENEMY_TYPES: ReadonlySet<EnemyType> = new Set<EnemyType>([
   'boss_neuro_sys',
   'boss_dream_eater',
   'boss_final_code',
+  'boss_catacombs_keeper',
 ]);
 
 /** Whether this enemy type is a boss (act finale). Bosses cannot flee, have

@@ -1,31 +1,65 @@
-/* Floating damage numbers, combo counter, and hit-flash overlay. */
+/* Floating damage numbers, combo counter, hit-flash overlay.
+ * Task 4b-C4: Added damage number color coding (white=normal, red=critical,
+ * green=heal, purple=magic/affinity), hit flash effect on enemy mesh,
+ * and proper damage channel support. */
 
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
+/** Resolve damage number color class based on log entry type.
+ *  - White (text-slate-100): normal player attack
+ *  - Red (text-red-400): enemy attack / enemy special
+ *  - Yellow (text-yellow-300): critical hit (overrides other colors)
+ *  - Green (text-emerald-400): healing (player_power with positive damage)
+ *  - Purple (text-purple-400): magic / affinity attacks (affinity_super, dark_mage specials)
+ *  - Fuchsia (text-fuchsia-400): poem combo
+ *  - Cyan (text-cyan-300): default fallback for player attacks */
+function resolveDamageColor(type: string, isCritical: boolean): string {
+  // Critical hits always get yellow
+  if (isCritical) return 'text-yellow-300';
+  // Healing
+  if (type === 'player_power') return 'text-emerald-400';
+  // Enemy damage to player
+  if (type === 'enemy_attack' || type === 'enemy_special') return 'text-red-400';
+  // Magic / dark affinity
+  if (type === 'affinity_super' || type === 'enemy_special') return 'text-purple-400';
+  // Poem combo
+  if (type === 'poem_combo') return 'text-fuchsia-400';
+  // Normal player attack — white
+  if (type === 'player_attack' || type === 'critical_hit' || type === 'combo_hit') return 'text-slate-100';
+  // Default fallback
+  return 'text-cyan-300';
+}
+
 export const DamageNumber = React.memo(function DamageNumber({
   damage,
   type,
   isCritical,
+  damageChannel,
 }: {
   damage: number;
   type: string;
   isCritical?: boolean;
+  /** Damage channel from combat log (e.g. 'magic', 'dark'). */
+  damageChannel?: string;
 }) {
   const isHeal = type === 'player_power' && damage > 0;
   const isPoemCombo = type === 'poem_combo';
-  const color =
-    type === 'enemy_attack' || type === 'enemy_special'
-      ? 'text-red-400'
-      : isPoemCombo
-        ? 'text-fuchsia-400'
-        : isHeal
-          ? 'text-emerald-400'
-          : isCritical
-            ? 'text-yellow-300'
-            : 'text-cyan-300';
+  // Task 4b-C4: Enhanced color coding with magic channel support
+  const isMagic = damageChannel === 'magic' || damageChannel === 'dark' || type === 'affinity_super';
+  const color = isCritical
+    ? 'text-yellow-300'
+    : isHeal
+      ? 'text-emerald-400'
+      : isMagic
+        ? 'text-purple-400'
+        : isPoemCombo
+          ? 'text-fuchsia-400'
+          : type === 'enemy_attack' || type === 'enemy_special'
+            ? 'text-red-400'
+            : 'text-slate-100';
   const size = isCritical ? 'text-4xl' : isPoemCombo ? 'text-3xl' : 'text-2xl';
 
   return (

@@ -18,3 +18,9 @@ export const sharedPlayerPositionRef: {
 /** Camera yaw (horizontal look) — used for FPS interaction targeting. */
 export const sharedCameraYawRef: { current: number } = { current: Math.PI };
 
+/** Player crouch state — written by playerMainMovement, read by camera strategies. */
+export const sharedPlayerCrouchRef: { current: boolean } = { current: false };
+
+/** Player block state (RMB) — written by input, read by camera/movement. */
+export const sharedPlayerBlockRef: { current: boolean } = { current: false };
+

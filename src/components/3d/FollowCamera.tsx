@@ -25,6 +25,8 @@ import {
   getSceneSpecificFov,
   ZOOM_SPRING_SNAP,
   FIRST_PERSON_ENABLED,
+  ZOOM_SMOOTH_SPEED,
+  CAMERA_LAG_FACTOR,
 } from '@/engine/camera/cameraConstants';
 import { shouldUseFirstPersonExploration } from '@/engine/camera/cinematicPresentation';
 import { eventBus } from '@/engine/EventBus';
@@ -353,7 +355,7 @@ export function FollowCamera({
     const targetInteractionDist = interactionLocked ? NPC_INTERACTION_DISTANCE : distanceRef.current;
     const distLerpSpeed = wasInDialogueRef.current && !interactionLocked
       ? DIALOGUE_EXIT_LERP_SPEED
-      : DISTANCE_LERP_SPEED;
+      : Math.max(DISTANCE_LERP_SPEED, ZOOM_SMOOTH_SPEED);
     interactionDistanceRef.current = MathUtils.lerp(
       interactionDistanceRef.current,
       targetInteractionDist,

@@ -29,6 +29,7 @@ export const ToastItem = memo(function ToastItem({
   const icon = NOTIFICATION_TOAST_ICONS[toast.type];
   const deltaStr = formatToastDelta(toast.delta);
   const motionProps = getToastItemMotion(reducedMotion);
+  const isGolden = icon.variant === 'golden';
 
   /* Countdown timer: ticks progress bar. Pauses on hover. */
   useEffect(() => {
@@ -75,7 +76,7 @@ export const ToastItem = memo(function ToastItem({
       tabIndex={0}
       data-toast-type={toast.type}
       data-hovered={hovered ? 'true' : 'false'}
-      className="notification-toast-card notification-toast-card--enhanced hud-filmic-notification-slide pointer-events-auto w-full max-w-[320px] cursor-pointer"
+      className={`notification-toast-card notification-toast-card--enhanced hud-filmic-notification-slide pointer-events-auto w-full max-w-[320px] cursor-pointer ${isGolden ? 'notification-toast-card--golden' : ''}`}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setHovered(true)}

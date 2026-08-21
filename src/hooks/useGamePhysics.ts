@@ -4,6 +4,7 @@
 import { useEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import { bindKeyboardInput, sampleKeyboardMovement } from '@/engine/keyboardInputState';
 import { applyMouseBothButtonsForward } from '@/engine/VirtualControlsState';
+import { sharedPlayerBlockRef } from '@/engine/PlayerRotationState';
 
 export interface VirtualControls {
   forward: number;
@@ -28,6 +29,8 @@ export interface PlayerControls {
     run: boolean;
     jump: boolean;
     interact: boolean;
+    crouch: boolean;
+    block: boolean;
     hasMovement: boolean;
   };
 }
@@ -74,6 +77,8 @@ export function usePlayerControls(
       run: kb.run,
       jump: kb.jump,
       interact: kb.interact,
+      crouch: kb.crouch,
+      block: kb.block || sharedPlayerBlockRef.current,
       hasMovement: kb.hasMovement,
     };
   }, []);
@@ -86,12 +91,19 @@ export function usePlayerControls(
     const updateMouseMove = (buttons: number) => {
       mouseOwnsForward = applyMouseBothButtonsForward(buttons, mouseOwnsForward);
     };
-    const onMouseDown = (e: MouseEvent) => updateMouseMove(e.buttons);
-    const onMouseUp = (e: MouseEvent) => updateMouseMove(e.buttons);
+    const onMouseDown = (e: MouseEvent) => {
+      updateMouseMove(e.buttons);
+      // RMB → block state flag
+      if (e.buttons & 2) sharedPlayerBlockRef.current = true;
+    };
+    const onMouseUp = (e: MouseEvent) => {
+      updateMouseMove(e.buttons);
+      if (!(e.buttons & 2)) sharedPlayerBlockRef.current = false;
+    };
     const onMouseMove = (e: MouseEvent) => updateMouseMove(e.buttons);
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
     return () => {
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
@@ -99,6 +111,7 @@ export function usePlayerControls(
       if (mouseOwnsForward) {
         applyMouseBothButtonsForward(0, true);
       }
+      sharedPlayerBlockRef.current = false;
     };
   }, []);
 

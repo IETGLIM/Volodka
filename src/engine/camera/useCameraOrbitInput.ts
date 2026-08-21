@@ -12,7 +12,10 @@ import {
   ZOOM_WHEEL_EXP,
   ZOOM_WHEEL_MIN_STEP,
   FIRST_PERSON_FOV_MIN,
-  FIRST_PERSON_FOV_MAX } from '@/engine/camera/cameraConstants';
+  FIRST_PERSON_FOV_MAX,
+  CAMERA_INERTIA_GAIN,
+  CAMERA_INERTIA_DECAY,
+} from '@/engine/camera/cameraConstants';
 import { getInteractionState } from '@/components/3d/InteractionSystemBridge';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { isNarrativeMovementLocked } from '@/shared/exploreHubNodes';
@@ -23,6 +26,10 @@ import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineO
 const PITCH_MIN = -0.5;
 const PITCH_MAX = 1.3;
 const ORBIT_SENSITIVITY = 0.004;
+
+// ── Rotation inertia state (module-level, persists across effect re-runs) ──
+let _inertiaYawVel = 0;
+let _inertiaPitchVel = 0;
 const ZOOM_LINE_MULTIPLIER = 40;
 const ZOOM_PAGE_MULTIPLIER = 800;
 /** Match InteractiveTriggers — short LMB click = interact, drag = look (FP). */
@@ -123,15 +130,43 @@ export function useCameraOrbitInput(
       isDraggingRef.current = lmbLookActive || rmbDown || mmbDown;
     };
 
-    const applyOrbitDelta = (dx: number, dy: number, sensScale = 1) => {
+    const applyOrbitDelta = (dx: number, dy: number, sensScale = 1, applyInertia = false) => {
       const { mouseSensitivity, invertY } = getVisualSettings();
       const sens = ORBIT_SENSITIVITY * sensScale * mouseSensitivity;
-      yawRef.current -= dx * sens;
+      const rawYawDelta = -dx * sens;
+      const rawPitchDelta = dy * sens * (invertY ? -1 : 1);
+      yawRef.current += rawYawDelta;
       pitchRef.current = Math.max(
         PITCH_MIN,
-        Math.min(PITCH_MAX, pitchRef.current + dy * sens * (invertY ? -1 : 1)),
+        Math.min(PITCH_MAX, pitchRef.current + rawPitchDelta),
       );
+      // Accumulate inertia velocity (used for momentum continue)
+      if (applyInertia) {
+        _inertiaYawVel += rawYawDelta * CAMERA_INERTIA_GAIN;
+        _inertiaPitchVel += rawPitchDelta * CAMERA_INERTIA_GAIN;
+      }
     };
+
+    // ── Inertia update loop: apply decaying angular velocity each frame ──
+    let _inertiaRaf = 0;
+    const updateInertia = () => {
+      if (Math.abs(_inertiaYawVel) > 1e-6 || Math.abs(_inertiaPitchVel) > 1e-6) {
+        yawRef.current += _inertiaYawVel;
+        pitchRef.current = Math.max(
+          PITCH_MIN,
+          Math.min(PITCH_MAX, pitchRef.current + _inertiaPitchVel),
+        );
+        const decay = 1 - Math.exp(-CAMERA_INERTIA_DECAY * (1 / 60));
+        _inertiaYawVel *= (1 - decay);
+        _inertiaPitchVel *= (1 - decay);
+        _inertiaRaf = requestAnimationFrame(updateInertia);
+      } else {
+        _inertiaYawVel = 0;
+        _inertiaPitchVel = 0;
+      }
+    };
+    // Start inertia loop on mount
+    _inertiaRaf = requestAnimationFrame(updateInertia);
 
     const onMouseDown = (e: MouseEvent) => {
       if (shouldBlockOrbit()) return;
@@ -190,7 +225,7 @@ export function useCameraOrbitInput(
         && (e.movementX !== 0 || e.movementY !== 0)
       ) {
         if (firstPersonRef?.current || rmbDown) {
-          applyOrbitDelta(e.movementX, e.movementY);
+          applyOrbitDelta(e.movementX, e.movementY, 1, true);
           isDraggingRef.current = true;
           return;
         }
@@ -214,7 +249,7 @@ export function useCameraOrbitInput(
         const dx = e.clientX - lastMouseRef.current.x;
         const dy = e.clientY - lastMouseRef.current.y;
         lastMouseRef.current = { x: e.clientX, y: e.clientY };
-        applyOrbitDelta(dx, dy);
+        applyOrbitDelta(dx, dy, 1, true);
         return;
       }
 
@@ -222,7 +257,7 @@ export function useCameraOrbitInput(
       const dx = e.clientX - lastMouseRef.current.x;
       const dy = e.clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
-      applyOrbitDelta(dx, dy);
+      applyOrbitDelta(dx, dy, 1, true);
     };
 
     const onWheel = (e: WheelEvent) => {
@@ -307,7 +342,7 @@ export function useCameraOrbitInput(
 
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
-    window.addEventListener('mousemove', onMouseMove);
+    window.addEventListener('mousemove', onMouseMove, { passive: true });
     window.addEventListener('blur', onBlur);
     if (canvasEl) {
       canvasEl.addEventListener('wheel', onWheel, { passive: false, capture: true });
@@ -319,6 +354,9 @@ export function useCameraOrbitInput(
     window.addEventListener('keydown', onKeyDown);
 
     return () => {
+      cancelAnimationFrame(_inertiaRaf);
+      _inertiaYawVel = 0;
+      _inertiaPitchVel = 0;
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);

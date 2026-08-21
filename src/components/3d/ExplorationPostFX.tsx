@@ -511,7 +511,7 @@ function PostFXPipeline() {
     selectedPreset,
     coarsePointer,
   );
-  const { brightness: userBrightness, agxToneMapping } = useVisualSettings();
+  const { brightness: userBrightness, agxToneMapping, vignetteEnabled, chromaticAberrationEnabled, filmGrainEnabled } = useVisualSettings();
   const userBrightnessOffset = (userBrightness - 1) * 0.3;
 
   const colorGrade = SCENE_COLOR_GRADE[sceneId]
@@ -575,6 +575,7 @@ function PostFXPipeline() {
   // Ultra gets coherent grain that reads as real film grain (structured, slowly drifting).
   const wantsNoise =
     softOk
+    && filmGrainEnabled
     && (preset.id === 'high' || preset.id === 'ultra')
     && (selectedPreset === 'high' || selectedPreset === 'ultra')
     && NOISE_SCENES.has(sceneId);
@@ -612,6 +613,7 @@ function PostFXPipeline() {
     && !reducedMotion
     && !visualLite
     && !coarsePointer
+    && chromaticAberrationEnabled
     && (preset.id === 'high' || preset.id === 'ultra')
     && (selectedPreset === 'high' || selectedPreset === 'ultra');
   // Stress ramp only on high preset (ultra stays composed/clean).
@@ -813,11 +815,13 @@ function PostFXPipeline() {
           mipmapBlur
           kernelSize={KernelSize.LARGE}
         />
-        <Vignette
-          offset={0.38}
-          darkness={Math.min(0.28 * SCENE_VISIBILITY.vignetteDarknessScale + poemBoost.vignetteDarkness, 0.75)}
-          blendFunction={BlendFunction.NORMAL}
-        />
+        {vignetteEnabled ? (
+          <Vignette
+            offset={0.38}
+            darkness={Math.min(0.28 * SCENE_VISIBILITY.vignetteDarknessScale + poemBoost.vignetteDarkness, 0.75)}
+            blendFunction={BlendFunction.NORMAL}
+          />
+        ) : null as any}
         <BrightnessContrast
           brightness={SCENE_VISIBILITY.postFxBrightnessLift + userBrightnessOffset}
           contrast={-0.02}
@@ -918,7 +922,7 @@ function PostFXPipeline() {
           ) : null}
         </>
       ) : null as any}
-      <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} eskil={vignetteEskil} blendFunction={BlendFunction.NORMAL} />
+      {vignetteEnabled ? <Vignette offset={stressVignetteOffset} darkness={stressVignetteDarkness} eskil={vignetteEskil} blendFunction={BlendFunction.NORMAL} /> : null as any}
       <HueSaturation hue={colorGrade.hue} saturation={effectiveSaturation} blendFunction={BlendFunction.NORMAL} />
       <BrightnessContrast brightness={effectiveBrightness} contrast={effectiveContrast} blendFunction={BlendFunction.NORMAL} />
       {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}

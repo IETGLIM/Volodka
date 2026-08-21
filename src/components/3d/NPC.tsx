@@ -48,6 +48,7 @@ import {
   NpcActivityBarkSprite,
 } from '@/engine/npc/npcWorldSprite';
 import { NpcEmotionIndicator } from '@/components/3d/NpcEmotionIndicator';
+import { NpcInteractionIndicator } from '@/components/3d/NpcInteractionIndicator';
 
 // Extracted modules
 import { useNpcPatrol } from '@/hooks/useNpcPatrol';
@@ -91,6 +92,8 @@ interface NPCProps {
   activity?: string;
   /** Patrol waypoints for wandering behavior */
   patrolWaypoints?: [number, number, number][];
+  /** Multiple patrol route options — random one picked at mount */
+  patrolRoutes?: readonly (readonly [number, number, number][])[];
   /** Visual/update fidelity tier (hero, interactive, background). */
   renderTier?: NpcRenderTier;
 }
@@ -106,6 +109,7 @@ export function NPC({
   isInteractionTarget = false,
   activity = 'idle',
   patrolWaypoints,
+  patrolRoutes,
   renderTier = 'interactive',
 }: NPCProps) {
   const groupRef = useRef<Group>(null);
@@ -135,11 +139,13 @@ export function NPC({
     activity,
     isInteractionTarget,
     patrolWaypoints,
+    patrolRoutes,
     position,
     sceneId,
     rotation,
     interactionState,
     groupRef,
+    livePlayerPositionRef,
   });
 
   const {
@@ -295,7 +301,12 @@ export function NPC({
       </group>
 
       <group ref={questMarkerRef} visible={false}>
-        {npcTierHasQuestMarker(renderTier) && <QuestMarker npcId={definition.id} />}
+        {npcTierHasQuestMarker(renderTier) && (
+          <>
+            <QuestMarker npcId={definition.id} />
+            <NpcInteractionIndicator npcId={definition.id} />
+          </>
+        )}
       </group>
     </group>
   );

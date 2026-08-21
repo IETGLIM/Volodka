@@ -32,13 +32,13 @@ import {
 } from '@/engine/player/playerLocomotionPresentation';
 import {
   FOOTSTEP_INTERVAL,
-  KEYBOARD_ACCEL,
   ROTATION_SPEED,
   ROTATION_SPEED_REVERSAL,
   ROTATION_REVERSAL_THRESHOLD,
   RUN_SPEED,
   WALK_SPEED,
   MAX_HORIZONTAL_SPEED,
+  VELOCITY_LERP_LAMBDA,
 } from '@/engine/player/playerConstants';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -349,7 +349,7 @@ export function SimplePlayer({
       * touchScale
       * getAccessibilityLocomotionScale()
       * analogSpeedScale;
-    const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : movementTuning.accel;
+    const moveAccel = keyboardDrivesMove ? VELOCITY_LERP_LAMBDA : movementTuning.accel;
     const stopDamping = keyboardDrivesMove ? movementTuning.damping * 0.55 : movementTuning.damping;
 
     if (isMoving) {
@@ -362,7 +362,7 @@ export function SimplePlayer({
       // micro-twitch on every keypress). High stiffness (25) keeps it
       // responsive while smoothing the edges.
       if (keyboardDrivesMove) {
-        const k = 25;
+        const k = VELOCITY_LERP_LAMBDA;
         vel.x = MathUtils.damp(vel.x, targetVx, k, dt);
         vel.z = MathUtils.damp(vel.z, targetVz, k, dt);
       } else {

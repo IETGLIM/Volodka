@@ -92,6 +92,9 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_invert_y: false,
   volodka_pointer_lock: false,
   volodka_agx: true,
+  volodka_vignette: true,
+  volodka_chromatic: true,
+  volodka_film_grain: true,
 };
 
 const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
@@ -117,6 +120,12 @@ function VisualSettingsTab({
   setCamShake,
   agx,
   setAgx,
+  vignette,
+  setVignette,
+  chromatic,
+  setChromatic,
+  filmGrain,
+  setFilmGrain,
   brightness,
   setBrightness,
   a11y,
@@ -132,6 +141,12 @@ function VisualSettingsTab({
   setCamShake: (v: boolean) => void;
   agx: boolean;
   setAgx: (v: boolean) => void;
+  vignette: boolean;
+  setVignette: (v: boolean) => void;
+  chromatic: boolean;
+  setChromatic: (v: boolean) => void;
+  filmGrain: boolean;
+  setFilmGrain: (v: boolean) => void;
   brightness: number;
   setBrightness: (v: number) => void;
   a11y: AccessibilitySettingsSnapshot;
@@ -205,6 +220,22 @@ function VisualSettingsTab({
       <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
         Современный кинематографичный тонмаппинг на пресете «Ультра». AgX темнее ACES — экспозиция автокомпенсируется (+0.15).
       </p>
+      <SectionDivider />
+      <CyberToggle
+        label="Виньетка"
+        checked={vignette}
+        onChange={(v) => { setVignette(v); persist('volodka_vignette', v); applyVisualSettings(); }}
+      />
+      <CyberToggle
+        label="Хроматическая аберрация"
+        checked={chromatic}
+        onChange={(v) => { setChromatic(v); persist('volodka_chromatic', v); applyVisualSettings(); }}
+      />
+      <CyberToggle
+        label="Зернистость плёнки"
+        checked={filmGrain}
+        onChange={(v) => { setFilmGrain(v); persist('volodka_film_grain', v); applyVisualSettings(); }}
+      />
       <SectionDivider />
       <CyberSlider
         label="Яркость"
@@ -334,6 +365,9 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [particles, setParticles] = useState(() => lsGetBool('volodka_particles', true));
   const [camShake, setCamShake] = useState(() => lsGetBool('volodka_cam_shake', true));
   const [agx, setAgx] = useState(() => lsGetBool('volodka_agx', true));
+  const [vignette, setVignette] = useState(() => lsGetBool('volodka_vignette', true));
+  const [chromatic, setChromatic] = useState(() => lsGetBool('volodka_chromatic', true));
+  const [filmGrain, setFilmGrain] = useState(() => lsGetBool('volodka_film_grain', true));
   const [brightness, setBrightness] = useState(() => lsGetNumber('volodka_brightness', 100));
 
   // ── Controls state ──
@@ -367,6 +401,9 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setParticles(DEFAULTS.volodka_particles as boolean);
     setCamShake(DEFAULTS.volodka_cam_shake as boolean);
     setAgx(DEFAULTS.volodka_agx as boolean);
+    setVignette(DEFAULTS.volodka_vignette as boolean);
+    setChromatic(DEFAULTS.volodka_chromatic as boolean);
+    setFilmGrain(DEFAULTS.volodka_film_grain as boolean);
     setBrightness(DEFAULTS.volodka_brightness as number);
     setMouseSens(DEFAULTS.volodka_mouse_sens as number);
     setInvertY(DEFAULTS.volodka_invert_y as boolean);
@@ -435,6 +472,12 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             setCamShake={setCamShake}
             agx={agx}
             setAgx={setAgx}
+            vignette={vignette}
+            setVignette={setVignette}
+            chromatic={chromatic}
+            setChromatic={setChromatic}
+            filmGrain={filmGrain}
+            setFilmGrain={setFilmGrain}
             brightness={brightness}
             setBrightness={setBrightness}
             a11y={a11y}

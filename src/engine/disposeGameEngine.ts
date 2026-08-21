@@ -9,7 +9,7 @@
 import { disposeEventBus, reviveEventBus } from '@/engine/EventBus';
 import { disposeGuidedStoryManager, reviveGuidedStoryManager } from '@/engine/GuidedStoryManager';
 import { disposeQuestTracker, reviveQuestTracker } from '@/engine/QuestTracker';
-import { disposeCombatSystem, reviveCombatSystem } from '@/engine/CombatSystem';
+import { disposeCombatSystemLazy, reviveCombatSystemLazy, preloadCombatSystem } from '@/engine/combat/lazyCombatSystem';
 import { disposeWorldEventDirector, reviveWorldEventDirector } from '@/engine/world/WorldEventDirector';
 import { disposeNavMeshLayer, reviveNavMeshLayer } from '@/engine/world/NavMeshLayer';
 import { disposeWorldStreamManager, reviveWorldStreamManager } from '@/engine/world/WorldStreamManager';
@@ -125,7 +125,7 @@ export function disposeGameEngine(): void {
     suspendAutoCloseTimers();
     resetPlayerXpBatchFromEngine();
 
-    disposeCombatSystem();
+    disposeCombatSystemLazy();
     disposeQuestTracker();
     disposeGuidedStoryManager();
     disposeWorldEventDirector();
@@ -185,7 +185,6 @@ export function reviveGameEngine(): void {
   bindSceneTransitionGuardListeners();
   bindDeferredCombatStartListener();
   bindCombatStartGateTimeout();
-  bindDeferredCombatStartListener();
   bindPoemResetListener();
   bindPoemReadingCutsceneLifecycleListeners();
   bindPoemRevealLifecycleListeners();
@@ -195,7 +194,7 @@ export function reviveGameEngine(): void {
 
   reviveQuestTracker();
   reviveGuidedStoryManager();
-  reviveCombatSystem();
+  reviveCombatSystemLazy();
   reviveWorldEventDirector();
   reviveNavMeshLayer();
   reviveWorldStreamManager();

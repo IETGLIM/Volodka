@@ -19,8 +19,9 @@ import {
 import {
   WALK_SPEED,
   RUN_SPEED,
+  CROUCH_SPEED,
   MAX_HORIZONTAL_SPEED,
-  KEYBOARD_ACCEL,
+  VELOCITY_LERP_LAMBDA,
   JUMP_FORCE,
   GRAVITY,
   ROTATION_SPEED,
@@ -42,6 +43,7 @@ import {
   WALL_BUMP_COOLDOWN,
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
+import { sharedPlayerCrouchRef, sharedPlayerBlockRef } from '@/engine/PlayerRotationState';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { triggerLandingFovDip } from '@/engine/camera/landingImpact';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
@@ -169,10 +171,16 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     rgt,
     running,
     jumping,
+    crouching,
+    blocking,
     keyboardDrivesMove,
     analogSpeedScale,
     isMoving,
   } = intent;
+
+  // Write crouch/block state for camera to read
+  sharedPlayerCrouchRef.current = crouching;
+  sharedPlayerBlockRef.current = blocking;
 
   moveDir.set(0, 0, 0);
   moveDir.addScaledVector(camFwd, fwd - bwd);
@@ -210,8 +218,10 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       /* store not ready */
     }
   }
+  // Crouch overrides run: crouching uses CROUCH_SPEED (0.5× WALK_SPEED)
+  const baseSpeed = crouching ? CROUCH_SPEED : (running ? RUN_SPEED : WALK_SPEED);
   const speed = Math.min(
-    (running ? RUN_SPEED : WALK_SPEED)
+    baseSpeed
     * deps.locomotionScale
     * touchScale
     * a11yScale
@@ -220,8 +230,8 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     * weatherSpeedMult,
     MAX_HORIZONTAL_SPEED,
   );
-  const moveAccel = keyboardDrivesMove ? KEYBOARD_ACCEL : deps.movementTuning.accel;
-  const stopDamping = keyboardDrivesMove ? deps.movementTuning.damping * 0.55 : deps.movementTuning.damping;
+  const moveAccel = keyboardDrivesMove ? VELOCITY_LERP_LAMBDA : deps.movementTuning.accel;
+  const stopDamping = keyboardDrivesMove ? VELOCITY_LERP_LAMBDA : deps.movementTuning.damping;
 
   scratch.isMoving = isMoving;
   scratch.running = running;
@@ -236,9 +246,8 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
     const targetVx = moveDir.x * speed;
     const targetVz = moveDir.z * speed;
     if (keyboardDrivesMove) {
-      const k = 25; // high stiffness, nearly instant but avoids hard snap
-      vel.x = MathUtils.damp(vel.x, targetVx, k, dt);
-      vel.z = MathUtils.damp(vel.z, targetVz, k, dt);
+      vel.x = MathUtils.damp(vel.x, targetVx, VELOCITY_LERP_LAMBDA, dt);
+      vel.z = MathUtils.damp(vel.z, targetVz, VELOCITY_LERP_LAMBDA, dt);
     } else {
       vel.x = MathUtils.damp(vel.x, targetVx, moveAccel, dt);
       vel.z = MathUtils.damp(vel.z, targetVz, moveAccel, dt);

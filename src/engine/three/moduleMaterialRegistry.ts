@@ -2,6 +2,22 @@
  * Tracks module-level MeshStandardMaterial singletons for procedural scene visuals.
  * Scene-scoped resources (claimed during scene module import) dispose on scene:unload.
  * Session-scoped resources dispose on canvas unmount / HMR.
+ *
+ * ── KTX2 / Basis Universal Texture Compression ──
+ * When supplying a `map` in MeshStandardMaterialParameters, prefer .ktx2 textures
+ * over .jpg/.png. KTX2 files are GPU-compressed (ASTC/BC7/ETC1S) and skip the
+ * expensive CPU-side decode + GPU upload that PNG/JPG require. To enable:
+ *
+ *   import { KTX2Loader } from 'three/addons/loaders/KTX2Loader';
+ *   const ktx2 = new KTX2Loader(manager).detectSupport(renderer);
+ *   // Then use: loader.setKTX2Loader(ktx2).setPath('/textures/');
+ *
+ * The `getSharedStandardMaterial()` factory below already accepts a `map` —
+ * just pass a Texture loaded via KTX2Loader. The cache key serialises the map
+ * UUID so compressed and uncompressed variants remain distinct entries.
+ *
+ * NOTE: Actual .ktx2 assets are not yet shipped. This is a forward-compatibility
+ * hook — no runtime changes needed when compressed textures arrive.
  */
 
 import { Color, ColorRepresentation, FrontSide, Material, MeshStandardMaterial, MeshStandardMaterialParameters } from 'three';

@@ -106,6 +106,7 @@ export function NPCSystem({
           rotation: def.defaultRotation,
           activity,
           patrolWaypoints,
+          patrolRoutes: def.patrolRoutes,
           renderTier: resolveNpcRenderTier(def, sceneId),
         };
       })
@@ -115,6 +116,7 @@ export function NPCSystem({
       rotation: number | undefined;
       activity: string;
       patrolWaypoints?: [number, number, number][];
+      patrolRoutes?: readonly (readonly [number, number, number][])[];
       renderTier: ReturnType<typeof resolveNpcRenderTier>;
     }>;
 
@@ -133,7 +135,7 @@ export function NPCSystem({
     <group>
       <NpcFrameBatchRunner />
       <NPCFrameCacheAdvancer />
-      {visibleNPCs.map(({ definition, position, rotation, activity, patrolWaypoints, renderTier }) => (
+      {visibleNPCs.map(({ definition, position, rotation, activity, patrolWaypoints, patrolRoutes, renderTier }) => (
         <NPC
           key={definition.id}
           definition={definition}
@@ -144,6 +146,7 @@ export function NPCSystem({
           isInteractionTarget={definition.id === interactionTargetNPCId}
           activity={activity}
           patrolWaypoints={patrolWaypoints}
+          patrolRoutes={patrolRoutes}
           renderTier={renderTier}
         />
       ))}

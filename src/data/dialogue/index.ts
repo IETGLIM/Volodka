@@ -14,6 +14,7 @@ import { DIALOGUE_PART4 } from './part4-late';
 import { DIALOGUE_PART4_EXPANDED } from './part4-late-expanded';
 import { DIALOGUE_PART5 } from './part5-final';
 import { DIALOGUE_PART5_EXPANDED } from './part5-final-expanded';
+import { DIALOGUE_ACT4_NEW } from './act4_newDialogues';
 
 export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   ...DIALOGUE_PART1,
@@ -31,4 +32,5 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   ...EXPLORATION_DIALOGUE_NODES,
   ...RETURN_DIALOGUE_NODES,
   ...MILESTONE_DIALOGUE_NODES,
+  ...DIALOGUE_ACT4_NEW,
 };

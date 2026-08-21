@@ -54,6 +54,10 @@ const ENEMY_VISUAL_BY_TYPE: Record<EnemyType, EnemyVisualSpec> = {
   boss_neuro_sys: { archetype: 'ethereal', scale: 1.4 },
   boss_dream_eater: { archetype: 'ethereal', scale: 1.5 },
   boss_final_code: { archetype: 'ethereal', scale: 1.3 },
+  // Task 4b-C1: New enemy visual specs
+  ranged_strelkov: { archetype: 'agent', scale: 0.95 },
+  dark_mage: { archetype: 'ethereal', scale: 1.05 },
+  boss_catacombs_keeper: { archetype: 'golem', scale: 1.6 },
 };
 
 export function resolveEnemyVisualSpec(enemyType: EnemyType): EnemyVisualSpec {

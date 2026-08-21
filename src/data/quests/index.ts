@@ -13,6 +13,7 @@ import { QUESTS_PHASE5_SIDE } from './phase5SideQuests';
 import { AAA_EXPANSION_QUESTS } from './aaaExpansionQuests';
 import { EXPANSION_QUEST_STUBS } from '../expansion/expansionQuestStubs';
 import { EXPANSION_HUB_QUESTS } from '../expansion/expansionHubQuests';
+import { QUESTS_ACT4_NEW } from './act4_newQuests';
 
 export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...QUESTS_ACT1,
@@ -28,5 +29,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...AAA_EXPANSION_QUESTS,
   ...EXPANSION_QUEST_STUBS,
   ...EXPANSION_HUB_QUESTS,
+  ...QUESTS_ACT4_NEW,
   ...CHK_QUESTS,
 ];

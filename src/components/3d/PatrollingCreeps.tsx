@@ -417,7 +417,8 @@ function Creep({
     );
 
     if (bodyMatRef.current) {
-      bodyMatRef.current.emissiveIntensity = inArena
+      // Task 4b-C4: White hit flash — blend emissive toward white during hitReact
+      const baseEmissiveIntensity = inArena
         ? 2.8 + combatPulse * 2.2
         : dormant
           ? 0.5
@@ -426,6 +427,12 @@ function Creep({
             : alerting
               ? 2.2 + alertPulse * 1.4
               : 1.6 + Math.sin(t * 3) * 0.4;
+      bodyMatRef.current.emissiveIntensity = hitKick > 0.5
+        ? baseEmissiveIntensity + hitKick * 6
+        : baseEmissiveIntensity;
+      if (hitKick > 0.5) {
+        bodyMatRef.current.emissive.set('#ffffff');
+      }
     }
     if (lightRef.current) {
       lightRef.current.intensity = inArena

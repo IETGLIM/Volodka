@@ -46,6 +46,8 @@ describe('playerLocomotionPresentation', () => {
         right: false,
         run: false,
         jump: false,
+        crouch: false,
+        block: false,
         hasMovement: true,
       },
       virtual: { forward: 0, backward: 1, left: 0, right: 0, run: 0, jump: 0, moveMagnitude: 0.8 },
@@ -64,6 +66,8 @@ describe('playerLocomotionPresentation', () => {
         right: false,
         run: false,
         jump: false,
+        crouch: false,
+        block: false,
         hasMovement: false,
       },
       virtual: {

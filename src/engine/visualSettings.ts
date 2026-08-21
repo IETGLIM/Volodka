@@ -34,6 +34,10 @@ export interface VisualSettingsSnapshot {
    * presets always use ACES_FILMIC regardless of this flag.
    */
   agxToneMapping: boolean;
+  /** Individual post-FX toggles (require postfxEnabled=true) */
+  vignetteEnabled: boolean;
+  chromaticAberrationEnabled: boolean;
+  filmGrainEnabled: boolean;
 }
 
 const LS_POSTFX = 'volodka_postfx';
@@ -45,6 +49,9 @@ const LS_MOUSE_SENS = 'volodka_mouse_sens';
 const LS_INVERT_Y = 'volodka_invert_y';
 const LS_POINTER_LOCK = 'volodka_pointer_lock';
 const LS_AGX = 'volodka_agx';
+const LS_VIGNETTE = 'volodka_vignette';
+const LS_CHROMATIC = 'volodka_chromatic';
+const LS_FILM_GRAIN = 'volodka_film_grain';
 
 function lsGetBool(key: string, fallback: boolean): boolean {
   try {
@@ -196,6 +203,10 @@ export function readVisualSettings(): VisualSettingsSnapshot {
     // Default ON: AgX is the modern filmic tone mapper; user can opt out.
     // Effective only when preset.id === 'ultra' (see ExplorationPostFX).
     agxToneMapping: lsGetBool(LS_AGX, true),
+    // Individual post-FX toggles — all default ON.
+    vignetteEnabled: lsGetBool(LS_VIGNETTE, true),
+    chromaticAberrationEnabled: lsGetBool(LS_CHROMATIC, true),
+    filmGrainEnabled: lsGetBool(LS_FILM_GRAIN, true),
   };
 }
 

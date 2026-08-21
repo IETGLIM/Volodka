@@ -38,6 +38,8 @@ export interface MovementIntentInput {
     right: boolean;
     run: boolean;
     jump: boolean;
+    crouch: boolean;
+    block: boolean;
     hasMovement: boolean;
   };
   virtual?: {
@@ -58,6 +60,8 @@ export interface MovementIntent {
   rgt: number;
   running: boolean;
   jumping: boolean;
+  crouching: boolean;
+  blocking: boolean;
   keyboardDrivesMove: boolean;
   /** 0–1 speed scale for analog stick / touch */
   analogSpeedScale: number;
@@ -208,6 +212,8 @@ export function resolveMovementIntent(input: MovementIntentInput): MovementInten
     rgt,
     running: input.keys.run || (virtual?.run ?? 0) > 0,
     jumping: input.keys.jump || (virtual?.jump ?? 0) > 0,
+    crouching: input.keys.crouch,
+    blocking: input.keys.block,
     keyboardDrivesMove,
     analogSpeedScale: isMoving ? Math.max(analogSpeedScale, 0.2) : 0,
     isMoving,

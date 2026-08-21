@@ -10,6 +10,8 @@ export interface KeyboardMovementSample {
   run: boolean;
   jump: boolean;
   interact: boolean;
+  crouch: boolean;
+  block: boolean;
   /** True when any movement key is held (WASD / arrows). */
   hasMovement: boolean;
 }
@@ -43,6 +45,8 @@ const keys = {
   run: false,
   jump: false,
   interact: false,
+  crouch: false,
+  block: false,
 };
 
 /** Last key pressed on each axis pair — resolves W+S / A+D rollover & ghosting. */
@@ -108,6 +112,11 @@ function onKeyDown(e: KeyboardEvent): void {
     case 'ShiftRight':
       keys.run = true;
       break;
+    case 'ControlLeft':
+    case 'ControlRight':
+      keys.crouch = true;
+      e.preventDefault();
+      break;
     case 'Space':
       keys.jump = true;
       e.preventDefault();
@@ -120,6 +129,7 @@ function onKeyDown(e: KeyboardEvent): void {
       break;
     default:
       if (e.key === 'Shift') keys.run = true;
+      else if (e.key === 'Control') { keys.crouch = true; e.preventDefault(); }
       else if (e.key === ' ' || e.key === 'Spacebar') {
         keys.jump = true;
         e.preventDefault();
@@ -142,6 +152,10 @@ function onKeyUp(e: KeyboardEvent): void {
     case 'ShiftRight':
       keys.run = false;
       break;
+    case 'ControlLeft':
+    case 'ControlRight':
+      keys.crouch = false;
+      break;
     case 'Space':
       keys.jump = false;
       break;
@@ -150,6 +164,7 @@ function onKeyUp(e: KeyboardEvent): void {
       break;
     default:
       if (e.key === 'Shift') keys.run = false;
+      else if (e.key === 'Control') keys.crouch = false;
       else if (e.key === ' ' || e.key === 'Spacebar') keys.jump = false;
       break;
   }
@@ -163,6 +178,8 @@ function clearKeyboardInputState(): void {
   keys.run = false;
   keys.jump = false;
   keys.interact = false;
+  keys.crouch = false;
+  keys.block = false;
   lastVerticalAxis = null;
   lastHorizontalAxis = null;
 }
@@ -225,6 +242,8 @@ export function sampleKeyboardMovement(): KeyboardMovementSample {
     run: keys.run,
     jump: keys.jump,
     interact: keys.interact,
+    crouch: keys.crouch,
+    block: keys.block,
     hasMovement,
   };
 }

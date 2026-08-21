@@ -58,6 +58,11 @@ const PAUSE_ACTIONS: Array<{
     run: ({ dispatchPanel }) => dispatchPanel('npcRelation'),
   },
   {
+    id: 'achievements',
+    label: 'Достижения',
+    run: ({ dispatchPanel }) => dispatchPanel('achievements'),
+  },
+  {
     id: 'settings',
     label: 'Настройки',
     run: ({ dispatchPanel }) => dispatchPanel('settings'),

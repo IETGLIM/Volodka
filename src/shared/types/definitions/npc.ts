@@ -66,6 +66,10 @@ export interface NPCDefinition {
   readonly defaultRotation?: number;
   readonly patrolRadius?: number;
   readonly patrolWaypoints?: [number, number, number][];
+  /** Multiple patrol route options — one is selected randomly at mount time.
+   *  Each inner array is a sequence of waypoints like `patrolWaypoints`.
+   *  Takes priority over `patrolWaypoints` when both are set. */
+  readonly patrolRoutes?: readonly (readonly [number, number, number][])[];
   readonly dialogueNodeId?: string;
   /** Dialogue node to redirect to after the first visit (return / repeat dialogue). */
   readonly returnDialogueNodeId?: string;

@@ -60,6 +60,12 @@ const BOSS_INTRO_DATA: Partial<Record<EnemyType, BossIntroData>> = {
     accent: '#00e5ff',
     ariaLabel: 'Босс: Финальный Код',
   },
+  boss_catacombs_keeper: {
+    name: 'ХРАНИТЕЛЬ КАТАКОМБ',
+    subtitle: 'Тысячи лет стражи — за что вы пришли?',
+    accent: '#8b5cf6',
+    ariaLabel: 'Босс: Хранитель Катакомб',
+  },
 };
 
 /* ══════════════════════════════════════════════════════════════

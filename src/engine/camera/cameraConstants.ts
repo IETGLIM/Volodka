@@ -10,7 +10,7 @@ import { getSceneConfig } from '@/config/scenes';
 export const OTS_DEFAULT_DISTANCE = 2.35;
 export const DEFAULT_DISTANCE = OTS_DEFAULT_DISTANCE;
 export const MIN_DISTANCE = 1.1;
-export const MAX_DISTANCE = 12.0;
+export const MAX_DISTANCE = 15.0;
 
 /**
  * Lateral shoulder bias (m) along camera-right before collision.
@@ -37,6 +37,14 @@ export const ZOOM_WHEEL_EXP = 0.011;
 export const ZOOM_WHEEL_MIN_STEP = 0.12;
 /** Spring snap strength after wheel input (0–1, applied once per frame until decay). */
 export const ZOOM_SPRING_SNAP = 0.74;
+/** Smooth zoom interpolation speed (higher = faster settle). */
+export const ZOOM_SMOOTH_SPEED = 6.0;
+/** Camera lag/interpolation factor (0.05 = heavy lag, 0.15 = responsive). */
+export const CAMERA_LAG_FACTOR = 0.08;
+/** Camera rotation inertia decay (higher = faster stop). */
+export const CAMERA_INERTIA_DECAY = 5.5;
+/** Camera rotation inertia gain (how much velocity builds per mouse delta). */
+export const CAMERA_INERTIA_GAIN = 0.6;
 export const LOOK_HEIGHT = 1.32;
 export const WALL_MARGIN = 0.25;
 
@@ -52,6 +60,10 @@ export const BREATHING_BOB_AMPLITUDE = 0.005;
 export const BREATHING_BOB_SPEED = Math.PI;
 export const LOOK_AHEAD_STRENGTH = 0.38;
 export const LOOK_AHEAD_LERP_SPEED = 5.15;
+/** Crouch camera height offset (m) — camera lowers when crouching. */
+export const CROUCH_CAMERA_HEIGHT_OFFSET = -0.55;
+/** Block camera height offset (m) — camera lowers slightly when blocking. */
+export const BLOCK_CAMERA_HEIGHT_OFFSET = -0.15;
 export const INDOOR_FOV = 52;
 export const OUTDOOR_FOV = 73;
 export const FOV_TRANSITION_SPEED = 3.25;

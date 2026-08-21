@@ -113,6 +113,20 @@ export function useNotificationToastController() {
       // a rich "★ Квест выполнен!" card with rewards via useQuests() watcher.
       // This toastManager.addToast('quest', ...) was duplicating it with a
       // plain text toast "Награда за X: ...". See notificationChannelRegistry.
+      // item:received — 'Получен предмет: [название]' toast
+      eventBus.on('ui:loot_notification', (payload) => {
+        if (payload.type === 'item_received') {
+          toastManager.addToast('item', `Получен предмет: ${payload.name}`);
+        }
+      }),
+      // quest:objective_updated — 'Квест обновлён: [название]' toast
+      eventBus.on('quest:objective_updated', (payload) => {
+        toastManager.addToast('quest', `Квест обновлён: ${payload.questTitle ?? ''}`);
+      }),
+      // achievement:unlocked — 'Достижение разблокировано: [название]' golden toast
+      eventBus.on('achievement:unlocked', (payload) => {
+        toastManager.addToast('achievement', `Достижение разблокировано: ${payload.title ?? payload.achievementId ?? ''}`);
+      }),
     ];
 
     return () => unsubs.forEach((unsub) => unsub());

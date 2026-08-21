@@ -1,16 +1,27 @@
 /** Locomotion and character-controller constants for PhysicsPlayer */
 
 export const WALK_SPEED = 4;
-export const RUN_SPEED = 7;
+/** Sprint speed: 1.8× walk speed. */
+export const RUN_SPEED = WALK_SPEED * 1.8;
+/** Smooth acceleration/deceleration lambda for keyboard velocity lerp.
+ * 0.12 per-frame factor → lambda ≈ 7.67 (frame-rate independent via MathUtils.damp). */
+export const VELOCITY_LERP_LAMBDA = 7.67;
+/** Crouch speed (m/s) — significantly slower than walk. */
+export const CROUCH_SPEED = 1.8;
+/** Block/walk speed (m/s) — slightly slower than walk. */
+export const BLOCK_SPEED = 2.5;
 /** Absolute cap on horizontal speed (m/s). Prevents perk stacking or
  *  external velocity injection from producing extreme speeds. */
 export const MAX_HORIZONTAL_SPEED = 15;
 /** Keyboard gets snappier response than touch/gamepad damp tuning. */
 export const KEYBOARD_ACCEL = 55;
+/** Smooth deceleration damping for keyboard (lower = longer coast). */
+export const KEYBOARD_DECEL = 12;
 export const JUMP_FORCE = 5.5;
 export const GRAVITY = -15;
 export const FOOTSTEP_INTERVAL = 0.4;
 export const PLAYER_HEIGHT = 1.75;
+export const PLAYER_CROUCH_HEIGHT = 1.2;
 export const PLAYER_RADIUS = 0.3;
 export const ROTATION_SPEED = 9.0;
 /** Speed for 180-degree direction reversals — slower than normal rotation
@@ -73,3 +84,17 @@ export const NPC_INTERACTION_RANGE = 3.0;
 export const NPC_INTERACTION_QUERY_RANGE = 3.5;
 /** Fraction of maxRange under which the target is considered “in interact range” for scoring/UI. */
 export const INTERACTION_IN_RANGE_FRACTION = 0.6;
+
+// –– Stamina system ––
+/** Maximum stamina points. */
+export const STAMINA_MAX = 100;
+/** Stamina drain per second while sprinting. */
+export const STAMINA_DRAIN_RATE = 18;
+/** Stamina regen per second while not sprinting. */
+export const STAMINA_REGEN_RATE = 12;
+/** Stamina regen delay after sprint ends (seconds). */
+export const STAMINA_REGEN_DELAY = 1.0;
+/** Minimum stamina to start sprinting. */
+export const STAMINA_SPRINT_THRESHOLD = 10;
+/** Stamina regen per second while crouching (slower). */
+export const STAMINA_CROUCH_REGEN_RATE = 15;

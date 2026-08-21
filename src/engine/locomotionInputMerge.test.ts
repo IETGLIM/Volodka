@@ -16,6 +16,8 @@ const idleKeys = {
   right: false,
   run: false,
   jump: false,
+  crouch: false,
+  block: false,
   hasMovement: false,
 };
 
