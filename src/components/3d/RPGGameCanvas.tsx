@@ -8,7 +8,9 @@ import { ACESFilmicToneMapping, NoToneMapping, PCFSoftShadowMap, SRGBColorSpace,
 import { devLog, devWarn } from '@/shared/utils/devLog';
 import { SimplePlayer } from './SimplePlayer';
 import { FollowCamera } from './FollowCamera';
-import { ExplorationPostFX } from './ExplorationPostFX';
+const LazyExplorationPostFX = lazy(() =>
+  import('./ExplorationPostFX').then((m) => ({ default: m.ExplorationPostFX })),
+);
 import { ExplorationLighting } from './Lighting';
 import { SceneEnvironment } from './SceneEnvironment';
 import { MatrixRain } from './MatrixRain';
@@ -644,7 +646,9 @@ function RPGGameCanvasScene({
 
       {!physicsPaused && (
         <PostFXErrorBoundary>
-          <ExplorationPostFX />
+          <Suspense fallback={null}>
+            <LazyExplorationPostFX />
+          </Suspense>
         </PostFXErrorBoundary>
       )}
 

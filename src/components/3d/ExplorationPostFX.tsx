@@ -60,6 +60,7 @@ import {
 import { resolveDerivedSceneId } from '@/config/sceneInheritance';
 import { shouldUseDenseSceneAmbientOcclusion } from '@/config/sceneVisualProfiles';
 import { GodRaysSunMesh, GODRAYS_POST_SCENES } from '@/components/3d/GodRaysSunMesh';
+import { MotionBlurEffect } from '@/components/3d/MotionBlurEffect';
 import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene chromatic aberration tuning — cinematic lens character varies by mood. **/
@@ -928,6 +929,8 @@ function PostFXPipeline() {
       {proceduralLut ? <LUT lut={proceduralLut} tetrahedralInterpolation blendFunction={BlendFunction.NORMAL} /> : null as any}
       {wantsNoise && !useCoherentNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
       {wantsNoise && useCoherentNoise ? <Noise premultiply blendFunction={BlendFunction.NORMAL} opacity={noiseOpacity} /> : null as any}
+      {/* Cinematic radial motion blur — ultra-only, force-enabled during cutscene/dialogue on high+ultra. */}
+      <MotionBlurEffect forceDuringCutscene={isInCutscene || isInDialogue} />
       <ToneMapping mode={toneMappingMode} exposure={toneExposure + agxExposureLift} />
       {wantsSmaa ? <SMAA preset={smaaPreset} /> : null as any}
     </ManagedEffectComposer>

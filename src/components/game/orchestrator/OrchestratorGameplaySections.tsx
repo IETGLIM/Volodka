@@ -1,4 +1,4 @@
-import { memo, Suspense, useCallback, useEffect, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -30,7 +30,9 @@ import { NotificationToasts } from '../NotificationToasts';
 import { ExaminePanel } from '../ExaminePanel';
 import { InteractionHintPopup } from '../InteractionHintPopup';
 import { NpcNoDialogueBark } from '../NpcNoDialogueBark';
-import { NpcScheduleDisplay } from '../NpcScheduleDisplay';
+const LazyNpcScheduleDisplay = lazy(() =>
+  import('../NpcScheduleDisplay').then((m) => ({ default: m.NpcScheduleDisplay })),
+);
 import { ExplorationHintsPanel } from '../ExplorationHintsPanel';
 import { MoralCompassHUD } from '../MoralCompassHUD';
 import { TutorialOverlay } from '../TutorialOverlay';
@@ -48,7 +50,9 @@ import { LoreDiscoveryToast } from '../LoreDiscoveryToast';
 import { WeatherAlertNotification } from '../WeatherAlertNotification';
 import { CraftingDiscoveryToast } from '../CraftingDiscoveryToast';
 import { GameSystemToast } from '../GameSystemToast';
-import { CompassHUD } from '../CompassHUD';
+const LazyCompassHUD = lazy(() =>
+  import('../CompassHUD').then((m) => ({ default: m.CompassHUD })),
+);
 import { ExplorationMobileHud } from '../ExplorationMobileHud';
 import { VirtualJoystick } from '../VirtualJoystick';
 import { MobileActionButtons } from '../MobileActionButtons';
@@ -68,8 +72,12 @@ import { HUDBootSequence } from '@/components/game/hud/parts/HUDBootSequence';
 import { HUDNotificationFeed } from '@/components/game/hud/parts/HUDNotificationFeed';
 import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
 import { FloatingTextLayer } from '../FloatingText';
-import { ScreenEffects } from '../ScreenEffects';
-import { CutsceneOverlay } from '@/components/game/CutsceneOverlay';
+const LazyScreenEffects = lazy(() =>
+  import('../ScreenEffects').then((m) => ({ default: m.ScreenEffects })),
+);
+const LazyCutsceneOverlay = lazy(() =>
+  import('@/components/game/CutsceneOverlay').then((m) => ({ default: m.CutsceneOverlay })),
+);
 // FIX-C1: IntroWakeOverlay import removed — CutsceneOverlay now handles
 // the intro_wakeup cutscene's letterbox + skip + per-phase text. The
 // standalone IntroWakeOverlay component was deleted as dead code.
@@ -102,7 +110,9 @@ import {
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { DiegeticDialogueHud } from '@/components/game/diegetic/DiegeticDialogueHud';
 import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
-import { DataTerminalOverlay } from '@/components/game/DataTerminalOverlay';
+const LazyDataTerminalOverlay = lazy(() =>
+  import('@/components/game/DataTerminalOverlay').then((m) => ({ default: m.DataTerminalOverlay })),
+);
 import { LevelUpNotification } from '@/components/game/LevelUpNotification';
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { ProximityWhisperOverlay } from '@/components/game/ProximityWhisperOverlay';
@@ -123,7 +133,9 @@ import {
   useSkillSlots,
 } from '@/store/selectors/hudMountSelectors';
 import { isAct1DiegeticScene } from '@/engine/narrative/narrativePresentationPolicy';
-import { AudioVisualizer } from '../AudioVisualizer';
+const LazyAudioVisualizer = lazy(() =>
+  import('../AudioVisualizer').then((m) => ({ default: m.AudioVisualizer })),
+);
 import { LocationAtmosphereOverlay } from '../LocationAtmosphereOverlay';
 import { CyberpunkGlowEffects } from '../CyberpunkGlowEffects';
 import { QuickAccessToolbar } from '../QuickAccessToolbar';
@@ -271,7 +283,9 @@ export const GameplayEventNotifications = memo(function GameplayEventNotificatio
           <AchievementNotification />
         </>
       )}
-      <DataTerminalOverlay />
+      <Suspense fallback={null}>
+        <LazyDataTerminalOverlay />
+      </Suspense>
     </>
   );
 });
@@ -307,7 +321,11 @@ export const GameplayCombatVisualFx = memo(function GameplayCombatVisualFx() {
 
 /** FX flash/shake/vignette — all gameplay modes (cutscene drama, combat hits). */
 export const GameplayScreenEffectsLayer = memo(function GameplayScreenEffectsLayer() {
-  return <ScreenEffects />;
+  return (
+    <Suspense fallback={null}>
+      <LazyScreenEffects />
+    </Suspense>
+  );
 });
 
 // FIX-C1 (Phase 7.2 — Prologue/IntroWake duplicate-frame cleanup):
@@ -331,7 +349,11 @@ export const GameplayCutsceneOverlay = memo(function GameplayCutsceneOverlay() {
   const cutsceneId = useActiveCutsceneId();
   if (mode !== 'cutscene' && cutsceneId == null) return null;
 
-  return <CutsceneOverlay />;
+  return (
+    <Suspense fallback={null}>
+      <LazyCutsceneOverlay />
+    </Suspense>
+  );
 });
 
 /** Scene transition progress bar and wipe overlay. */
@@ -474,7 +496,9 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
           <StressIndicator />
           <QuickUseBar />
           <QuickInventoryBar />
-          <CompassHUD />
+          <Suspense fallback={null}>
+            <LazyCompassHUD />
+          </Suspense>
           {/* FIX S13-23: SceneTopBarHud moved INTO ExplorationHUD (inside game-hud div)
               so E2E tests can find the scene name via getByTestId('game-hud').toContainText().
               Was a sibling in GameplayAmbientExplorationHud — game-hud had empty textContent. */}
@@ -527,7 +551,9 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <HUDNotificationFeed />
       <InteractionHintPopup />
       <NpcNoDialogueBark />
-      <NpcScheduleDisplay />
+      <Suspense fallback={null}>
+        <LazyNpcScheduleDisplay />
+      </Suspense>
       <ExplorationHintsPanel />
       <AmbientAtmosphereCaption />
       {/* Filmic scene-discovery celebration — replaces the older neon SceneDiscoveryToast.
@@ -743,7 +769,11 @@ export const GameplayExamineOverlay = memo(function GameplayExamineOverlay({
 
 /** Audio visualizer — reactive waveform/spectrum, bottom-right corner. */
 export const GameplayAudioVisualizer = memo(function GameplayAudioVisualizer() {
-  return <AudioVisualizer />;
+  return (
+    <Suspense fallback={null}>
+      <LazyAudioVisualizer />
+    </Suspense>
+  );
 });
 
 /** Location atmosphere overlay — color wash based on scene type + time. */
