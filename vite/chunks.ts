@@ -114,6 +114,15 @@ const DATA_NPC = new Set([
   'expandedNPCs',
   'npcSchedules',
   'npcGifts',
+  // expansionNpcStubs imports from @/config/npcModelRegistry +
+  // @/config/npcAnimationDefaults (which resolve into data-npc via the npcModelRegistry
+  // / npcAnimationDefaults file-bases). Meanwhile allNpcDefinitions (data-npc) imports
+  // EXPANSION_NPC_STUBS from expansionNpcStubs. If expansionNpcStubs falls into the
+  // default 'data-misc' bucket, this creates a data-npc ↔ data-misc circular chunk
+  // → Rollup emits `import{a as Q}from"./data-misc-*.js"` in data-npc, but data-misc
+  // imports back from data-npc → TDZ: "Cannot access 'Q' before initialization".
+  // Colocate expansionNpcStubs with the rest of the NPC data to break the cycle.
+  'expansionNpcStubs',
 ]);
 
 const DATA_WORLD = new Set([
