@@ -3,7 +3,7 @@ import { preloadPhysicsChunk } from '@/engine/physics/preloadPhysicsChunk';
 import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
 import type { GamePhase } from '@/shared/gamePhase';
 
-const PHYSICS_PHASES = new Set<GamePhase>(['exploration', 'combat', 'cutscene']);
+const PHYSICS_PHASES = new Set<GamePhase>(['intro', 'exploration', 'combat', 'cutscene']);
 const RETRY_MS = 1_500;
 
 /**

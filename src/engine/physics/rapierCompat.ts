@@ -19,42 +19,21 @@ export * from '@dimforge/rapier3d-compat-original';
 let initPromise: Promise<void> | null = null;
 let initMode: 'pending' | 'external' | 'inline' | 'failed' = 'pending';
 
-/**
- * Guard against duplicate init() calls across module instances.
- *
- * In Vite dev mode, even with `resolve.dedupe`, the dev-server's pre-bundle
- * step can create a separate module instance of rapierCompat.ts for
- * `@react-three/rapier`'s nested `@dimforge/rapier3d-compat` import vs. our
- * direct `@/engine/physics/rapierCompat` import. Two instances → two
- * independent `initPromise` caches → the second init() call (from <Physics>
- * component mount) re-runs the entire WASM compile, double-marking
- * 'rapier:init-start' and wasting ~1.3s of blocking main-thread work on
- * every boot. The flag below is module-scoped — it only guards WITHIN a
- * single module instance. For full dedup we rely on Vite's alias+dedupe
- * (production build is unaffected — single bundle = single instance).
- *
- * Once init has completed (success OR failure), `initHasStarted` stays true
- * and subsequent calls return the cached promise without re-marking.
- */
-let initHasStarted = false;
-
 const EXTERNAL_WASM_URL = '/rapier/rapier_wasm3d_bg.wasm';
 
 /**
  * Try to init with external wasm file if available.
  * Falls back to inline base64 (default behavior) if fetch fails or not deployed.
+ *
+ * Dedup across module instances: relies on `resolve.dedupe` in vite.config.ts
+ * to ensure @react-three/rapier's nested @dimforge/rapier3d-compat import
+ * resolves to this single module instance. Within this instance, `initPromise`
+ * cache prevents duplicate WASM compiles — and on transient failure,
+ * `initPromise = null` (in the catch block) allows retry.
  */
 export async function init(): Promise<void> {
-  // Early return: init already started or completed in this module instance.
-  // This guards against duplicate init() calls when @react-three/rapier's
-  // <Physics> component mounts AFTER preloadPhysicsChunk already ran —
-  // even if initPromise was cleared by an earlier transient failure.
-  if (initHasStarted) {
-    return initPromise ?? Promise.resolve();
-  }
   if (initPromise) return initPromise;
 
-  initHasStarted = true;
   initPromise = (async () => {
     // Mark start
     if (typeof performance !== 'undefined' && performance.mark) {
@@ -142,5 +121,4 @@ export function getRapierInitMode(): typeof initMode {
 export function resetRapierInitForTests(): void {
   initPromise = null;
   initMode = 'pending';
-  initHasStarted = false;
 }
