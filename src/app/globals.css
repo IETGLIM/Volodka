@@ -85,3 +85,28 @@ html[data-scanlines="off"] .cp-scanline-bar,
 html[data-scanlines="off"] body::after {
   display: none !important;
 }
+
+/* ── Menu item entrance animation (replaces framer-motion initial/animate) ──
+   INP-CRITICAL: framer-motion's motion.button initialized layout calculations
+   synchronously on mount, blocking the pointer event ~760ms. CSS animation
+   is GPU-accelerated and runs off the main thread. */
+@keyframes menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover shift — was 2px, now 6px to match original framer-motion whileHover { x: 6 } */
+.cinematic-menu-item:hover:not(:disabled) {
+  transform: translateX(6px) !important;
+}
+
+/* Active tap — replaces framer-motion whileTap { scale: 0.985 } */
+.cinematic-menu-item:active:not(:disabled) {
+  transform: scale(0.985) !important;
+}

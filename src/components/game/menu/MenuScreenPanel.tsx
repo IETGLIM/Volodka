@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, startTransition } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Volume2, VolumeX } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -156,7 +156,13 @@ function MenuScreenPanelInner() {
     (id: string) => {
       if (showNewGameDialog) return;
       if (id === 'new') {
-        setShowNewGameDialog(true);
+        // startTransition: the dialog mounts a motion.div with backdrop-blur +
+        // blur filter animation (very expensive — forces re-rasterize per frame).
+        // Marking it non-urgent lets the browser paint the menu click feedback
+        // first, then mount the dialog without blocking the pointer event's INP.
+        startTransition(() => {
+          setShowNewGameDialog(true);
+        });
         safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_open');
         return;
       }
@@ -321,9 +327,9 @@ function MenuScreenPanelInner() {
             <motion.div
               key="new-game-dialog"
               className="w-full max-w-[22rem] mx-4"
-              initial={{ opacity: 0, y: 14, scale: 0.98, filter: 'blur(8px)' }}
-              animate={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: 10, scale: 0.98, filter: 'blur(6px)' }}
+              initial={{ opacity: 0, y: 14, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 10, scale: 0.98 }}
               transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
