@@ -120,7 +120,7 @@ export const DIALOGUE_ACT3_EXPANDED: Record<string, DialogueNode> = {
         text: 'Говори. Я слушаю.',
         next: 'dying_poet_the_request',
         effects: [
-          { type: 'triggerQuest', questId: 'last_poem' },
+          { type: 'triggerQuest', questId: 'dying_poet_last_letter' },
           { type: 'addKarma', value: 2 },
           { type: 'addSkill', skill: 'empathy', value: 1 },
         ],
@@ -129,7 +129,7 @@ export const DIALOGUE_ACT3_EXPANDED: Record<string, DialogueNode> = {
         text: 'Может, лучше вызвать помощь?',
         next: 'dying_poet_no_help',
         effects: [
-          { type: 'triggerQuest', questId: 'last_poem' },
+          { type: 'triggerQuest', questId: 'dying_poet_last_letter' },
         ],
       },
     ],

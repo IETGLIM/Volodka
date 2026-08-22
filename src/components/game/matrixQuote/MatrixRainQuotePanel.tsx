@@ -7,6 +7,8 @@ import {
   MATRIX_QUOTE_CLOSE_LABEL,
   MATRIX_QUOTE_DEFAULT_DURATION_MS,
   MATRIX_QUOTE_DISMISS_HINT,
+  MATRIX_QUOTE_FALLBACK_LABEL,
+  MATRIX_QUOTE_GENERATED_LABEL,
   MATRIX_QUOTE_TYPE_SPEED,
 } from '@/engine/matrixQuote/matrixQuoteConstants';
 import {
@@ -15,8 +17,11 @@ import {
   buildQuoteAriaLabel,
   getActThemeColor,
 } from '@/engine/matrixQuote/matrixQuotePresentation';
+import { useMatrixQuote } from '@/hooks/useMatrixQuote';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useTypewriter } from '@/hooks/useTypewriter';
+import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
+import { getPlayerStoreState } from '@/store/stores/playerStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 export interface MatrixRainQuoteProps {
@@ -42,6 +47,16 @@ function MatrixRainQuotePanel({
   const showChapterSubtitle = Boolean(chapterTitle?.trim() && text.trim());
   const typeSpeed = reducedMotion ? 0 : MATRIX_QUOTE_TYPE_SPEED;
   const { displayed, done, skip } = useTypewriter(bodyText, typeSpeed);
+
+  // Dynamic (LLM-generated) Matrix quote via FreeRouter serverless proxy.
+  // AUGMENTS the static author quote — never replaces it. The hook is
+  // null-safe: if FREEROUTER_KEY is unset or fetch fails, `dynamicQuote`
+  // stays null and the static quote is shown alone. Game never breaks.
+  const sceneId = getLiveCurrentSceneId();
+  const karma = getPlayerStoreState().playerState.karma;
+  const dynamicQuote = useMatrixQuote(sceneId, karma, actNumber);
+  const dynamicText = dynamicQuote.quote;
+  const showDynamic = Boolean(dynamicText) && dynamicText !== bodyText;
 
   useEffect(() => {
     if (reducedMotion && bodyText) skip();
@@ -157,6 +172,30 @@ function MatrixRainQuotePanel({
                 style={{ color: themeColor }}
               >
                 {buildActFooterLabel(actNumber, chapterTitle?.trim() || undefined)}
+              </motion.div>
+            ) : null}
+
+            {showDynamic && dynamicText ? (
+              <motion.div
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: reducedMotion ? 0 : 1.4, duration: 0.6 }}
+                className="mt-6 pt-4 border-t border-white/10 max-w-xl mx-auto"
+              >
+                <p
+                  className="text-[10px] font-mono tracking-[0.2em] uppercase mb-2"
+                  style={{ color: `${themeColor}aa` }}
+                >
+                  {dynamicQuote.fallback
+                    ? MATRIX_QUOTE_FALLBACK_LABEL
+                    : MATRIX_QUOTE_GENERATED_LABEL}
+                </p>
+                <p
+                  className="text-sm md:text-base font-mono italic leading-relaxed opacity-80"
+                  style={{ color: `${themeColor}cc` }}
+                >
+                  {dynamicText}
+                </p>
               </motion.div>
             ) : null}
 

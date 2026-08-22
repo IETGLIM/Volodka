@@ -20,7 +20,7 @@ export const QUESTS_ACT4_EXPANDED: QuestDefinition[] = [
         id: 'find_datacenter_entrance',
         description: 'Найти вход в подземный дата-центр',
         type: 'location_visited',
-        target: 'datacenter_entrance',
+        target: 'guild_mainframe',
         completed: false,
       },
       {
@@ -142,7 +142,7 @@ export const QUESTS_ACT4_EXPANDED: QuestDefinition[] = [
         id: 'find_hidden_door',
         description: 'Найти потайную дверь в подвал библиотеки',
         type: 'location_visited',
-        target: 'library_hidden_door',
+        target: 'library_basement',
         completed: false,
       },
       {
@@ -206,14 +206,14 @@ export const QUESTS_ACT4_EXPANDED: QuestDefinition[] = [
         id: 'trace_signal_source',
         description: 'Проследить источник радиосигнала',
         type: 'location_visited',
-        target: 'signal_origin_point',
+        target: 'rooftop_edge',
         completed: false,
       },
       {
         id: 'enter_bunker',
         description: 'Проникнуть в довоенный бункер',
         type: 'location_visited',
-        target: 'prewar_bunker_entrance',
+        target: 'underground_bunker',
         completed: false,
       },
       {

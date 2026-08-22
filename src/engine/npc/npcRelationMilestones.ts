@@ -3,10 +3,19 @@
  * (rising or falling), emit `npc:relation_milestone` so the UI can open the
  * authored milestone dialogue node. Milestones are one-shot per crossing —
  * to re-fire, the relation must leave the threshold and cross it again.
+ *
+ * Boundary contract: the store layer (worldSlice) does NOT call this module
+ * directly — instead it emits `store:npc_relation_changed` via the shared
+ * appEventBus. The engine subscribes once at bootstrap
+ * (registerRelationMilestoneBridge, called from bindApplicationLayers) and
+ * runs `checkRelationMilestones` for each emitted change. This keeps the
+ * store free of any `@/engine/**` import.
  */
 
 import { eventBus } from '@/engine/EventBus';
 import { findNpcById } from '@/data/allNpcDefinitions';
+import { onAppEvent } from '@/shared/events/appEventBus';
+import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 
 export interface RelationMilestonePayload {
   /** Canonical NPC id (resolved via `resolveCanonicalNpcId`). */
@@ -61,3 +70,34 @@ export function checkRelationMilestones(
     });
   }
 }
+
+/* ─── Store→engine bridge subscription ─── */
+
+let bridgeUnsubscribe: (() => void) | null = null;
+
+/**
+ * Subscribe (once, at app bootstrap) to store-emitted `store:npc_relation_changed`
+ * events and dispatch each to `checkRelationMilestones`. Idempotent — safe to
+ * call multiple times. Wired in `bindApplicationLayers`.
+ */
+export function registerRelationMilestoneBridge(): void {
+  if (bridgeUnsubscribe) return;
+  bridgeUnsubscribe = onAppEvent(
+    'store:npc_relation_changed',
+    ({ npcId, oldRelation, newRelation }) => {
+      checkRelationMilestones(npcId, oldRelation, newRelation);
+    },
+  );
+}
+
+/** Test helper — detach the bridge subscription between unit tests. */
+export function resetRelationMilestoneBridgeForTests(): void {
+  bridgeUnsubscribe?.();
+  bridgeUnsubscribe = null;
+}
+
+// HMR: drop the subscription so the new module instance can re-bind cleanly.
+registerHmrDispose(() => {
+  bridgeUnsubscribe?.();
+  bridgeUnsubscribe = null;
+});

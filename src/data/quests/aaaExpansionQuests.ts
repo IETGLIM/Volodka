@@ -322,7 +322,7 @@ export const AAA_EXPANSION_QUESTS: QuestDefinition[] = [
         id: 'repair_mechanism_minigame',
         description: 'Починить релейный механизм (миниигра)',
         type: 'minigame_completed',
-        target: 'factory_mechanism_repair',
+        target: 'bash_terminal',
         completed: false,
       },
       {

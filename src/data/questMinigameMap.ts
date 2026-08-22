@@ -69,4 +69,20 @@ export const QUEST_MINIGAME_MAP: Record<string, QuestMinigameMapping> = {
     failureText: 'Стихотворение не открывается...',
     successText: 'Финальное стихотворение Владимира раскрыто!',
   },
+  library_banned_book: {
+    questId: 'library_banned_book',
+    objectiveId: 'bypass_security_lock',
+    minigameType: 'codebreaker',
+    difficulty: 2,
+    failureText: 'Замок не поддаётся. Попробуй другую комбинацию.',
+    successText: 'Замок хранилища библиотеки взломан — «Сборник Мёртвых Серверов» доступен.',
+  },
+  aaa_factory_broken_mechanism: {
+    questId: 'aaa_factory_broken_mechanism',
+    objectiveId: 'repair_mechanism_minigame',
+    minigameType: 'bash_terminal',
+    difficulty: 3,
+    failureText: 'Релейный блок не отвечает. Сценарий не прошёл.',
+    successText: 'Релейный механизм «Зари-М» восстановлен — машина готова заговорить.',
+  },
 };

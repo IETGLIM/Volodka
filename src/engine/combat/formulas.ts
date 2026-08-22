@@ -6,7 +6,6 @@ import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { resolveThoughtCombatEffects, type ThoughtCombatEffect } from './thoughtCombatModifiers';
 import { THOUGHT_CABINET_MAP } from '@/data/thoughtCabinet';
 import { applyEquipmentBonusToSkill } from './EquipmentBonusCalculator';
-import { getPlayerStore } from '@/store/storeBindings';
 import type { EquipmentSlot } from '@/shared/types/game';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -152,15 +151,15 @@ function snap() {
   return getGameSnapshot();
 }
 
-/** Read the player's equipped items from the live store.
- *  The combat snapshot (getGameSnapshot) intentionally carries a reduced
- *  playerState for determinism/serialization — it has skills/energy/thoughts
- *  but NOT equippedItems. The live store does. Wrapped in try/catch so pure
- *  unit tests (where the store isn't bound) get an empty set → no equipment
- *  bonus, matching pre-fix behavior. */
+/** Read the player's equipped items from the bridge snapshot.
+ *  The snapshot carries a serializable view of `playerState.equippedItems`
+ *  (one `{ id }` per slot) — sufficient for the equipment bonus calculator,
+ *  which only reads `id`. Wrapped in try/catch so pure unit tests (where the
+ *  bridge isn't registered) get an empty set → no equipment bonus, matching
+ *  pre-fix behavior. */
 function getEquippedItemsSafe(): Partial<Record<EquipmentSlot, { id: string } | null>> {
   try {
-    return getPlayerStore().playerState.equippedItems ?? {};
+    return snap().equippedItems ?? {};
   } catch {
     return {};
   }

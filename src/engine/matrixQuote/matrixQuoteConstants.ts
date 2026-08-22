@@ -20,3 +20,8 @@ export const MATRIX_RAIN_CHARS_PER_COLUMN_RANGE = 10;
 
 export const MATRIX_QUOTE_DISMISS_HINT = 'нажмите чтобы продолжить';
 export const MATRIX_QUOTE_CLOSE_LABEL = 'Закрыть цитату';
+
+// Dynamic (LLM-generated via FreeRouter) quote — clearly distinguished from
+// the author's static voice so users know it's AI, not the project author.
+export const MATRIX_QUOTE_GENERATED_LABEL = '✨ Новая цитата · сгенерировано';
+export const MATRIX_QUOTE_FALLBACK_LABEL = '✨ Цитата из резервного списка';

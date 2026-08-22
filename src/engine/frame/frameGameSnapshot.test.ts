@@ -69,6 +69,18 @@ function baseSnapshot(overrides: Partial<GameStoreSnapshot> = {}): GameStoreSnap
     weatherEnabled: true,
     rainIntensity: 0,
     acquiredThoughtIds: [],
+    difficultySettings: {
+      difficulty: 'normal',
+      enemyDamageMultiplier: 1,
+      enemyHealthMultiplier: 1,
+      playerDamageMultiplier: 1,
+      xpMultiplier: 1,
+      creditsMultiplier: 1,
+      skillCheckThreshold: 0,
+      stressAccumulationRate: 1,
+      energyRegenRate: 1,
+      combatFleeBaseChance: 0.3,
+    },
     ...overrides,
   };
 }

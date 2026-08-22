@@ -1,6 +1,6 @@
 /* ─── NPC emissive color caching ─── */
 
-import { useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 
 /** Cached emissive color per NPC — reads store once per frame, not per-NPC */
 const _emissiveCache = new Map<string, { color: string; frame: number }>();
@@ -13,7 +13,7 @@ export function getNpcEmissiveColor(npcId: string, glowColor: string): string {
     return cached.color;
   }
 
-  const npcRelations = useGameStore.getState().npcRelations;
+  const npcRelations = getGameSnapshot().npcRelations;
   const relation = npcRelations.find((r) => r.npcId === npcId);
   const value = relation?.value ?? 50;
 

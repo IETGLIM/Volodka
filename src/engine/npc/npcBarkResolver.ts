@@ -1,6 +1,6 @@
 /* ─── NPC bark text resolution + per-frame cache ─── */
 
-import { useGameStore } from '@/store/gameStore';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { NPCDefinition } from '@/shared/types/game';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
@@ -22,7 +22,7 @@ export function computeBark(definition: NPCDefinition): string | null {
     return resolveNpcBarkForRelation(definition.barkTexts, cached.value);
   }
 
-  const npcRelations = useGameStore.getState().npcRelations;
+  const npcRelations = getGameSnapshot().npcRelations;
   const relation = npcRelations.find((r) => r.npcId === definition.id);
   const value = relation?.value ?? 50;
   _barkRelationCache.set(definition.id, { value, frame: _barkRelationFrame });

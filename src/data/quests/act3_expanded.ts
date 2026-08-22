@@ -20,7 +20,7 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
         id: 'find_surveillance_node',
         description: 'Найти узел слежения в промзоне',
         type: 'location_visited' as const,
-        target: 'surveillance_node_location',
+        target: 'guild_mainframe',
         completed: false,
       },
       {
@@ -110,10 +110,12 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
     questGiverNpcId: 'park_old_man',
   },
 
-  /* ─────────── КВЕСТ: Последний Стих ─────────── */
+  /* ─────────── КВЕСТ: Последнее Стих (side quest — dying poet → Elena) ── */
+  /* NOTE: renamed from `last_poem` to `dying_poet_last_letter` to avoid
+     id collision with the golden-path `last_poem` quest in act4.ts. */
   {
-    id: 'last_poem',
-    title: 'Последний Стих',
+    id: 'dying_poet_last_letter',
+    title: 'Последнее Стих',
     description: 'В читальном зале библиотеки, за последним стеллажом, лежит человек, которого забыли все кроме смерти. Поэт — последний из тех, кто помнит, как стихи были оружием. Он написал своё последнее произведение: не для публикаций, не для Сети — для одного человека. Человека, которого он предал тридцать лет назад. У него нет сил встать. У него есть только этот листок и имя.',
     act: 3,
     questType: 'side',
@@ -182,7 +184,7 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
         id: 'enter_factory_at_night',
         description: 'Войти на завод «Прогресс-7» ночью',
         type: 'location_visited' as const,
-        target: 'factory_night_entrance',
+        target: 'abandoned_factory',
         completed: false,
       },
       {
@@ -210,7 +212,7 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
         id: 'find_phantom_source',
         description: 'Найти источник фантомов',
         type: 'location_visited' as const,
-        target: 'phantom_source_location',
+        target: 'factory_basement',
         completed: false,
       },
       {
@@ -245,14 +247,14 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
         id: 'find_bunker_entrance',
         description: 'Найти вход в подземный бункер',
         type: 'location_visited' as const,
-        target: 'bunker_entrance',
+        target: 'underground_bunker',
         completed: false,
       },
       {
         id: 'explore_bunker_first_room',
         description: 'Осмотреть первый зал бункера',
         type: 'location_visited' as const,
-        target: 'bunker_first_room',
+        target: 'underground_bunker',
         completed: false,
       },
       {
@@ -273,7 +275,7 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
         id: 'exit_bunker',
         description: 'Выбраться из бункера',
         type: 'location_visited' as const,
-        target: 'bunker_exit',
+        target: 'street_night',
         completed: false,
       },
     ],

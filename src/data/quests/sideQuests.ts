@@ -826,7 +826,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
         id: 'bypass_security_lock',
         description: 'Обойти замок хранилища (проверка логики)',
         type: 'minigame_completed',
-        target: 'library_lockpick',
+        target: 'codebreaker',
         completed: false,
       },
       {
@@ -868,7 +868,7 @@ export const QUESTS_SIDE: QuestDefinition[] = [
         id: 'find_blueprint_cache',
         description: 'Найти тайник с чертежом',
         type: 'location_visited',
-        target: 'abandoned_factory_deep',
+        target: 'abandoned_factory',
         completed: false,
       },
       {

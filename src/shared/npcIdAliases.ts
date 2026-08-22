@@ -25,7 +25,14 @@ export const NPC_ID_ALIASES: Readonly<Record<string, string>> = {
   npc_katya: 'kate',
   npc_alina: 'solnysh',
   npc_viktoria: 'maria',
+  /* `victoria` is its own canonical NPC — vault-keeper specialist (see
+     EXPANSION_NPC_STUBS). Legacy `npc_victoria` records map to `maria`
+     for back-compat with old saves from when Виктория was a Maria alias. */
   npc_victoria: 'maria',
+  /* `alexander` and `barista` are short aliases used by WS22-B / WS23-B
+     dialogue npcChange effects. They map to the canonical long-form ids. */
+  alexander: 'office_alexander',
+  barista: 'cafe_barista',
   npc_alexander: 'office_alexander',
   npc_marat_echo: 'marat_echo',
   npc_guild_defector: 'guild_defector',

@@ -15,6 +15,7 @@ import { registerDifficultySliceMultiplierGetter } from '@/engine/combat/combatD
 import { getDifficultyStore } from '@/store/storeBindings';
 import { eventBus } from '@/engine/EventBus';
 import { bindAppEventBus, resetAppEventBusForTests } from '@/shared/events/appEventBus';
+import { registerRelationMilestoneBridge } from '@/engine/npc/npcRelationMilestones';
 import { bindSceneTransitionBridge, resetSceneTransitionBridgeForTests } from '@/shared/gameBridge/sceneTransitionBridge';
 import { wrapStoreSubscribe } from '@/engine/frame/frameProfilerCounters';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
@@ -47,6 +48,13 @@ export function bindApplicationLayers(): void {
   });
 
   bindStoreMusicEvents();
+
+  // Wire store→engine milestone bridge: the store emits
+  // `store:npc_relation_changed` via appEventBus; the engine listens and runs
+  // `checkRelationMilestones` to emit `npc:relation_milestone` for any
+  // threshold crossed. Kept out of the store to keep `@/engine/**` imports
+  // out of store slices.
+  registerRelationMilestoneBridge();
 
   // Wire the user-facing 5-level difficulty (difficultySlice) into the combat
   // damage scaler so the player's chosen difficulty affects ALL enemy damage

@@ -12,6 +12,7 @@ import {
   emitAchievementUnlocked,
   emitPoemCollected,
   runAfterStoreCommit,
+  scheduleNpcRelationChanged,
   scheduleQuestAccepted,
   scheduleQuestCompleted,
   scheduleQuestFailed,
@@ -38,7 +39,6 @@ import { applyFairmathRelation } from '@/shared/fairmath';
 import { scaleNpcRelationDelta } from '@/shared/skills/passiveSkillModifiers';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import { shouldSuppressQuestAcceptEmit } from '@/shared/quest/questAcceptDeferral';
-import { checkRelationMilestones } from '@/engine/npc/npcRelationMilestones';
 import type { GameStoreState } from '../types';
 import { getPlayerStore, getUIStore } from '../storeBindings';
 import {
@@ -439,14 +439,14 @@ export const createWorldSlice: StateCreator<
         });
       }
 
-      // Schedule milestone check AFTER the store commit so listeners
-      // (DialogueRenderer) read the fresh relation value when opening the
-      // milestone dialogue. runAfterStoreCommit uses queueMicrotask, matching
-      // the pattern used by emitPoemCollected / emitAchievementUnlocked.
+      // Schedule the relation-changed event AFTER the store commit so the
+      // engine-side milestone listener (subscribed via onAppEvent in
+      // npcRelationMilestones.ts) reads the fresh value when deciding whether
+      // to open the milestone dialogue. scheduleNpcRelationChanged wraps
+      // runAfterStoreCommit + emitAppEvent, matching the pattern used by
+      // emitPoemCollected / emitAchievementUnlocked.
       if (oldRelation !== newRelation) {
-        runAfterStoreCommit(() => {
-          checkRelationMilestones(canonicalId, oldRelation, newRelation);
-        });
+        scheduleNpcRelationChanged(canonicalId, oldRelation, newRelation);
       }
 
       return { npcRelations: relations };

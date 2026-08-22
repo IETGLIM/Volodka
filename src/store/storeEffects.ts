@@ -197,6 +197,31 @@ export function schedulePerkUnlocked(
   runAfterStoreCommit(() => emitPerkUnlocked(perkId, perkName, category));
 }
 
+/* ─── NPC relation changes ─── */
+
+/**
+ * Emit a relation-changed event for the engine to run milestone checks.
+ * The store commits the new relation value first, then schedules this emit
+ * via `scheduleNpcRelationChanged` so engine listeners (subscribed via
+ * `onAppEvent` in `npcRelationMilestones.ts`) read the fresh value when
+ * deciding whether to open the milestone dialogue node.
+ */
+export function emitNpcRelationChanged(
+  npcId: string,
+  oldRelation: number,
+  newRelation: number,
+): void {
+  emitAppEvent('store:npc_relation_changed', { npcId, oldRelation, newRelation });
+}
+
+export function scheduleNpcRelationChanged(
+  npcId: string,
+  oldRelation: number,
+  newRelation: number,
+): void {
+  runAfterStoreCommit(() => emitNpcRelationChanged(npcId, oldRelation, newRelation));
+}
+
 export function emitGameLoaded(): void {
   emitAppEvent('game:loaded', {});
 }

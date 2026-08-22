@@ -91,6 +91,18 @@ export interface ApplicationEventMap {
   };
   /** Perk unlocked — fires Volodka's reactive inner monologue. */
   'perk:unlocked': { perkId: string; perkName: string; category: string };
+  /**
+   * Store-emitted when an NPC's relation value changes between commits.
+   * Engine subscribes (via `onAppEvent`) and runs `checkRelationMilestones`
+   * to emit `npc:relation_milestone` for any crossed threshold. This decouples
+   * the store from the engine milestone module — the store only emits the
+   * raw relation change, the engine owns the milestone logic.
+   */
+  'store:npc_relation_changed': {
+    npcId: string;
+    oldRelation: number;
+    newRelation: number;
+  };
 }
 
 export type ApplicationEventName = keyof ApplicationEventMap;

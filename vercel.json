@@ -5,8 +5,9 @@
   "installCommand": "npm install",
   "devCommand": "vite",
   "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
     {
-      "source": "/(.*)",
+      "source": "/((?!api|assets|rapier|models|hdri|textures|menu).*)",
       "destination": "/index.html"
     }
   ]

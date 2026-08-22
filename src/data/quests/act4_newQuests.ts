@@ -20,7 +20,7 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
         id: 'enter_catacombs',
         description: 'Найти вход в катакомбы за старой мельницей',
         type: 'location_visited',
-        target: 'catacombs_entrance',
+        target: 'underground_bunker',
         completed: false,
       },
       {
@@ -76,7 +76,7 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
         id: 'search_forest_road',
         description: 'Обыскать лесную дорогу на месте крушения',
         type: 'location_visited',
-        target: 'forest_road_crash_site',
+        target: 'forest_clearing',
         completed: false,
       },
       {
@@ -219,7 +219,7 @@ export const QUESTS_ACT4_NEW: QuestDefinition[] = [
         id: 'travel_to_marina',
         description: 'Найти Марину в доме у реки',
         type: 'location_visited',
-        target: 'marina_house',
+        target: 'home_evening',
         completed: false,
       },
       {

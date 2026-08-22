@@ -105,6 +105,7 @@ function buildGameSnapshot(state: GameStoreState): GameStoreSnapshot {
       : {}) as GameStoreSnapshot['equippedItems'],
     dialogueHistory: state.dialogueHistory,
     trophyTracking: state.trophyTracking,
+    difficultySettings: state.difficultySettings,
   };
 }
 function toGameSnapshot(state: GameStoreState): GameStoreSnapshot {

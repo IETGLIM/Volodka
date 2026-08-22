@@ -2,10 +2,13 @@
 
 import type { NpcEmotion } from '@/shared/types/definitions/npc';
 import type { SceneWeatherType } from '@/shared/types/ambientSound';
-// Value import of a leaf constants module — `npcRelationshipConstants` has no
-// imports of its own, so this shared→engine reference is acyclic and lets the
-// bark relation band stay in lock-step with the "Союзник" badge threshold.
-import { NPC_RELATION_ALLY_THRESHOLD } from '@/engine/npcRelationship/npcRelationshipConstants';
+// Pure numeric thresholds live in @/shared/constants — keeps this shared file
+// free of @/engine/** imports (no-restricted-imports boundary contract).
+// The friendly threshold (65) MUST stay in lock-step with the engine's
+// "Союзник" (Ally) badge threshold so an NPC showing the ally UI also gets
+// friendly bark lines (previously a hard-coded 70 left the 65–69 range with
+// ally badge but neutral mutterings).
+import { NPC_RELATION_ALLY_THRESHOLD } from '@/shared/constants/npcRelationThresholds';
 
 /** Single line or a pool of variants — engine picks one at runtime. */
 export type NPCBarkBand = string | readonly string[];

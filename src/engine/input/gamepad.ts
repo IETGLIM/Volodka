@@ -1,5 +1,12 @@
 /* ─── Volodka RPG – Gamepad API helpers ─── */
 
+// `getActiveGamepad` lives in shared/ — re-export here for backward compat
+// with engine/component callers, and so `pollGamepad` (below) can use the
+// same canonical reader. The shared location keeps `@/shared/utils/gamepadRumble`
+// free of `@/engine/**` imports (no-restricted-imports boundary contract).
+export { getActiveGamepad } from '@/shared/input/getActiveGamepad';
+import { getActiveGamepad } from '@/shared/input/getActiveGamepad';
+
 /** Standard Xbox / "standard" mapping button indices */
 export const GAMEPAD = {
   A: 0,
@@ -83,18 +90,6 @@ function readTrigger(button: GamepadButton | undefined): number {
 
 function isButtonPressed(button: GamepadButton | undefined): boolean {
   return Boolean(button && (button.pressed || button.value > 0.5));
-}
-
-/** Pick the first connected gamepad (player slot 0 preferred). */
-export function getActiveGamepad(): Gamepad | null {
-  if (typeof navigator === 'undefined' || !navigator.getGamepads) return null;
-
-  const pads = navigator.getGamepads();
-  for (let i = 0; i < pads.length; i++) {
-    const pad = pads[i];
-    if (pad?.connected) return pad;
-  }
-  return null;
 }
 
 /** Read current gamepad state (call once per animation frame). */

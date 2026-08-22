@@ -128,6 +128,87 @@ Environment variables:
 | Variable | Значение |
 |----------|----------|
 | `VITE_SITE_URL` | Canonical URL и OG preview, например `https://volodka.vercel.app` |
+| `FREEROUTER_KEY` | (опционально) ключ FreeRouter API для динамических Matrix-цитат (см. ниже) |
+| `FREEROUTER_MODEL` | (опционально) имя модели, по умолчанию `glm-5.2` |
+
+## Динамические Matrix-цитаты (FreeRouter, опционально)
+
+`src/data/matrixQuotes.ts` содержит 77+ статичных философских цитат в стиле
+Matrix — это основной голос автора и **остаётся canonical**. Поверх них игра
+может показывать **динамические цитаты, сгенерированные LLM** через
+[FreeRouter](https://freerouter.eu.cc/) — OpenAI-совместимый роутер. Это
+augmentation: динамическая цитата отображается отдельной строкой под статичной,
+с пометкой «✨ Новая цитата · сгенерировано», чтобы игрок отличал голос автора от
+LLM-генерации.
+
+### Безопасность
+
+Volodka — статическое SPA на Vercel. Помещать ключ FreeRouter в клиентский
+бандл **нельзя**: `dist/index.html` (12 МБ, инлайн через `viteSingleFile`)
+доступен каждому, и ключ можно извлечь. Поэтому ключ живёт в серверной Edge
+Function:
+
+```
+браузер  →  /api/matrix-quote?scene=…&karma=…&act=…
+          (тот же origin, ключа в коде нет)
+Edge fn  →  https://freerouter.eu.cc/v1/chat/completions
+            Authorization: Bearer ${process.env.FREEROUTER_KEY}
+          ← { quote, model }
+браузер  ←  { quote, model }
+```
+
+Ключ читается из `process.env.FREEROUTER_KEY` внутри Edge runtime (Vercel
+внедряет env vars в Edge Function автоматически — никогда не передаёт их в
+клиентский бандл).
+
+### Установка
+
+1. Зарегистрируйте ключ на https://freerouter.eu.cc/ (бесплатный OpenAI-compatible).
+2. В Vercel dashboard: **Project → Settings → Environment Variables → Add**:
+   - Name: `FREEROUTER_KEY`
+   - Value: ваш ключ (формата `fr-…`)
+   - Environments: ☑ Production ☑ Preview ☑ Development
+   - **НЕ** ставьте префикс `VITE_` — `VITE_*` переменные инлайнятся в клиентский
+     бандл Vite и утекут.
+3. Redeploy. Без ключа `/api/matrix-quote` вернёт 503, клиент увидит fallback из
+   встроенного списка (10 цитат) или продолжит показывать только статичные.
+
+### Кеширование и rate limits
+
+- **Edge response cache:** 5 минут на один набор `(act, scene, karma, theme)`.
+  Одинаковые параметры → одинаковая цитата (мягкое дедуплирование).
+- **Per-IP rate limit:** 1 запрос / 3 секунды. Попытки в окне возвращают cached
+  цитату (если есть) или HTTP 429.
+- **localStorage cache на клиенте:** `matrix-quote-${scene}-${karmaBucket}` где
+  `karmaBucket = Math.floor(karma / 25)`. TTL 30 минут. Бакетирование убирает
+  повторные запросы на каждое ±1 изменение кармы.
+- **Debounce:** смена сцены триггерит fetch через 2 секунды (не на каждый кадр).
+- **Fallback:** если FreeRouter недоступен (сеть, 5xx, key не задан), клиент
+  использует статичные цитаты. Игра никогда не ломается.
+
+### Локальная разработка
+
+Vite dev server не обрабатывает `/api/*` — это делает только Vercel. Для
+локального теста запустите `vercel dev`:
+
+```bash
+npm i -g vercel
+vercel dev   # поднимает и Vite (через vercel.json devCommand), и /api/* функции
+```
+
+`.env.example` содержит шаблон. **Никогда не коммитьте `.env` с реальным
+ключом** — `.gitignore` уже исключает `.env*` (кроме `.env.example`).
+
+### Файлы интеграции
+
+| Файл | Назначение |
+|------|------------|
+| `api/matrix-quote.ts` | Vercel Edge serverless function (proxy). Держит ключ, кеш, rate limit. |
+| `src/hooks/useMatrixQuote.ts` | React-хук: fetch, localStorage cache, debounce, offline fallback. |
+| `src/components/game/matrixQuote/MatrixRainQuotePanel.tsx` | Рендерит динамическую цитату под статичной с пометкой «сгенерировано». |
+| `src/engine/matrixQuote/matrixQuoteConstants.ts` | Лейблы `MATRIX_QUOTE_GENERATED_LABEL`, `MATRIX_QUOTE_FALLBACK_LABEL`. |
+| `vercel.json` | `/api/*` rewrite в Edge Function, всё остальное → SPA fallback. |
+| `.env.example` | Шаблон env vars (без реальных ключей). |
 
 ## Управление
 

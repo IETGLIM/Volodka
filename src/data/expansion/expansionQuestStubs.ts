@@ -140,4 +140,207 @@ export const EXPANSION_QUEST_STUBS: QuestDefinition[] = [
     ],
     questGiverNpcId: 'albert',
   },
+
+  /* ═══════════════════════════════════════════════════════════════
+     MILESTONE-80 STUB QUESTS
+     Triggered by albert/zarema/maria/solnysh milestone_80 dialogues.
+     Minimal side-quest shells — full content TBD by future content packs.
+     ═══════════════════════════════════════════════════════════════ */
+
+  {
+    id: 'marat_archive_unlock',
+    title: 'Архив Марата',
+    description:
+      'Альберт передаёт ключ: строку-пароль к архиву Марата — первого прошивщика. Стихи, спрятанные в логах Гильдии тридцать лет, ждут, пока их кто-то услышит. Задача — простая и страшная: открыть архив. Прочитать. Понять, почему Альберт нёс это один.',
+    act: 2,
+    faction: 'network',
+    questType: 'side',
+    difficulty: 'medium',
+    requiresQuests: ['act1_albert_alliance'],
+    hint: 'Кафе → терминал Гильдии → ввести строку-пароль → прочитать стихи Марата → вернуться к Альберту.',
+    objectives: [
+      {
+        id: 'receive_marat_key',
+        description: 'Принять ключ-пароль от Альберта',
+        type: 'flag_set',
+        target: 'albert_marat_archive_key_received',
+        completed: false,
+      },
+      {
+        id: 'reach_guild_terminal',
+        description: 'Добраться до терминала Гильдии с доступом к логам',
+        type: 'location_visited',
+        target: 'office_day',
+        completed: false,
+      },
+      {
+        id: 'enter_marat_archive',
+        description: 'Ввести пароль и открыть архив Марата',
+        type: 'flag_set',
+        target: 'marat_archive_opened',
+        completed: false,
+      },
+      {
+        id: 'read_marat_poems',
+        description: 'Прочитать стихи Марата из архива',
+        type: 'flag_set',
+        target: 'marat_poems_read',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 80 },
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      { type: 'setFlag', flag: 'marat_archive_unlocked', flagValue: true },
+    ],
+    questGiverNpcId: 'albert',
+  },
+
+  {
+    id: 'zarema_heritage',
+    title: 'Наследие Заремы',
+    description:
+      'Зарема достаёт со дна кухонного шкафа бабушкину тетрадь — стихи, переписанные от руки в шестьдесят восьмом. Книга хранилась в банке с солениями сорок лет. Зарема хочет, чтобы Володька помог донести её до тех, кому она теперь нужна — и решить, кому можно доверить копию.',
+    act: 2,
+    faction: 'network',
+    questType: 'side',
+    difficulty: 'easy',
+    hint: 'Кухня → книга → проверить копию у Кейт в библиотеке → решить, кому доверить.',
+    objectives: [
+      {
+        id: 'receive_grandmother_book',
+        description: 'Принять от Заремы бабушкину тетрадь',
+        type: 'flag_set',
+        target: 'zarema_grandmother_book_received',
+        completed: false,
+      },
+      {
+        id: 'visit_kate_at_library',
+        description: 'Отнести тетрадь Кейт в библиотеку для проверки',
+        type: 'location_visited',
+        target: 'library_day',
+        completed: false,
+      },
+      {
+        id: 'verify_book_authenticity',
+        description: 'Сверить рукопись с архивными образцами',
+        type: 'flag_set',
+        target: 'zarema_book_verified',
+        completed: false,
+      },
+      {
+        id: 'decide_book_fate',
+        description: 'Решить, кому доверить копию тетради',
+        type: 'flag_set',
+        target: 'zarema_heritage_decided',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 70 },
+      { type: 'addKarma', value: 6 },
+      { type: 'addSkill', skill: 'empathy', value: 2 },
+      { type: 'setFlag', flag: 'zarema_heritage_honored', flagValue: true },
+    ],
+    questGiverNpcId: 'zarema',
+  },
+
+  {
+    id: 'eye_blueprint_shutdown',
+    title: 'Отключение «Ока»',
+    description:
+      'Мария разработала код: не взлом, а элегантное отключение. «Око» — система тотального наблюдения гильдии — можно погасить изнутри, если попасть в серверную через Олега. Код уже в коммуникаторе. Дело за малым — за самым опасным «малым» в жизни Володьки.',
+    act: 4,
+    faction: 'network',
+    questType: 'side',
+    difficulty: 'hard',
+    hint: 'Олег у входа → серверная → загрузить код → подтвердить отключение.',
+    objectives: [
+      {
+        id: 'recruit_oleg',
+        description: 'Убедить Олега пропустить в серверную',
+        type: 'flag_set',
+        target: 'oleg_recruit_hint',
+        completed: false,
+      },
+      {
+        id: 'enter_guild_server_room',
+        description: 'Проникнуть в серверную Гильдии',
+        type: 'location_visited',
+        target: 'guild_mainframe',
+        completed: false,
+      },
+      {
+        id: 'upload_eye_code',
+        description: 'Загрузить код Марии в главный терминал',
+        type: 'flag_set',
+        target: 'maria_eye_code_uploaded',
+        completed: false,
+      },
+      {
+        id: 'confirm_shutdown',
+        description: 'Подтвердить отключение «Ока»',
+        type: 'flag_set',
+        target: 'eye_blueprint_shutdown_confirmed',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 220 },
+      { type: 'addKarma', value: 15 },
+      { type: 'addSkill', skill: 'coding', value: 4 },
+      { type: 'addSkill', skill: 'persuasion', value: 2 },
+      { type: 'setFlag', flag: 'eye_blueprint_offline', flagValue: true },
+    ],
+    questGiverNpcId: 'maria',
+  },
+
+  {
+    id: 'solnysh_mother_archive',
+    title: 'Архив матери Солныш',
+    description:
+      'Солныш показывает тетрадь матери — подпольщицы, перепечатывавшей запрещённые стихи в подвале школы. Тетрадь — это имена, даты, явки. Гильдия стёрла её мать из реестра, но не из бумаги. Задача — найти, где ещё помнят, и вернуть тетрадь туда, где её сохранят.',
+    act: 5,
+    faction: 'network',
+    questType: 'side',
+    difficulty: 'medium',
+    hint: 'Комната Солныш → костёр ЧК → встреча с теми, кто помнил её мать.',
+    objectives: [
+      {
+        id: 'receive_mother_notebook',
+        description: 'Принять от Солныш тетрадь её матери',
+        type: 'flag_set',
+        target: 'solnysh_mother_notebook_received',
+        completed: false,
+      },
+      {
+        id: 'reach_chk_campfire',
+        description: 'Добраться до костра ЧК, где ещё помнят подпольщиков',
+        type: 'location_visited',
+        target: 'chk_forest_zorge',
+        completed: false,
+      },
+      {
+        id: 'find_witness',
+        description: 'Найти свидетеля, знавшего мать Солныш',
+        type: 'flag_set',
+        target: 'solnysh_witness_found',
+        completed: false,
+      },
+      {
+        id: 'hand_over_notebook',
+        description: 'Передать тетрадь в надёжные руки',
+        type: 'flag_set',
+        target: 'solnysh_mother_archive_deposited',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 120 },
+      { type: 'addKarma', value: 10 },
+      { type: 'addSkill', skill: 'empathy', value: 3 },
+      { type: 'setFlag', flag: 'solnysh_mother_archive_honored', flagValue: true },
+    ],
+    questGiverNpcId: 'solnysh',
+  },
 ];

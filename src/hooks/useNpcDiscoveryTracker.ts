@@ -5,6 +5,13 @@
  * 2. Has npcRelations entries for an NPC
  *
  * Subscribe to game store and update the standalone NpcCodexStore.
+ *
+ * Boundary note: this is a UI integration hook (subscribes to the store
+ * reactively + writes to a separate persisted codex store). It lives in
+ * src/hooks/ rather than src/engine/npc/ so the engine layer stays free
+ * of `@/store/**` imports per the no-restricted-imports boundary contract.
+ * The engine exposes pure helpers (findNpcById, etc.) via @/data — UI
+ * wiring belongs here.
  */
 
 import { useEffect, useRef } from 'react';

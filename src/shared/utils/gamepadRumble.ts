@@ -3,7 +3,7 @@
  * Falls back to navigator.vibrate when gamepad vibration is unavailable.
  */
 
-import { getActiveGamepad } from '@/engine/input/gamepad';
+import { getActiveGamepad } from '@/shared/input/getActiveGamepad';
 
 /** Cached navigator.vibrate reference (from hapticFeedback.ts pattern). */
 let navVibrateFn: ((pattern: VibratePattern) => boolean) | null = null;

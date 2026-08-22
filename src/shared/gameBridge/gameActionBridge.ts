@@ -103,6 +103,26 @@ export interface GameStoreSnapshot {
     poemPowersUsedCount: number;
     highStressWin: boolean;
   };
+  /**
+   * User-facing difficulty multiplier snapshot — engine reads combat-scaling
+   * fields from here instead of importing `@/store/slices/difficultySlice`
+   * directly. The shape mirrors the store's `DifficultySettings` interface;
+   * `difficulty` is widened to `string` to keep the snapshot decoupled from
+   * the store-layer enum (engine readers only consume numeric multipliers).
+   * Populated by `buildGameSnapshot` in `gameStore.ts`.
+   */
+  difficultySettings: {
+    difficulty: string;
+    enemyDamageMultiplier: number;
+    enemyHealthMultiplier: number;
+    playerDamageMultiplier: number;
+    xpMultiplier: number;
+    creditsMultiplier: number;
+    skillCheckThreshold: number;
+    stressAccumulationRate: number;
+    energyRegenRate: number;
+    combatFleeBaseChance: number;
+  };
 }
 
 /** Typed mutations engine may request from the store. */

@@ -25,6 +25,21 @@ const mockSnapshot = {
       unlockedSkills: [] as string[],
     },
   },
+  // Engine reads combat-scaling fields from the bridge snapshot instead of
+  // importing @/store/slices/difficultySlice directly. Mock the same shape
+  // (normal difficulty defaults) so combat formulas resolve real multipliers.
+  difficultySettings: {
+    difficulty: 'normal',
+    enemyDamageMultiplier: 1,
+    enemyHealthMultiplier: 1,
+    playerDamageMultiplier: 1,
+    xpMultiplier: 1,
+    creditsMultiplier: 1,
+    skillCheckThreshold: 0,
+    stressAccumulationRate: 1,
+    energyRegenRate: 1,
+    combatFleeBaseChance: 0.3,
+  },
 };
 
 vi.mock('@/engine/GameActionDispatcher', async (importOriginal) => {

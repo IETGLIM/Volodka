@@ -62,7 +62,6 @@ import {
 import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, getPlayerCritChance, getPlayerThoughtFleeBonus, getPlayerThoughtComboMultiplierBonus, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, computeEnemyScalingFactor } from './combat/combatDifficulty';
-import { getDifficultyStore } from '@/store/storeBindings';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
 import { resolveCombatPerkModifiers } from '@/shared/perks/perkModifiers';
 import { applyExplorationPoemCombatBridge } from '@/engine/poemEffects/poemTTLRuntime';
@@ -373,7 +372,7 @@ function startCombatImmediate(
   const playerLevel = state.playerState.progression.level;
   const currentAct = state.playerState.progression.currentAct;
   const scaleFactor = computeEnemyScalingFactor(currentAct, playerLevel);
-  const difficultySettings = getDifficultyStore().difficultySettings;
+  const difficultySettings = snap().difficultySettings;
   const hpScale = scaleFactor * difficultySettings.enemyHealthMultiplier;
 
   const enemy: CombatEnemy = {
@@ -454,7 +453,7 @@ export function playerAttack(): CombatState | null {
   const effectiveEnemyDef = enemyDef + enemyDefBoost;
 
   const multiplier = getPlayerDamageMultiplier(cs);
-  const difficultySettings = getDifficultyStore().difficultySettings;
+  const difficultySettings = snap().difficultySettings;
   const seeded = SeededCombatRng.fromState(cs.rng);
   let damage = seeded.rollDamage({
     attack: pAtk,
@@ -782,7 +781,7 @@ export function playerFlee(): CombatState | null {
   fleeChance += getFleeChanceBonus();
   // Thought-cabinet flee bonus (empathy thoughts → +5% per thought)
   fleeChance += getPlayerThoughtFleeBonus() / 100;
-  fleeChance += getDifficultyStore().difficultySettings.combatFleeBaseChance - 0.3;
+  fleeChance += snap().difficultySettings.combatFleeBaseChance - 0.3;
 
   // Clamp to [0.15, 0.95]
   const clampedChance = Math.max(0.15, Math.min(0.95, fleeChance));
@@ -1220,7 +1219,7 @@ function handleVictory(): CombatState | null {
   const xpGained = enemy.xpReward + comboBonus;
   addXp(xpGained);
 
-  const creditsGained = Math.max(1, Math.floor(computeCombatCredits(xpGained, comboBonus) * getDifficultyStore().difficultySettings.creditsMultiplier));
+  const creditsGained = Math.max(1, Math.floor(computeCombatCredits(xpGained, comboBonus) * snap().difficultySettings.creditsMultiplier));
   dispatchGameAction({ type: 'player/addCredits', amount: creditsGained });
 
   // Boss defeat flag — used by achievement system + story progression

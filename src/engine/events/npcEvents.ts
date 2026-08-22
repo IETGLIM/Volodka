@@ -54,6 +54,21 @@ export interface NpcEvents {
     direction: 'rising' | 'falling';
   };
   /**
+   * Store→engine bridge event: emitted by `worldSlice.setNpcRelation` (via
+   * `storeEffects.scheduleNpcRelationChanged` → `emitAppEvent`) when an NPC's
+   * relation value changes between commits. The engine subscribes (via
+   * `onAppEvent` in `npcRelationMilestones.ts → registerRelationMilestoneBridge`)
+   * and runs `checkRelationMilestones` to emit `npc:relation_milestone` for any
+   * crossed threshold. Mirrored in `ApplicationEventMap` so the typed
+   * `appEventBus` binding forwards it to the singleton bus without an
+   * `as never` cast on the event key.
+   */
+  'store:npc_relation_changed': {
+    npcId: string;
+    oldRelation: number;
+    newRelation: number;
+  };
+  /**
    * Запуск анимации ухода NPC из сцены.
    * NpcTransitionAnimator плавно перемещает NPC к ближайшему краю
    * и после завершения генерирует событие npc:despawn.

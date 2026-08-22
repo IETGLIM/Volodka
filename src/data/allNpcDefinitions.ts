@@ -6,13 +6,15 @@ import { resolveCanonicalNpcId, warnUnknownNpcId } from '@/shared/npcIdAliases';
 import { NPC_DEFINITIONS } from './npcDefinitions';
 import { EXPANDED_NPCS, EXPANDED_NPC_QUEST_LINKS } from './expandedNPCs';
 import { CHK_NPCS, CHK_NPC_QUEST_LINKS } from './chkTolpa/npcs';
+import { EXPANSION_NPC_STUBS } from './expansion/expansionNpcStubs';
 
-type NpcSourceLabel = 'NPC_DEFINITIONS' | 'EXPANDED_NPCS' | 'CHK_NPCS';
+type NpcSourceLabel = 'NPC_DEFINITIONS' | 'EXPANDED_NPCS' | 'CHK_NPCS' | 'EXPANSION_NPC_STUBS';
 
 const NPC_SOURCES: ReadonlyArray<{ label: NpcSourceLabel; npcs: readonly NPCDefinition[] }> = [
   { label: 'NPC_DEFINITIONS', npcs: NPC_DEFINITIONS },
   { label: 'EXPANDED_NPCS', npcs: EXPANDED_NPCS },
   { label: 'CHK_NPCS', npcs: CHK_NPCS },
+  { label: 'EXPANSION_NPC_STUBS', npcs: EXPANSION_NPC_STUBS },
 ];
 
 function mergeQuestLinks(npc: NPCDefinition): NPCDefinition {

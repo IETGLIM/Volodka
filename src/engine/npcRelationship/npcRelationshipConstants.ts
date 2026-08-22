@@ -1,5 +1,15 @@
 export type RelationLevel = 'ally' | 'neutral' | 'enemy';
 
+// Pure numeric thresholds live in @/shared/constants so shared-layer modules
+// (e.g. `@/shared/npcBark.ts`) can read them without importing from @/engine
+// (no-restricted-imports boundary contract). Re-exported here for backward
+// compatibility with engine/component callers
+// (`DialogueRelationBar`, `npcRelationshipPresentation`, etc.).
+export {
+  NPC_RELATION_ALLY_THRESHOLD,
+  NPC_RELATION_ENEMY_THRESHOLD,
+} from '@/shared/constants/npcRelationThresholds';
+
 export const NPC_RELATIONSHIP_LABELS = {
   title: 'Отношения',
   schedule: 'Расписание',
@@ -53,5 +63,5 @@ export const RELATION_LEVEL_COLORS: Record<
 
 export const DEFAULT_NPC_PORTRAIT_PRIMARY = '#94a3b8';
 
-export const NPC_RELATION_ALLY_THRESHOLD = 65;
-export const NPC_RELATION_ENEMY_THRESHOLD = 30;
+// `NPC_RELATION_ALLY_THRESHOLD` (65) and `NPC_RELATION_ENEMY_THRESHOLD` (30)
+// are re-exported at the top of this file from `@/shared/constants/npcRelationThresholds`.
