@@ -110,3 +110,15 @@ html[data-scanlines="off"] body::after {
 .cinematic-menu-item:active:not(:disabled) {
   transform: scale(0.985) !important;
 }
+
+/* ── UI Text Scale (WCAG 1.4.4 — resize text) ──
+   Set by accessibility setting uiTextScale (0.85–1.3).
+   Applied as --volodka-ui-text-scale on <html> by AccessibilityManager.
+   Default 1 = no scaling. */
+:root {
+  --volodka-ui-text-scale: 1;
+}
+
+html {
+  font-size: calc(16px * var(--volodka-ui-text-scale, 1));
+}

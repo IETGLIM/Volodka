@@ -49,6 +49,12 @@ export const ACCESSIBILITY_DOM_HOOKS: readonly AccessibilityDomHook[] = [
     attribute: 'data-high-contrast',
     serialize: (settings) => (settings.highContrast ? 'true' : null),
   },
+  {
+    settingKey: 'uiTextScale',
+    type: 'cssVar',
+    cssVar: '--volodka-ui-text-scale',
+    serialize: (settings) => String(settings.uiTextScale),
+  },
 ] as const;
 
 function shouldApplyDomHook(

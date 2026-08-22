@@ -30,6 +30,7 @@ export const ACCESSIBILITY_LS_KEYS = {
   textSpeed: 'volodka_text_speed',
   locomotionSpeed: 'volodka_locomotion_speed',
   highContrast: 'volodka_high_contrast',
+  uiTextScale: 'volodka_ui_text_scale',
 } as const satisfies Record<AccessibilitySettingKey, string>;
 
 const LS_KEY_TO_SETTING = Object.fromEntries(
@@ -127,6 +128,14 @@ export function readAccessibilitySettingsFromStorage(
         DEFAULT_ACCESSIBILITY_SETTINGS.highContrast,
       ),
       'highContrast',
+    ),
+    uiTextScale: clampInRange(
+      readNumber(
+        storage,
+        ACCESSIBILITY_LS_KEYS.uiTextScale,
+        DEFAULT_ACCESSIBILITY_SETTINGS.uiTextScale,
+      ),
+      'uiTextScale',
     ),
   };
 }

@@ -11,6 +11,7 @@ import {
   createLocomotionSpeed,
   createSubtitleScale,
   createTextSpeed,
+  createUiTextScale,
 } from './accessibilityConstraints';
 import type {
   AccessibilitySettingsSnapshot,
@@ -18,6 +19,7 @@ import type {
   LocomotionSpeed,
   SubtitleScale,
   TextSpeed,
+  UiTextScale,
 } from './accessibilityTypes';
 
 export type {
@@ -128,6 +130,10 @@ export function setLocomotionSpeed(speed: number | LocomotionSpeed): void {
 
 export function setHighContrast(enabled: boolean): void {
   manager().updateSetting('highContrast', enabled);
+}
+
+export function setUiTextScale(scale: number | UiTextScale): void {
+  manager().updateSetting('uiTextScale', createUiTextScale(scale));
 }
 
 export function resetAccessibilitySettings(): AccessibilitySettingsSnapshot {

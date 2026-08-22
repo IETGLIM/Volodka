@@ -4,6 +4,7 @@ import type {
   LocomotionSpeed,
   SubtitleScale,
   TextSpeed,
+  UiTextScale,
 } from './accessibilityTypes';
 import { parseColorBlindMode } from './accessibilityTypes';
 
@@ -12,6 +13,9 @@ export const ACCESSIBILITY_NUMERIC_RANGES = {
   subtitleScale: { min: 0.8, max: 1.5 },
   textSpeed: { min: 0.5, max: 2 },
   locomotionSpeed: { min: 0.7, max: 1.3 },
+  /** Global UI text scale (WCAG 1.4.4 — resize text). Applied as CSS var
+   *  --volodka-ui-text-scale on <html>. Affects HUD, menus, panels. */
+  uiTextScale: { min: 0.85, max: 1.3 },
 } as const;
 
 export type AccessibilityNumericSettingKey = keyof typeof ACCESSIBILITY_NUMERIC_RANGES;
@@ -54,10 +58,15 @@ export function createLocomotionSpeed(value: unknown, fallback: number = 1): Loc
   return createBrandedNumericSetting('locomotionSpeed', value, fallback);
 }
 
+export function createUiTextScale(value: unknown, fallback: number = 1): UiTextScale {
+  return createBrandedNumericSetting('uiTextScale', value, fallback);
+}
+
 const NUMERIC_SETTING_FACTORIES = {
   subtitleScale: createSubtitleScale,
   textSpeed: createTextSpeed,
   locomotionSpeed: createLocomotionSpeed,
+  uiTextScale: createUiTextScale,
 } as const;
 
 export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettingsSnapshot = {
@@ -69,6 +78,7 @@ export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettingsSnapshot = {
   textSpeed: createTextSpeed(1),
   locomotionSpeed: createLocomotionSpeed(1),
   highContrast: false,
+  uiTextScale: createUiTextScale(1),
 };
 
 /** Normalize and clamp a setting value for the given key. */
@@ -94,6 +104,8 @@ export function clampInRange<K extends AccessibilitySettingKey>(
       return createLocomotionSpeed(value, Number(fallback)) as AccessibilitySettingsSnapshot[K];
     case 'highContrast':
       return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
+    case 'uiTextScale':
+      return createUiTextScale(value, Number(fallback)) as AccessibilitySettingsSnapshot[K];
     default: {
       const _exhaustive: never = key;
       return _exhaustive;

@@ -11,6 +11,7 @@ export type ColorBlindMode = (typeof VALID_COLOR_BLIND_MODES)[number];
 declare const subtitleScaleBrand: unique symbol;
 declare const textSpeedBrand: unique symbol;
 declare const locomotionSpeedBrand: unique symbol;
+declare const uiTextScaleBrand: unique symbol;
 
 /** Clamped subtitle size multiplier (see ACCESSIBILITY_NUMERIC_RANGES). */
 export type SubtitleScale = number & { readonly [subtitleScaleBrand]: true };
@@ -21,6 +22,9 @@ export type TextSpeed = number & { readonly [textSpeedBrand]: true };
 /** Clamped player locomotion speed multiplier. */
 export type LocomotionSpeed = number & { readonly [locomotionSpeedBrand]: true };
 
+/** Clamped global UI text scale multiplier (WCAG 1.4.4 — resize text). */
+export type UiTextScale = number & { readonly [uiTextScaleBrand]: true };
+
 export interface AccessibilitySettingsSnapshot {
   colorBlindMode: ColorBlindMode;
   reducedMotionOverride: boolean;
@@ -30,6 +34,8 @@ export interface AccessibilitySettingsSnapshot {
   textSpeed: TextSpeed;
   locomotionSpeed: LocomotionSpeed;
   highContrast: boolean;
+  /** Global UI text scale (WCAG 1.4.4). Applied as CSS var on <html>. */
+  uiTextScale: UiTextScale;
 }
 
 export type AccessibilitySettingKey = keyof AccessibilitySettingsSnapshot;
