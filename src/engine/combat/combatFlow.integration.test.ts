@@ -30,6 +30,22 @@ const mockSnapshot = {
   },
   exploration: { timeOfDay: 'day' as const },
   activeTTLFlags: [] as string[],
+  // CombatSystem reads snap().difficultySettings for enemy health/damage scaling.
+  // Uses 'normal' preset values — matches DIFFICULTY_PRESETS.normal from
+  // src/store/slices/difficultySlice.ts. Without this, startCombat crashes with
+  // "Cannot read properties of undefined (reading 'enemyHealthMultiplier')".
+  difficultySettings: {
+    difficulty: 'normal' as const,
+    enemyDamageMultiplier: 1.0,
+    enemyHealthMultiplier: 1.0,
+    playerDamageMultiplier: 1.0,
+    xpMultiplier: 1.0,
+    creditsMultiplier: 1.0,
+    skillCheckThreshold: 0,
+    stressAccumulationRate: 1.0,
+    energyRegenRate: 1.0,
+    combatFleeBaseChance: 0.3,
+  },
 };
 
 vi.mock('@/engine/GameActionDispatcher', async (importOriginal) => {
