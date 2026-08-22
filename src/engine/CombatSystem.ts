@@ -59,7 +59,7 @@ import {
   createBuff, addBuff, sumBuffEffect, hasBuffEffect, tickBuffs,
   getEnemyDefenseReduction, getPlayerDamageMultiplier,
   getPlayerAttackBoost } from './combat/buffSystem';
-import { getPlayerAttack, getPlayerMaxHp, tickPowerCooldowns, isPowerAvailable, addXp, computeCombatCredits, getPlayerCritChance, getPlayerThoughtFleeBonus, getPlayerThoughtComboMultiplierBonus, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
+import { getPlayerAttack, getPlayerMaxHp, isPowerAvailable, addXp, getPlayerCritChance, getPlayerThoughtFleeBonus, getPlayerThoughtComboMultiplierBonus, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, computeEnemyScalingFactor } from './combat/combatDifficulty';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
@@ -80,6 +80,19 @@ import {
   computeEnemyIncomingDamage,
   resolveStatDrain,
 } from './combat/enemyTurn';
+import {
+  endPlayerTurn as computeEndPlayerTurn,
+  transitionToPlayerTurn as computeTransitionToPlayerTurn,
+  gotoEnemyTurnEnd as computeGotoEnemyTurnEnd,
+  type PlayerStatDrainSnapshot,
+} from './combat/turnCycle';
+import {
+  computeVictoryRewards,
+  computeDefeatPenalty,
+  buildCombatReward,
+  buildVictoryLogEntries,
+  buildDefeatLogEntry,
+} from './combat/rewards';
 
 // ── Re-export types so existing imports of CombatSystem don't break ──
 export type {
@@ -887,150 +900,69 @@ export function getAvailableCombatItems(): Array<{ itemId: string; name: string;
   }));
 }
 
-function endPlayerTurn(): CombatState {
+function endPlayerTurn(): CombatState | null {
   const cs = combat.getState();
-  if (!cs || cs.status !== 'active') return cs!;
+  if (!cs || cs.status !== 'active') return cs ?? null;
 
-  // Tick player power cooldowns
-  combat.setState({
-    ...cs,
-    isPlayerTurn: false,
-    powerCooldowns: tickPowerCooldowns(cs.powerCooldowns) });
+  // Pure computation: tick player power cooldowns, switch phase to enemy.
+  // Side-effect orchestration stays here (setState / emit / schedule).
+  const next = computeEndPlayerTurn(cs);
 
-  const next = combat.getState()!;
+  combat.setState(next);
   eventBus.emit('combat:turn', { turn: next.turn, isPlayerTurn: false });
   combat.notifyListeners();
 
   // Enemy acts after a brief delay for visual feedback
   combat.schedule(800, () => executeEnemyTurn());
 
-  return next;
+  return combat.getState();
 }
 
 /** Transition to the player's turn.
  *  Processes player buffs at turn start (tick durations, stat drain, skip_turn check).
- *  If the player has a skip_turn debuff, auto-skips and transitions to enemy turn. */
+ *  If the player has a skip_turn debuff, auto-skips and transitions to enemy turn.
+ *
+ *  Pure computation lives in `combat/turnCycle.ts` (computeTransitionToPlayerTurn);
+ *  this orchestrator applies side effects (dispatch drain actions, setState,
+ *  emit, schedule auto-skip for stunned turns). */
 function transitionToPlayerTurn(state: CombatState): void {
   if (!combat.getState()) return;
 
-  // ── Check if player is stunned (skip_turn debuff) BEFORE ticking ──
-  // A skip_turn with duration 1 applied during the enemy's turn must fire
-  // on the player's turn. tickBuffs decrements duration first, which would
-  // remove a duration-1 skip_turn before this check ever runs. Checking on
-  // the incoming (un-ticked) state ensures the stun actually takes effect.
-  if (hasBuffEffect(state, 'player', 'skip_turn')) {
-    // Remove the skip_turn buff since it's been consumed
-    const consumed = state.buffs.filter(
-      (b) => !(b.target === 'player' && b.effect.type === 'skip_turn'),
-    );
-    // Tick remaining buffs (stat_drain, hp_drain, etc.) so they still progress
-    const { state: afterTick, expiredLog } = tickBuffs({ ...state, buffs: consumed }, 'player');
-    // Apply stun immunity for 1 turn so the player cannot be stun-locked
-    const immuneBuff = createBuff(afterTick, 'Иммунитет к оглушению', 'stun_recovery_player', 'buff', 'player', 1, { type: 'stun_immune' });
-    const withImmune = addBuff(afterTick, immuneBuff);
-    const workingState: CombatState = {
-      ...withImmune,
-      turn: afterTick.turn + 1,
-      enemyDefending: false,
-      doubleAttack: false,
-      playerDefending: false,
-      enemyDefenseReduction: getEnemyDefenseReduction(afterTick),
-      _sideEffects: [],
-      log: [
-        ...withImmune.log,
-        ...expiredLog,
-        { turn: afterTick.turn + 1, text: '😵 Вы оглушены и пропускаете ход!', type: 'info' },
-        { turn: afterTick.turn + 1, text: '🛡️ Вы получаете иммунитет к оглушению на 1 ход.', type: 'info' },
-      ] };
+  // Snapshot for stat drain clamping — read ONCE before any drain dispatch.
+  // The pure function tracks running values internally so subsequent drains
+  // clamp against earlier ones in the same pass (matches the original
+  // getGameSnapshot-per-iteration behavior).
+  const gameSnap = snap();
+  const playerSnapshot: PlayerStatDrainSnapshot = {
+    energy: gameSnap.playerState.energy,
+    karma: gameSnap.playerState.karma,
+    skills: {
+      logic: gameSnap.playerState.skills.logic,
+      empathy: gameSnap.playerState.skills.empathy,
+    },
+  };
 
-    combat.setState({
-      ...workingState,
-      isPlayerTurn: true, // Briefly show it's "your turn" before skipping
-    });
+  const result = computeTransitionToPlayerTurn(state, playerSnapshot);
 
-    const stunnedTurn = combat.getState()!;
-    eventBus.emit('combat:turn', { turn: stunnedTurn.turn, isPlayerTurn: true });
-    combat.notifyListeners();
+  // Dispatch drain actions BEFORE setState — the drain math assumes the
+  // store reflects each drain by the time the next drain's clamp runs.
+  for (const action of result.drainActions) {
+    dispatchGameAction(action);
+  }
 
-    // Auto-skip after a brief delay
+  combat.setState(result.nextState);
+  const turn = combat.getState()!;
+  eventBus.emit('combat:turn', { turn: turn.turn, isPlayerTurn: true });
+  combat.notifyListeners();
+
+  // Stunned turns auto-skip after a brief display.
+  if (result.scheduleAutoSkip) {
     combat.schedule(800, () => {
       if (combat.getState()?.status === 'active') {
         endPlayerTurn();
       }
     });
-
-    return;
   }
-
-  // ── Normal path: tick player buffs ──
-  const { state: afterBuffTick, expiredLog } = tickBuffs(state, 'player');
-
-  // ── Process stat drain debuffs on player ──
-  const drainLog: CombatLogEntry[] = [];
-  let playerHpAfterDrain = afterBuffTick.playerHp;
-  for (const buff of afterBuffTick.buffs) {
-    if (buff.target === 'player' && buff.effect.type === 'stat_drain') {
-      // FIX-1D: cast extended to include 'empathy' (matches BuffEffect union).
-      const eff = buff.effect as { type: 'stat_drain'; stat: 'logic' | 'energy' | 'karma' | 'empathy'; value: number };
-      const snap = getGameSnapshot();
-      if (eff.stat === 'energy') {
-        const current = snap.playerState.energy ?? 0;
-        const drainAmount = Math.min(eff.value, current);
-        dispatchGameAction({ type: 'player/addEnergy', amount: -drainAmount });
-        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Энергия -${drainAmount}`, type: 'info' });
-      } else if (eff.stat === 'karma') {
-        const current = snap.playerState.karma ?? 0;
-        const drainAmount = Math.min(eff.value, current);
-        dispatchGameAction({ type: 'player/addKarma', amount: -drainAmount });
-        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Карма -${drainAmount}`, type: 'info' });
-      } else if (eff.stat === 'logic') {
-        const currentLogic = snap.playerState.skills.logic;
-        const drainAmount = Math.min(eff.value, currentLogic);
-        dispatchGameAction({ type: 'player/addSkill', skill: 'logic', amount: -drainAmount });
-        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Логика -${drainAmount}`, type: 'info' });
-      } else if (eff.stat === 'empathy') {
-        // FIX-1D: Phase 11 empathy drain (grief_echo, memory_devourer).
-        const currentEmpathy = snap.playerState.skills.empathy;
-        const drainAmount = Math.min(eff.value, currentEmpathy);
-        dispatchGameAction({ type: 'player/addSkill', skill: 'empathy', amount: -drainAmount });
-        drainLog.push({ turn: afterBuffTick.turn, text: `💀 ${buff.name}: Эмпатия -${drainAmount}`, type: 'info' });
-      }
-    }
-    /* ── Enhanced: Process hp_drain_percent (Цифровая лихорадка) ── */
-    if (buff.target === 'player' && buff.effect.type === 'hp_drain_percent') {
-      const eff = buff.effect as { type: 'hp_drain_percent'; value: number };
-      const drainDmg = Math.max(1, Math.floor(state.playerMaxHp * eff.value));
-      playerHpAfterDrain = Math.max(1, playerHpAfterDrain - drainDmg);
-      drainLog.push({ turn: afterBuffTick.turn, text: `🦠 ${buff.name}: -${drainDmg} HP`, type: 'status_effect', damage: drainDmg });
-    }
-  }
-
-  const workingState: CombatState = {
-    ...afterBuffTick,
-    playerHp: playerHpAfterDrain,
-    turn: afterBuffTick.turn + 1,
-    // Reset backward-compat flags at the start of each player turn.
-    // These are consumed during the enemy's turn and must not persist;
-    // the buff system handles duration-based effects.
-    enemyDefending: false,
-    doubleAttack: false,
-    playerDefending: false,
-    // Sync enemy defense reduction from buff system (may have changed due to buff tick/expiry)
-    enemyDefenseReduction: getEnemyDefenseReduction(afterBuffTick),
-    // Safety: clear any stale side effects that survived from a previous turn.
-    // consumeSideEffects() is the primary clearing mechanism, but this
-    // prevents re-application if a consumer reads the state between turns.
-    _sideEffects: [],
-    log: [...afterBuffTick.log, ...expiredLog, ...drainLog] };
-
-  // Normal: enable player turn
-  combat.setState({
-    ...workingState,
-    isPlayerTurn: true });
-
-  const playerTurn = combat.getState()!;
-  eventBus.emit('combat:turn', { turn: playerTurn.turn, isPlayerTurn: true });
-  combat.notifyListeners();
 }
 
 function executeEnemyTurn() {
@@ -1173,27 +1105,21 @@ function executeEnemyTurn() {
   transitionToPlayerTurn(combat.getState()!);
 }
 
-/** Helper to finalize enemy turn after a special attack */
+/** Helper to finalize enemy turn after a special attack.
+ *  Pure computation lives in `combat/turnCycle.ts` (computeGotoEnemyTurnEnd);
+ *  this orchestrator applies side effects (setState, defeat check, transition). */
 function gotoEnemyTurnEnd(state: CombatState) {
-  // Stat drain is now processed at the start of the player's turn (see transitionToPlayerTurn)
-
-  combat.setState({
-    ...state,
-    playerDefending: false,
-    enemyDefenseReduction: getEnemyDefenseReduction(state),
-    enemy: {
-      ...state.enemy,
-      specialCooldown: Math.max(0, state.enemy.specialCooldown - 1) } });
+  const result = computeGotoEnemyTurnEnd(state);
+  combat.setState(result.nextState);
 
   // Check defeat (some specials deal damage directly)
-  const afterSpecial = combat.getState()!;
-  if (afterSpecial.playerHp <= 0) {
+  if (result.playerDefeated) {
     handleDefeat();
     return;
   }
 
   // Transition to player turn (handles buff processing and skip_turn check)
-  transitionToPlayerTurn(afterSpecial);
+  transitionToPlayerTurn(result.nextState);
 }
 
 /* ═══════════════════════════════════════════════════════════════
@@ -1209,76 +1135,65 @@ function handleVictory(): CombatState | null {
   combat.clearPendingTimers();
 
   const enemy = cs.enemy;
-  const victoryRng = SeededCombatRng.fromState(cs.rng);
+  const defeatBarks = ENEMY_TEMPLATES[enemy.type]?.defeatBarks ?? [];
+  const creditsMultiplier = snap().difficultySettings.creditsMultiplier;
 
-  const comboBonus = Math.min(cs.maxCombo * 2, 10);
-  const karmaGained = 3 + victoryRng.nextInt(0, 4) + comboBonus;
-  dispatchGameAction({ type: 'player/addKarma', amount: karmaGained });
+  // Pure computation: roll karma, XP, credits, loot drop, skill XP, defeat bark.
+  // Side-effect orchestration (dispatches, tryAddInventoryItem, setState, emit,
+  // scheduleExit) stays here.
+  const computed = computeVictoryRewards({
+    combatState: cs,
+    creditsMultiplier,
+    defeatBarks,
+  });
 
-  // XP reward
-  const xpGained = enemy.xpReward + comboBonus;
-  addXp(xpGained);
-
-  const creditsGained = Math.max(1, Math.floor(computeCombatCredits(xpGained, comboBonus) * snap().difficultySettings.creditsMultiplier));
-  dispatchGameAction({ type: 'player/addCredits', amount: creditsGained });
+  // Dispatch reward game actions (side effects on Zustand store)
+  dispatchGameAction({ type: 'player/addKarma', amount: computed.karmaGained });
+  addXp(computed.xpGained);
+  dispatchGameAction({ type: 'player/addCredits', amount: computed.creditsGained });
 
   // Boss defeat flag — used by achievement system + story progression
-  if (isBossEnemyType(enemy.type)) {
+  if (computed.isBoss) {
     dispatchGameAction({ type: 'player/setFlag', key: `${enemy.type}_defeated`, value: true });
   }
 
-  // Loot roll (higher combo = better loot chance)
-  const lootChance = 0.6 + cs.maxCombo * 0.05;
+  // Loot add — may fail if inventory full; only counts toward the reward
+  // if the add succeeds (preserves original behavior).
   const lootItems: string[] = [];
-  if (enemy.lootTable.length > 0 && victoryRng.roll(Math.min(0.9, lootChance))) {
-    const lootItemId = enemy.lootTable[victoryRng.nextInt(0, enemy.lootTable.length - 1)];
-    const item = createInventoryItem(lootItemId);
+  if (computed.lootDrop) {
+    const item = createInventoryItem(computed.lootDrop);
     if (tryAddInventoryItem(item)) {
-      lootItems.push(lootItemId);
+      lootItems.push(computed.lootDrop);
     }
   }
 
-  // Skill experience
-  const skillXp: Partial<Record<import('@/shared/types/game').TrainablePlayerSkill, number>> = {};
-  skillXp.coding = Math.floor(xpGained * 0.3);
-  skillXp.logic = Math.floor(xpGained * 0.2);
-  skillXp.writing = Math.floor(xpGained * 0.1);
+  // Build the final CombatReward (xp/karma/credits/lootItems/skillXp).
+  const rewards = buildCombatReward(computed, lootItems);
 
-  const rewards: import('@/shared/types/game').CombatReward = {
-    xp: xpGained,
-    karma: karmaGained,
-    credits: creditsGained,
-    lootItems,
-    skillXp };
-
-  // Enemy defeat bark — dramatic last words (if defined)
-  const defeatTemplate = ENEMY_TEMPLATES[enemy.type];
-  const defeatBarks = defeatTemplate?.defeatBarks ?? [];
-  const defeatBark = defeatBarks.length > 0
-    ? defeatBarks[victoryRng.nextInt(0, defeatBarks.length - 1)]
-    : null;
+  // Build the victory log entries (defeat bark + summary line).
+  const logEntries = buildVictoryLogEntries(
+    cs.turn,
+    computed,
+    lootItems.length,
+    cs.maxCombo,
+  );
 
   combat.setState({
     ...cs,
     status: 'victory',
     powerCooldowns: {},
     rewards,
-    rng: victoryRng.getState(),
-    log: [
-      ...cs.log,
-      ...(defeatBark ? [{ turn: cs.turn, text: `💀 ${defeatBark}`, type: 'defeat' as const }] : []),
-      {
-        turn: cs.turn,
-        text: `🏆 Победа! +${karmaGained} кармы, +${xpGained} опыта, +${creditsGained} кредитов${lootItems.length > 0 ? `, найден предмет!` : ''}${cs.maxCombo >= 3 ? ` Макс. комбо: x${cs.maxCombo}!` : ''}`,
-        type: 'victory' },
-    ] });
+    rng: computed.rng,
+    log: [...cs.log, ...logEntries],
+  });
 
   eventBus.emit('combat:victory', {
     enemyType: enemy.type,
-    xpGained,
-    karmaGained,
-    creditsGained,
-    lootItemId: lootItems[0] });
+    xpGained: computed.xpGained,
+    karmaGained: computed.karmaGained,
+    creditsGained: computed.creditsGained,
+    lootItemId: lootItems[0],
+  });
 
   combat.notifyListeners();
 
@@ -1299,8 +1214,7 @@ function handleVictory(): CombatState | null {
     eventBus.emit('combat:end', {});
   });
 
-  const finalState = combat.getState();
-  return finalState;
+  return combat.getState();
 }
 
 function handleDefeat(): void {
@@ -1311,30 +1225,32 @@ function handleDefeat(): void {
   combat.clearPendingTimers();
 
   const enemy = cs.enemy;
-  const defeatRng = SeededCombatRng.fromState(cs.rng);
 
-  const energyLost = 15 + defeatRng.nextInt(0, 9);
-  const karmaLost = 5 + defeatRng.nextInt(0, 4);
-  dispatchGameAction({ type: 'player/addEnergy', amount: -energyLost });
-  dispatchGameAction({ type: 'player/addKarma', amount: -karmaLost });
+  // Pure computation: roll energyLost + karmaLost from combat RNG.
+  const computed = computeDefeatPenalty(cs);
+
+  dispatchGameAction({ type: 'player/addEnergy', amount: -computed.energyLost });
+  dispatchGameAction({ type: 'player/addKarma', amount: -computed.karmaLost });
+
+  const logEntry = buildDefeatLogEntry(
+    cs.turn,
+    computed.energyLost,
+    computed.karmaLost,
+  );
 
   combat.setState({
     ...cs,
     status: 'defeat',
     powerCooldowns: {},
-    rng: defeatRng.getState(),
-    log: [
-      ...cs.log,
-      {
-        turn: cs.turn,
-        text: `💀 Поражение... -${energyLost} энергии, -${karmaLost} кармы. Вы отступаете.`,
-        type: 'defeat' },
-    ] });
+    rng: computed.rng,
+    log: [...cs.log, logEntry],
+  });
 
   eventBus.emit('combat:defeat', {
     enemyType: enemy.type,
-    energyLost,
-    karmaLost });
+    energyLost: computed.energyLost,
+    karmaLost: computed.karmaLost,
+  });
 
   combat.notifyListeners();
 

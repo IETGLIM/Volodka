@@ -3,7 +3,7 @@
  * Built as DataTextures so unit tests and headless boots do not need a full Canvas2D.
  */
 
-import { ColorSpace, DataTexture, LinearFilter, LinearMipmapLinearFilter, MeshStandardMaterial, NoColorSpace, RepeatWrapping, SRGBColorSpace, Vector2 } from 'three';
+import { ColorSpace, DataTexture, LinearFilter, LinearMipmapLinearFilter, MeshStandardMaterial, NoColorSpace, RepeatWrapping, SRGBColorSpace, Texture, Vector2 } from 'three';
 import { seededRand } from '@/shared/utils/seededRand';
 
 export type SurfaceDetailKind = 'asphalt' | 'concrete' | 'plaster' | 'wood' | 'sidewalk';
@@ -327,12 +327,26 @@ export function applySurfaceDetailMaps(
   const maps = getCachedSurfaceDetailMaps(kind, textureScale);
   const repeat = maps.repeat * repeatScale;
 
+  // Dispose previously-assigned clones BEFORE overwriting — Three.js
+  // Material.dispose() does NOT dispose its textures (intentional), so re-applying
+  // detail maps to an existing material would otherwise leak the previous clones.
+  // Only touches textures we previously cloned here (tracked via userData marker),
+  // so externally-owned maps (photo-source kitbash, MeshReflectorMaterial's own
+  // render target, etc.) are never disposed by this routine.
+  disposePrevSurfaceDetailClone(material.map);
+  disposePrevSurfaceDetailClone(material.normalMap);
+  disposePrevSurfaceDetailClone(material.roughnessMap);
+
   const cloneMap = (src: DataTexture) => {
     const t = src.clone();
     t.wrapS = RepeatWrapping;
     t.wrapT = RepeatWrapping;
     t.repeat.set(repeat, repeat);
     t.needsUpdate = true;
+    // Mark as a surface-detail clone so the next applySurfaceDetailMaps call can
+    // safely dispose this texture. Texture.copy() deep-copies userData via JSON,
+    // so the marker stays local to this clone (cached source tex.userData is clean).
+    t.userData.volodkaSurfaceDetailClone = true;
     return t;
   };
 
@@ -341,4 +355,11 @@ export function applySurfaceDetailMaps(
   material.normalScale = new Vector2(0.55, 0.55);
   material.roughnessMap = cloneMap(maps.roughnessMap);
   material.needsUpdate = true;
+}
+
+/** Disposes a previously-assigned surface-detail clone (no-op for textures we don't own). */
+function disposePrevSurfaceDetailClone(tex: Texture | null | undefined): void {
+  if (tex && (tex as Texture & { userData?: Record<string, unknown> }).userData?.volodkaSurfaceDetailClone === true) {
+    tex.dispose();
+  }
 }

@@ -73,3 +73,17 @@ export async function generateDynamicTexturesAsync(
     w.postMessage(req);
   });
 }
+
+/**
+ * Terminate the texture-gen worker if one was lazily spawned. Safe to call
+ * multiple times — `generateDynamicTexturesAsync` will revive the worker on
+ * next call. Currently no production caller invokes `generateDynamicTexturesAsync`,
+ * but exposing the disposal hook ensures the worker cannot leak if/when the
+ * procedural AAA pipeline is wired up.
+ */
+export function disposeTextureGenWorker(): void {
+  if (worker) {
+    worker.terminate();
+    worker = null;
+  }
+}

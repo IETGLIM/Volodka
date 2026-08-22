@@ -77,5 +77,23 @@ export function getAmbientCrowdImpostorTexture(): DataTexture {
   tex.generateMipmaps = true;
   tex.needsUpdate = true;
   cached = tex;
+
+  // Self-evict when the texture is disposed externally — R3F auto-disposes the
+  // consumer mesh (and its material/texture bindings) on scene transition.
+  // Without this, `cached` would keep referencing a disposed texture and the
+  // next caller would receive a stale GPU handle (correctness bug + leak).
+  // Mirrors proceduralSkyTextures.ts:26-28 pattern.
+  tex.addEventListener('dispose', () => {
+    if (cached === tex) cached = null;
+  });
+
   return tex;
+}
+
+/** Test helper and quality/HMR cleanup — dispose the cached impostor texture. */
+export function clearAmbientCrowdImpostorTexture(): void {
+  if (cached) {
+    cached.dispose();
+    cached = null;
+  }
 }

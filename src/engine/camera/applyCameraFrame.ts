@@ -290,7 +290,12 @@ export function applyCameraFrame(
   const speed = playerVelocity.length();
   if (speed > 5.2 && !isInDialogue && !isCutscene && !isFpExploration && !isEffectiveReducedMotion()) {
     const thrust = Math.min(1, (speed - 5.2) / 1.8);
-    const fwd = new Vector3().subVectors(targetLook, targetPos).normalize();
+    // Reuse the module-level _camFwd scratch vector (defined at top of file) instead
+    // of allocating a new Vector3 every frame. The sprint-thrust branch is bounded by
+    // speed > 5.2 but fires every frame during sustained sprinting — per-frame Vector3
+    // allocation caused measurable GC churn. _camFwd is overwritten again at the
+    // AudioListener orientation update below (line ~344) so this is safe.
+    const fwd = _camFwd.set(0, 0, 0).subVectors(targetLook, targetPos).normalize();
     targetPos.addScaledVector(fwd, thrust * 0.03);
     targetLook.addScaledVector(fwd, thrust * 0.02);
     // Subtle "air rush" FOV breathing — wind-in-face feel, synced with body bob.

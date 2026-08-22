@@ -10,6 +10,9 @@ import { FPS_ARMS_URL } from '@/config/fpsArmsUrl';
 import { getNpcModelUrls } from '@/config/npcModelRegistry';
 import { getPropModelUrls } from '@/config/propModelRegistry';
 import { QUALITY_GPU_CLEANUP } from '@/engine/graphics/graphicsSettingsStorage';
+import { clearAmbientCrowdImpostorTexture } from '@/engine/graphics/ambientCrowdImpostorTexture';
+import { clearHeroEnvMapCache } from '@/engine/graphics/proceduralEnvMaps';
+import { clearSurfaceDetailCache } from '@/engine/graphics/proceduralSurfaceTextures';
 import { clearSkyTextureCache } from '@/engine/graphics/proceduralSkyTextures';
 import { evictCanvasTextureCache } from '@/engine/three/cachedCanvasTexture';
 import { evictNpcTemplateCache } from '@/engine/three/npcTemplateCache';
@@ -43,6 +46,12 @@ export function evictQualityDependentGpuCache(): void {
   clearSkyTextureCache();
   evictTextureReuseMap();
   evictNpcTemplateCache();
+  // Singleton procedural GPU caches — PMREM env maps, surface detail DataTextures,
+  // and the ambient crowd impostor atlas all live at module scope and otherwise
+  // survive across scene transitions (several MB each).
+  clearHeroEnvMapCache();
+  clearSurfaceDetailCache();
+  clearAmbientCrowdImpostorTexture();
 }
 
 let listenerRegistered = false;

@@ -120,6 +120,23 @@ function disposeMaterial(ctx: DisposeContext, material: Material | Material[] | 
   }
 }
 
+/**
+ * Dispose a material AND its attached textures (map/normalMap/roughnessMap/etc.).
+ *
+ * Use for component-owned materials whose textures were assigned via clone()
+ * (e.g., `applySurfaceDetailMaps` in proceduralSurfaceTextures.ts) — Three.js
+ * `Material.dispose()` does NOT cascade to its textures by design, so the cloned
+ * DataTextures would otherwise leak every time a component unmounts.
+ *
+ * Honors the registry-managed-material skip list (won't double-dispose materials
+ * tracked by moduleMaterialRegistry) and is idempotent within a single call.
+ */
+export function disposeMaterialWithTextures(material: Material | null | undefined): void {
+  if (!material) return;
+  const ctx = createContext();
+  disposeMaterial(ctx, material);
+}
+
 function disposeGeometry(ctx: DisposeContext, geometry: BufferGeometry | undefined): void {
   if (!geometry) return;
   if (shouldSkipGeometry(ctx, geometry)) return;
