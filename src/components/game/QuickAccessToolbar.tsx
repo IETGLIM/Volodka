@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
 
@@ -163,21 +162,16 @@ export function QuickAccessToolbar({
   }, []);
 
   return (
-    <AnimatePresence>
-      {visible && (
-        <motion.nav
-          key="quick-access-toolbar"
-          className="quick-access-toolbar"
-          style={{ zIndex: UI_LAYERS.MOBILE_CONTROLS - 1 }}
-          initial={{ opacity: 0, y: 60 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 60 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-          onTouchStart={handleTouchStart}
-          onTouchEnd={handleTouchEnd}
-          role="toolbar"
-          aria-label="Быстрый доступ"
-        >
+    visible ? (
+      <nav
+        key="quick-access-toolbar"
+        className="quick-access-toolbar quick-access-toolbar--enter"
+        style={{ zIndex: UI_LAYERS.MOBILE_CONTROLS - 1 }}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        role="toolbar"
+        aria-label="Быстрый доступ"
+      >
           <div className="quick-access-toolbar-inner">
             {slots.map((slot) => (
               <button
@@ -192,25 +186,18 @@ export function QuickAccessToolbar({
               >
                 <span className="quick-access-slot-icon" aria-hidden="true">{slot.icon}</span>
                 <span className="quick-access-slot-label">{slot.label}</span>
-                <AnimatePresence>
-                  {hoveredSlot === slot.id && (
-                    <motion.span
-                      key={`kbd-${slot.id}`}
-                      className="quick-access-slot-kbd"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.15 }}
-                    >
-                      {slot.shortcut}
-                    </motion.span>
-                  )}
-                </AnimatePresence>
+                {hoveredSlot === slot.id && (
+                  <span
+                    key={`kbd-${slot.id}`}
+                    className="quick-access-slot-kbd quick-access-slot-kbd--enter"
+                  >
+                    {slot.shortcut}
+                  </span>
+                )}
               </button>
             ))}
           </div>
-        </motion.nav>
-      )}
-    </AnimatePresence>
+      </nav>
+    ) : null
   );
 }

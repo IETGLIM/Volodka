@@ -126,3 +126,37 @@
     transition: none;
   }
 }
+
+/* ── CSS replacement for framer-motion entrance animation ──
+   INP-CRITICAL: framer-motion's motion.nav initialized layout calculations
+   synchronously on mount, blocking the pointer event ~304ms on toolbar
+   button clicks. CSS animation is GPU-accelerated, runs off main thread. */
+@keyframes quick-access-toolbar-in {
+  from {
+    opacity: 0;
+    transform: translateY(60px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.quick-access-toolbar--enter {
+  animation: quick-access-toolbar-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes quick-access-slot-kbd-in {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.quick-access-slot-kbd--enter {
+  animation: quick-access-slot-kbd-in 0.15s ease-out both;
+}
