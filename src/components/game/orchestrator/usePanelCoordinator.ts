@@ -4,6 +4,7 @@ import {
   useReducer,
   useRef,
   useState,
+  startTransition,
   type Dispatch,
 } from 'react';
 import { useGameStore } from '@/store/gameStore';
@@ -419,26 +420,41 @@ export function usePanelCoordinator({
 
   const handleOpenQuests = useCallback(() => {
     closeJournalIfOpen();
-    dispatchStackAction({ type: 'toggle', panel: 'quests' });
+    // React.startTransition marks the panel-mount state update as non-urgent.
+    // The browser can paint the toolbar hover/focus feedback immediately, then
+    // mount the panel (lazy chunk load + render) without blocking the pointer
+    // event — cuts INP on toolbar clicks significantly (panels are heavy: they
+    // dynamically import their component + render large lists).
+    startTransition(() => {
+      dispatchStackAction({ type: 'toggle', panel: 'quests' });
+    });
   }, [closeJournalIfOpen, dispatchStackAction]);
 
   const handleOpenInventory = useCallback(() => {
     closeJournalIfOpen();
-    dispatchStackAction({ type: 'toggle', panel: 'inventory' });
+    startTransition(() => {
+      dispatchStackAction({ type: 'toggle', panel: 'inventory' });
+    });
   }, [closeJournalIfOpen, dispatchStackAction]);
 
   const handleOpenPoetry = useCallback(() => {
     closeJournalIfOpen();
-    dispatchStackAction({ type: 'toggle', panel: 'poetry' });
+    startTransition(() => {
+      dispatchStackAction({ type: 'toggle', panel: 'poetry' });
+    });
   }, [closeJournalIfOpen, dispatchStackAction]);
 
   const handleOpenPoetryBook = useCallback(() => {
     closeJournalIfOpen();
-    dispatchStackAction({ type: 'toggle', panel: 'poetry' });
+    startTransition(() => {
+      dispatchStackAction({ type: 'toggle', panel: 'poetry' });
+    });
   }, [closeJournalIfOpen, dispatchStackAction]);
 
   const handleOpenJournal = useCallback(() => {
-    dispatchStackAction({ type: 'toggle', panel: 'journal' });
+    startTransition(() => {
+      dispatchStackAction({ type: 'toggle', panel: 'journal' });
+    });
   }, [dispatchStackAction]);
 
   const handleToggleTutorials = useCallback(() => {

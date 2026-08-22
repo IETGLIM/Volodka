@@ -81,6 +81,14 @@ export default defineConfig({
         experimentalMinChunkSize: ROLLUP_MIN_CHUNK_SIZE,
       },
     },
+    // CRITICAL for LCP: by default Vite emits a <link rel="modulepreload"> for
+    // EVERY statically imported chunk in index.html. With our tier-based splitting,
+    // index.html ended up with 68 modulepreload links — 68 HTTP requests fired
+    // on first paint, blocking LCP to ~4s. Disabling lets the browser load
+    // chunks lazily via dynamic import() when they're actually needed (3D scene
+    // entry, panel open, etc.). The boot chunk (index) still loads via the
+    // <script type="module"> tag.
+    modulePreload: false,
   },
   optimizeDeps: {
     // Pre-bundle heavy dependencies for faster dev startup

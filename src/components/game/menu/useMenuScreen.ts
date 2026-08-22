@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, startTransition } from 'react';
 import { useSyncExternalStore } from 'react';
 import { audioEngine } from '@/engine/AudioEngine';
 import { NEW_GAME_FADE_MS } from '@/engine/menu/menuConstants';
@@ -57,28 +57,41 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
         const mod = (window as any).__VOLODKA_AUDIO_CTX__ as { resume?: () => void } | undefined;
         mod?.resume?.();
       } catch {}
-      try {
-        // Динамический импорт чтобы не тянуть AudioEngine в меню чанк
-        import('@/engine/SharedAudioContext').then(({ getSharedAudioContext, whenAudioReady }) => {
-          const ctx = getSharedAudioContext();
-          ctx?.resume?.();
-          whenAudioReady(() => {
-            // Предзагрузка аудио — чтобы не было тишины
-            import('@/engine/audio/AudioEngine').then(({ audioEngine }) => {
-              audioEngine.playSfx('confirm');
+      // Sync SFX on the gesture (cheap) — keep the click responsive.
+      safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'confirm');
+      // Defer the heavy dynamic imports + AudioContext resume to a microtask so
+      // they don't block the pointer event's INP. The browser can paint the
+      // fade-out immediately, then we resume audio + preload chunks off the
+      // critical interaction path.
+      queueMicrotask(() => {
+        try {
+          import('@/engine/SharedAudioContext').then(({ getSharedAudioContext, whenAudioReady }) => {
+            const ctx = getSharedAudioContext();
+            ctx?.resume?.();
+            whenAudioReady(() => {
+              import('@/engine/audio/AudioEngine').then(({ audioEngine }) => {
+                audioEngine.playSfx('confirm');
+              });
             });
           });
-        });
-      } catch {}
-      safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'confirm');
+        } catch {}
+      });
 
       window.setTimeout(() => {
         setIsFadingOut(false);
 
         if (!skipPrologue) {
-          setShowProloguePerfection(true);
+          // startTransition: the prologue overlay mounts a heavy Suspense +
+          // typewriter + audio preload. Marking it non-urgent lets the browser
+          // paint the menu fade-out first, then mount the overlay without
+          // blocking the original pointer event's INP.
+          startTransition(() => {
+            setShowProloguePerfection(true);
+          });
         } else {
-          setShowSkipPrologueOverlay(true);
+          startTransition(() => {
+            setShowSkipPrologueOverlay(true);
+          });
         }
       }, NEW_GAME_FADE_MS);
     },
@@ -114,12 +127,16 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
 
   const handleSettings = useCallback(() => {
     safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_open');
-    setShowSettings(true);
+    startTransition(() => {
+      setShowSettings(true);
+    });
   }, []);
 
   const handleAbout = useCallback(() => {
     safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'ui_open');
-    setShowAbout(true);
+    startTransition(() => {
+      setShowAbout(true);
+    });
   }, []);
 
   const handleMenuAction = useCallback(
