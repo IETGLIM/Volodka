@@ -51,6 +51,7 @@ export {
   createLocomotionSpeed,
   createSubtitleScale,
   createTextSpeed,
+  createUiTextScale,
   DEFAULT_ACCESSIBILITY_SETTINGS,
 } from './accessibilityConstraints';
 export {

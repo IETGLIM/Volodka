@@ -34,6 +34,7 @@ import {
   createLocomotionSpeed,
   createSubtitleScale,
   createTextSpeed,
+  createUiTextScale,
   setColorBlindMode,
   setReducedMotionOverride,
   setLoadingFxDisabled,
@@ -42,6 +43,7 @@ import {
   setTextSpeed,
   setLocomotionSpeed,
   setHighContrast,
+  setUiTextScale,
 } from '@/engine/accessibility/accessibilitySettings';
 import type { AccessibilitySettingsSnapshot } from '@/engine/accessibility/accessibilitySettings';
 import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
@@ -108,6 +110,7 @@ const QUALITY_OPTIONS: { id: QualityPresetId; label: string }[] = [
 const SUBTITLE_SLIDER = accessibilitySliderBounds('subtitleScale');
 const TEXT_SPEED_SLIDER = accessibilitySliderBounds('textSpeed');
 const LOCOMOTION_SLIDER = accessibilitySliderBounds('locomotionSpeed');
+const UI_TEXT_SCALE_SLIDER = accessibilitySliderBounds('uiTextScale');
 
 function VisualSettingsTab({
   postfx,
@@ -333,6 +336,19 @@ function VisualSettingsTab({
       />
       <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
         Множитель скорости бега и ходьбы персонажа в исследовании.
+      </p>
+      <CyberSlider
+        label="Масштаб интерфейса"
+        value={accessibilitySliderPercent(a11y.uiTextScale)}
+        min={UI_TEXT_SCALE_SLIDER.min}
+        max={UI_TEXT_SCALE_SLIDER.max}
+        onChange={(v) => {
+          setUiTextScale(createUiTextScale(v / 100));
+        }}
+        unit="%"
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Глобальный масштаб текста интерфейса (WCAG 1.4.4). Влияет на HUD, меню и панели.
       </p>
     </motion.div>
   );
