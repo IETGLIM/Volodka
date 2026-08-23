@@ -57,13 +57,21 @@ function npcCharacterAsset(
   lod2Distance = 35,
 ): GltfAssetDefinition {
   const base = `${MODELS}/npcs/${fileBase}`;
+  // LOD-дедупликация (v4.7.1): файлы {base}_lod1.glb / {base}_lod2.glb были
+  // байт-идентичными копиями {base}.draco.glb (25.7 МБ чистых дублей в репо и
+  // в деплое + тройная загрузка одного и того же контента на каждого NPC).
+  // Реальные LOD не сгенерировать: меши скелетные и фрагментированы на сотни
+  // примитивов — gltf-transform simplify их не редуцирует, а модели уже
+  // низкополигональные (~13k upload-вершин). LOD-переключение сохранено на
+  // тех же дистанциях, но оба дальних уровня указывают на draco-файл —
+  // браузерный кэш дедуплицирует сеть до 1-2 уникальных загрузок на NPC.
   return {
     id: manifestId,
     category: 'character',
     lods: [
       { url: `${base}.glb`, maxDistance: 0 },
-      { url: `${base}_lod1.glb`, maxDistance: lod1Distance },
-      { url: `${base}_lod2.glb`, maxDistance: lod2Distance },
+      { url: `${base}.draco.glb`, maxDistance: lod1Distance },
+      { url: `${base}.draco.glb`, maxDistance: lod2Distance },
     ],
     variants: {
       none: `${base}.glb`,
@@ -108,10 +116,14 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
   player_volodka: {
     id: 'player_volodka',
     category: 'character',
+    // LOD-дедупликация (v4.7.1): volodka_lod1/lod2.glb были байт-идентичны
+    // volodka_lod0.draco.glb — дистанции LOD сохранены, дальние уровни
+    // указывают на draco-файл (заявленные ранее triangles 6000/2000 не
+    // соответствовали фактическому содержимому — метаданные убраны).
     lods: [
-      { url: `${MODELS}/characters/volodka/volodka_lod0.glb`, maxDistance: 0, triangles: 12000 },
-      { url: `${MODELS}/characters/volodka/volodka_lod1.glb`, maxDistance: 15, triangles: 6000 },
-      { url: `${MODELS}/characters/volodka/volodka_lod2.glb`, maxDistance: 35, triangles: 2000 },
+      { url: `${MODELS}/characters/volodka/volodka_lod0.glb`, maxDistance: 0 },
+      { url: `${MODELS}/characters/volodka/volodka_lod0.draco.glb`, maxDistance: 15 },
+      { url: `${MODELS}/characters/volodka/volodka_lod0.draco.glb`, maxDistance: 35 },
     ],
     variants: {
       none: `${MODELS}/characters/volodka/volodka_lod0.glb`,

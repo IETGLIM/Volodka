@@ -50,9 +50,21 @@ const issues = [];
 const successes = [];
 
 // Check Volodka player LOD
-function checkAsset(name, lodPaths) {
+function checkAsset(name, lodPaths, opts = {}) {
   const lod0 = parseGlbGeometry(lodPaths.lod0);
   if (!lod0) { issues.push(`${name}: LOD0 not found or corrupt`); return; }
+
+  if (opts.dedup) {
+    // v4.7.1 dedup design: far LODs point at the draco file (same mesh,
+    // fewer files). Verify every URL exists/parses; vertex counts are
+    // identical BY DESIGN — no reduction expected.
+    for (const [label, p] of [['LOD1', lodPaths.lod1], ['LOD2', lodPaths.lod2]]) {
+      if (!p) continue;
+      if (!parseGlbGeometry(p)) { issues.push(`${name}: ${label} not found or corrupt`); }
+    }
+    successes.push(`${name}: dedup LOD chain ok (${lod0.verts}v, draco far-LODs)`);
+    return;
+  }
 
   if (lodPaths.lod1) {
     const lod1 = parseGlbGeometry(lodPaths.lod1);
@@ -81,12 +93,19 @@ function checkAsset(name, lodPaths) {
   }
 }
 
-// Player
+// v4.7.1 — LOD-дедупликация персонажей: все {npc}_lod1/_lod2.glb и
+// volodka_lod1/lod2.glb были байт-идентичными копиями draco-варианта
+// (40 файлов, ~26 МБ дублей). Реальные LOD не генерируются: меши
+// скелетные, фрагментированы на сотни примитивов (simplify их не
+// редуцирует) и уже низкополигональные. Дальние LOD указывают на
+// draco-файл — проверяем существование фактической цепочки.
+
+// Player (dedup: lod1/lod2 → draco variant of lod0)
 checkAsset('player_volodka', {
   lod0: path.join(PUBLIC, 'characters/volodka/volodka_lod0.glb'),
-  lod1: path.join(PUBLIC, 'characters/volodka/volodka_lod1.glb'),
-  lod2: path.join(PUBLIC, 'characters/volodka/volodka_lod2.glb'),
-});
+  lod1: path.join(PUBLIC, 'characters/volodka/volodka_lod0.draco.glb'),
+  lod2: path.join(PUBLIC, 'characters/volodka/volodka_lod0.draco.glb'),
+}, { dedup: true });
 
 // NPCs — unique on-disk file bases only (shared-mesh aliases → npcMeshShare.ts)
 const npcNames = [
@@ -98,9 +117,9 @@ const npcNames = [
 for (const npc of npcNames) {
   checkAsset(`npc_${npc}`, {
     lod0: path.join(PUBLIC, `npcs/${npc}.glb`),
-    lod1: path.join(PUBLIC, `npcs/${npc}_lod1.glb`),
-    lod2: path.join(PUBLIC, `npcs/${npc}_lod2.glb`),
-  });
+    lod1: path.join(PUBLIC, `npcs/${npc}.draco.glb`),
+    lod2: path.join(PUBLIC, `npcs/${npc}.draco.glb`),
+  }, { dedup: true });
 }
 
 // Environment — single-LOD interim café props (Khronos BrainStem; fake LOD1/LOD2
