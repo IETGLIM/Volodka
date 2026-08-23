@@ -30,7 +30,8 @@ export type StorySatellitePackId =
   | 'resistance'
   | 'epilogue'
   | 'phase5Quests'
-  | 'expansionQuests';
+  | 'expansionQuests'
+  | 'aaaExpansion';
 export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
@@ -119,6 +120,11 @@ const storySatelliteLoaders: Record<
   epilogue: () => import('../story/epilogueStory').then((m) => m.STORY_NODES_EPILOGUE),
   phase5Quests: () => import('../story/phase5QuestStory').then((m) => m.STORY_NODES_PHASE5_QUESTS),
   expansionQuests: () => import('../story/expansionQuestStory').then((m) => m.STORY_NODES_EXPANSION_QUESTS),
+  // FIX (parity): AAA expansion story nodes (aaaExpansionStory.ts — 8 side-quest
+  // chains referenced by aaaExpansionQuests.ts linkedStoryNodeId(s)) were merged
+  // in the static buildStoryNodes() but had NO lazy loader here — at runtime
+  // ensureStoryNode() threw "Story node not found" for all 38 nodes.
+  aaaExpansion: () => import('../story/aaaExpansionStory').then((m) => m.AAA_EXPANSION_STORY_NODES),
 };
 
 /** Satellites loaded automatically when their parent act pack loads. */
@@ -142,6 +148,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'epilogue',
   'phase5Quests',
   'expansionQuests',
+  'aaaExpansion',
 ] as const;
 
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {

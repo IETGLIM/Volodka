@@ -187,6 +187,29 @@ const NPC_SPLASH_ENTRIES: ReadonlyArray<
   ['chk_guest_devops', 'Гость (DevOps)', 'ТОЛПА', '#3399bb'],
   ['chk_guest_analyst', 'Гость (Аналитик)', 'ТОЛПА', '#8866bb'],
   ['chk_ritka', 'Ритка', 'Бард пирса', '#ee7799'],
+  // FIX (3.3, splash coverage audit): expansion NPC stubs
+  // (src/data/expansion/expansionNpcStubs.ts) reference npc_* splash presets
+  // via their `npcSplashProfile` field, but those presets were never
+  // registered here — the audit (resolveInteractionSplash.test.ts) reported
+  // 18 unwired NPCs: their first-meeting camera splash silently no-op'd.
+  ['victoria', 'Виктория', 'Хранительница ключей', '#a060c0'],
+  ['informant_seryozha', 'Информант Серёжа', 'Бывший архивист гильдии', '#c0a050'],
+  ['merchant_boris', 'Торговец Борис', 'Печать гильдии купцов', '#b08040'],
+  ['captain_garold', 'Капитан Гарольд', 'Городская стража', '#8090a0'],
+  ['blacksmith_ignat', 'Кузнец Игнат', 'Мастерская у реки', '#c07030'],
+  ['dying_old_man', 'Умирающий старик', 'Последние слова', '#907080'],
+  ['marina', 'Марина', 'Дом за мостом', '#60b0a0'],
+  ['surveillance_contact', 'Контакт из Сети', 'Безымянный голос', '#50b0d0'],
+  ['park_old_man', 'Старик на скамье', 'Парк и память', '#90a070'],
+  ['dying_poet', 'Умирающий поэт', 'Последний стеллаж', '#b06070'],
+  ['poem_recipient_elena', 'Елена', 'Адресат стихов', '#d08090'],
+  ['factory_foreman', 'Мастер завода', '«Прогресс-7»', '#a08050'],
+  ['rival_poet_max', 'Поэт Макс', 'Соперник с площади', '#c05050'],
+  ['old_librarian_fyodor', 'Библиотекарь Фёдор', 'Хранитель подвала', '#80a8b0'],
+  ['radio_operator_katya', 'Радист Катя', 'Голос в эфире', '#60c0c0'],
+  ['smuggler_grisha', 'Контрабандист Гриша', 'Тайные тропы', '#70a060'],
+  ['community_buyer', 'Снабженец Общины', 'Хозяйственник окраин', '#90b080'],
+  ['union_supplier', 'Поставщик Союза', 'Запчасти на медикаменты', '#a09860'],
 ] as const;
 
 export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {

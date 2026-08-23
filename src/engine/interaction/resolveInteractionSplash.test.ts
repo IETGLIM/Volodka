@@ -2,6 +2,7 @@ import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import type { TriggerZone } from '@/data/triggerZones';
 import { ALL_NPC_IDS } from '@/data/allNpcDefinitions';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
+import { preloadBootGameData } from '@/data/gameDataLoader';
 import {
   auditInteractionSplashCoverage,
   deriveZoneRepeatSkipFlag,
@@ -166,6 +167,14 @@ describe('resolveInteractionSplash', () => {
   });
 
   describe('interaction splash coverage inventory', () => {
+    // resolveNpcInteractionSplash falls through to findNpcById() (gameDataLoader)
+    // when the NPC has no dedicated splash profile — the audit therefore needs
+    // the boot data pack (NPC definitions) preloaded before it can verify the
+    // full registry wiring.
+    beforeEach(async () => {
+      await preloadBootGameData();
+    });
+
     it('wires every interactable trigger zone on first visit', () => {
       const report = auditInteractionSplashCoverage(TRIGGER_ZONES, ALL_NPC_IDS);
       expect(report.unwiredZoneIds).toEqual([]);
