@@ -104,7 +104,7 @@ const ENTRY_VARIANTS: Variants = {
     scale: 0.8,
     opacity: 0,
     y: -30,
-    transition: { duration: 0.35, ease: [0.4, 0, 1, 1] as any },
+    transition: { duration: 0.35, ease: [0.4, 0, 1, 1] as const },
   },
 };
 
@@ -123,7 +123,7 @@ const PULSE_VARIANTS: Variants = {
     transition: {
       duration: 0.5,
       repeat: Infinity,
-      ease: 'easeInOut' as any,
+      ease: 'easeInOut' as const,
     },
   },
 };
@@ -135,7 +135,7 @@ const SHAKE_VARIANTS: Variants = {
       duration: 0.35,
       repeat: Infinity,
       repeatDelay: 1.5,
-      ease: 'easeInOut' as any,
+      ease: 'easeInOut' as const,
     },
   },
 };

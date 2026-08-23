@@ -219,19 +219,19 @@ function CesiumPlayerModelInner({
 
       // AAA Phase B: hard brake recovery — torso pitches forward on stop, then settles
       // Feels like the character is fighting momentum. Very satisfying.
-      if ((window as any).__brakeRecovery && (window as any).__brakeRecovery > 0) {
+      if (window.__brakeRecovery && window.__brakeRecovery > 0) {
         // Session 13 (ramp-tame): brake pitch ~7° max (was 0.48rad / 27.5°).
-        const brakePitch = (window as any).__brakeRecovery * 0.12;
+        const brakePitch = window.__brakeRecovery * 0.12;
         bodyGroup.rotation.x = MathUtils.lerp(bodyGroup.rotation.x || 0, brakePitch, 0.45);
-        (window as any).__brakeRecovery = Math.max(0, (window as any).__brakeRecovery - (1/60) * 4.1);
+        window.__brakeRecovery = Math.max(0, window.__brakeRecovery - (1/60) * 4.1);
       }
     }
   }, { label: 'PlayerAvatarYaw', phase: 'pre_render' });
 
   // Listen for hard brake to trigger torso pitch recovery
   useEffect(() => {
-    const unsub = eventBus.on('player:hard_brake' as any, () => {
-      (window as any).__brakeRecovery = 1.0;
+    const unsub = eventBus.on('player:hard_brake', () => {
+      window.__brakeRecovery = 1.0;
     });
     return unsub;
   }, []);
@@ -245,7 +245,7 @@ function CesiumPlayerModelInner({
   const landingSquashDecayRef = useRef(0);
 
   useEffect(() => {
-    const unsub = eventBus.on('player:landed' as any, ({ impact }: any) => {
+    const unsub = eventBus.on('player:landed', ({ impact }) => {
       const str = Math.min(1, Math.max(0.3, (impact || 0.7)));
       // Session 13 (ramp-tame): landing squash 8% max (was 32% — extreme).
       // Session 14 (closure-fix): now stored in refs — this reactive squash is ALIVE.

@@ -71,20 +71,20 @@ export function PhysicsPlayerContactShadow({
     }));
 
     // Hard landing — big squash + pulse
-    unsubs.push(eventBus.on('player:landed' as any, ({ impact }: any) => {
+    unsubs.push(eventBus.on('player:landed', ({ impact }) => {
       const str = Math.min(1, Math.max(0.35, impact || 0.6));
       landingSquashRef.current = Math.max(landingSquashRef.current, str * 1.15);
       stepPulseRef.current = Math.max(stepPulseRef.current, 0.9 + str * 0.7);
     }));
 
     // Hard brake — extra dramatic expansion
-    unsubs.push(eventBus.on('player:hard_brake' as any, () => {
+    unsubs.push(eventBus.on('player:hard_brake', () => {
       sprintIntensityRef.current = Math.max(sprintIntensityRef.current, 1.3);
       stepPulseRef.current = Math.max(stepPulseRef.current, 1.4);
     }));
 
     // Sprint launch — instant big expansion (the moment you hit sprint)
-    unsubs.push(eventBus.on('player:sprint_start' as any, () => {
+    unsubs.push(eventBus.on('player:sprint_start', () => {
       sprintIntensityRef.current = Math.max(sprintIntensityRef.current, 1.65);
       stepPulseRef.current = Math.max(stepPulseRef.current, 1.25);
     }));

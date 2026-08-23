@@ -52,12 +52,12 @@ const INNER_VOICE_LINES: Record<string, string> = {
   forest_night: 'Деревья помнят. Шепчут то, что ты забыл.',
 };
 
-function toneStyle(tone: GuideEntry['tone']) {
+function toneStyle(tone: GuideEntry['tone']): React.CSSProperties {
   switch (tone) {
-    case 'whisper': return { color: 'var(--hud-filmic-ink-dim)', fontStyle: 'italic', tracking: '0.08em' };
-    case 'thought': return { color: 'var(--hud-filmic-ink)', fontStyle: 'normal', tracking: '0.06em' };
-    case 'memory': return { color: 'var(--hud-filmic-ink-meta)', fontStyle: 'italic', tracking: '0.12em' };
-    case 'poetic': return { color: 'var(--hud-filmic-glow-warm)', fontStyle: 'italic', tracking: '0.10em' };
+    case 'whisper': return { color: 'var(--hud-filmic-ink-dim)', fontStyle: 'italic', letterSpacing: '0.08em' };
+    case 'thought': return { color: 'var(--hud-filmic-ink)', fontStyle: 'normal', letterSpacing: '0.06em' };
+    case 'memory': return { color: 'var(--hud-filmic-ink-meta)', fontStyle: 'italic', letterSpacing: '0.12em' };
+    case 'poetic': return { color: 'var(--hud-filmic-glow-warm)', fontStyle: 'italic', letterSpacing: '0.10em' };
   }
 }
 
@@ -104,7 +104,7 @@ export function AaaImmersiveGuide() {
       }),
       eventBus.on('scene:enter', ({ sceneId }) => {
         const key = `scene_${sceneId}`;
-        let line = (INNER_VOICE_LINES as any)[key] || (INNER_VOICE_LINES as any)[`scene_${sceneId.split('_')[0]}`];
+        let line = INNER_VOICE_LINES[key] || INNER_VOICE_LINES[`scene_${sceneId.split('_')[0]}`];
         if (!line) {
           // Fallback poetic atmosphere lines for all hubs
           if (sceneId.includes('factory') || sceneId.includes('basement')) line = INNER_VOICE_LINES.scene_factory;
@@ -135,7 +135,7 @@ export function AaaImmersiveGuide() {
           show('poem_power', INNER_VOICE_LINES.poem_power, 'poetic', 4600);
         }
       }),
-      eventBus.on('player:karma_change' as any, ({ delta }: any) => {
+      eventBus.on('player:karma_change', ({ delta }) => {
         if (Math.abs(delta || 0) > 8) {
           const line = (delta || 0) > 0 ? INNER_VOICE_LINES.karma_high : INNER_VOICE_LINES.karma_low;
           show(`karma_${Date.now()}`, line, 'thought', 3200);
@@ -168,7 +168,7 @@ export function AaaImmersiveGuide() {
             <div className="hud-filmic-rule hud-filmic-rule--wide opacity-40" aria-hidden />
             <p
               className="hud-filmic-body text-[12px] leading-relaxed"
-              style={toneStyle(entry.tone) as any}
+              style={toneStyle(entry.tone)}
             >
               {entry.text}
             </p>

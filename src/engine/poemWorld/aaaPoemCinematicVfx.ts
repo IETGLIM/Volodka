@@ -61,22 +61,22 @@ export function triggerPoemCinematicVfx(poemId: string, mode: 'discovery' | 'pow
   const profile = getPoemVfxProfile(poemId);
   // EventBus for other systems to listen (postfx, camera, particles)
   eventBus.emit('poem:cinematic_vfx', {
-    poemId: poemId as any,
+    poemId,
     mode,
     tint: profile.tint,
     particle: profile.particle,
     bloomBoost: profile.bloomBoost,
     vignetteBoost: profile.vignetteBoost,
     durationMs: profile.durationMs,
-  } as any);
+  });
 
   // Camera shake + dolly for tactile reading
   if (mode !== 'combat') {
-    eventBus.emit('camera:poem_reading_start', {} as any);
+    eventBus.emit('camera:poem_reading_start', {});
     eventBus.emit('cutscene:camera_shake', {
       intensity: profile.cameraShake,
       duration: profile.durationMs * 0.4,
-    } as any);
+    });
   } else {
     eventBus.emit('combat:bullet_time', {
       duration: profile.durationMs / 1000 * 0.35,
@@ -85,6 +85,6 @@ export function triggerPoemCinematicVfx(poemId: string, mode: 'discovery' | 'pow
     });
     eventBus.emit('camera:combat_impact', {
       intensity: profile.cameraShake * 1.4,
-    } as any);
+    });
   }
 }

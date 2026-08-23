@@ -164,11 +164,11 @@ export function AaaLivingWorldActivities() {
         if (key && ACTIVITY_LINES[key]) {
           const line = ACTIVITY_LINES[key];
           // Rich inner monologue — show, don't tell
-          eventBus.emit('volodka:thought' as any, {
+          eventBus.emit('volodka:thought', {
             text: line,
             source: key,
             scene: sId,
-          } as any);
+          });
 
           // Subtle world reactivity + tiny rewards for cozy moments
           if (COZY_ACTIVITIES.has(key)) {
@@ -192,14 +192,14 @@ export function AaaLivingWorldActivities() {
 
           // Dynamic world feedback — lights flicker, props react
           if (key.includes('lamp') || key === 'terminal' || key === 'control_panel') {
-            eventBus.emit('world:ambient_event' as any, {
+            eventBus.emit('world:ambient_event', {
               type: 'light_flicker',
               intensity: 0.6 + Math.random() * 0.3,
               duration: 800,
             });
           }
           if (key === 'radio' || key === 'jukebox') {
-            eventBus.emit('audio:ambient_stinger' as any, { cue: 'static' } as any);
+            eventBus.emit('audio:ambient_stinger', { cue: 'static' });
           }
         }
       }),
@@ -210,7 +210,7 @@ export function AaaLivingWorldActivities() {
         if (Math.random() < 0.018) {
           const whispers = ['Город шепчет.', 'Кто-то прошёл здесь недавно.', 'Ветер несёт запахи прошлого.'];
           const w = whispers[Math.floor(Math.random() * whispers.length)];
-          eventBus.emit('volodka:thought' as any, { text: w, source: 'ambient' } as any);
+          eventBus.emit('volodka:thought', { text: w, source: 'ambient' });
         }
       }),
     ];
