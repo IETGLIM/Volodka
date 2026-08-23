@@ -9,7 +9,12 @@ import { useCutsceneStore } from './stores/cutsceneStore';
 import { useSaveStore } from './stores/saveStore';
 import { useDialogueHistoryStore } from './stores/dialogueHistoryStore';
 import { useAchievementStore } from './stores/achievementStore';
-const SLICE_STORES: Array<StoreApi<unknown>> = [usePlayerStore, useExplorationStore, useWorldStore, useUIStore, useCutsceneStore, useSaveStore, useDialogueHistoryStore, useAchievementStore];
+import { useDifficultyStore } from './stores/difficultyStore';
+// FIX (P1): the difficulty store was missing from SLICE_STORES, so mutations
+// of useDifficultyStore (e.g. setGameDifficulty in SettingsPanel) did not
+// mark the facade dirty nor flush useGameStore — React UI kept rendering a
+// stale difficulty until some unrelated store changed.
+const SLICE_STORES: Array<StoreApi<unknown>> = [usePlayerStore, useExplorationStore, useWorldStore, useUIStore, useCutsceneStore, useSaveStore, useDialogueHistoryStore, useAchievementStore, useDifficultyStore];
 
 let sliceMutationFrameId: number | null = null;
 let sliceMutationMicrotaskScheduled = false;

@@ -45,6 +45,16 @@ function buildSnapshotCacheKey(state: GameStoreState): SnapshotCacheKey {
     state.lastUsedPoemId,
     state.lastUsedPoemTimestamp,
     state.pendingPoemReadingId,
+    // FIX (P2): these fields are published by buildGameSnapshot but were not
+    // part of the cache key — isolated changes produced stale engine snapshots.
+    state.difficultySettings,
+    state.playerState.equippedItems,
+    state.dialogueHistory,
+    state.trophyTracking,
+    state.weatherEnabled,
+    state.rainIntensity,
+    state.acquiredThoughtIds,
+    state.equippedThoughtIds,
   ];
 }
 
