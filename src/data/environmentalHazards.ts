@@ -83,10 +83,13 @@ export const ENVIRONMENTAL_HAZARDS: readonly EnvironmentalHazard[] = [
     enterToast: '🌊 Глубокое место у сваи — не уплыви.',
   },
   // ── chk_forest_zorge: campfire that burns if you stand in it ──
+  // Позиция синхронизирована с реальным костром (kenney_city_campfire в
+  // scenePropDressing стоит в [0, 0, -2.0]) — раньше триггер висел в 2 м
+  // от горящего пропа и не совпадал ни с визуалом, ни с логикой.
   {
     id: 'chk_campfire',
     sceneId: 'chk_forest_zorge',
-    position: [0, 0, 0],
+    position: [0, 0, -2.0],
     halfExtents: [0.8, 0.8, 0.8],
     kind: 'fire',
     damagePerTick: 10,
@@ -94,6 +97,91 @@ export const ENVIRONMENTAL_HAZARDS: readonly EnvironmentalHazard[] = [
     enterToast: '🔥 Костёр горит жарко — не стой в огне!',
   },
 ];
+
+/* ─── Data-driven тюнинг (единый источник игровых значений) ─────────────── */
+
+/**
+ * Потолок стресса за один тик hazard-зоны.
+ *
+ * damagePerTick в данных — дизайнерское значение ПОЛНОГО урона (в бою оно
+ * бьёт по HP). В exploration HP не трогается (осознанный дизайн: HP живёт
+ * только в combat), зона конвертирует урон в стресс. Чтобы «край крыши»
+ * (25 урона) не выжигал весь стресс-бар за пару тиков, полный урон капится
+ * в разумный стресс-эквивалент: min(damagePerTick, HAZARD_STRESS_PER_TICK_CAP).
+ * HP-часть урона продолжает применяться только в бою.
+ */
+export const HAZARD_STRESS_PER_TICK_CAP = 12;
+
+/** Fallback-интервал тиков, если дизайнер сломал tickInterval в данных. */
+export const DEFAULT_HAZARD_TICK_INTERVAL = 1.5;
+
+/** Минимально допустимый интервал (защита от мгновенных тиков). */
+export const MIN_HAZARD_TICK_INTERVAL = 0.2;
+
+/**
+ * Стресс за тик: урон из данных, капнутый и округлённый до целого (мин. 1).
+ * До фикса система игнорировала damagePerTick (хардкод 3) — теперь
+ * дизайнерские значения реально управляют давлением зоны.
+ */
+export function resolveHazardStressPerTick(hazard: EnvironmentalHazard): number {
+  const raw = Number.isFinite(hazard.damagePerTick) ? hazard.damagePerTick : 1;
+  return Math.max(1, Math.round(Math.min(raw, HAZARD_STRESS_PER_TICK_CAP)));
+}
+
+/**
+ * Интервал тиков из данных с санитайзом: NaN/бесконечность/слишком быстрые
+ * значения откатываются к DEFAULT_HAZARD_TICK_INTERVAL.
+ */
+export function resolveHazardTickInterval(hazard: EnvironmentalHazard): number {
+  const raw = hazard.tickInterval;
+  if (!Number.isFinite(raw) || raw < MIN_HAZARD_TICK_INTERVAL) {
+    return DEFAULT_HAZARD_TICK_INTERVAL;
+  }
+  return raw;
+}
+
+/** Активна ли зона при текущих флагах игрока (гейт requiredFlag/disabledWhenFlag). */
+export function isHazardEnabled(
+  hazard: EnvironmentalHazard,
+  flags: Readonly<Record<string, boolean>>,
+): boolean {
+  if (hazard.requiredFlag && !flags[hazard.requiredFlag]) return false;
+  if (hazard.disabledWhenFlag && flags[hazard.disabledWhenFlag]) return false;
+  return true;
+}
+
+/** Только включённые зоны сцены — для рантайм-тика и 3D-маркеров. */
+export function getEnabledHazardsForScene(
+  sceneId: SceneId,
+  flags: Readonly<Record<string, boolean>>,
+): readonly EnvironmentalHazard[] {
+  return ENVIRONMENTAL_HAZARDS.filter(
+    (h) => h.sceneId === sceneId && isHazardEnabled(h, flags),
+  );
+}
+
+/** Русская подпись типа опасности — тосты входа и HUD-индикатор. */
+export function getHazardLabel(kind: HazardKind): string {
+  switch (kind) {
+    case 'fire': return 'Огонь';
+    case 'electric': return 'Электричество';
+    case 'toxic': return 'Токсичные пары';
+    case 'fall': return 'Край';
+    case 'drown': return 'Глубокая вода';
+  }
+}
+
+/**
+ * Единая палитра типов опасности — 3D-маркеры и HUD-индикатор читают отсюда,
+ * чтобы цвет зоны в мире совпадал с цветом предупреждения на экране.
+ */
+export const HAZARD_KIND_COLOR: Readonly<Record<HazardKind, string>> = {
+  electric: '#7fd8ff',
+  toxic: '#5dff8a',
+  fall: '#ff5a5a',
+  drown: '#5a9dff',
+  fire: '#ff8a3d',
+};
 
 /** Check if a world position is inside a hazard AABB. */
 export function isInsideHazard(

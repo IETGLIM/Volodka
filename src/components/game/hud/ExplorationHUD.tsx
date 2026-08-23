@@ -14,6 +14,7 @@ import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
+import { HazardStatusIndicator } from '@/components/game/hud/parts/HazardStatusIndicator';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { EnhancedCrosshairPrompt } from '@/components/game/EnhancedCrosshairPrompt';
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
@@ -153,6 +154,7 @@ export function ExplorationHUD(props: HUDProps) {
           когда стамина не полная (спринт её расходует). */}
       <StaminaBar />
       <CombatPreEngagementWarning />
+      <HazardStatusIndicator />
 
       {/* Stress-reactive chromatic edge fringing — wraps the screen edges with
           subtle color separation when energy is low or stress is high. Pure
