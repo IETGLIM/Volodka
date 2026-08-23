@@ -975,3 +975,91 @@ NPC идёт к краю сцены перед исчезновением, по�
 
 Полноценная панель крафта: категории, поиск, детали рецепта,
 кнопка крафта с проверкой ингредиентов. Все тексты на русском.
+
+## v4.7.0 — Новые модули
+
+### Фазы боссов (интеграция `engine/combat/bossPhases.ts` в `CombatSystem.ts`)
+
+Мёртвая система активирована: переходы 100/60/30% HP → множители урона
+(×1.0→×1.6) и скорости, i-frames (`damage_reduction 1.0` на 1 удар),
+«Призыв Теней» (attack_boost, strictly-1v1 substitute), вспышка фазового
+цвета + `combat:boss_phase`. `getBossPhaseThresholds()` синхронизирует
+phase pips BossHealthBar с механическими порогами. Скорость не
+компаундится: `bossBaseSpeed` хранит донефазную базу.
+
+### Телеграфирование спец-атак (`CombatState.enemy.chargingSpecial`)
+
+Вместо мгновенного спешела враг тратит ход на зарядку (turnsToHit),
+индикатор «Готовит: …!» в CombatEnemyPanel (TelegraphIndicator), событие
+`combat:telegraph` + тревожный стингер. Защита в контр-окно применяет
+доп. ×0.4 к заряженной атаке (computeSpecialIncomingDamage). Заряженный
+спешел исполняется гарантированно, cooldown+1 с компенсацией декремента
+gotoEnemyTurnEnd.
+
+### Единый пайплайн защиты (`enemyTurn.ts applyPlayerDefenseLayers`)
+
+Слои 3–8 (defend → defense_boost → damage_reduction → vulnerability →
+spiritual → perks) вынесены в общую функцию — спешелы боссов больше не
+байпасят защиту игрока.
+
+### WoW-ИИ крипов (`engine/npc/creepTactics.ts` + `PatrollingCreeps.tsx`)
+
+- LOS: сегмент×AABB (slab method) по vision-блокерам сцены, чек раз в
+  ~200мс на крипа с кэшем — конус зрения не видит сквозь стены
+- Leash: выход за leashRange → состояние return к точке патруля
+- Кайтинг: ranged_strelkov/censor_drone держат 5–7м, отступают при сближении
+- Погоня по nav mesh (A*) + stuck-детект (1.5с без движения → отказ)
+
+### Директор погоды (`engine/world/weatherDirector.ts` + `useWeatherDirector.ts`)
+
+Чистый детерминированный модуль: погода = f(сцена, игровое время,
+настройки), хеши вместо Math.random — воспроизводимость после сейв/лоад.
+Синусоида дождя 0.20–0.74 (ниже порога «storm» 0.75 — геймплейный тип не
+дёргается), грозовые окна с пиком 1.0 и рампом 60–90с (HUD-вспышки через
+существующий storm-тип), окна дождя в сухих уличных сценах, дыхание
+снегопада, indoor-сцены всегда 0. Запись только через setRainIntensity
+(стор), пересчёт раз в 2–5с. Базовая карта сцена→тип перенесена в
+SCENE_BASE_WEATHER (единый источник истины для контроллера и директора).
+
+### Стамина (`engine/player/playerStamina.ts` + `hud/parts/StaminaBar.tsx`)
+
+Module-level engine-состояние (не zustand — без ре-рендеров): дрейн 18/с
+на спринте, реген 12/с (задержка 1с), порог 10 с гистерезисом, плавное
+падение скорости спринта до шага. UI: тонкая полоска только при неполной
+шкале, обновление через DOM-refs (паттерн StaminaBar ≈ SessionPlayTimer).
+
+### Хазард-зоны (`components/3d/HazardZoneMarker.tsx` + `engine/hazard/hazardStatusChannel.ts`)
+
+Data-driven тики: stress = cap(damagePerTick, 12), интервал из данных.
+Диегетические 3D-маркеры: мерцающие искры (электро), зелёная лужа-декаль
+(токсин), красные шевроны (край), «дышащая» вода (утопление), огненное
+кольцо (костёр) — дешёвые примитивы, visualLite → статичные. HUD-канал
+pub/sub (3D→HUD без EventMap): иконка + «−N стресс · X.X с» + полоска тика.
+
+### Миникарта: квест-маркеры + сворачивание (`MinimapComponent.tsx`)
+
+Живой `getQuestMarker()` вместо мёртвого `markerWorldPos`; edge-clamping
+в стиле Cyberpunk/GTA (маркер на ободе + стрелка); цель в другой сцене →
+маркер на выходе, ведущем к сцене цели. Сворачивание в «таблетку» 44px
+(стрелка севера + ромб цели с дистанцией), framer-motion mode="wait".
+
+### FreeRouter: городской тикер и шёпот (`api/city-news.ts`, `api/lib/*`)
+
+`/api/city-news?act=&scene=&hour=` — AI-новости ночного радио для
+TopBarDataTicker (бейдж «ЭФИР», graceful degradation на статику).
+`/api/matrix-quote?mode=whisper` — тревожные шёпоты от первого лица под
+будущую интеграцию стресса. Чистая логика в `api/lib/` (санитизация,
+denylist насилия, eviction, фолбэки) — 38 юнит-тестов; tsconfig/vitest
+подключают api/. Ключ FREEROUTER_KEY только в env.
+
+### PWA (`public/sw.js` + регистрация в `main.tsx`)
+
+Регистрация в production после load; кэш-стратегии: shell+WASM прекэш,
+/assets|basis|draco|rapier/ cache-first, /models|textures|hdri|menu/
+ограниченный runtime-кэш (~120 записей, LRU-аппроксимация) — офлайн-запуск.
+
+### Narrative registry: satellite-пак `aaaExpansion` (+ `streetLegends`)
+
+38 нод aaaExpansionStory.ts не имели ленивого загрузчика (ensureStoryNode
+кидал not found) — добавлены в STANDALONE_STORY_SATELLITE_ORDER. Новый пак
+streetLegends (5 квестов, 30 нод) подключён по тому же паттерну.
