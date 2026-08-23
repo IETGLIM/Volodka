@@ -11,6 +11,17 @@ export type SaveMigrationStep = (data: Record<string, unknown>) => Record<string
 const MIGRATIONS: Partial<Record<number, SaveMigrationStep>> = {
   // Example when bumping to v2:
   // 1: (data) => ({ ...data, newField: 'default' }),
+  //
+  // v4.7.3 CONTRACT — почему MIGRATIONS пуст при SAVE_VERSION = 4:
+  // все исторические изменения схемы (v1→v4) покрыты Zod-defaults:
+  // отсутствующие поля бэкфиллятся дефолтами в saveSchema.ts
+  // (например, weapon-слот v4.7.2 — optional + default(null)).
+  // Императивный шаг нужен ТОЛЬКО когда новый формат не выводим из
+  // старого чистой подстановкой дефолта (переименование поля, смена
+  // типа, вычисляемая миграция данных). При таком изменении:
+  //   1) инкрементируй SAVE_VERSION,
+  //   2) добавь шаг (oldVersion) => ({...data, ...}),
+  //   3) обнови saveSchema.ts и persistedState.ts.
 };
 
 function readSaveVersion(data: Record<string, unknown>): number {

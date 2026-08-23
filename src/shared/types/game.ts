@@ -29,7 +29,6 @@ export * from './state/combatRng';
 export * from './state/daily';
 export * from './state/player';
 export * from './state/exploration';
-export * from './state/game';
 
 export type { CameraWaypointData } from './camera';
 
