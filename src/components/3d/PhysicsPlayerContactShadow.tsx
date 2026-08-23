@@ -59,13 +59,13 @@ export function PhysicsPlayerContactShadow({
     const unsubs: Array<() => void> = [];
 
     // Sprint weight — shadow grows and darkens
-    unsubs.push(eventBus.on('exploration:footstep', ({ runWeight, isSprinting }: any) => {
+    unsubs.push(eventBus.on('exploration:footstep', ({ runWeight, isSprinting }) => {
       const rw = Math.max(0, Math.min(1, runWeight ?? (isSprinting ? 1 : 0)));
       sprintIntensityRef.current = Math.max(sprintIntensityRef.current, rw * 1.0);
     }));
 
     // Every heavy step — quick pulse
-    unsubs.push(eventBus.on('exploration:footstep', ({ runWeight }: any) => {
+    unsubs.push(eventBus.on('exploration:footstep', ({ runWeight }) => {
       const rw = Math.max(0, runWeight ?? 0);
       stepPulseRef.current = Math.max(stepPulseRef.current, 0.65 + rw * 0.9);
     }));

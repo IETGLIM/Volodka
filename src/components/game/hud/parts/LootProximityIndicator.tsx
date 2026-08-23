@@ -19,13 +19,13 @@ export function LootProximityIndicator() {
   }, []);
 
   useEffect(() => {
-    const unsubHint = eventBus.on('interaction:hint', (data: any) => {
-      const name = (data?.name || data?.label || '').toLowerCase();
-      const type = (data?.type || '').toLowerCase();
+    const unsubHint = eventBus.on('interaction:hint', (data) => {
+      const name = data.label.toLowerCase();
+      const type = data.type;
       const isLoot = name.includes('сундук') || name.includes('контейнер') || name.includes('ящик')
-        || name.includes('лоот') || type === 'loot' || type === 'container' || type === 'chest';
+        || name.includes('лоот') || type === 'item' || type === 'object';
       if (isLoot) {
-        setLootName(data?.name || data?.label || '');
+        setLootName(data.label);
         setNearLoot(true);
       } else {
         setNearLoot(false);
@@ -34,8 +34,8 @@ export function LootProximityIndicator() {
 
     const unsubEnd = eventBus.on('interaction:end', () => setNearLoot(false));
     const unsubStart = eventBus.on('interaction:start', () => setNearLoot(false));
-    const unsubLoot = eventBus.on('loot:reward', (data: any) => {
-      showAcquired(data?.itemName || data?.item);
+    const unsubLoot = eventBus.on('loot:reward', (data) => {
+      showAcquired(data.name);
     });
 
     return () => {

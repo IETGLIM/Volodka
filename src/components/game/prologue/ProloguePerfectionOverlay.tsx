@@ -187,9 +187,9 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
 
       <div className="absolute top-7 left-1/2 -translate-x-1/2 z-30 flex items-center gap-[10px]">
         {(['boot', 'breath', 'title'] as const).map((p) => {
-          const phases = ['boot', 'breath', 'title', 'handoff'] as const;
-          const curIdx = phases.indexOf(phase as any);
-          const thisIdx = phases.indexOf(p as any);
+          const phases = ['boot', 'breath', 'eyeOpen', 'title', 'handoff'] as const;
+          const curIdx = phases.indexOf(phase);
+          const thisIdx = phases.indexOf(p);
           const active = thisIdx === curIdx;
           const done = thisIdx < curIdx;
           return (

@@ -54,7 +54,7 @@ export function NeonSignFixture({
   const lightRef = useRef<PointLight>(null);
   const meshRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
-  const shadowRes = getShadowMapResolution(preset.id as any);
+  const shadowRes = getShadowMapResolution(preset.id);
 
   const geometry = useMemo(
     () => new PlaneGeometry(width, height),
@@ -135,7 +135,7 @@ export function StreetLampFixture({
   const lightRef = useRef<PointLight>(null);
   const meshRef = useRef<Mesh>(null);
   const timeRef = useRef(0);
-  const shadowRes = getShadowMapResolution(preset.id as any);
+  const shadowRes = getShadowMapResolution(preset.id);
 
   const geometry = useMemo(() => new SphereGeometry(0.12, 8, 6), []);
 

@@ -64,9 +64,9 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
   // Device info для immersion — реальные данные браузера
   const deviceInfo = useMemo(() => {
     if (typeof window === 'undefined') return null;
-    const gpu = (navigator as any).gpu ? 'WebGPU' : 'WebGL2';
+    const gpu = navigator.gpu ? 'WebGPU' : 'WebGL2';
     const cores = navigator.hardwareConcurrency ?? 4;
-    const mem = (navigator as any).deviceMemory ? `${(navigator as any).deviceMemory}GB` : 'unknown';
+    const mem = navigator.deviceMemory ? `${navigator.deviceMemory}GB` : 'unknown';
     const dpr = window.devicePixelRatio?.toFixed(2) ?? '1';
     return { gpu, cores, mem, dpr };
   }, []);

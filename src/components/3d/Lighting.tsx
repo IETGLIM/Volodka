@@ -101,7 +101,7 @@ function ScenePointLights() {
     sceneId === 'abandoned_factory';
 
   // Shadow quality tiers: low=off, medium=512, high=1024, ultra=2048
-  const pointShadowSize = getShadowMapResolution(preset.id as any);
+  const pointShadowSize = getShadowMapResolution(preset.id);
 
   if (lights.length === 0) return null;
 
@@ -142,7 +142,7 @@ export function ExplorationLighting() {
   );
   const config = getSceneConfig(sceneId);
   // Shadow quality tiers: low=off (0), medium=512, high=1024, ultra=2048
-  const dirShadowRes = isMobile ? 512 : getShadowMapResolution(preset.id as any);
+  const dirShadowRes = isMobile ? 512 : getShadowMapResolution(preset.id);
   const shadowSize = dirShadowRes > 0
     ? Math.min(4096, Math.round(dirShadowRes * rendering.shadowMapScale))
     : 0;
@@ -545,7 +545,7 @@ function SceneAccentLights({ sceneId, isMobile }: { sceneId: string; isMobile: b
   if (!lights) return null;
 
   // Shadow quality tier for accent lights
-  const accentShadowRes = getShadowMapResolution(preset.id as any);
+  const accentShadowRes = getShadowMapResolution(preset.id);
 
   // On mobile, limit accent lights to prevent performance issues
   const effectiveLights = isMobile ? lights.slice(0, 2) : lights;

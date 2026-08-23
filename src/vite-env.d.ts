@@ -8,3 +8,8 @@ interface Window {
   /** Brake recovery state tracked by CesiumPlayerModel for camera pitch. */
   __brakeRecovery?: number;
 }
+
+// Chrome-only Navigator API (not in standard DOM types)
+interface Navigator {
+  deviceMemory?: number;
+}

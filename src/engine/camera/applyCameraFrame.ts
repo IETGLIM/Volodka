@@ -301,8 +301,9 @@ export function applyCameraFrame(
     // Subtle "air rush" FOV breathing — wind-in-face feel, synced with body bob.
     const rushPhase = (ctx.time * 5.8) % (Math.PI * 2);
     const rush = Math.sin(rushPhase) * 0.012 * thrust;
-    (targets as any).targetFov = (targets as any).targetFov || targetFov;
-    (targets as any).targetFov += rush;
+    // Mutate the target's FOV directly — destructured `targetFov` above is a
+    // const copy, so we write back to the source object.
+    targets.targetFov = (targets.targetFov || targetFov) + rush;
   }
 
   _rollForward.subVectors(spring.lookAt, cam.position);
