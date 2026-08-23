@@ -64,9 +64,15 @@ describe('SettingsPanel', () => {
     render(<SettingsPanel open onClose={vi.fn()} />);
 
     await user.click(screen.getByRole('button', { name: /Управление/ }));
-    await user.click(screen.getByRole('button', { name: 'Сюжетный' }));
+    // The button's accessible name includes the difficulty icon (📖 Сюжетный).
+    await user.click(screen.getByRole('button', { name: /Сюжетный/ }));
 
-    expect(localStorage.getItem('volodka_combat_difficulty')).toBe('story');
+    // Modern difficulty flow: the zustand difficulty slice is the source of
+    // truth (persisted via the save payload); the legacy
+    // 'volodka_combat_difficulty' localStorage key belongs to the old
+    // 3-tier system and is intentionally no longer written here.
+    const { useGameStore } = await import('@/store/gameStore');
+    expect(useGameStore.getState().difficultySettings.difficulty).toBe('story');
   });
 
   it('shows quality preset hints on the visual tab', async () => {

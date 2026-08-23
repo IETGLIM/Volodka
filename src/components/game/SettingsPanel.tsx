@@ -181,7 +181,7 @@ function VisualSettingsTab({
                 className="px-2.5 py-1 rounded-md font-mono text-[11px] tracking-wide transition-colors border"
                 style={{
                   color: active ? 'rgb(var(--cyber-cyan-rgb) / 0.95)' : 'rgba(148, 163, 184, 0.65)',
-                  background: active ? 'rgb(var(--cyber-cyan-rgb) / 0.12)' : 'rgba(15, 23, 42, 0.5)',
+                  backgroundColor: active ? 'rgb(var(--cyber-cyan-rgb) / 0.12)' : 'rgba(15, 23, 42, 0.5)',
                   borderColor: active ? 'rgb(var(--cyber-cyan-rgb) / 0.45)' : 'rgba(71, 85, 105, 0.35)',
                 }}
               >
@@ -550,7 +550,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                       }`}
                       style={{
                         color: isActive ? meta.color : 'rgba(148, 163, 184, 0.65)',
-                        background: isActive ? meta.glowColor : 'rgba(15, 23, 42, 0.5)',
+                        backgroundColor: isActive ? meta.glowColor : 'rgba(15, 23, 42, 0.5)',
                         borderColor: isActive ? meta.color + '80' : 'rgba(71, 85, 105, 0.35)',
                         boxShadow: isActive ? `0 0 12px ${meta.glowColor}` : 'none',
                       }}
@@ -573,7 +573,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               </span>
               <div
                 className="rounded-md border border-slate-700/30 p-3"
-                style={{ background: 'rgba(15, 23, 42, 0.5)' }}
+                style={{ backgroundColor: 'rgba(15, 23, 42, 0.5)' }}
               >
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
                   {[
@@ -592,7 +592,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                       <kbd
                         className="inline-flex items-center justify-center min-w-[32px] h-5 px-1.5 rounded border font-mono text-[10px]"
                         style={{
-                          background: 'rgba(15, 23, 42, 0.7)',
+                          backgroundColor: 'rgba(15, 23, 42, 0.7)',
                           borderColor: 'rgba(100, 116, 139, 0.25)',
                           color: 'rgba(203, 213, 225, 0.7)',
                           boxShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
@@ -642,7 +642,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
           className="flex items-center justify-between px-4 py-2.5 border-b"
           style={{
             borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
-            background: 'rgba(0, 0, 0, 0.4)',
+            backgroundColor: 'rgba(0, 0, 0, 0.4)',
           }}
         >
           <div className="flex items-center gap-2">
@@ -681,7 +681,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                   color: isActive
                     ? 'rgb(var(--cyber-cyan-rgb) / 0.9)'
                     : 'rgba(148, 163, 184, 0.5)',
-                  background: isActive
+                  backgroundColor: isActive
                     ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
                     : 'transparent',
                 }}
@@ -729,7 +729,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             style={{
               color: 'rgba(251, 191, 36, 0.7)',
               borderColor: 'rgba(251, 191, 36, 0.2)',
-              background: 'rgba(251, 191, 36, 0.05)',
+              backgroundColor: 'rgba(251, 191, 36, 0.05)',
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.borderColor = 'rgba(251, 191, 36, 0.4)';
@@ -750,7 +750,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             <kbd
               className="inline-flex items-center justify-center px-1.5 h-5 rounded border font-mono text-[10px]"
               style={{
-                background: 'rgba(15, 23, 42, 0.6)',
+                backgroundColor: 'rgba(15, 23, 42, 0.6)',
                 borderColor: 'rgba(100, 116, 139, 0.25)',
                 color: 'rgba(148, 163, 184, 0.5)',
               }}

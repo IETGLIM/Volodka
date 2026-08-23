@@ -40,6 +40,10 @@ describe('usePhysicsPreload', () => {
 
       renderHook(() => usePhysicsPreload('exploration'));
 
+      // INP optimization: the first attempt is deferred to an idle slot —
+      // jsdom has no requestIdleCallback, so the hook falls back to
+      // setTimeout(0). Advance fake timers to fire that first attempt.
+      await vi.advanceTimersByTimeAsync(0);
       await Promise.resolve();
       await Promise.resolve();
       expect(preloadPhysicsChunk).toHaveBeenCalledTimes(1);
