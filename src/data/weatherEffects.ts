@@ -140,6 +140,16 @@ const OUTDOOR_SCENES = new Set([
   'park_day',
   'rooftop_edge',
   'chk_forest_zorge',
+  // Динамическая погода (режиссёр, engine/world/weatherDirector.ts): варианты
+  // дождливых сцен и сухие уличные сцены, где rainIntensity теперь меняется в
+  // рантайме. Без outdoor-классификации determineWeatherType считал бы их
+  // «помещением» и дёргал бы 'rain'↔'clear' на каждом колебании синусоиды
+  // (порог 0.3 в indoor-ветке) — карточки погоды сыпались бы каждые 60–100 с.
+  'river_pier',
+  'pier_evening',
+  'factory_roof',
+  'city_square',
+  'procedural_aaa',
 ]);
 
 /** Indoor scenes with large windows — reduced weather impact */

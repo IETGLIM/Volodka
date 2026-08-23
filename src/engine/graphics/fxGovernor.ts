@@ -94,7 +94,10 @@ export function sceneWantsRain(
   );
 }
 
-/** Resolve rain + fog + god rays together for a scene. */
+/** Resolve rain + fog + god rays together for a scene.
+ *  wantsRain (optional) переопределяет решение sceneWantsRain — так WeatherController
+ *  включает бюджетный слот дождя для динамических окон режиссёра погоды в сухих
+ *  уличных сценах. Без поля — прежнее поведение (только базовые дождливые сцены). */
 export function resolveSceneHeavyFx(
   tier: FxTier,
   sceneId: string,
@@ -102,10 +105,12 @@ export function resolveSceneHeavyFx(
     weatherEnabled: boolean;
     wantsFog: boolean;
     wantsGodRays: boolean;
+    /** Сцена хочет дождь прямо сейчас (динамическое окно режиссёра погоды). */
+    wantsRain?: boolean;
   },
 ): HeavyFxEnablement {
   return resolveHeavyFxEnablement(tier, {
-    rain: sceneWantsRain(sceneId, options.weatherEnabled),
+    rain: options.wantsRain ?? sceneWantsRain(sceneId, options.weatherEnabled),
     fog: options.wantsFog,
     godRays: options.wantsGodRays,
   }, sceneId);
