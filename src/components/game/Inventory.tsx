@@ -13,6 +13,7 @@ import {
   INVENTORY_SORT_OPTIONS,
 } from '@/components/game/inventory/inventoryConstants';
 import { useInventoryPanel } from '@/components/game/inventory/useInventoryPanel';
+import { InventoryDragProvider } from '@/components/game/inventory/inventoryDnd';
 import type { InventoryFilterCategory } from '@/engine/inventory/inventoryPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -269,6 +270,12 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
 
           {activeTab === 'items' && (
             <>
+              {/* v4.7.4: drag & drop — предмет → слот (надеть), надетый →
+                  сетка (снять); pointer-события (мышь + тач-лонгпресс). */}
+              <InventoryDragProvider
+                onEquipDrop={handleEquipItem}
+                onUnequipDrop={handleUnequipItem}
+              >
               <EquipmentPanel
                 equippedItems={equippedItems}
                 selectedSlot={selectedSlot}
@@ -315,6 +322,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                   )}
                 </AnimatePresence>
               </div>
+              </InventoryDragProvider>
             </>
           )}
 

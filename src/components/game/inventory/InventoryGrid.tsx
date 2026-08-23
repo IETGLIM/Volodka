@@ -7,6 +7,7 @@ import {
   INVENTORY_GRID_ROW_HEIGHT,
   INVENTORY_VIRTUALIZE_THRESHOLD,
 } from '@/components/game/inventory/inventoryConstants';
+import { useInventoryDnd } from '@/components/game/inventory/inventoryDnd';
 import {
   useInventoryGridColumns,
   useInventoryGridNavigation,
@@ -49,6 +50,10 @@ export function InventoryGrid({
   const columnCount = useInventoryGridColumns(gridContainerRef);
   const useVirtual = views.length >= INVENTORY_VIRTUALIZE_THRESHOLD;
   const rowCount = Math.ceil(views.length / columnCount);
+  // Зона дропа надетого предмета (снять) — подсветка dashed-контуром.
+  const { dragPayload, dropTarget } = useInventoryDnd();
+  const unequipHover =
+    !!dragPayload?.fromSlot && dropTarget?.kind === 'inventory';
 
   const rowVirtualizer = useVirtualizer({
     count: useVirtual ? rowCount : 0,
@@ -117,7 +122,8 @@ export function InventoryGrid({
       tabIndex={-1}
       role="listbox"
       aria-label="Предметы инвентаря"
-      className="outline-none min-w-0"
+      data-dnd-inventory="true"
+      className={`outline-none min-w-0 ${unequipHover ? 'inv-grid-drop-ok' : ''}`}
     >
       {useVirtual ? (
         <div ref={scrollRef} className="inv-grid-scroll max-h-[420px] overflow-y-auto pr-1">

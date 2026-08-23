@@ -9,6 +9,8 @@ import {
   INVENTORY_RARITY_BORDER_CLASS,
   INVENTORY_RARITY_TEXT_CLASS,
 } from '@/components/game/inventory/inventoryConstants';
+import { useInventoryDnd } from '@/components/game/inventory/inventoryDnd';
+import { wasDraggingRecently } from '@/components/game/inventory/inventoryDndLogic';
 import type { EquipmentSlot } from '@/shared/types/game';
 
 interface InventoryCardProps {
@@ -46,6 +48,8 @@ export const InventoryCard = memo(function InventoryCard({
   const [hovered, setHovered] = useState(false);
   const tooltipId = useId();
   const showTooltip = hovered || isFocused;
+  const { beginItemPointerDown } = useInventoryDnd();
+  const canBeDragged = def?.category === 'equipment' && !!def.equipmentSlot;
 
   return (
     <>
@@ -60,7 +64,14 @@ export const InventoryCard = memo(function InventoryCard({
         data-rarity={rarity !== 'common' ? rarity : undefined}
         data-focused={isFocused ? 'true' : undefined}
         tabIndex={isFocused ? 0 : -1}
-        onClick={() => onSelect(item.id, index)}
+        onClick={() => {
+          // После состоявшегося драга клик гасится (click стреляет после pointerup).
+          if (wasDraggingRecently()) return;
+          onSelect(item.id, index);
+        }}
+        onPointerDown={(e) => {
+          if (canBeDragged) beginItemPointerDown(item, e);
+        }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={`
@@ -68,6 +79,7 @@ export const InventoryCard = memo(function InventoryCard({
           backdrop-blur-md w-full
           ${INVENTORY_RARITY_BORDER_CLASS[rarity]}
           ${ringClass}
+          ${canBeDragged ? 'cursor-grab active:cursor-grabbing' : ''}
         `}
         initial={reducedMotion ? false : { opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -82,6 +94,14 @@ export const InventoryCard = memo(function InventoryCard({
       >
         {rarity === 'legendary' && (
           <div className="absolute inset-0 rounded-lg inv-legendary-shimmer pointer-events-none" />
+        )}
+        {canBeDragged && (
+          <span
+            className="pointer-events-none absolute right-1.5 top-1.5 rounded bg-cyan-500/10 px-1 text-[8px] font-mono uppercase tracking-wide text-cyan-300/70 opacity-0 transition-opacity duration-150 group-hover:opacity-100"
+            aria-hidden
+          >
+            ⟷ тяни
+          </span>
         )}
         {rarity === 'rare' && !isSelected && (
           <div className="absolute inset-0 rounded-lg inv-rare-pulse pointer-events-none" />

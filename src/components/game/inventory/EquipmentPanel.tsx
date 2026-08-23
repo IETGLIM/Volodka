@@ -6,6 +6,11 @@ import {
   INVENTORY_SLOT_ICONS,
   INVENTORY_SLOT_LABELS,
 } from '@/components/game/inventory/inventoryConstants';
+import { useInventoryDnd } from '@/components/game/inventory/inventoryDnd';
+import {
+  isSlotDropCompatible,
+  wasDraggingRecently,
+} from '@/components/game/inventory/inventoryDndLogic';
 import type { EquipmentSlot, InventoryItem } from '@/shared/types/game';
 
 interface EquipmentPanelProps {
@@ -19,6 +24,7 @@ export function EquipmentPanel({
   selectedSlot,
   onSelectSlot,
 }: EquipmentPanelProps) {
+  const { dragPayload, dropTarget, beginEquippedPointerDown } = useInventoryDnd();
   return (
     <div className="mb-4">
       <h3 className="text-xs font-medium text-slate-400 mb-2 flex items-center gap-1.5 font-mono uppercase tracking-wider">
@@ -31,14 +37,32 @@ export function EquipmentPanel({
           const view = equipped ? resolveInventoryItemView(equipped) : null;
           const isSelected = selectedSlot === slot;
           const slotBorderColor = INVENTORY_SLOT_BORDER_COLORS[slot];
+          // Подсветка цели дропа (v4.7.4): совместимый слот — cyan-пульс,
+          // несовместимый под курсором — rose-отказ.
+          const hoveredAsTarget = dragPayload && dropTarget?.kind === 'slot' && dropTarget.slot === slot;
+          const compatibleTarget =
+            hoveredAsTarget && dragPayload?.item
+              ? isSlotDropCompatible(dragPayload.equipmentSlot, slot)
+              : false;
+          const rejectedTarget =
+            hoveredAsTarget && dragPayload?.item ? !compatibleTarget : false;
 
           return (
             <button
               key={slot}
               type="button"
+              data-dnd-slot={slot}
               aria-label={`${INVENTORY_SLOT_LABELS[slot]}${equipped ? `: ${equipped.name}` : ', пусто'}`}
               aria-pressed={isSelected}
-              onClick={() => onSelectSlot(equipped ? slot : null)}
+              onClick={() => {
+                if (wasDraggingRecently()) return;
+                onSelectSlot(equipped ? slot : null);
+              }}
+              onPointerDown={(e) => {
+                if (!equipped) return;
+                if (e.pointerType === 'mouse' && e.button !== 0) return;
+                beginEquippedPointerDown(slot, equipped, e);
+              }}
               className={`
                 flex-1 rounded-md border p-2 transition-all duration-200 relative
                 ${equipped
@@ -47,6 +71,13 @@ export function EquipmentPanel({
                     : `${slotBorderColor} bg-slate-900/50 hover:bg-slate-800/40`
                   : 'inv-slot-empty border-slate-700/20 bg-slate-900/20'
                 }
+                ${equipped ? 'cursor-grab active:cursor-grabbing' : ''}
+                ${compatibleTarget
+                  ? 'ring-2 ring-cyan-400/70 bg-cyan-500/10 inv-slot-drop-ok'
+                  : ''}
+                ${rejectedTarget
+                  ? 'ring-2 ring-rose-500/70 inv-slot-drop-reject opacity-70'
+                  : ''}
               `}
             >
               <div className="text-[10px] text-slate-500 mb-1 flex items-center gap-1">
