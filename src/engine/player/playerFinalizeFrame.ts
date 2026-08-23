@@ -89,7 +89,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       });
 
       // AAA: rich landing dust burst (visual weight + living world)
-      eventBus.emit('player:landed' as any, {
+      eventBus.emit('player:landed', {
         position: [finalPos.x, finalPos.y, finalPos.z],
         impact,
         yaw: deps.livePlayerRotationRef.current,
@@ -172,7 +172,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     const isSprinting = horizontalSpeed > 5.5;
     const runWeight = Math.min(1, Math.max(0, (horizontalSpeed - 4) / 3));
     if (!wasIdle && isSprinting && horizontalSpeed > 5.3 && prevAnimForFootstep !== 'run') {
-      eventBus.emit('player:sprint_start' as any, {
+      eventBus.emit('player:sprint_start', {
         position: [finalPos.x, finalPos.y, finalPos.z],
         speed: horizontalSpeed,
         yaw: deps.livePlayerRotationRef.current,
@@ -259,7 +259,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     // for dust explosion, camera yank, body recovery, and audio.
     const wasFast = (window as any).__lastSprintSpeed > 5.0;
     if (wasFast && horizontalSpeed < 1.2 && deps.isGroundedRef.current) {
-      eventBus.emit('player:hard_brake' as any, {
+      eventBus.emit('player:hard_brake', {
         position: [finalPos.x, finalPos.y, finalPos.z],
         speed: horizontalSpeed,
         yaw: deps.livePlayerRotationRef.current,

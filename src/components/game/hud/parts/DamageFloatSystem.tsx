@@ -339,11 +339,11 @@ const floatVariants: Record<string, any> = {
   },
   animate: (duration: number) => ({
     scale: 1,
-    opacity: [0, 1, 1, 0] as any,
+    opacity: [0, 1, 1, 0] as const,
     y: FLOAT_DISTANCE,
     transition: {
       duration: duration / 1000,
-      ease: [0.25, 0.46, 0.45, 0.94] as any,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
       times: [0, 0.1, FADE_START_RATIO, 1],
     },
   }),
@@ -363,13 +363,13 @@ const critVariants: Record<string, any> = {
     rotate: -5,
   },
   animate: (duration: number) => ({
-    scale: [0.3, 1.2, 1, 1.05, 1] as any,
-    opacity: [0, 1, 1, 1, 0] as any,
+    scale: [0.3, 1.2, 1, 1.05, 1] as const,
+    opacity: [0, 1, 1, 1, 0] as const,
     y: FLOAT_DISTANCE * 1.2,
-    rotate: [ -5, 5, -3, 3, 0 ] as any,
+    rotate: [-5, 5, -3, 3, 0] as const,
     transition: {
       duration: duration / 1000,
-      ease: [0.25, 0.46, 0.45, 0.94] as any,
+      ease: [0.25, 0.46, 0.45, 0.94] as const,
       times: [0, 0.15, 0.3, FADE_START_RATIO, 1],
     },
   }),
@@ -389,11 +389,11 @@ const quickFadeVariants: Record<string, any> = {
   },
   animate: (duration: number) => ({
     scale: 1,
-    opacity: [0, 0.8, 0] as any,
+    opacity: [0, 0.8, 0] as const,
     y: FLOAT_DISTANCE * 0.6,
     transition: {
       duration: (duration * 0.8) / 1000,
-      ease: 'easeOut' as any,
+      ease: 'easeOut' as const,
       times: [0, 0.2, 1],
     },
   }),
@@ -411,12 +411,12 @@ const killShotVariants: Record<string, any> = {
     y: 0,
   },
   animate: (duration: number) => ({
-    scale: [0, 1.5, 1.2, 1] as any,
-    opacity: [0, 1, 1, 0] as any,
+    scale: [0, 1.5, 1.2, 1] as const,
+    opacity: [0, 1, 1, 0] as const,
     y: FLOAT_DISTANCE * 0.8,
     transition: {
       duration: duration / 1000,
-      ease: [0.175, 0.885, 0.32, 1.275] as any,
+      ease: [0.175, 0.885, 0.32, 1.275] as const,
       times: [0, 0.1, 0.5, 1],
     },
   }),

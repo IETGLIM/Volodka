@@ -227,7 +227,7 @@ export function FootstepDust() {
 
   // AAA cinematic landing dust burst — triggered from player movement on hard landings
   useEffect(() => {
-    const unsub = eventBus.on('player:landed' as any, ({ position, impact, yaw, sceneId }: any) => {
+    const unsub = eventBus.on('player:landed', ({ position, impact, yaw, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       const strength = Math.min(1, Math.max(0.4, impact || 0.6));
       const count = Math.round(6 + strength * 7); // strong visible puff
@@ -268,7 +268,7 @@ export function FootstepDust() {
   // Direct 'player:sprint_start' listener — powerful cinematic launch burst
   // (more reliable on exact transition, even if footstep timing is slightly off).
   useEffect(() => {
-    const unsub = eventBus.on('player:sprint_start' as any, ({ position, yaw, sceneId }: any) => {
+    const unsub = eventBus.on('player:sprint_start', ({ position, yaw, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       // Massive satisfying launch explosion — feels like the world reacts to your power
       const count = 15;
@@ -301,7 +301,7 @@ export function FootstepDust() {
   // AAA Phase B: hard brake dust explosion + slide trail
   // Massive satisfying stop puff + sliding dust — feels like real physics.
   useEffect(() => {
-    const unsub = eventBus.on('player:hard_brake' as any, ({ position, yaw, sceneId }: any) => {
+    const unsub = eventBus.on('player:hard_brake', ({ position, yaw, sceneId }: any) => {
       if (reducedMotionRef.current) return;
       // Big forward + lateral explosion
       const count = 14;

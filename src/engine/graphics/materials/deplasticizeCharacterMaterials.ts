@@ -96,26 +96,26 @@ export function deplasticizeCharacterMaterials(
       const physical = std as unknown as MeshPhysicalMaterial;
       if (isCloth && 'sheen' in physical) {
         try {
-          (physical as any).sheen = Math.max((physical as any).sheen ?? 0, 0.45);
-          (physical as any).sheenRoughness = 0.72;
-          (physical as any).sheenColor = new Color('#5a5a6a');
+          physical.sheen = Math.max(physical.sheen ?? 0, 0.45);
+          physical.sheenRoughness = 0.72;
+          physical.sheenColor = new Color('#5a5a6a');
         } catch { /* ignore */ }
       }
       if (isSkin && 'sheen' in physical) {
         try {
-          (physical as any).sheen = Math.max((physical as any).sheen ?? 0, 0.28);
-          (physical as any).sheenRoughness = 0.58;
-          (physical as any).sheenColor = new Color('#ffdfc4');
+          physical.sheen = Math.max(physical.sheen ?? 0, 0.28);
+          physical.sheenRoughness = 0.58;
+          physical.sheenColor = new Color('#ffdfc4');
         } catch { /* ignore */ }
         // SSS approximation: thin clearcoat layer simulates epidermis specular
         // and subtle transmission simulates light through thin skin (ears, fingers).
         if (opts.enableSssApprox && 'clearcoat' in physical && 'transmission' in physical) {
           try {
-            (physical as any).clearcoat = Math.max((physical as any).clearcoat ?? 0, 0.08);
-            (physical as any).clearcoatRoughness = 0.65;
-            (physical as any).transmission = Math.max((physical as any).transmission ?? 0, 0.03);
-            (physical as any).thickness = 0.5;
-            (physical as any).ior = 1.4;  // Skin IOR ≈ 1.4
+            physical.clearcoat = Math.max(physical.clearcoat ?? 0, 0.08);
+            physical.clearcoatRoughness = 0.65;
+            physical.transmission = Math.max(physical.transmission ?? 0, 0.03);
+            physical.thickness = 0.5;
+            physical.ior = 1.4;  // Skin IOR ≈ 1.4
           } catch { /* ignore */ }
         }
       }
@@ -123,8 +123,8 @@ export function deplasticizeCharacterMaterials(
         // Subtle clearcoat on polished/wood kit surfaces — breaks the dead matte look
         // that deplasticizing can cause. 0.08-0.15 reads as varnished or worn lacquer.
         try {
-          (physical as any).clearcoat = Math.max((physical as any).clearcoat ?? 0, 0.1);
-          (physical as any).clearcoatRoughness = 0.55;
+          physical.clearcoat = Math.max(physical.clearcoat ?? 0, 0.1);
+          physical.clearcoatRoughness = 0.55;
         } catch { /* ignore */ }
       }
     }
