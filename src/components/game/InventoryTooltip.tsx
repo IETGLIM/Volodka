@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import type { ItemRarity } from '@/data/items';
 import type { InventoryItemView } from '@/engine/inventory/inventoryPresentation';
 import { buildInventoryTooltipContent } from '@/engine/inventory/inventoryTooltipPresentation';
-import type { TooltipComparisonDelta } from '@/engine/inventory/inventoryTooltipPresentation';
+import type { TooltipComparisonDelta, TooltipComparisonRow } from '@/engine/inventory/inventoryTooltipPresentation';
 import { inventoryTelemetry } from '@/engine/inventory/inventoryTelemetry';
 import { useInventoryTooltipPosition } from '@/components/game/inventory/useInventoryTooltipPosition';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -62,6 +62,71 @@ function ComparisonDelta({ delta }: { delta: TooltipComparisonDelta }) {
   );
 }
 
+/* ── v4.7.9: двухколоночное сравнение (Cyberpunk-стиль) ──
+ * Полная картина: значение на НОВОМ предмете | на НАДЕТОМ, по каждой
+ * строке — вердикт (лучше/хуже/равно). Строки с преимуществом нового
+ * подсвечены emerald, проигрышем — rose, равные — приглушённо. */
+function ComparisonRow({ row }: { row: TooltipComparisonRow }) {
+  const isPositive = row.delta > 0;
+  const newWins = row.delta !== 0 && isPositive === row.positiveIsGood;
+  const equippedWins = row.delta !== 0 && !newWins;
+  const sign = isPositive ? '+' : '';
+
+  const newValueClass = newWins ? 'text-emerald-300' : equippedWins ? 'text-rose-300/80' : 'text-slate-300';
+  const equippedValueClass = equippedWins ? 'text-emerald-300' : newWins ? 'text-rose-300/80' : 'text-slate-300';
+  const deltaClass = row.delta === 0
+    ? 'text-slate-600'
+    : newWins ? 'text-emerald-400' : 'text-rose-400';
+  const verdict = row.delta === 0 ? '=' : isPositive ? '↑' : '↓';
+
+  return (
+    <div className="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center gap-2 font-mono text-[11px] leading-relaxed">
+      <span className="text-right tabular-nums break-words" style={{ color: undefined }}>
+        <span className={newValueClass}>{row.newValue > 0 ? `+${row.newValue}` : row.newValue}</span>
+      </span>
+      <span className={equippedWins ? 'text-emerald-500/70' : 'text-slate-700'} aria-hidden>│</span>
+      <span className="text-slate-400 truncate">{row.label}</span>
+      <span className={newWins ? 'text-emerald-500/70' : 'text-slate-700'} aria-hidden>│</span>
+      <span className="tabular-nums">
+        <span className={equippedValueClass}>
+          {row.equippedValue > 0 ? `+${row.equippedValue}` : row.equippedValue}
+        </span>
+        <span className={`ml-1.5 ${deltaClass}`} aria-label={`${row.label}: ${sign}${row.delta}`}>
+          {verdict}{row.delta !== 0 ? `${sign}${row.delta}` : ''}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+function SideBySideComparison({
+  comparison,
+}: {
+  comparison: NonNullable<InventoryTooltipContentComparison>;
+}) {
+  return (
+    <div className="rounded-md border border-amber-500/20 bg-amber-950/10 px-2 py-1.5">
+      {/* Заголовок колонок: НОВЫЙ (слева, cyan) vs НАДЕТО (справа, dim) */}
+      <div className="grid grid-cols-[1fr_auto_auto_auto_1fr] items-center gap-2 font-mono text-[9px] uppercase tracking-wider mb-1">
+        <span className="text-right text-cyan-400/90">Новое</span>
+        <span aria-hidden />
+        <span className="text-amber-500/70 truncate">
+          vs {comparison.equippedName}
+        </span>
+        <span aria-hidden />
+        <span className="text-slate-500">Надето</span>
+      </div>
+      {comparison.rows.map((row) => (
+        <ComparisonRow key={row.stat} row={row} />
+      ))}
+    </div>
+  );
+}
+
+type InventoryTooltipContentComparison = ReturnType<
+  typeof buildInventoryTooltipContent
+>['comparison'];
+
 export const InventoryTooltip = memo(function InventoryTooltip({
   view,
   visible,
@@ -102,7 +167,9 @@ export const InventoryTooltip = memo(function InventoryTooltip({
           id={tooltipId}
           role="tooltip"
           aria-hidden={!visible}
-          className="fixed pointer-events-none w-64 max-w-[calc(100vw-16px)] hud-filmic-tooltip-ink"
+          className={`fixed pointer-events-none max-w-[calc(100vw-16px)] hud-filmic-tooltip-ink ${
+            content.comparison && content.comparison.rows.length > 0 ? 'w-72' : 'w-64'
+          }`}
           style={{ top: coords.top, left: coords.left, zIndex: UI_LAYERS.TOOLTIP }}
           initial={reducedMotion ? false : { opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -196,8 +263,8 @@ export const InventoryTooltip = memo(function InventoryTooltip({
               </>
             )}
 
-            {/* ── Equipment Comparison ── */}
-            {content.comparison && content.comparison.deltas.length > 0 && (
+            {/* ── Equipment Comparison (v4.7.9: side-by-side, Cyberpunk-стиль) ── */}
+            {content.comparison && content.comparison.rows.length > 0 && (
               <>
                 <div
                   className="h-[1px] mx-3"
@@ -206,13 +273,17 @@ export const InventoryTooltip = memo(function InventoryTooltip({
                     background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.2), transparent)',
                   }}
                 />
-                <div className="px-3 py-2 space-y-1">
-                  <p className="font-mono text-[10px] uppercase tracking-wider text-amber-500/60 mb-1">
-                    Сравнение с {content.comparison.equippedName}
+                <div className="px-3 py-2 space-y-1.5">
+                  <p className="font-mono text-[10px] uppercase tracking-wider text-amber-500/60 mb-0.5">
+                    Сравнение · {content.comparison.slotLabel}
                   </p>
-                  {content.comparison.deltas.map((delta) => (
-                    <ComparisonDelta key={delta.stat} delta={delta} />
-                  ))}
+                  <SideBySideComparison comparison={content.comparison} />
+                  {/* Компактная сводка дельт для скрин-ридеров и беглого взгляда */}
+                  <div className="sr-only">
+                    {content.comparison.deltas.map((delta) => (
+                      <ComparisonDelta key={`sr-${delta.stat}`} delta={delta} />
+                    ))}
+                  </div>
                 </div>
               </>
             )}

@@ -26,12 +26,28 @@ export interface TooltipComparisonDelta {
   positiveIsGood: boolean;
 }
 
+/** v4.7.9: строка двухколоночного сравнения (Cyberpunk-стиль) — значение
+ *  на новом предмете vs на надетом, с вердиктом «лучше/хуже/равно». */
+export interface TooltipComparisonRow {
+  stat: string;
+  label: string;
+  /** Значение на новом (наведённом) предмете. */
+  newValue: number;
+  /** Значение на надетом предмете. */
+  equippedValue: number;
+  delta: number;
+  /** Whether a higher value is beneficial for the player. */
+  positiveIsGood: boolean;
+}
+
 export interface TooltipComparison {
   equippedItemId: string;
   equippedName: string;
   equippedRarity: ItemRarity;
   slotLabel: string;
   deltas: TooltipComparisonDelta[];
+  /** v4.7.9: полные строки side-by-side (включая нулевые дельты). */
+  rows: TooltipComparisonRow[];
 }
 
 export type InventoryTooltipContent = {
@@ -163,12 +179,35 @@ function computeComparison(
     deltas.push({ stat: key, label, delta, positiveIsGood });
   }
 
+  // v4.7.9: полные строки side-by-side — все статы обоих предметов,
+  // включая равные (Cyberpunk-стиль: пустых строк нет, честная картина).
+  const rows: TooltipComparisonRow[] = [];
+  for (const key of allKeys) {
+    const newVal = newStats.get(key) ?? 0;
+    const oldVal = oldStats.get(key) ?? 0;
+    const delta = newVal - oldVal;
+
+    let label: string;
+    let positiveIsGood: boolean;
+    if (key.startsWith('skill:')) {
+      const skillKey = key.slice(6);
+      label = SKILL_LABELS_LOCAL[skillKey] ?? skillKey;
+      positiveIsGood = true;
+    } else {
+      label = STAT_LABELS[key] ?? key;
+      positiveIsGood = STAT_POSITIVE_IS_GOOD[key] ?? true;
+    }
+
+    rows.push({ stat: key, label, newValue: newVal, equippedValue: oldVal, delta, positiveIsGood });
+  }
+
   return {
     equippedItemId,
     equippedName: equippedDef.name,
     equippedRarity: equippedDef.rarity,
     slotLabel,
     deltas,
+    rows,
   };
 }
 

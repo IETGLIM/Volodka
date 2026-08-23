@@ -30,6 +30,49 @@ describe('buildInventoryTooltipContent', () => {
   });
 });
 
+describe('tooltip comparison: side-by-side rows (v4.7.9)', () => {
+  // two real weapon items from the catalog (equipmentSlot 'weapon')
+  const NEW_VIEW = resolveInventoryItemView(item('debug_blade', 'Отладочный Клинок'));
+  const EQUIPPED_ID = 'logic_cannon';
+
+  it('сравнение оружия строится, rows полные (включая равные статы)', () => {
+    const content = buildInventoryTooltipContent(NEW_VIEW, EQUIPPED_ID);
+    expect(content.comparison).not.toBeNull();
+    const cmp = content.comparison!;
+    expect(cmp.slotLabel).toBe('Оружие');
+    expect(cmp.equippedName).toBe('Логическая Пушка');
+    // rows: все уникальные статы обоих предметов
+    const statKeys = cmp.rows.map((r) => r.stat).sort();
+    expect(statKeys).toContain('skill:coding');
+    expect(statKeys).toContain('skill:logic');
+    // каждое значение строки согласовано с дельтой
+    for (const row of cmp.rows) {
+      expect(row.newValue - row.equippedValue).toBe(row.delta);
+    }
+  });
+
+  it('дельты — это ненулевое подмножество rows', () => {
+    const content = buildInventoryTooltipContent(NEW_VIEW, EQUIPPED_ID);
+    const cmp = content.comparison!;
+    const rowDeltas = new Map(cmp.rows.map((r) => [r.stat, r.delta]));
+    for (const d of cmp.deltas) {
+      expect(rowDeltas.get(d.stat)).toBe(d.delta);
+    }
+    expect(cmp.deltas.length).toBeLessThanOrEqual(cmp.rows.length);
+  });
+
+  it('тот же предмет надет — сравнение не строится', () => {
+    const content = buildInventoryTooltipContent(NEW_VIEW, 'debug_blade');
+    expect(content.comparison).toBeNull();
+  });
+
+  it('расходуемый без equipmentSlot — сравнения нет', () => {
+    const view = resolveInventoryItemView(item('energy_drink', 'Энергетик'));
+    const content = buildInventoryTooltipContent(view, 'debug_blade');
+    expect(content.comparison).toBeNull();
+  });
+});
+
 function rect(left: number, top: number, width: number, height: number) {
   return {
     left,
