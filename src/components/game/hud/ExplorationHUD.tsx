@@ -15,6 +15,7 @@ import type { HUDProps } from '@/components/game/hud/hudTypes';
 import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { HazardStatusIndicator } from '@/components/game/hud/parts/HazardStatusIndicator';
+import { CityWhisperOverlay } from '@/components/game/hud/parts/CityWhisperOverlay';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
 import { EnhancedCrosshairPrompt } from '@/components/game/EnhancedCrosshairPrompt';
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
@@ -155,6 +156,9 @@ export function ExplorationHUD(props: HUDProps) {
       <StaminaBar />
       <CombatPreEngagementWarning />
       <HazardStatusIndicator />
+      {/* «Шёпот города»: тревожная строка при стрессе ≥70 (FreeRouter,
+          mode=whisper; кулдаун 8 мин, один шёпот на эпизод стресса). */}
+      <CityWhisperOverlay />
 
       {/* Stress-reactive chromatic edge fringing — wraps the screen edges with
           subtle color separation when energy is low or stress is high. Pure
