@@ -71,9 +71,11 @@ interface FreeRouterResponse {
 }
 
 async function callFreeRouter(apiKey: string, model: string, systemPrompt: string): Promise<{ quote: string | null; model: string }> {
-  // glm-5.2 is a reasoning model — needs headroom for the reasoning trace
-  // before emitting final `content`. 400 tokens is empirically enough
-  // for a 1-2 sentence Russian quote (probed during integration).
+  // glm-5.2 is a reasoning model — it emits a hidden reasoning trace before
+  // the final `content`. 400 tokens was empirically enough at integration
+  // time, but live probes (2026-08) showed traces occasionally eating the
+  // whole budget → finish_reason "length" with empty content. 900 tokens
+  // leaves headroom for the trace + a 1-2 sentence Russian quote.
   const upstream = await fetch(FREEROUTER_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -87,7 +89,7 @@ async function callFreeRouter(apiKey: string, model: string, systemPrompt: strin
         { role: 'system', content: systemPrompt },
         { role: 'user', content: 'Сгенерируй цитату.' },
       ],
-      max_tokens: 400,
+      max_tokens: 900,
       temperature: 0.95,
     }),
   });
