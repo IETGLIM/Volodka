@@ -7,7 +7,7 @@ import { withHmrCleanup } from '@/shared/dev/hmrDispose';
 import { startCombat } from '@/engine/CombatSystem';
 import { getItemDefinition } from '@/data/items';
 import { audioEngine } from '@/engine/audio/AudioEngine';
-import { pickEnemyForCurrentState } from '@/engine/combat/enemies';
+import { pickEnemyForCurrentState, rollEncounterWave } from '@/engine/combat/enemies';
 import { gamepadRumbleDanger } from '@/shared/utils/gamepadRumble';
 import type { EnemyType } from '@/shared/types/game';
 
@@ -42,7 +42,23 @@ export function useCombatOrchestrator() {
           // Task 4-b: Use act+level-aware enemy selection instead of karma-only
           const enemyType = pickEnemyForCurrentState();
 
-          startCombat(enemyType, { encounterSource: 'arena' });
+          // v4.7.8 «Волна из двух врагов»: на акте 3+ арена-бой может
+          // подкрепиться вторым врагом (шанс 15–35% по актам). Отдельный
+          // бросок Math.random — волна не обязана быть детерминированной
+          // (в отличие от основного пика, влияющего на баланс сейвскама).
+          const snapshot = store;
+          const waveEnemy = rollEncounterWave(
+            snapshot.playerState.progression.currentAct,
+            snapshot.playerState.progression.level,
+            snapshot.playerState.karma,
+            Math.random(),
+            enemyType,
+          );
+
+          startCombat(enemyType, {
+            encounterSource: 'arena',
+            pendingEnemies: waveEnemy ? [waveEnemy] : [],
+          });
         }
       }
     });
@@ -98,6 +114,13 @@ export function useCombatOrchestrator() {
     scope.on('combat:telegraph', () => {
       audioEngine.playStinger('danger');
       // Haptic: нарастающая «зарядка» — двойной гул, сильнее обычного удара.
+      gamepadRumbleDanger();
+    }, EventBusPriority.FX);
+
+    // v4.7.8 «Волна из двух врагов»: первый пал — второй вступает.
+    // Mystery-стингер + тяжёлая вибрация: бой не кончился, цель сменилась.
+    scope.on('combat:wave_swap', () => {
+      audioEngine.playStinger('mystery');
       gamepadRumbleDanger();
     }, EventBusPriority.FX);
 

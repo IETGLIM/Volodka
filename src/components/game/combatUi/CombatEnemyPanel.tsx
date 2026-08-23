@@ -91,6 +91,9 @@ export function CombatEnemyPanel({
     ? `combat-enemy-affinity-${primaryWeakness.channel}`
     : '';
 
+  // v4.7.8: индикатор волны — в очереди ждёт второй враг.
+  const pendingWave = combatState.pendingEnemies ?? [];
+
   return (
     <motion.div
       className="pointer-events-auto pt-3 px-3"
@@ -98,6 +101,26 @@ export function CombatEnemyPanel({
       animate={{ y: introVisible ? -20 : 0, opacity: introVisible ? 0.35 : 1 }}
       transition={{ delay: introVisible ? 0 : 0.35, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
     >
+      {pendingWave.length > 0 && (
+        <div
+          className="mb-1 flex items-center justify-center gap-1.5 rounded border border-amber-500/50 bg-amber-950/40 px-2 py-0.5 backdrop-blur-sm"
+          style={{ boxShadow: '0 0 10px rgba(245, 158, 11, 0.18)' }}
+          role="status"
+          aria-label="В бою ждёт второй противник"
+        >
+          <motion.span
+            className="text-[10px]"
+            animate={{ opacity: [0.55, 1, 0.55] }}
+            transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+            aria-hidden
+          >
+            ⚠
+          </motion.span>
+          <span className="font-mono text-[9px] uppercase tracking-wider text-amber-300/90">
+            Следом: ещё {pendingWave.length === 1 ? 'противник' : `противника ×${pendingWave.length}`}
+          </span>
+        </div>
+      )}
       <motion.div
         className={`glass-panel-dark bg-black/60 backdrop-blur-sm border border-red-900/30 rounded-lg p-3 scan-line combat-enemy-card ${enemyAffinityClass}`}
         style={{ boxShadow: '0 0 20px rgba(239,68,68,0.1)' }}

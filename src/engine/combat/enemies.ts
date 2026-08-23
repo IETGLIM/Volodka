@@ -1852,3 +1852,42 @@ export function pickEnemyForCurrentState(): EnemyType {
   const seed = getPlayerRngSeed(snapshot.playerState) ^ (act * 17 + level * 31);
   return pool[pickIndexFromSeed(seed, pool.length)];
 }
+
+/** v4.7.8 «Волна из двух врагов»: решает, подкрепится ли бой вторым врагом.
+ *
+ * Шанс растёт по актам (акт 3 — 15%, акт 5 — 25%, акт 7 — 35%), второй враг
+ * выбирается из того же act-aware пула (не босс, не дубль первого —
+ * разнообразие важнее). Чистая функция от (act, level, karma, rngRoll) —
+ * детерминизм пика наследуется от вызывающего рола.
+ */
+export function rollEncounterWave(
+  act: number,
+  level: number,
+  karma: number,
+  rngRoll: number,
+  firstEnemy: EnemyType,
+): EnemyType | null {
+  const waveChance = act >= 7 ? 0.35 : act >= 5 ? 0.25 : act >= 3 ? 0.15 : 0;
+  if (waveChance <= 0 || rngRoll >= waveChance) return null;
+
+  // Тот же пул-строитель, что и в pickEnemyForCurrentState — вынесем мини-копию:
+  const pool: EnemyType[] = ['system_daemon', 'corporate_golem', 'corporate_drone', 'rust_sentinel'];
+  if (level >= 2) { pool.push('censor_drone', 'ranged_strelkov'); }
+  if (level >= 3) pool.push('shadow_agent');
+  if (act >= 2) {
+    pool.push('data_phantom', 'code_inquisitor', 'data_wraith', 'memory_wraith', 'grief_echo', 'dark_mage');
+    if (level >= 2) pool.push('network_spy');
+    if (level >= 5) pool.push('poetry_hunter');
+  }
+  if (act >= 3 && level >= 3) pool.push('guild_enforcer', 'firewall_guardian');
+  if (act >= 3 && level >= 4) pool.push('quantum_ghost');
+  if (act >= 4 && level >= 5) pool.push('corporate_ai');
+  if (act >= 5 && level >= 6) pool.push('memory_devourer');
+  if (karma > 65) pool.push('shadow_agent');
+  if (karma < 35) pool.push('corporate_drone', 'censor_drone');
+
+  const candidates = pool.filter((t) => t !== firstEnemy);
+  if (candidates.length === 0) return null;
+  const idx = Math.floor((rngRoll / Math.max(waveChance, 1e-6)) * candidates.length) % candidates.length;
+  return candidates[idx] ?? null;
+}

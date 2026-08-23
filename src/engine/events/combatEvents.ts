@@ -38,6 +38,14 @@ export interface CombatEvents {
   'combat:damage': { amount: number; source?: string; critical?: boolean };
   'combat:heal': { amount: number; source?: string };
   'combat:story_continue': { nodeId: string };
+  /** v4.7.8 «Волна из двух врагов» — первый враг пал, из очереди вступает
+   *  следующий: UI меняет портрет/панель, аудио — стингер, flash — смена
+   *  цели. Награды за павшего начислены (половинные). */
+  'combat:wave_swap': {
+    defeatedType: EnemyType;
+    nextType: EnemyType;
+    nextName: string;
+  };
   /** Boss phase transition (combat/bossPhases.ts) — UI flash, audio stinger,
    *  announcer. Emitted when HP crosses a threshold (100/60/30). */
   'combat:boss_phase': {

@@ -8,6 +8,7 @@ import type {
   CombatReward,
   EnemyChargingSpecial,
 } from '../definitions/combat';
+import type { EnemyType } from '../definitions/combat';
 import type { CombatRngState } from './combatRng';
 
 export interface CombatState {
@@ -62,6 +63,12 @@ export interface CombatState {
   /** Enemy speed BEFORE any boss-phase speed multipliers — phase transitions
    *  re-derive enemy.speed from this base so multipliers never compound. */
   bossBaseSpeed?: number;
+
+  /** v4.7.8 «Волна из двух врагов»: очередь типов врагов, вступающих в бой
+   *  после падения текущего. Пустая очередь (и undefined в старых сейвах) =
+   *  классический 1v1. При победе над активным врагом очередь НЕ пуста →
+   *  смена цели вместо победы (см. CombatSystem.spawnNextWaveEnemy). */
+  pendingEnemies?: EnemyType[];
 }
 
 export type { EnemyChargingSpecial };

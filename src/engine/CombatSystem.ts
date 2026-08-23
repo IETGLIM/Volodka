@@ -461,6 +461,10 @@ export interface CombatStartOptions {
   creepId?: string;
   /** Test harness — skip the shared encounter presentation beat. */
   skipPresentation?: boolean;
+  /** v4.7.8 «Волна из двух врагов»: очередь типов, вступающих после падения
+   *  первого. Наполняется вызывающей стороной (encounter roll) либо самим
+   *  бойцом при story-encounters на акте 3+. */
+  pendingEnemies?: EnemyType[];
 }
 
 export function startCombat(
@@ -561,6 +565,8 @@ function startCombatImmediate(
       // Boss phase tracking (bossPhases.ts) — phase 0 until HP crosses 60%.
       bossPhase: 0,
       bossBaseSpeed: enemy.speed,
+      // v4.7.8: волна второго врага (если назначена снаружи).
+      pendingEnemies: options?.pendingEnemies ?? [],
     },
     state.activeTTLFlags,
   );
@@ -1366,9 +1372,135 @@ function gotoEnemyTurnEnd(state: CombatState) {
    §9 — VICTORY / DEFEAT
    ═══════════════════════════════════════════════════════════════ */
 
+/* ═══════════════════════════════════════════════════════════════
+   §9.5 — WAVE SWAP (v4.7.8 «Волна из двух врагов»)
+   Победа над активным врагом при непустой pendingEnemies-очереди:
+   начисляем половинные награды за павшего, второй враг вступает в бой
+   на полном HP со своим набором спец-атак; баффы/дебаффы игрока живут
+   (бой один), баффы врага и телеграф сбрасываются.
+   ═══════════════════════════════════════════════════════════════ */
+
+function handleWaveSwap(cs: CombatState, pendingWave: EnemyType[]): CombatState | null {
+  const enemy = cs.enemy;
+  const creditsMultiplier = snap().difficultySettings.creditsMultiplier;
+  const defeatBarks = ENEMY_TEMPLATES[enemy.type]?.defeatBarks ?? [];
+
+  // Награды за павшего — половинные (бой продолжается, финальная премия —
+  // за второго врага в полном объёме).
+  const computed = computeVictoryRewards({
+    combatState: cs,
+    creditsMultiplier,
+    defeatBarks,
+  });
+  const halfXp = Math.max(1, Math.floor(computed.xpGained / 2));
+  const halfCredits = Math.max(0, Math.floor(computed.creditsGained / 2));
+  dispatchGameAction({ type: 'player/addKarma', amount: Math.floor(computed.karmaGained / 2) });
+  addXp(halfXp);
+  dispatchGameAction({ type: 'player/addCredits', amount: halfCredits });
+
+  if (computed.isBoss) {
+    dispatchGameAction({ type: 'player/setFlag', key: `${enemy.type}_defeated`, value: true });
+  }
+
+  // Лут за павшего выпадает как обычно.
+  const lootItems: string[] = [];
+  if (computed.lootDrop) {
+    const item = createInventoryItem(computed.lootDrop);
+    if (tryAddInventoryItem(item)) lootItems.push(computed.lootDrop);
+  }
+
+  // Следующий враг из очереди.
+  const [nextType, ...rest] = pendingWave;
+  const resolvedType = resolveEnemyType(nextType);
+  const template = ENEMY_TEMPLATES[resolvedType];
+  if (!template) {
+    // Неизвестный шаблон — деградируем в обычную победу.
+    const fallbackState: CombatState = { ...cs, pendingEnemies: [] };
+    combat.setState(fallbackState);
+    return handleVictory();
+  }
+
+  const state = snap();
+  const playerLevel = state.playerState.progression.level;
+  const currentAct = state.playerState.progression.currentAct;
+  const scaleFactor = computeEnemyScalingFactor(currentAct, playerLevel);
+  const difficultySettings = state.difficultySettings;
+  const hpScale = scaleFactor * difficultySettings.enemyHealthMultiplier;
+
+  const nextEnemy: CombatEnemy = {
+    type: template.type,
+    name: template.name,
+    emoji: template.emoji,
+    maxHp: Math.floor(template.baseHp * hpScale),
+    hp: Math.floor(template.baseHp * hpScale),
+    attack: Math.floor(template.baseAttack * scaleFactor),
+    defense: Math.floor(template.baseDefense * scaleFactor),
+    speed: Math.floor(template.baseSpeed * scaleFactor),
+    targetsStat: template.targetsStat,
+    lootTable: template.lootTable,
+    xpReward: Math.floor(template.xpReward * scaleFactor * difficultySettings.xpMultiplier),
+    specialCooldown: 0,
+    chargingSpecial: null,
+  };
+
+  const swapLog: CombatLogEntry[] = [
+    ...cs.log,
+    {
+      turn: cs.turn,
+      text: `${enemy.emoji} ${enemy.name} повержен! +${halfXp} опыта, +${halfCredits} кр.`,
+      type: 'victory',
+    },
+    {
+      turn: cs.turn,
+      text: `⚡ ${nextEnemy.emoji} ${nextEnemy.name} вступает в бой!`,
+      type: 'info',
+    },
+  ];
+
+  // Баффы врага умирают вместе с ним; баффы игрока переносятся (бой один).
+  const playerBuffs = cs.buffs.filter((b) => b.target === 'player');
+
+  combat.setState({
+    ...cs,
+    enemy: nextEnemy,
+    pendingEnemies: rest,
+    // Фазы/скорость/защита — заново для нового врага.
+    bossPhase: 0,
+    bossBaseSpeed: nextEnemy.speed,
+    enemyDefending: false,
+    enemyDefenseReduction: 0,
+    buffs: playerBuffs,
+    // Игрок сохраняет инициативу — только что нанёс решающий удар.
+    isPlayerTurn: true,
+    turn: cs.turn + 1,
+    comboCount: 0,
+    log: swapLog,
+    rng: computed.rng,
+  });
+
+  // UI-хук: смена портрета/панели (CombatEnemyPanel ремоунтится по enemy.type).
+  eventBus.emit('combat:wave_swap', {
+    defeatedType: enemy.type,
+    nextType: nextEnemy.type,
+    nextName: nextEnemy.name,
+  });
+  eventBus.emit('fx:flash', { color: '#ff3b6b', opacity: 0.3, duration: 400 });
+  combat.notifyListeners();
+
+  return combat.getState();
+}
+
 function handleVictory(): CombatState | null {
   const cs = combat.getState();
   if (!cs) return null;
+
+  // v4.7.8 «Волна из двух врагов»: первый враг пал, но очередь не пуста —
+  // это смена цели, а не победа. Награды начисляются сразу (половинные —
+  // бой продолжается), второй враг вступает.
+  const pendingWave = (cs.pendingEnemies ?? []).filter(Boolean);
+  if (pendingWave.length > 0 && cs.status === 'active') {
+    return handleWaveSwap(cs, pendingWave);
+  }
 
   // Pop synchronously — delayed exit callbacks may be cancelled by a new session
   const returnNodeId = combat.popReturnNode();
