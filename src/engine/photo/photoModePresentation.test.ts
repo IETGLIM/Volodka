@@ -31,7 +31,8 @@ describe('photoModePresentation', () => {
 
   it('getPhotoFilterTitle switches cyberpunk_neon/noir labels', () => {
     expect(getPhotoFilterTitle('cyberpunk_neon')).toBe('КИБЕРПАНК НЕОН');
-    expect(getPhotoFilterTitle('noir')).toBe('НОАР');
+    expect(getPhotoFilterTitle('noir')).toBe('РЕЖИМ НУАР');
+    expect(getPhotoFilterTitle('normal')).toBe('ФОТОРЕЖИМ');
   });
 
   it('applyNoirGradeToDataUrl resolves without throwing on empty image', async () => {

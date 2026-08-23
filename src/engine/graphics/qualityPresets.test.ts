@@ -19,7 +19,12 @@ describe('detectAutoQualityPreset', () => {
   });
 
   it('keeps desktop tiers when memory and DPR are comfortable', () => {
-    expect(detectAutoQualityPreset(1280, 2)).toBe('high');
+    // Sub-1440px desktops intentionally resolve to 'medium' (AGGRESSIVE
+    // default — see detectAutoQualityPreset: 18 PostFX passes caused frame
+    // drops on mid-range GPUs at 'high').
+    expect(detectAutoQualityPreset(1280, 2)).toBe('medium');
+    // Large comfortable desktop screen (≥1440px) keeps 'high'.
+    expect(detectAutoQualityPreset(1600, 1)).toBe('high');
     expect(capQualityTierForGpuMemory('ultra', 2, 8)).toBe('ultra');
   });
 });
