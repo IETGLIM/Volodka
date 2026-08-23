@@ -31,7 +31,8 @@ export type StorySatellitePackId =
   | 'epilogue'
   | 'phase5Quests'
   | 'expansionQuests'
-  | 'aaaExpansion';
+  | 'aaaExpansion'
+  | 'streetLegends';
 export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
@@ -125,6 +126,10 @@ const storySatelliteLoaders: Record<
   // in the static buildStoryNodes() but had NO lazy loader here — at runtime
   // ensureStoryNode() threw "Story node not found" for all 38 nodes.
   aaaExpansion: () => import('../story/aaaExpansionStory').then((m) => m.AAA_EXPANSION_STORY_NODES),
+  // «Уличные легенды» — 5 сайд-квест цепочек (streetLegendsQuests.ts).
+  // Same pattern as aaaExpansion: merged in static buildStoryNodes(), needs a
+  // lazy loader here so ensureStoryNode() can resolve sl_* nodes at runtime.
+  streetLegends: () => import('../story/streetLegendsStory').then((m) => m.STREET_LEGENDS_STORY_NODES),
 };
 
 /** Satellites loaded automatically when their parent act pack loads. */
@@ -149,6 +154,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'phase5Quests',
   'expansionQuests',
   'aaaExpansion',
+  'streetLegends',
 ] as const;
 
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {

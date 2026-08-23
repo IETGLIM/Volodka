@@ -16,6 +16,7 @@ import { EXPANSION_HUB_QUESTS } from '../expansion/expansionHubQuests';
 import { QUESTS_ACT4_NEW } from './act4_newQuests';
 import { QUESTS_ACT3_EXPANDED } from './act3_expanded';
 import { QUESTS_ACT4_EXPANDED } from './act4_expanded';
+import { STREET_LEGENDS_QUESTS } from './streetLegendsQuests';
 
 export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...QUESTS_ACT1,
@@ -34,5 +35,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...QUESTS_ACT4_NEW,
   ...QUESTS_ACT3_EXPANDED,
   ...QUESTS_ACT4_EXPANDED,
+  ...STREET_LEGENDS_QUESTS,
   ...CHK_QUESTS,
 ];

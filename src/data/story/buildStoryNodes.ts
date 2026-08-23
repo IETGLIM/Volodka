@@ -35,6 +35,7 @@ import { STORY_NODES_PHASE5_QUESTS } from './phase5QuestStory';
 import { STORY_NODES_EXPANSION_QUESTS } from './expansionQuestStory';
 import { STORY_NODES_ACT4_SIDE_QUESTS } from './act4SideQuestStory';
 import { AAA_EXPANSION_STORY_NODES } from './aaaExpansionStory';
+import { STREET_LEGENDS_STORY_NODES } from './streetLegendsStory';
 
 /** Known pack overrides — later sources intentionally replace earlier spine nodes. */
 const INTENTIONAL_STORY_NODE_OVERRIDES: Record<string, readonly string[]> = {
@@ -76,6 +77,7 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'expansionQuests', nodes: STORY_NODES_EXPANSION_QUESTS },
     { name: 'act4SideQuests', nodes: STORY_NODES_ACT4_SIDE_QUESTS },
     { name: 'aaaExpansion', nodes: AAA_EXPANSION_STORY_NODES },
+    { name: 'streetLegends', nodes: STREET_LEGENDS_STORY_NODES },
   ];
 
   const registry: Record<string, StoryNode> = {};
