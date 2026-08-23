@@ -12,11 +12,13 @@ const crowdFiller: NPCDefinition = {
   defaultPosition: [0, 0, 0],
 };
 
+// Не-геройский диалоговый NPC: street_poet с 8083b508 повышен до 'hero',
+// поэтому для проверки «диалоговые NPC не падают в background» берём другого.
 const storyNpc: NPCDefinition = {
-  id: 'street_poet',
-  name: 'Уличный поэт',
+  id: 'street_musician',
+  name: 'Уличный музыкант',
   defaultPosition: [0, 0, 0],
-  dialogueNodeId: 'street_poet_greeting',
+  dialogueNodeId: 'street_musician_greeting',
 };
 
 describe('npcRenderTier', () => {

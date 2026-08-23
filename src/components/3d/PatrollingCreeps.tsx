@@ -1,7 +1,15 @@
 /* ─── Volodka RPG – patrolling creeps (visible roaming enemies) ───
  *  Replaces the invisible autoTrigger combat zones with stealth gameplay:
- *  PATROL → (player in vision cone) → CHASE → (contact) → turn-based combat.
+ *  PATROL → (player in vision cone + line of sight) → CHASE → (contact or
+ *  ranged firing band) → turn-based combat.
  *
+ *  - Vision cone is gated by wall-aware line-of-sight (engine/npc/creepTactics.ts)
+ *    — creeps no longer see the player through walls and tall props.
+ *  - WoW-style chase rules (engine/combat/enemyAiBehaviors.ts): leash range
+ *    from the chase origin, contact-loss grace, ranged kiting (hold the
+ *    preferred distance, retreat when crowded) and stuck detection. Chases
+ *    follow the scene nav mesh around walls; a wall-blocked creep gives up
+ *    and returns to its patrol instead of clipping through geometry.
  *  - Chase speed < player run speed, so fleeing is always possible.
  *  - combat:victory removes the creep until the scene remounts.
  *  - combat:defeat / fleeing puts the creep on a grace cooldown.
@@ -24,16 +32,45 @@ import { eventBus } from '@/engine/EventBus';
 import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManager';
 import { startEncounter } from '@/engine/combat/encounterPresentation';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
+import { getEnemyAiConfig } from '@/engine/combat/enemyAiBehaviors';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
 import { getCreepsForScene, type CreepPatrolDef } from '@/data/creepPatrols';
+import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
+import type { ColliderDef } from '@/shared/types/sceneDefinition';
+import {
+  buildNpcAvoidanceObstacles,
+  resolveNpcObstacleAvoidance,
+  type NpcObstacleAabb,
+} from '@/engine/npc/npcObstacleAvoidance';
+import type { NavMeshGraph } from '@/engine/npc/navMeshBuilder';
+import {
+  CREEP_CHASE_REPATH_MOVE,
+  CREEP_CHASE_REPATH_S,
+  CREEP_CONTACT_LOST_S,
+  CREEP_LOS_CHECK_INTERVAL_S,
+  CREEP_PATH_WAYPOINT_RADIUS,
+  CREEP_RETURN_ARRIVE_DISTANCE,
+  computeCreepNavPath,
+  createCreepStuckTracker,
+  filterVisionBlockers,
+  hasCreepLineOfSight,
+  isPlayerBeyondLeash,
+  isWithinRangedEngageBand,
+  nearestWaypointIndex,
+  resolveCreepNavMesh,
+  resolveKiteMove,
+  resolveRetreatDirection,
+  updateCreepStuckTracker,
+  type CreepStuckTracker,
+} from '@/engine/npc/creepTactics';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   CreepBody,
   type CreepBodyAnimState,
 } from '@/components/3d/proceduralEnemy/enemyArchetypes';
 
-type CreepState = 'patrol' | 'chase' | 'engaged' | 'cooldown';
+type CreepState = 'patrol' | 'chase' | 'engaged' | 'cooldown' | 'return';
 
 const CONTACT_DISTANCE = 1.15;
 const LOSE_AGGRO_DISTANCE = 9.5;
@@ -60,6 +97,24 @@ interface PatrollingCreepsProps {
 export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProps) {
   const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   const creeps = useMemo(() => getCreepsForScene(sceneId), [sceneId]);
+
+  // ── Scene colliders → tactical AI inputs (Task 3.3-b2) ──
+  // Vision blockers gate the stealth cone by line of sight; avoidance AABBs
+  // steer kinematic chases around walls. Both recompute only per scene.
+  const sceneColliders = useMemo(() => {
+    const def = (
+      SCENE_DEFINITIONS as Record<string, { walls?: ColliderDef[]; obstacles?: ColliderDef[] }>
+    )[sceneId];
+    return def ?? null;
+  }, [sceneId]);
+  const visionBlockers = useMemo<NpcObstacleAabb[]>(
+    () => (sceneColliders ? filterVisionBlockers(sceneColliders) : []),
+    [sceneColliders],
+  );
+  const avoidanceObstacles = useMemo<NpcObstacleAabb[]>(
+    () => (sceneColliders ? buildNpcAvoidanceObstacles(sceneColliders) : []),
+    [sceneColliders],
+  );
   const phase = useGamePhase();
   const showStoryOverlay = useShowStoryOverlay();
   const activeCutsceneId = useActiveCutsceneId();
@@ -142,6 +197,8 @@ export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProp
             livePlayerPositionRef={livePlayerPositionRef}
             engagedCreepIdRef={engagedCreepIdRef}
             frameCtxRef={frameCtxRef}
+            visionBlockers={visionBlockers}
+            avoidanceObstacles={avoidanceObstacles}
           />
         ),
       )}
@@ -161,11 +218,15 @@ function Creep({
   livePlayerPositionRef,
   engagedCreepIdRef,
   frameCtxRef,
+  visionBlockers,
+  avoidanceObstacles,
 }: {
   def: CreepPatrolDef;
   livePlayerPositionRef: React.MutableRefObject<Vector3>;
   engagedCreepIdRef: React.MutableRefObject<string | null>;
   frameCtxRef: React.MutableRefObject<CreepFrameContext>;
+  visionBlockers: readonly NpcObstacleAabb[];
+  avoidanceObstacles: readonly NpcObstacleAabb[];
 }) {
   const groupRef = useRef<Group>(null);
   // WS16-A: ref type upgraded to MeshPhysicalMaterial (enemy bodies now use sheen for organic look).
@@ -187,6 +248,29 @@ function Creep({
   const [dueling, setDueling] = useState(false);
   const [engaging, setEngaging] = useState(false);
 
+  // ── Tactical AI state (Task 3.3-b2) ──
+  // Per-type WoW-style config (aggro/leash/kiting) from enemyAiBehaviors.ts.
+  const aiConfig = useMemo(() => getEnemyAiConfig(def.enemyType), [def.enemyType]);
+  // Throttled LOS cache for the vision cone (~5 Hz, see creepTactics.ts).
+  const losTimerRef = useRef(0);
+  const losClearRef = useRef(true);
+  // Leash bookkeeping: where the chase began + contact-loss grace timer.
+  const chaseOriginRef = useRef({ x: def.waypoints[0][0], z: def.waypoints[0][1] });
+  const lostContactTimerRef = useRef(0);
+  // Stuck detection for wall-blocked pursuits (no teleports — give up).
+  const stuckTrackerRef = useRef<CreepStuckTracker>(
+    createCreepStuckTracker(def.waypoints[0][0], def.waypoints[0][1]),
+  );
+  // Return state: home waypoint after giving up + its nav path.
+  const returnWaypointRef = useRef(0);
+  const returnPathRef = useRef<Array<[number, number]> | null>(null);
+  // Nav-mesh path following for wall-aware chases.
+  const navMeshRef = useRef<NavMeshGraph | null>(null);
+  const navMeshResolvedRef = useRef(false);
+  const chasePathRef = useRef<Array<[number, number]> | null>(null);
+  const chaseRepathTimerRef = useRef(0);
+  const lastChaseTargetRef = useRef({ x: 0, z: 0 });
+
   const enemyEmoji = ENEMY_TEMPLATES[def.enemyType]?.emoji ?? '👾';
   const coneGroupRef = useRef<Group>(null);
   const waypointIndexRef = useRef(0);
@@ -199,6 +283,28 @@ function Creep({
   const positionRef = useRef(
     new Vector3(def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]),
   );
+
+  /** Lazily resolve the scene nav mesh (built once per scene, then cached). */
+  function resolveNavMesh(): NavMeshGraph | null {
+    if (!navMeshResolvedRef.current) {
+      navMeshResolvedRef.current = true;
+      navMeshRef.current = resolveCreepNavMesh(def.sceneId);
+    }
+    return navMeshRef.current;
+  }
+
+  /** Give up the pursuit and walk home to the nearest patrol waypoint. */
+  function enterReturnState(fromX: number, fromZ: number): void {
+    stateRef.current = 'return';
+    alertTimerRef.current = 0;
+    alertToastSentRef.current = false;
+    lostContactTimerRef.current = 0;
+    chasePathRef.current = null;
+    stuckTrackerRef.current = createCreepStuckTracker(fromX, fromZ);
+    returnWaypointRef.current = nearestWaypointIndex(def.waypoints, fromX, fromZ);
+    const [wx, wz] = def.waypoints[returnWaypointRef.current];
+    returnPathRef.current = computeCreepNavPath(fromX, fromZ, wx, wz, resolveNavMesh());
+  }
 
   // Spawn gating re-checked on mount only (flags rarely flip mid-scene)
   const [spawned, setSpawned] = useState(() => creepSpawnAllowed(def));
@@ -288,7 +394,29 @@ function Creep({
     // ── Movement ──
     let bodyWalking = false;
     let inVisionCone = false;
-    if (exploring && (state === 'patrol' || state === 'chase')) {
+    if (exploring && (state === 'patrol' || state === 'chase' || state === 'return')) {
+      /** Step toward an XZ target; `steer` enables obstacle avoidance so the
+       *  kinematic creep slides along walls instead of clipping through. */
+      const stepToward = (targetX: number, targetZ: number, speed: number, steer: boolean) => {
+        const mdx = targetX - pos.x;
+        const mdz = targetZ - pos.z;
+        const mDist = Math.hypot(mdx, mdz);
+        if (mDist < 1e-4) return;
+        let dirX = mdx / mDist;
+        let dirZ = mdz / mDist;
+        let speedScale = 1;
+        if (steer && avoidanceObstacles.length > 0) {
+          const avoidance = resolveNpcObstacleAvoidance(pos.x, pos.z, dirX, dirZ, avoidanceObstacles);
+          dirX = avoidance.dirX;
+          dirZ = avoidance.dirZ;
+          speedScale = avoidance.speedScale;
+        }
+        const step = Math.min(speed * speedScale * delta, mDist);
+        pos.x += dirX * step;
+        pos.z += dirZ * step;
+        headingRef.current = Math.atan2(dirX, dirZ);
+      };
+
       if (state === 'patrol') {
         const [wx, wz] = def.waypoints[waypointIndexRef.current];
         const wdx = wx - pos.x;
@@ -304,14 +432,35 @@ function Creep({
           headingRef.current = Math.atan2(wdx, wdz);
         }
 
-        // Vision check: distance + cone around heading.
+        // Vision check: distance + cone around heading, gated by line of
+        // sight — walls and tall props hide the player from the creep.
         // «Путеводная Звезда» dims the creep's senses while its TTL flag runs.
+        let coneCandidate = false;
         if (playerDist < def.visionRange * poemVisionScale) {
           const angleToPlayer = Math.atan2(dx, dz);
           let diff = angleToPlayer - headingRef.current;
           while (diff > Math.PI) diff -= Math.PI * 2;
           while (diff < -Math.PI) diff += Math.PI * 2;
-          inVisionCone = Math.abs(diff) < def.visionHalfAngle * poemVisionScale;
+          coneCandidate = Math.abs(diff) < def.visionHalfAngle * poemVisionScale;
+        }
+        if (coneCandidate) {
+          // Throttled LOS re-check (~5 Hz) — the cached result is reused
+          // between checks so the slab test doesn't run every frame.
+          losTimerRef.current -= delta;
+          if (losTimerRef.current <= 0) {
+            losTimerRef.current = CREEP_LOS_CHECK_INTERVAL_S;
+            losClearRef.current = hasCreepLineOfSight(
+              pos.x,
+              pos.z,
+              player.x,
+              player.z,
+              visionBlockers,
+            );
+          }
+          inVisionCone = losClearRef.current;
+        } else {
+          // Player left the cone — force a fresh LOS check on re-entry.
+          losTimerRef.current = 0;
         }
 
         if (inVisionCone) {
@@ -329,6 +478,13 @@ function Creep({
           alertTimerRef.current -= delta;
           if (alertTimerRef.current <= 0) {
             stateRef.current = 'chase';
+            // WoW-style chase bookkeeping: leash origin + fresh stuck window.
+            chaseOriginRef.current.x = pos.x;
+            chaseOriginRef.current.z = pos.z;
+            lostContactTimerRef.current = 0;
+            stuckTrackerRef.current = createCreepStuckTracker(pos.x, pos.z);
+            chasePathRef.current = null;
+            chaseRepathTimerRef.current = 0;
             chaseFootstepTimerRef.current = 0;
             audioEngine.playSfx('error');
             eventBus.emit('ui:exploration_message', { text: `⚠ ${def.name} заметил тебя!` });
@@ -337,8 +493,46 @@ function Creep({
           alertTimerRef.current = 0;
           alertToastSentRef.current = false;
         }
+      } else if (state === 'return') {
+        // RETURN — walk home to the nearest patrol waypoint after the chase
+        // was given up (leash / lost contact / stuck). Slow pace on purpose.
+        const [wx, wz] = def.waypoints[returnWaypointRef.current];
+        if (Math.hypot(wx - pos.x, wz - pos.z) < CREEP_RETURN_ARRIVE_DISTANCE) {
+          waypointIndexRef.current = returnWaypointRef.current;
+          returnPathRef.current = null;
+          stateRef.current = 'patrol';
+          alertTimerRef.current = 0;
+          alertToastSentRef.current = false;
+        } else {
+          bodyWalking = true;
+          const path = returnPathRef.current;
+          let targetX = wx;
+          let targetZ = wz;
+          let followPath = false;
+          if (path && path.length > 0) {
+            while (
+              path.length > 1 &&
+              Math.hypot(pos.x - path[0][0], pos.z - path[0][1]) < CREEP_PATH_WAYPOINT_RADIUS
+            ) {
+              path.shift();
+            }
+            targetX = path[0][0];
+            targetZ = path[0][1];
+            followPath = true;
+          }
+          stepToward(targetX, targetZ, def.patrolSpeed, !followPath);
+          if (updateCreepStuckTracker(stuckTrackerRef.current, pos.x, pos.z, delta)) {
+            // Wedged on the way home — resume patrol from wherever it stands.
+            waypointIndexRef.current = nearestWaypointIndex(def.waypoints, pos.x, pos.z);
+            returnPathRef.current = null;
+            stateRef.current = 'patrol';
+            alertTimerRef.current = 0;
+            alertToastSentRef.current = false;
+          }
+        }
       } else {
-        // CHASE
+        // CHASE — WoW-style: leash range, contact-loss grace, ranged kiting,
+        // nav-mesh paths around walls and stuck detection (creepTactics.ts).
         chaseFootstepTimerRef.current -= delta;
         if (chaseFootstepTimerRef.current <= 0) {
           chaseFootstepTimerRef.current = CREEP_CHASE_FOOTSTEP_S;
@@ -350,39 +544,129 @@ function Creep({
           audioEngine.playSpatialSfx('metal', [pos.x, pos.y, pos.z]);
         }
 
-        if (playerDist > LOSE_AGGRO_DISTANCE) {
-          stateRef.current = 'patrol';
-          alertTimerRef.current = 0;
-          alertToastSentRef.current = false;
-          chaseFootstepTimerRef.current = 0;
-        } else if (
-          playerDist < CONTACT_DISTANCE &&
-          !engageQueuedRef.current &&
-          !isSceneTransitionInProgress()
+        let gaveUp = false;
+        if (
+          isPlayerBeyondLeash(
+            chaseOriginRef.current.x,
+            chaseOriginRef.current.z,
+            player.x,
+            player.z,
+            aiConfig.leashRange,
+          )
         ) {
-          engageQueuedRef.current = true;
-          stateRef.current = 'engaged';
-          engagedCreepIdRef.current = def.id;
-          setEngaging(true);
-          contactBurstRef.current = 1;
-
-          const faceYaw = Math.atan2(dx, dz);
-          pos.x = player.x + Math.sin(faceYaw) * 2.4;
-          pos.z = player.z + Math.cos(faceYaw) * 2.4;
-          headingRef.current = faceYaw + Math.PI;
-
-          startEncounter({
-            source: 'creep',
-            enemyType: def.enemyType,
-            encounterName: def.name,
-            creepId: def.id,
-          });
+          // Leash: the player fled too far from where the chase began.
+          gaveUp = true;
+        } else if (playerDist > LOSE_AGGRO_DISTANCE) {
+          // Contact lost — a short grace window before giving up for good.
+          lostContactTimerRef.current += delta;
+          if (lostContactTimerRef.current >= CREEP_CONTACT_LOST_S) gaveUp = true;
         } else {
-          bodyWalking = true;
-          const step = def.chaseSpeed * delta;
-          pos.x += (dx / playerDist) * step;
-          pos.z += (dz / playerDist) * step;
-          headingRef.current = Math.atan2(dx, dz);
+          lostContactTimerRef.current = 0;
+        }
+        if (gaveUp) {
+          enterReturnState(pos.x, pos.z);
+          eventBus.emit('ui:exploration_message', {
+            text: `💨 ${def.name} теряет след и отступает`,
+          });
+        }
+
+        if (stateRef.current === 'chase') {
+          // Ranged creeps (ranged_strelkov, censor_drone) open the encounter
+          // from their preferred firing band instead of melee contact.
+          const rangedEngage = isWithinRangedEngageBand(playerDist, aiConfig);
+          if (
+            (playerDist < CONTACT_DISTANCE || rangedEngage) &&
+            !engageQueuedRef.current &&
+            !isSceneTransitionInProgress()
+          ) {
+            engageQueuedRef.current = true;
+            stateRef.current = 'engaged';
+            engagedCreepIdRef.current = def.id;
+            setEngaging(true);
+            contactBurstRef.current = 1;
+
+            const faceYaw = Math.atan2(dx, dz);
+            pos.x = player.x + Math.sin(faceYaw) * 2.4;
+            pos.z = player.z + Math.cos(faceYaw) * 2.4;
+            headingRef.current = faceYaw + Math.PI;
+
+            startEncounter({
+              source: 'creep',
+              enemyType: def.enemyType,
+              encounterName: def.name,
+              creepId: def.id,
+            });
+          } else {
+            const kiteMove = resolveKiteMove(playerDist, aiConfig);
+            if (kiteMove === 'retreat') {
+              // Kite: back away from the player, heading for the patrol post.
+              bodyWalking = true;
+              const [homeX, homeZ] = def.waypoints[returnWaypointRef.current];
+              const retreat = resolveRetreatDirection(
+                pos.x,
+                pos.z,
+                player.x,
+                player.z,
+                homeX,
+                homeZ,
+              );
+              stepToward(pos.x + retreat.dirX, pos.z + retreat.dirZ, def.chaseSpeed, true);
+            } else if (kiteMove === 'approach') {
+              // Wall-aware pursuit: follow a nav-mesh path to the player,
+              // recomputed on a fixed cadence or when the player strays.
+              bodyWalking = true;
+              chaseRepathTimerRef.current -= delta;
+              const driftSq =
+                (player.x - lastChaseTargetRef.current.x) ** 2 +
+                (player.z - lastChaseTargetRef.current.z) ** 2;
+              if (
+                chaseRepathTimerRef.current <= 0 ||
+                driftSq > CREEP_CHASE_REPATH_MOVE * CREEP_CHASE_REPATH_MOVE
+              ) {
+                chaseRepathTimerRef.current = CREEP_CHASE_REPATH_S;
+                lastChaseTargetRef.current.x = player.x;
+                lastChaseTargetRef.current.z = player.z;
+                chasePathRef.current = computeCreepNavPath(
+                  pos.x,
+                  pos.z,
+                  player.x,
+                  player.z,
+                  resolveNavMesh(),
+                );
+              }
+              const path = chasePathRef.current;
+              let targetX = player.x;
+              let targetZ = player.z;
+              let followPath = false;
+              if (path && path.length > 0) {
+                while (
+                  path.length > 1 &&
+                  Math.hypot(pos.x - path[0][0], pos.z - path[0][1]) <
+                    CREEP_PATH_WAYPOINT_RADIUS
+                ) {
+                  path.shift();
+                }
+                targetX = path[0][0];
+                targetZ = path[0][1];
+                followPath = true;
+              }
+              stepToward(targetX, targetZ, def.chaseSpeed, !followPath);
+            }
+            // kiteMove === 'hold' — inside the firing band: stand ground
+            // (the encounter itself starts from this distance).
+
+            // Stuck detect: barely moved while trying to chase → the pursuit
+            // is wall-blocked; give up as lost (no teleports).
+            if (
+              kiteMove !== 'hold' &&
+              updateCreepStuckTracker(stuckTrackerRef.current, pos.x, pos.z, delta)
+            ) {
+              enterReturnState(pos.x, pos.z);
+              eventBus.emit('ui:exploration_message', {
+                text: `💨 ${def.name} теряет след и отступает`,
+              });
+            }
+          }
         }
       }
     }
