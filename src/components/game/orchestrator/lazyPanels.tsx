@@ -97,7 +97,6 @@ export const LazyLevelUpEffect = retryLazyDefault(() => import('../LevelUpEffect
 export const LazyPhotoMode = retryLazyDefault(() => import('../PhotoMode').then((m) => ({ default: m.PhotoMode })), 'PhotoMode');
 
 export const LazyHUD = retryLazyDefault(() => import('../HUD').then((m) => ({ default: m.HUD })), 'HUD');
-export const LazyMiniMap = retryLazyDefault(() => import('../MiniMap').then((m) => ({ default: m.MiniMap })), 'MiniMap');
 export const LazyQuestNotificationSystem = retryLazyDefault(
   () => import('../QuestNotificationSystem').then((m) => ({ default: m.QuestNotificationSystem })),
   'QuestNotificationSystem',
