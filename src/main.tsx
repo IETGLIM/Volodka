@@ -26,6 +26,23 @@ initAccessibilitySettings();
 initVoiceLineRegistry();
 installSceneLoadDebugTap();
 
+// PWA: register the service worker (production only, after first paint).
+// The SW (public/sw.js) caches the app shell, physics WASM and game media
+// for offline play. Registration failures are non-fatal — the game works
+// fine without it; we only log a quiet console warning.
+function registerServiceWorker(): void {
+  if (!('serviceWorker' in navigator)) return;
+  if (!import.meta.env.PROD) return;
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .catch((err: unknown) => {
+        console.warn('[pwa] Не удалось зарегистрировать сервис-воркер:', err);
+      });
+  }, { once: true });
+}
+registerServiceWorker();
+
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');
 
