@@ -127,6 +127,11 @@ function onKeyDown(e: KeyboardEvent): void {
         onInteractPress?.();
       }
       break;
+    case 'KeyX':
+      // Hold X = block (audit 2-b P2: keys.block was a dead flag). RMB already
+      // blocks via sharedPlayerBlockRef — X is the keyboard-only counterpart.
+      keys.block = true;
+      break;
     default:
       if (e.key === 'Shift') keys.run = true;
       else if (e.key === 'Control') { keys.crouch = true; e.preventDefault(); }
@@ -161,6 +166,9 @@ function onKeyUp(e: KeyboardEvent): void {
       break;
     case 'KeyE':
       keys.interact = false;
+      break;
+    case 'KeyX':
+      keys.block = false;
       break;
     default:
       if (e.key === 'Shift') keys.run = false;

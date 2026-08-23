@@ -81,4 +81,35 @@ describe('keyboardInputState', () => {
     vi.unstubAllGlobals();
     vi.stubGlobal('window', { addEventListener, removeEventListener });
   });
+
+  it('holding KeyX drives the block flag (keyboard block)', () => {
+    bindKeyboardInput();
+    expect(sampleKeyboardMovement().block).toBe(false);
+
+    dispatchKey('keydown', 'KeyX');
+    expect(sampleKeyboardMovement().block).toBe(true);
+
+    // Auto-repeat must not toggle anything — still blocked.
+    handlers.get('keydown')?.({
+      code: 'KeyX',
+      target: null,
+      repeat: true,
+    } as KeyboardEvent);
+    expect(sampleKeyboardMovement().block).toBe(true);
+
+    dispatchKey('keyup', 'KeyX');
+    expect(sampleKeyboardMovement().block).toBe(false);
+  });
+
+  it('blur clears a held block key', () => {
+    bindKeyboardInput();
+    dispatchKey('keydown', 'KeyX');
+    expect(sampleKeyboardMovement().block).toBe(true);
+
+    vi.stubGlobal('document', { hasFocus: () => false });
+    handlers.get('blur')?.({} as FocusEvent);
+    expect(sampleKeyboardMovement().block).toBe(false);
+    vi.unstubAllGlobals();
+    vi.stubGlobal('window', { addEventListener, removeEventListener });
+  });
 });

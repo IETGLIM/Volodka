@@ -26,6 +26,12 @@ import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineO
 const PITCH_MIN = -0.5;
 const PITCH_MAX = 1.3;
 const ORBIT_SENSITIVITY = 0.004;
+/** Clamp for the rAF inertia dt — tab switches / rAF throttling must not
+ *  teleport the camera or blow up the decay math. */
+const INERTIA_DT_MAX_S = 0.1;
+/** _inertia*Vel is accumulated per mouse event as a "per 60Hz frame" delta —
+ *  converting to seconds needs the 60Hz reference rate. */
+const INERTIA_REF_FPS = 60;
 
 // ── Rotation inertia state (module-level, persists across effect re-runs) ──
 let _inertiaYawVel = 0;
@@ -144,29 +150,56 @@ export function useCameraOrbitInput(
       if (applyInertia) {
         _inertiaYawVel += rawYawDelta * CAMERA_INERTIA_GAIN;
         _inertiaPitchVel += rawPitchDelta * CAMERA_INERTIA_GAIN;
+        ensureInertiaLoop();
       }
     };
 
     // ── Inertia update loop: apply decaying angular velocity each frame ──
+    // Audit 2-b P1: previously the decay assumed a fixed dt of 1/60 — on high
+    // refresh monitors (144Hz) the rotation ran 2.4× faster and decayed 2.4×
+    // faster. Now the real rAF timestamp delta drives both the applied step
+    // (velocity is "per 60Hz frame", scaled by dt·60) and the exponential
+    // decay, so the feel matches across 60/120/144Hz displays. dt is clamped
+    // to [0, INERTIA_DT_MAX_S] so a background tab doesn't snap the camera.
+    // The loop also (re)starts on new drag input — previously it stopped for
+    // good once the velocity decayed, so momentum never applied after that.
     let _inertiaRaf = 0;
-    const updateInertia = () => {
-      if (Math.abs(_inertiaYawVel) > 1e-6 || Math.abs(_inertiaPitchVel) > 1e-6) {
-        yawRef.current += _inertiaYawVel;
+    let _inertiaPrevTime = 0;
+    let _inertiaLoopActive = false;
+    const updateInertia = (now: number) => {
+      const prev = _inertiaPrevTime;
+      _inertiaPrevTime = now;
+      if (
+        prev > 0
+        && (Math.abs(_inertiaYawVel) > 1e-6 || Math.abs(_inertiaPitchVel) > 1e-6)
+      ) {
+        const dt = Math.min(Math.max((now - prev) / 1000, 0), INERTIA_DT_MAX_S);
+        const step = dt * INERTIA_REF_FPS;
+        yawRef.current += _inertiaYawVel * step;
         pitchRef.current = Math.max(
           PITCH_MIN,
-          Math.min(PITCH_MAX, pitchRef.current + _inertiaPitchVel),
+          Math.min(PITCH_MAX, pitchRef.current + _inertiaPitchVel * step),
         );
-        const decay = 1 - Math.exp(-CAMERA_INERTIA_DECAY * (1 / 60));
+        const decay = 1 - Math.exp(-CAMERA_INERTIA_DECAY * dt);
         _inertiaYawVel *= (1 - decay);
         _inertiaPitchVel *= (1 - decay);
+      }
+      if (Math.abs(_inertiaYawVel) > 1e-6 || Math.abs(_inertiaPitchVel) > 1e-6) {
         _inertiaRaf = requestAnimationFrame(updateInertia);
       } else {
         _inertiaYawVel = 0;
         _inertiaPitchVel = 0;
+        _inertiaLoopActive = false;
       }
     };
+    const ensureInertiaLoop = () => {
+      if (_inertiaLoopActive) return;
+      _inertiaLoopActive = true;
+      _inertiaPrevTime = 0; // dt baseline resets on (re)start
+      _inertiaRaf = requestAnimationFrame(updateInertia);
+    };
     // Start inertia loop on mount
-    _inertiaRaf = requestAnimationFrame(updateInertia);
+    ensureInertiaLoop();
 
     const onMouseDown = (e: MouseEvent) => {
       if (shouldBlockOrbit()) return;
@@ -355,6 +388,7 @@ export function useCameraOrbitInput(
 
     return () => {
       cancelAnimationFrame(_inertiaRaf);
+      _inertiaLoopActive = false;
       _inertiaYawVel = 0;
       _inertiaPitchVel = 0;
       window.removeEventListener('mousedown', onMouseDown);

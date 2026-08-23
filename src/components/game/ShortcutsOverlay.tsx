@@ -30,6 +30,7 @@ const KEYBOARD_GROUPS: ShortcutGroup[] = [
       { keys: ['Shift'], desc: 'Бег' },
       { keys: ['Space'], desc: 'Прыжок' },
       { keys: ['E'], desc: 'Взаимодействие' },
+      { keys: ['X'], desc: 'Блок (удержание)' },
       { keys: ['F'], desc: 'Быстрый переход' },
     ],
   },

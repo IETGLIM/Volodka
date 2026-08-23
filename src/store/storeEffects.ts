@@ -118,6 +118,11 @@ export function scheduleLevelUpEvent(event: ApplicationEventMap['player:levelup'
   runAfterStoreCommit(() => emitAppEvent('player:levelup', event));
 }
 
+/** Rest at home — engine listener (playerStamina) fully restores stamina. */
+export function schedulePlayerRested(amount: number): void {
+  runAfterStoreCommit(() => emitAppEvent('player:rest', { amount }));
+}
+
 export function scheduleChoiceMade(payload: ApplicationEventMap['choice:made']): void {
   runAfterStoreCommit(() => emitChoiceMade(payload));
 }

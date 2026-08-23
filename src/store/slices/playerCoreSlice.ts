@@ -7,7 +7,7 @@ import type { PlayerState } from '@/shared/types/game';
 import { clamp, createDefaultPlayerState, pushNotification, type GameNotification } from '../shared';
 import type { GameStoreState } from '../types';
 import { pickPlayerCoreCrossActions, readPlayerFromExploration } from '../crossSliceReads';
-import { scheduleChoiceMade } from '../storeEffects';
+import { scheduleChoiceMade, schedulePlayerRested } from '../storeEffects';
 import { getDifficultyStore } from '../storeBindings';
 import {
   resolveEnergyMaxFlatBonus,
@@ -219,6 +219,9 @@ export const createPlayerCoreSlice: StateCreator<
     if (currentSceneId !== 'volodka_room' && currentSceneId !== 'home_evening') return;
 
     advanceTime(8);
+    // Отдых полностью восстанавливает и выносливость (спринт-стамину) —
+    // слушатель в engine/player/playerStamina подписан на 'player:rest'.
+    schedulePlayerRested(8);
 
     // Re-read timeOfDay AFTER advanceTime so perk ceiling (night_watch) uses the new time.
     const { timeOfDay } = readPlayerFromExploration();

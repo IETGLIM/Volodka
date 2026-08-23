@@ -41,6 +41,14 @@ const HANDHELD_AMP = 0.0009;
 // AAA Phase B: sprint launch boost flag (armed by player:sprint_start event)
 let _sprintLaunchBoost = 0;
 
+// ── Per-frame scratch vectors (audit 2-b P2: the sprint-lean / decel-lean /
+// brake paths used to clone Vector3s every frame while running — now reused,
+// following the module-scratch pattern from engine/three/frameScratch.ts).
+// Single-threaded per-frame use: each consumer copies its inputs in first.
+const _scratchLookDir = new Vector3();
+const _scratchRight = new Vector3();
+const _worldUp = new Vector3(0, 1, 0);
+
 // Arm cinematic sprint launch boost from the exact edge event
 if (typeof window !== 'undefined') {
   eventBus.on('player:sprint_start' as any, () => {
@@ -246,12 +254,12 @@ export const explorationStrategy: CameraModeStrategy = {
 
     // AAA Phase B: apply sprint forward lean (pitch down) to look target for cinematic momentum
     if (sprintLeanPitch !== 0) {
-      const lookDir = targetLook.clone().sub(targetPos).normalize();
+      const lookDir = _scratchLookDir.copy(targetLook).sub(targetPos).normalize();
       // Apply small pitch rotation around right axis
-      const right = new Vector3().crossVectors(lookDir, new Vector3(0,1,0)).normalize();
+      const right = _scratchRight.crossVectors(lookDir, _worldUp).normalize();
       if (right.lengthSq() > 0.001) {
         lookDir.applyAxisAngle(right, sprintLeanPitch);
-        targetLook.copy(targetPos).add(lookDir.multiplyScalar(12)); // keep reasonable distance
+        targetLook.copy(targetPos).addScaledVector(lookDir, 12); // keep reasonable distance
       }
     }
 
@@ -261,20 +269,20 @@ export const explorationStrategy: CameraModeStrategy = {
     const decel = Math.max(0, prevSpeed - speedMs);
     if (decel > 1.6 && speedMs < 4.8) {
       const decelLean = Math.min(0.022, decel * 0.009); // nose-up settle
-      const lookDir2 = targetLook.clone().sub(targetPos).normalize();
-      const right2 = new Vector3().crossVectors(lookDir2, new Vector3(0,1,0)).normalize();
+      const lookDir2 = _scratchLookDir.copy(targetLook).sub(targetPos).normalize();
+      const right2 = _scratchRight.crossVectors(lookDir2, _worldUp).normalize();
       if (right2.lengthSq() > 0.001) {
         lookDir2.applyAxisAngle(right2, decelLean);
-        targetLook.copy(targetPos).add(lookDir2.multiplyScalar(10));
+        targetLook.copy(targetPos).addScaledVector(lookDir2, 10);
       }
 
       // Strong cinematic "brake" camera pull-back on hard stop (opposite of thrust)
       const brakeT = Math.min(1, decel / 3.5);
-      // Camera forward direction for brake pull-back.
-      const fwd = targetLook.clone().sub(targetPos).normalize();
+      // Camera forward direction for brake pull-back (recomputed after the
+      // decel lean above already rewrote targetLook).
+      const fwd = _scratchLookDir.copy(targetLook).sub(targetPos).normalize();
       // Session 13 (ramp-tame): brake pull-back ~2.5cm max (was 9cm — too violent).
-      const brakeBack = fwd.clone().negate().multiplyScalar(brakeT * 0.025);
-      targetPos.add(brakeBack);
+      targetPos.addScaledVector(fwd, -brakeT * 0.025);
     }
 
     // Max Payne OTS — lateral bias before wall collision so the spring arm

@@ -31,6 +31,7 @@ import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVi
 import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
+import { StaminaBar } from '@/components/game/hud/parts/StaminaBar';
 import { AaaImmersiveGuide } from '@/components/game/hud/parts/AaaImmersiveGuide';
 import { AaaWorldMarkerSystem } from '@/components/game/hud/parts/AaaWorldMarkerSystem';
 import { ObjectiveBeacon } from '@/components/game/hud/parts/ObjectiveBeacon';
@@ -148,6 +149,9 @@ export function ExplorationHUD(props: HUDProps) {
       <AmbientParticles />
       <RainScreenEffect />
       <SprintDrainOverlay />
+      {/* Тонкая полоска выносливости над нижним HUD-стеком — видна только
+          когда стамина не полная (спринт её расходует). */}
+      <StaminaBar />
       <CombatPreEngagementWarning />
 
       {/* Stress-reactive chromatic edge fringing — wraps the screen edges with

@@ -1,4 +1,6 @@
 import { getPlayerExternalVelocity } from '@/engine/PlayerRigidBodyState';
+import { sharedPlayerCrouchRef } from '@/engine/PlayerRotationState';
+import { tickPlayerStamina } from '@/engine/player/playerStamina';
 import {
   GRAVITY,
   ROTATION_SPEED,
@@ -23,6 +25,15 @@ export function runLockedPlayerMovement(deps: PlayerMovementDeps): void {
   const groundY = scratch.groundY;
   const dt = scratch.dt;
   const currentMode = scratch.currentMode;
+
+  // Stamina keeps regenerating while movement is locked (dialogue / cutscene) —
+  // the player cannot sprint here, so this is a pure recovery tick.
+  tickPlayerStamina({
+    dt,
+    sprinting: false,
+    moving: false,
+    crouching: sharedPlayerCrouchRef.current,
+  });
 
   const external = getPlayerExternalVelocity();
 

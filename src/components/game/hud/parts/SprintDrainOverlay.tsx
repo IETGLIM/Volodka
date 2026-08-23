@@ -7,6 +7,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
+import { isPlayerSprintDraining } from '@/engine/player/playerStamina';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -33,6 +34,12 @@ export function SprintDrainOverlay() {
 
     // Check for sprint timeout
     intervalRef.current = setInterval(() => {
+      // Стамина реально утекает — спринт активен. Это надёжнее каданса шагов
+      // (шаги замедляются при исчерпании стамины, а тут сигнал точный).
+      if (isPlayerSprintDraining()) {
+        setIsSprinting((prev) => (prev ? prev : true));
+        return;
+      }
       if (Date.now() - lastFootstepRef.current > SPRINT_TIMEOUT_MS) {
         setIsSprinting((prev) => (prev ? false : prev));
       }

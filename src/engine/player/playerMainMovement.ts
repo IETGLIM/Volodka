@@ -20,6 +20,7 @@ import {
   WALK_SPEED,
   RUN_SPEED,
   CROUCH_SPEED,
+  BLOCK_SPEED,
   MAX_HORIZONTAL_SPEED,
   VELOCITY_LERP_LAMBDA,
   JUMP_FORCE,
@@ -44,6 +45,7 @@ import {
 } from '@/engine/player/playerConstants';
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { sharedPlayerCrouchRef, sharedPlayerBlockRef } from '@/engine/PlayerRotationState';
+import { isSprintAllowedByStamina, tickPlayerStamina } from '@/engine/player/playerStamina';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { triggerLandingFovDip } from '@/engine/camera/landingImpact';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
@@ -218,8 +220,29 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       /* store not ready */
     }
   }
-  // Crouch overrides run: crouching uses CROUCH_SPEED (0.5× WALK_SPEED)
-  const baseSpeed = crouching ? CROUCH_SPEED : (running ? RUN_SPEED : WALK_SPEED);
+  // ── Stamina (audit 2-b P1: was dead — constants unused, sprint was infinite) ──
+  // Sprint counts only when the run key is held while actually moving and no
+  // stance suppresses it (crouch/block). Exhausted stamina denies sprint until
+  // the bar recovers above the threshold + hysteresis (see playerStamina.ts).
+  const wantsSprint = running && isMoving && !crouching && !blocking;
+  const sprinting = wantsSprint && isSprintAllowedByStamina();
+  tickPlayerStamina({ dt, sprinting, moving: isMoving, crouching });
+
+  // Crouch overrides run; block slows movement to guard pace (block + crouch =
+  // the slower of the two, audit 2-b P1: BLOCK_SPEED was unused). When stamina
+  // denies sprint the target speed caps at walk — the velocity damp below
+  // yields the smooth run→walk falloff instead of a hard stop.
+  let baseSpeed: number;
+  if (crouching) {
+    baseSpeed = CROUCH_SPEED;
+  } else if (sprinting) {
+    baseSpeed = RUN_SPEED;
+  } else {
+    baseSpeed = WALK_SPEED;
+  }
+  if (blocking) {
+    baseSpeed = Math.min(baseSpeed, BLOCK_SPEED);
+  }
   const speed = Math.min(
     baseSpeed
     * deps.locomotionScale
@@ -234,7 +257,9 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   const stopDamping = keyboardDrivesMove ? VELOCITY_LERP_LAMBDA : deps.movementTuning.damping;
 
   scratch.isMoving = isMoving;
-  scratch.running = running;
+  // Effective sprint flag (stamina-gated) — drives the run animation and the
+  // sprint_start edge. Run-key intent alone must not read as sprinting.
+  scratch.running = sprinting;
   scratch.keyboardDrivesMove = keyboardDrivesMove;
   scratch.isOutdoor = isOutdoor;
   scratch.jumpHeld = jumping;
