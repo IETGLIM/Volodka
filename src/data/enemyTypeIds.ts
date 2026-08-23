@@ -16,4 +16,19 @@ export const ENEMY_TYPE_IDS: readonly EnemyType[] = [
   'corporate_drone',
   'memory_wraith',
   'firewall_guardian',
+  // Phase 11 — content depth expansion
+  'network_spy',
+  'quantum_ghost',
+  'grief_echo',
+  'corporate_ai',
+  'rust_sentinel',
+  'memory_devourer',
+  // Task 4b-C1 — ranged/mage archetypes
+  'ranged_strelkov',
+  'dark_mage',
+  // Bosses
+  'boss_neuro_sys',
+  'boss_dream_eater',
+  'boss_final_code',
+  'boss_catacombs_keeper',
 ] as const;

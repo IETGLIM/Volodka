@@ -1,6 +1,6 @@
 export const PHOTO_MODE_LABELS = {
-  title: 'PHOTO MODE',
-  titleNoir: 'NOIR MODE',
+  title: 'ФОТОРЕЖИМ',
+  titleNoir: 'РЕЖИМ НУАР',
   dialogLabel: 'Режим фото',
   unknownScene: 'Неизвестная сцена',
   captureHintKey: 'SPACE',

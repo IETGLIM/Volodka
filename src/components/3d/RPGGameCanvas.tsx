@@ -502,7 +502,7 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
       data-game-canvas=""
       data-color-blind-mode={colorBlindMode === 'none' ? undefined : colorBlindMode}
       role="application"
-      aria-label="Игровой мир Володьки — исследование от первого лица"
+      aria-label="Игровой мир Володьки — исследование от третьего лица"
       style={{
         width: '100%',
         height: '100%',

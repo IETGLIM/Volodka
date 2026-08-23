@@ -316,7 +316,7 @@ function CyberpunkHudFrame({ accent, accentSolid }: { accent: (a: number) => str
       <div className="absolute inset-2 sm:inset-5 md:inset-7 border" style={{ borderColor: accent(0.15) }} />
       {/* Top-left HUD data */}
       <div className="absolute top-5 left-5 sm:top-8 sm:left-8">
-        <div className="text-[8px] font-mono" style={{ color: accent(0.6) }}>VOLODKA // PHOTO MODE</div>
+        <div className="text-[8px] font-mono" style={{ color: accent(0.6) }}>ВОЛОДЬКА // ФОТОРЕЖИМ</div>
         <div className="text-[7px] font-mono mt-0.5" style={{ color: accent(0.35) }}>████████░░ 80%</div>
       </div>
       {/* Top-right HUD data */}

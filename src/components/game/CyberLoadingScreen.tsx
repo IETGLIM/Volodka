@@ -15,7 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 const CYBER_QUOTES = [
   { text: "В коде есть поэзия. Нужно лишь уметь её читать...", author: "Володька" },
   { text: "Каждая ошибка — это возможность стать лучше.", author: "System" },
-  { text: "Алгоритмы не лгут. Люди интерпретируют их.", author: "Unknown" },
+  { text: "Алгоритмы не лгут. Люди интерпретируют их.", author: "Неизвестный" },
   { text: "Информация — это оружие. Обращайся с ней осторожно.", author: "Security Protocol" },
   { text: "Сеть помнит всё. Выбирай свои действия мудро.", author: "NetWatch" },
   { text: "Поэзия — это баг в системе, который стал фичей.", author: "AI_Poet" },
