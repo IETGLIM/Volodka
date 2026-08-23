@@ -7,32 +7,66 @@ import { EnemyPortrait } from '@/components/game/combatUi/CombatEnemyPortrait';
 import type { CombatBuff, CombatState } from '@/shared/types/game';
 import { getEnemyWeaknesses } from '@/engine/combat/combatAffinities';
 
-/* ── Telegraph indicator (Task 3.3-b1) ──
+/* ── Telegraph indicator (Task 3.3-b1, стилизован в v4.7.1) ──
  * Shown while the enemy is CHARGING a special attack (chargingSpecial).
  * The special fires guaranteed next turn — defending during the charge
- * window cuts its damage hard (extra ×0.4). */
+ * window cuts its damage hard (extra ×0.4).
+ *
+ * Подача: двухслойный «заряжающийся» индикатор — пульсирующая рамка
+ * опасности + полоса зарядки с бегущим бликом; иконка ⚡ в пульсирующем
+ * кольце. Подсказка о контр-окне видна и на мобильных (короткая форма). */
 function TelegraphIndicator({ name }: { name: string }) {
   return (
     <motion.div
-      className="mt-1 flex items-center gap-1.5 px-2 py-1 rounded border border-rose-500/60 bg-rose-950/60"
-      style={{ boxShadow: '0 0 12px rgba(244,63,94,0.25)' }}
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: [0.75, 1, 0.75], y: 0 }}
+      className="relative mt-1 overflow-hidden rounded border border-rose-500/70 bg-gradient-to-r from-rose-950/80 via-rose-900/50 to-rose-950/80 px-2 py-1"
+      style={{ boxShadow: '0 0 14px rgba(244,63,94,0.35), inset 0 0 10px rgba(244,63,94,0.12)' }}
+      initial={{ opacity: 0, y: -6, scaleX: 0.9 }}
+      animate={{ opacity: [0.8, 1, 0.8], y: 0, scaleX: 1 }}
+      exit={{ opacity: 0, y: 4 }}
       transition={{
         opacity: { duration: 0.9, repeat: Infinity, ease: 'easeInOut' },
         y: { duration: 0.25, ease: 'easeOut' },
+        scaleX: { duration: 0.3, ease: 'easeOut' },
       }}
       role="status"
       aria-live="polite"
       aria-label={`Враг готовит атаку: ${name}`}
     >
-      <span className="text-xs" aria-hidden="true">⚡</span>
-      <span className="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-rose-300 truncate">
-        Готовит: {name}!
-      </span>
-      <span className="ml-auto text-[9px] font-mono text-rose-400/80 whitespace-nowrap hidden sm:inline">
-        Защита ослабит удар
-      </span>
+      {/* Полоса зарядки: бегущий блик слева направо — «накопление» атаки. */}
+      <motion.div
+        className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-transparent via-rose-400/25 to-transparent"
+        initial={{ x: '-120%' }}
+        animate={{ x: '420%' }}
+        transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
+        aria-hidden="true"
+      />
+      <div className="relative flex items-center gap-1.5">
+        {/* Иконка в пульсирующем кольце. */}
+        <motion.span
+          className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-rose-400/70 bg-rose-950/90"
+          animate={{ boxShadow: ['0 0 4px rgba(251,113,133,0.4)', '0 0 10px rgba(251,113,133,0.9)', '0 0 4px rgba(251,113,133,0.4)'] }}
+          transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
+          aria-hidden="true"
+        >
+          <span className="text-[9px] leading-none">⚡</span>
+        </motion.span>
+        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-200 truncate drop-shadow-[0_0_6px_rgba(244,63,94,0.6)]">
+          Готовит: {name}!
+        </span>
+        <span className="ml-auto whitespace-nowrap font-mono text-[9px] text-rose-300/90">
+          <span className="hidden sm:inline">🛡 Защита ослабит удар</span>
+          <span className="sm:hidden">🛡 Защитись!</span>
+        </span>
+      </div>
+      {/* Тонкая нижняя линия «до удара» — доля заполнения растёт к удару. */}
+      <motion.div
+        className="absolute bottom-0 left-0 h-[2px] rounded-full bg-rose-400/80"
+        style={{ boxShadow: '0 0 6px rgba(251,113,133,0.8)' }}
+        initial={{ width: '12%' }}
+        animate={{ width: ['12%', '100%'] }}
+        transition={{ duration: 1.4, repeat: Infinity, ease: 'easeIn' }}
+        aria-hidden="true"
+      />
     </motion.div>
   );
 }

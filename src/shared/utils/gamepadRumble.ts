@@ -67,6 +67,22 @@ export function gamepadRumbleCombatHit(): void {
   gamepadRumble(40, 30, 1, 0.6);
 }
 
+/** Danger cue (enemy telegraph / boss phase) — heavy double pulse,
+ *  stronger than a regular hit: the gamepad «growls» a warning. */
+export function gamepadRumbleDanger(): void {
+  try {
+    const a = playDualRumble({ startDelay: 0, duration: 55, strongMagnitude: 1, weakMagnitude: 0.45 });
+    if (a) {
+      playDualRumble({ startDelay: 70, duration: 70, strongMagnitude: 0.85, weakMagnitude: 0.3 });
+      return;
+    }
+    const fn = getNavVibrateFn();
+    if (fn) fn([45, 55, 60]);
+  } catch {
+    /* silent */
+  }
+}
+
 /** Combat hit dealt — lighter confirmation */
 export function gamepadRumbleCombatDealt(): void {
   gamepadRumble(25, 15, 0.7, 0.3);

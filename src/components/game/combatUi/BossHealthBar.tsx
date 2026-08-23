@@ -97,6 +97,15 @@ const PhasePips = memo(function PhasePips({
   phaseColors,
 }: PhasePipsProps) {
   const phaseCount = thresholdsPct.length + 1;
+  // Current phase = highest lit pip (phase 1 while above the first threshold,
+  // then 2, 3…). It gets a breathing glow; passed phases stay solid.
+  const currentPhase = (() => {
+    let p = 0;
+    for (let i = 0; i < thresholdsPct.length; i++) {
+      if (pct <= thresholdsPct[i]) p = i + 1;
+    }
+    return p;
+  })();
   return (
     <div className="flex items-center gap-1.5" aria-hidden="true">
       {Array.from({ length: phaseCount }, (_, i) => {
@@ -105,6 +114,7 @@ const PhasePips = memo(function PhasePips({
         // getCurrentBossPhase: hpFrac ≤ hpUpperBound → phase active).
         const active = i === 0 || pct <= thresholdsPct[i - 1];
         const pipColor = phaseColors[i] ?? accent;
+        const isCurrent = active && i === currentPhase;
         return (
           <motion.div
             key={i}
@@ -115,15 +125,31 @@ const PhasePips = memo(function PhasePips({
               boxShadow: active ? `0 0 8px ${pipColor}aa` : 'none',
             }}
             initial={false}
-            animate={{
-              opacity: active ? 1 : 0.35,
-              scale: active ? 1.0 : 0.85,
-            }}
-            transition={{
-              duration: reducedMotion ? 0 : 0.3,
-              ease: 'easeOut',
-              delay: reducedMotion ? 0 : i * 0.04,
-            }}
+            animate={
+              isCurrent && !reducedMotion
+                ? {
+                    opacity: [0.65, 1, 0.65],
+                    scale: [0.95, 1.1, 0.95],
+                    boxShadow: [
+                      `0 0 6px ${pipColor}88`,
+                      `0 0 14px ${pipColor}`,
+                      `0 0 6px ${pipColor}88`,
+                    ],
+                  }
+                : {
+                    opacity: active ? 1 : 0.35,
+                    scale: active ? 1.0 : 0.85,
+                  }
+            }
+            transition={
+              isCurrent && !reducedMotion
+                ? { duration: 1.1, repeat: Infinity, ease: 'easeInOut' }
+                : {
+                    duration: reducedMotion ? 0 : 0.3,
+                    ease: 'easeOut',
+                    delay: reducedMotion ? 0 : i * 0.04,
+                  }
+            }
           />
         );
       })}

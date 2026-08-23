@@ -8,6 +8,7 @@ import { startCombat } from '@/engine/CombatSystem';
 import { getItemDefinition } from '@/data/items';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { pickEnemyForCurrentState } from '@/engine/combat/enemies';
+import { gamepadRumbleDanger } from '@/shared/utils/gamepadRumble';
 import type { EnemyType } from '@/shared/types/game';
 
 /**
@@ -96,12 +97,16 @@ export function useCombatOrchestrator() {
     // one-turn counter-window («Готовит: …!»).
     scope.on('combat:telegraph', () => {
       audioEngine.playStinger('danger');
+      // Haptic: нарастающая «зарядка» — двойной гул, сильнее обычного удара.
+      gamepadRumbleDanger();
     }, EventBusPriority.FX);
 
     // Boss phase transition (100/60/30) — danger sting + the combat log's
     // «… переходит в фазу …» beat.
     scope.on('combat:boss_phase', () => {
       audioEngine.playStinger('danger');
+      // Haptic: фазовый переход босса — тяжёлый двойной удар (и-фрейсы).
+      gamepadRumbleDanger();
     }, EventBusPriority.FX);
 
     return withHmrCleanup(() => scope.dispose());
