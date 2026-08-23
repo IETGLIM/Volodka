@@ -24,6 +24,10 @@ import {
   type GameDifficulty,
 } from '@/store/slices/difficultySlice';
 import { useGameStore } from '@/store/gameStore';
+import {
+  readSkipArrivalCinematics,
+  writeSkipArrivalCinematics,
+} from '@/engine/cinematic/arrivalCinematicsSetting';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 import { applyVisualSettings } from '@/engine/visualSettings';
 import {
@@ -388,6 +392,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
 
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
+  const [skipArrival, setSkipArrival] = useState(() => readSkipArrivalCinematics());
   const [invertY, setInvertY] = useState(() => lsGetBool('volodka_invert_y', false));
   const [pointerLock, setPointerLock] = useState(() => lsGetBool('volodka_pointer_lock', false));
   const [difficulty, setDifficulty] = useState<GameDifficulty>(() => {
@@ -528,6 +533,18 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               checked={pointerLock}
               onChange={(v) => { setPointerLock(v); persist('volodka_pointer_lock', v); applyVisualSettings(); }}
             />
+            <CyberToggle
+              label="Пропускать кат-сцены входа в локации"
+              checked={skipArrival}
+              onChange={(v) => {
+                setSkipArrival(v);
+                writeSkipArrivalCinematics(v);
+              }}
+            />
+            <p className="text-[10px] font-mono text-slate-500/80 leading-relaxed -mt-2">
+              Пропускает короткие вступительные проходы камеры при входе в локацию.
+              Сюжетные сцены и встречи не затрагиваются.
+            </p>
             <SectionDivider />
             <div className="flex flex-col gap-2">
               <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">

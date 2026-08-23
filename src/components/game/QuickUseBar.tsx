@@ -18,6 +18,8 @@ import {
   isHotbarDropCompatible,
   subscribeDndMirror,
 } from '@/components/game/inventory/inventoryDndLogic';
+import { InventoryDragProvider, useInventoryDnd } from '@/components/game/inventory/inventoryDnd';
+import { wasDraggingRecently } from '@/components/game/inventory/inventoryDndLogic';
 import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import { getItemDefinition } from '@/data/items';
 import type { ItemDefinition } from '@/data/items';
@@ -150,7 +152,21 @@ function UseToast({ text, onDone }: { text: string; onDone: () => void }) {
 
 /* ─── Main Component ─── */
 
+/**
+ * v4.7.7: хотбар — одновременно И цель дропа (когда драгут из инвентаря,
+ * панель открыта — работает общий провайдер), И источник драга
+ * (переупорядочивание слотов). Для второго оборачиваем бар в собственный
+ * InventoryDragProvider: его окна-колбэки живут глобально, а колбэки
+ * дропа замыкаются на сам хотбар (reorder/убрать). При закрытой панели
+ * инвентаря провайдер всё равно смонтирован вместе с баром.
+ */
 export function QuickUseBar() {
+  return (
+    <QuickUseBarWithDnd />
+  );
+}
+
+function QuickUseBarWithDnd() {
   const quietStyle = useHudQuietStyle();
   const bottomHudVisible = useExplorationBottomHudVisible();
   const mode = useGameMode();
@@ -158,6 +174,7 @@ export function QuickUseBar() {
   const { addEnergy, addStress, addKarma, addSkill, removeItem } = useConsumableActions();
   const hotbarSlots = useHotbarSlots();
   const setHotbarSlot = useSetHotbarSlot();
+  const { beginHotbarPointerDown } = useInventoryDnd();
 
   /* ── v4.7.5: DnD-зеркало — подсветка слотов при перетаскивании
         расходуемого из инвентаря (панель открыта, драг жив). ── */
@@ -378,6 +395,18 @@ export function QuickUseBar() {
   if (mode !== 'exploration' || !bottomHudVisible || isOnboarding) return null;
 
   return (
+    <InventoryDragProvider
+      onEquipDrop={() => undefined}
+      onUnequipDrop={() => undefined}
+      onHotbarDrop={(slotIndex, itemId) => setHotbarSlot(slotIndex, itemId || null)}
+      onHotbarReorder={(from, to) => {
+        const current = hotbarSlots;
+        const fromItem = current[from] ?? null;
+        const toItem = current[to] ?? null;
+        setHotbarSlot(from, toItem);
+        setHotbarSlot(to, fromItem);
+      }}
+    >
     <AnimatePresence>
       <motion.div
         key="quick-use-bar"
@@ -419,10 +448,17 @@ export function QuickUseBar() {
                 <button
                   data-dnd-hotbar={i}
                   onClick={() => {
+                    if (wasDraggingRecently()) return;
                     if (hasItem) handleUseItemAtSlot(i);
                   }}
                   onContextMenu={(e) => handleSlotContextMenu(e, i)}
-                  onPointerDown={() => handleSlotPointerDown(i)}
+                  onPointerDown={(e) => {
+                    handleSlotPointerDown(i);
+                    const slot = resolvedSlots[i];
+                    if (slot?.item && (e.pointerType !== 'mouse' || e.button === 0)) {
+                      beginHotbarPointerDown(i, slot.item, e);
+                    }
+                  }}
                   onPointerUp={handleSlotPointerUp}
                   onPointerLeave={handleSlotPointerLeave}
                   disabled={isOnCooldown}
@@ -521,5 +557,6 @@ export function QuickUseBar() {
         </AnimatePresence>
       </motion.div>
     </AnimatePresence>
+    </InventoryDragProvider>
   );
 }

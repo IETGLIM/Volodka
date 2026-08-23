@@ -69,6 +69,8 @@ export interface DragPayload {
   item?: import('@/shared/types/game').InventoryItem;
   /** Слот, с которого тянут надетый предмет — снять при дропе в инвентарь. */
   fromSlot?: EquipmentSlot;
+  /** Индекс слота хотбара, с которого тянут предмет (переупорядочивание). */
+  fromHotbar?: number;
   label: string;
   icon?: string;
   rarity: import('@/data/items').ItemRarity;

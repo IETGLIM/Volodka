@@ -62,6 +62,12 @@ export interface DndContextValue {
     item: InventoryItem,
     e: ReactPointerEvent,
   ) => void;
+  /** Начать потенциальный драг предмета из слота хотбара (переупорядочивание). */
+  beginHotbarPointerDown: (
+    slotIndex: number,
+    item: InventoryItem,
+    e: ReactPointerEvent,
+  ) => void;
 }
 
 const DndContext = createContext<DndContextValue | null>(null);
@@ -74,6 +80,7 @@ export function useInventoryDnd(): DndContextValue {
       dropTarget: null,
       beginItemPointerDown: () => undefined,
       beginEquippedPointerDown: () => undefined,
+      beginHotbarPointerDown: () => undefined,
     };
   }
   return ctx;
@@ -84,6 +91,8 @@ interface ProviderProps {
   onUnequipDrop: (slot: EquipmentSlot) => void;
   /** v4.7.5: дроп расходуемого в слот хотбара (index, itemId). */
   onHotbarDrop: (slotIndex: number, itemId: string) => void;
+  /** v4.7.7: перенос предмета между слотами хотбара (from → to). */
+  onHotbarReorder?: (fromIndex: number, toIndex: number) => void;
   children: ReactNode;
 }
 
@@ -101,6 +110,7 @@ export function InventoryDragProvider({
   onEquipDrop,
   onUnequipDrop,
   onHotbarDrop,
+  onHotbarReorder,
   children,
 }: ProviderProps) {
   const [dragPayload, setDragPayload] = useState<DragPayload | null>(null);
@@ -110,8 +120,8 @@ export function InventoryDragProvider({
   const ghostRef = useRef<HTMLDivElement>(null);
   const dropTargetRef = useRef<DropTarget>(null);
   const payloadRef = useRef<DragPayload | null>(null);
-  const cbRef = useRef({ onEquipDrop, onUnequipDrop, onHotbarDrop });
-  cbRef.current = { onEquipDrop, onUnequipDrop, onHotbarDrop };
+  const cbRef = useRef({ onEquipDrop, onUnequipDrop, onHotbarDrop, onHotbarReorder });
+  cbRef.current = { onEquipDrop, onUnequipDrop, onHotbarDrop, onHotbarReorder };
 
   const cancelPending = useCallback(() => {
     const p = pendingRef.current;
@@ -226,6 +236,24 @@ export function InventoryDragProvider({
     [registerPointerDown],
   );
 
+  const beginHotbarPointerDown = useCallback(
+    (slotIndex: number, item: InventoryItem, e: ReactPointerEvent) => {
+      const view = resolveInventoryItemView(item);
+      registerPointerDown(
+        {
+          fromHotbar: slotIndex,
+          item,
+          label: view.displayName,
+          icon: view.def?.icon,
+          rarity: view.rarity,
+          itemCategory: view.def?.category,
+        },
+        e,
+      );
+    },
+    [registerPointerDown],
+  );
+
   /* Движение/отпускание — на window, чтобы работать за пределами карточки. */
   useEffect(() => {
     const onPointerMove = (e: PointerEvent) => {
@@ -274,6 +302,13 @@ export function InventoryDragProvider({
         if (payload.item && target?.kind === 'slot' &&
             isSlotDropCompatible(payload.equipmentSlot, target.slot)) {
           cbRef.current.onEquipDrop(payload.item);
+        } else if (payload.fromHotbar !== undefined && target?.kind === 'hotbar' &&
+            target.slot !== payload.fromHotbar) {
+          // v4.7.7: перенос между слотами хотбара (drag-to-reorder).
+          cbRef.current.onHotbarReorder?.(payload.fromHotbar, target.slot);
+        } else if (payload.fromHotbar !== undefined && target?.kind === 'inventory') {
+          // Убрать из хотбара — сброс в зону инвентаря (пустой itemId).
+          cbRef.current.onHotbarDrop(payload.fromHotbar, '');
         } else if (payload.item && target?.kind === 'hotbar' &&
             isHotbarDropCompatible(payload.itemCategory)) {
           cbRef.current.onHotbarDrop(target.slot, payload.item.id);
@@ -306,8 +341,9 @@ export function InventoryDragProvider({
       dropTarget,
       beginItemPointerDown,
       beginEquippedPointerDown,
+      beginHotbarPointerDown,
     }),
-    [dragPayload, dropTarget, beginItemPointerDown, beginEquippedPointerDown],
+    [dragPayload, dropTarget, beginItemPointerDown, beginEquippedPointerDown, beginHotbarPointerDown],
   );
 
   return (

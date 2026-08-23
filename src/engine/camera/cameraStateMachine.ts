@@ -69,6 +69,7 @@ import {
   LIBRARY_DAY_ARRIVAL_TIMELINE,
   FACTORY_BASEMENT_ARRIVAL_TIMELINE,
 } from '@/engine/cinematic/streetLegendsArrivalTimelines';
+import { readSkipArrivalCinematics } from '@/engine/cinematic/arrivalCinematicsSetting';
 import { CITY_SQUARE_ARRIVAL_TIMELINE } from '@/engine/cinematic/citySquareArrivalTimeline';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
@@ -517,6 +518,19 @@ export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneI
   const targetLook = new Vector3(spawn[0], spawn[1] + LOOK_HEIGHT, spawn[2]);
 
   // Hero spaces use staged timelines (actor + light cues + holds), not only camera waypoints.
+  // v4.7.7: «Пропускать arrival-кат-сцены» — отключает ВСЕ входы в сцены
+  // (сюжетные кат-сцены актов и сплэши взаимодействий не затрагиваются).
+  if (readSkipArrivalCinematics()) {
+    startSceneTransition(
+      subsystems.transition.current,
+      subsystems.spring.current.position,
+      subsystems.spring.current.lookAt,
+      targetPos,
+      targetLook,
+    );
+    acquireCameraOwnership('transition');
+    return;
+  }
   if (sceneId === 'street_night' && !isCinematicTimelineActive()) {
     startCinematicTimeline({ def: STREET_ARRIVAL_TIMELINE, options: {} });
     return;

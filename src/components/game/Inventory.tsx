@@ -15,6 +15,7 @@ import {
 import { useInventoryPanel } from '@/components/game/inventory/useInventoryPanel';
 import { InventoryDragProvider } from '@/components/game/inventory/inventoryDnd';
 import { useSetHotbarSlot } from '@/store/selectors/uiSelectors';
+import { useGameStore } from '@/store/gameStore';
 import type { InventoryFilterCategory } from '@/engine/inventory/inventoryPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -279,7 +280,15 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
               <InventoryDragProvider
                 onEquipDrop={handleEquipItem}
                 onUnequipDrop={handleUnequipItem}
-                onHotbarDrop={(slotIndex, itemId) => setHotbarSlot(slotIndex, itemId)}
+                onHotbarDrop={(slotIndex, itemId) => setHotbarSlot(slotIndex, itemId || null)}
+                onHotbarReorder={(from, to) => {
+                  // v4.7.7: swap содержимого слотов хотбара (drag-to-reorder).
+                  const current = useGameStore.getState().hotbarSlots;
+                  const fromItem = current[from] ?? null;
+                  const toItem = current[to] ?? null;
+                  setHotbarSlot(from, toItem);
+                  setHotbarSlot(to, fromItem);
+                }}
               >
               <EquipmentPanel
                 equippedItems={equippedItems}

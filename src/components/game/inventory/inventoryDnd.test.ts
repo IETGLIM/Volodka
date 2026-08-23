@@ -141,3 +141,15 @@ describe('DnD-зеркало (cross-tree подсветка хотбара)', ()
     setDndMirror({ payload: null, target: null });
   });
 });
+
+describe('переупорядочивание хотбара (v4.7.7)', () => {
+  it('слот хотбара — валидная цель для дропа с любого слота', () => {
+    const slot3 = el({ 'data-dnd-hotbar': '3' });
+    expect(resolveDropTargetFromElement(slot3)).toEqual({ kind: 'hotbar', slot: 3 });
+  });
+
+  it('зона инвентаря остаётся целью «убрать из хотбара»', () => {
+    const zone = el({ 'data-dnd-inventory': 'true' });
+    expect(resolveDropTargetFromElement(zone)).toEqual({ kind: 'inventory' });
+  });
+});
