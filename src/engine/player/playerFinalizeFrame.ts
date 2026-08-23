@@ -193,7 +193,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       } catch {} 
 
       // Also emit a brake-ready state for future decel detection (used by camera)
-      (window as any).__lastSprintSpeed = horizontalSpeed;
+      window.__lastSprintSpeed = horizontalSpeed;
     }
 
     prevAnimForFootstep = currentAnim;
@@ -257,7 +257,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     // AAA Phase B: cinematic hard brake / stop detection
     // When player was sprinting and suddenly stops, emit a powerful brake event
     // for dust explosion, camera yank, body recovery, and audio.
-    const wasFast = (window as any).__lastSprintSpeed > 5.0;
+    const wasFast = (window.__lastSprintSpeed ?? 0) > 5.0;
     if (wasFast && horizontalSpeed < 1.2 && deps.isGroundedRef.current) {
       eventBus.emit('player:hard_brake', {
         position: [finalPos.x, finalPos.y, finalPos.z],
@@ -278,7 +278,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
         audioEngine.playSfx('brake_thud');
       } catch {}
 
-      (window as any).__lastSprintSpeed = 0;
+      window.__lastSprintSpeed = 0;
     }
 
     // Session 12-B: keep prevAnimForFootstep in sync with currentAnimRef even
