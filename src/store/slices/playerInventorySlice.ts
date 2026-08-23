@@ -37,7 +37,11 @@ export const createPlayerInventorySlice: StateCreator<
 > = (set, get) => ({
   addItem: (item) => {
     const state = get();
-    const result = addInventoryItem(state.playerState.inventory, item);
+    // v4.7.2: catalog maxStack — the stack no longer grows past the limit.
+    const def = getItemDefinition(item.id);
+    const result = addInventoryItem(state.playerState.inventory, item, {
+      maxStack: def?.maxStack,
+    });
 
     if (result.ok) {
       set({

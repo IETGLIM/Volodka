@@ -53,11 +53,18 @@ export function normalizeInventoryItem(item: InventoryItemLike): InventoryItem {
   return { ...item, id, stackable: false, quantity: 1 };
 }
 
-/** Stack or append an item. Returns false when inventory is full. */
-export function addInventoryItem(inventory: InventoryItem[], item: InventoryItem): AddInventoryItemResult {
+/** Stack or append an item. Returns false when inventory is full.
+ * v4.7.2: honours the catalog maxStack — the existing stack fills to the
+ * limit and the remainder spills into a fresh stack (when there is room). */
+export function addInventoryItem(
+  inventory: InventoryItem[],
+  item: InventoryItem,
+  options?: { maxStack?: number },
+): AddInventoryItemResult {
   const next = [...inventory];
   const normalized = normalizeInventoryItem(item);
   const existingIdx = findInventoryItemIndex(next, normalized.id);
+  const maxStack = options?.maxStack && options.maxStack > 0 ? options.maxStack : Infinity;
 
   if (existingIdx >= 0 && next[existingIdx].stackable) {
     const existing = next[existingIdx];
@@ -65,15 +72,47 @@ export function addInventoryItem(inventory: InventoryItem[], item: InventoryItem
       return { ok: false, reason: 'full', itemName: normalized.name };
     }
     const addQty = normalized.stackable ? normalized.quantity : 1;
-    const updated: StackableInventoryItem = {
-      ...existing,
-      quantity: existing.quantity + addQty,
-    };
-    next[existingIdx] = updated;
+    // v4.7.2 FIX: the stack used to grow past the catalog maxStack
+    // (e.g. 30× coffee in one slot at maxStack 10). Fill to the limit and
+    // spill the remainder into new stacks while there is room.
+    const roomInStack = Math.max(0, maxStack - existing.quantity);
+    const intoStack = Math.min(addQty, roomInStack);
+    let remainder = addQty - intoStack;
+
+    if (intoStack > 0) {
+      next[existingIdx] = {
+        ...existing,
+        quantity: existing.quantity + intoStack,
+      } satisfies StackableInventoryItem;
+    }
+
+    while (remainder > 0) {
+      if (next.length >= MAX_INVENTORY_SLOTS) {
+        // No room for the overflow — the whole call fails (atomic), the
+        // caller shows the «inventory full» toast.
+        return { ok: false, reason: 'full', itemName: normalized.name };
+      }
+      const chunk = Math.min(remainder, maxStack);
+      next.push({ ...normalized, stackable: true, quantity: chunk } as StackableInventoryItem);
+      remainder -= chunk;
+    }
     return { ok: true, inventory: next };
   }
 
   if (next.length < MAX_INVENTORY_SLOTS) {
+    if (normalized.stackable && normalized.quantity > maxStack) {
+      // Fresh oversized stack — clamp to the limit and spill the rest.
+      let remainder = normalized.quantity;
+      while (remainder > 0) {
+        if (next.length >= MAX_INVENTORY_SLOTS) {
+          return { ok: false, reason: 'full', itemName: normalized.name };
+        }
+        const chunk = Math.min(remainder, maxStack);
+        next.push({ ...normalized, stackable: true, quantity: chunk } as StackableInventoryItem);
+        remainder -= chunk;
+      }
+      return { ok: true, inventory: next };
+    }
     next.push(normalized);
     return { ok: true, inventory: next };
   }
