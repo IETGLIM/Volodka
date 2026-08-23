@@ -68,20 +68,25 @@ export function getPolyHavenPbrUrls(
 }
 
 /** Photographic HDRIs under public/hdri (CC0 Poly Haven). */
-export type PolyHavenHdriId = 'moonlit_golf_2k' | 'abandoned_parking_1k' | 'lebombo_1k';
+export type PolyHavenHdriId = 'moonlit_golf_2k' | 'moonlit_golf_1k' | 'abandoned_parking_1k' | 'lebombo_1k';
 
 export const POLYHAVEN_HDRI: Record<PolyHavenHdriId, string> = {
   moonlit_golf_2k: '/hdri/moonlit_golf_2k.hdr',
+  // v4.7.3: box-2x downscale of moonlit_golf_2k (6.7→3.1 МБ) — for
+  // low-tier devices (mobile / low memory); selected via resolveHeroHdriPath.
+  moonlit_golf_1k: '/hdri/moonlit_golf_1k.hdr',
   abandoned_parking_1k: '/hdri/abandoned_parking_1k.hdr',
   lebombo_1k: '/hdri/lebombo_1k.hdr',
 };
 
-export function resolveHeroHdriPath(sceneId: string): string | null {
+export function resolveHeroHdriPath(sceneId: string, options?: { lowMemory?: boolean }): string | null {
   switch (sceneId) {
     case 'street_night':
     case 'city_square':
     case 'cafe_evening':
-      return POLYHAVEN_HDRI.moonlit_golf_2k;
+      return options?.lowMemory
+        ? POLYHAVEN_HDRI.moonlit_golf_1k
+        : POLYHAVEN_HDRI.moonlit_golf_2k;
     case 'street_winter':
     case 'rooftop_edge':
     case 'abandoned_factory':

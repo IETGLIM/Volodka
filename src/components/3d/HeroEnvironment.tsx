@@ -4,6 +4,7 @@ import { Suspense, useEffect, useState } from 'react';
 import { useThree } from '@react-three/fiber';
 import { Environment } from '@react-three/drei';
 import { Texture } from 'three';
+import { useDeviceTier } from '@/hooks/useDeviceTier';
 import {
   getOrBakeHeroEnvMap,
   resolveHeroEnvKind,
@@ -95,7 +96,10 @@ function BakedOrPresetFallback({
 }
 
 export function HeroEnvironment({ sceneId, intensity, fallbackPreset }: HeroEnvironmentProps) {
-  const hdri = resolveHeroHdriPath(sceneId);
+  // v4.7.3: low-tier devices load the 1k HDRI variant (3.1 МБ instead of
+  // 6.7 МБ — box-2x downscale, visually identical as IBL at small screens).
+  const deviceTier = useDeviceTier();
+  const hdri = resolveHeroHdriPath(sceneId, { lowMemory: deviceTier === 'low' });
   const asBackground = usesPhotographicHdriBackground(sceneId);
 
   if (hdri) {
