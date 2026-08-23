@@ -1,5 +1,28 @@
 # Changelog — ВОЛОДЬКА RPG
 # Changelog — ВОЛОДЬКА RPG
+## v4.7.3 (2026-08-24) — «Худеем: −5570 строк кода и −6.8 МБ ассетов»
+
+### Чистка
+- **−5570 строк мёртвого UI-кода** (10 компонентов без единого живого
+  импорта): MiniMap, WorldMapPanel, HudCompass, EnhancedAchievementSystem,
+  EnhancedStatusDisplay, EnhancedActionBar, EnhancedLoadingScreen,
+  EnhancedNotificationSystem, PhotoModeEnhanced, мёртвый дубль
+  crafting/CraftingPanel — меньше кода в репо, быстрее сборка
+- Удалены неиспользуемые public-файлы (−3.2 МБ): public/art/ (портреты
+  генерируются процедурно), placeholder.png, deploy-vercel.md
+- GameState (state/game.ts) — мёртвый тип с дрейфом полей удалён
+
+### Производительность слабых устройств
+- **moonlit_golf_1k.hdr**: box-2x downscale 2k-HDRI (6.7→3.1 МБ),
+  генерация three.js RGBELoader + RLE-энкодер с roundtrip-проверкой;
+  HeroEnvironment грузит 1k при deviceTier 'low' (−3.6 МБ на мобильных
+  в ночных hero-сценах)
+
+### Документация
+- MIGRATIONS-контракт: когда нужен императивный шаг миграции сейва,
+  а когда достаточно Zod-defaults (с процедурой инкремента SAVE_VERSION)
+
+# Changelog — ВОЛОДЬКА RPG
 ## v4.7.2 (2026-08-24) — «Репутация без сирот, оружие в руках, честные стаки»
 
 ### Исправления
