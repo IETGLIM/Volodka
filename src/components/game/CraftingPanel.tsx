@@ -294,13 +294,9 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
               >
                 {craftingAll ? (
                   <>
-                    <motion.span
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="inline-block"
-                    >
+                    <span className="inline-block fm-spin">
                       ⚙
-                    </motion.span>
+                    </span>
                     Создание...
                   </>
                 ) : (
@@ -454,11 +450,7 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
 
                         {/* Craft button indicator */}
                         {isCrafting ? (
-                          <motion.div
-                            className="w-6 h-6 rounded-full border-2 border-cyan-400 border-t-transparent"
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          />
+                          <div className="w-6 h-6 rounded-full border-2 border-cyan-400 border-t-transparent fm-spin" />
                         ) : isJustCrafted ? (
                           <motion.div
                             initial={{ scale: 0 }}
@@ -716,13 +708,9 @@ function RecipeDetail({
       >
         {isCrafting ? (
           <>
-            <motion.span
-              animate={{ rotate: 360 }}
-              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-              className="inline-block mr-1.5"
-            >
+            <span className="inline-block mr-1.5 fm-spin">
               ⚙
-            </motion.span>
+            </span>
             Создание...
           </>
         ) : (

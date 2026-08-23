@@ -159,9 +159,9 @@ export function AaaImmersiveGuide() {
         {entry && (
           <motion.div
             key={entry.id}
-            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 8, filter: 'blur(4px)' }}
-            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -4, filter: 'blur(2px)' }}
+            initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -4 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
             className="hud-filmic-caption hud-filmic-ink-bleed px-5 py-2.5 text-center"
           >

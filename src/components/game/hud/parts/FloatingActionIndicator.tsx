@@ -73,7 +73,7 @@ export function FloatingActionIndicator() {
             key={action.id}
             initial={reducedMotion ? { opacity: 1 } : { opacity: 0, y: 10, scale: 0.8 }}
             animate={reducedMotion ? { opacity: 0 } : { opacity: 1, y: 0, scale: 1 }}
-            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -30, scale: 0.6, filter: 'blur(2px)' }}
+            exit={reducedMotion ? { opacity: 0 } : { opacity: 0, y: -30, scale: 0.6 }}
             transition={{
               duration: 0.4,
               delay: index * 0.05,

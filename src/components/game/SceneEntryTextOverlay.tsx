@@ -127,9 +127,9 @@ export function SceneEntryTextOverlay() {
                 color: 'rgba(245,245,244,0.96)',
                 textShadow: '0 2px 14px rgba(0,0,0,0.85)',
               }}
-              initial={{ opacity: 0, y: 16, filter: 'blur(10px)' }}
-              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-              exit={{ opacity: 0, y: -8, filter: 'blur(4px)' }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
               transition={{ duration: FADE_IN_DURATION, delay: 0.15, ease: 'easeOut' }}
             >
               {sceneName}

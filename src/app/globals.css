@@ -122,3 +122,16 @@ html[data-scanlines="off"] body::after {
 html {
   font-size: calc(16px * var(--volodka-ui-text-scale, 1));
 }
+
+/* ── CSS spinner utility (replaces framer-motion infinite repeat) ──
+   INP: framer-motion's animate={{ rotate: 360 }} transition={{ repeat: Infinity }}
+   runs a JS-driven animation loop on the main thread. CSS animation is
+   GPU-accelerated and runs off the main thread. */
+@keyframes fm-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.fm-spin {
+  animation: fm-spin 1s linear infinite;
+  display: inline-block;
+}
