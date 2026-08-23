@@ -43,7 +43,9 @@ export default defineConfig({
         test: {
           name: 'unit',
           environment: 'node',
-          include: ['src/**/*.test.ts', 'vite/**/*.test.ts'],
+          // api/lib/*.test.ts — юнит-тесты чистой логики edge-функций
+          // (сами edge-функции с `export const config` под Node не импортируются).
+          include: ['src/**/*.test.ts', 'vite/**/*.test.ts', 'api/**/*.test.ts'],
           exclude: ['src/**/*.integration.test.ts'],
           setupFiles: ['./vitest/setupUnitTests.ts'],
         },

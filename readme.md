@@ -128,7 +128,7 @@ Environment variables:
 | Variable | Значение |
 |----------|----------|
 | `VITE_SITE_URL` | Canonical URL и OG preview, например `https://volodka.vercel.app` |
-| `FREEROUTER_KEY` | (опционально) ключ FreeRouter API для динамических Matrix-цитат (см. ниже) |
+| `FREEROUTER_KEY` | (опционально) ключ FreeRouter API: динамические Matrix-цитаты, режим «шёпота» и городской тикер (см. ниже) |
 | `FREEROUTER_MODEL` | (опционально) имя модели, по умолчанию `glm-5.2` |
 
 ## Динамические Matrix-цитаты (FreeRouter, опционально)
@@ -203,12 +203,64 @@ vercel dev   # поднимает и Vite (через vercel.json devCommand), �
 
 | Файл | Назначение |
 |------|------------|
-| `api/matrix-quote.ts` | Vercel Edge serverless function (proxy). Держит ключ, кеш, rate limit. |
+| `api/matrix-quote.ts` | Vercel Edge serverless function (proxy). Держит ключ, кеш, rate limit. Режимы `mode=quote|whisper`. |
+| `api/lib/matrixWhisperLogic.ts` | Чистая логика режима `mode=whisper`: промпт, 10 фолбэков, санитизация (тестируется Vitest). |
 | `src/hooks/useMatrixQuote.ts` | React-хук: fetch, localStorage cache, debounce, offline fallback. |
 | `src/components/game/matrixQuote/MatrixRainQuotePanel.tsx` | Рендерит динамическую цитату под статичной с пометкой «сгенерировано». |
 | `src/engine/matrixQuote/matrixQuoteConstants.ts` | Лейблы `MATRIX_QUOTE_GENERATED_LABEL`, `MATRIX_QUOTE_FALLBACK_LABEL`. |
 | `vercel.json` | `/api/*` rewrite в Edge Function, всё остальное → SPA fallback. |
 | `.env.example` | Шаблон env vars (без реальных ключей). |
+
+## Городской тикер и «Шёпот города» (FreeRouter, опционально)
+
+Тот же ключ `FREEROUTER_KEY` питает ещё две атмосферные AI-фичи — тот же
+Edge-паттерн (ключ только в env, кеш, rate limit, inline-фолбэки, игра
+никогда не ломается).
+
+### Городской тикер: `/api/city-news`
+
+Edge-функция генерирует одну короткую новость ночного города в стиле
+внутриигрового радио для бегущей строки в топ-баре HUD:
+
+```
+GET /api/city-news?act=1..7&scene=<sceneId>&hour=0..23
+← { news, model } | { news, model, fallback: true } | { error }
+```
+
+- **Лимит строки:** 140 символов (обрезка по границе слова, санитизация
+  кавычек/префиксов, перевод строки схлопывается — тикер однострочный).
+- **Кеш:** 10 минут на `(act, scene, hour)` — новости дешевле цитат.
+  Rate limit: 1 запрос / 3 секунды на IP, как у matrix-quote.
+- **Фолбэки:** 10 инлайн-новостей на русском (Гильдия, «Синяя яма», Косая 12 —
+  в лоре Володни). `max_tokens=900` — glm-5.2 reasoning-модель (см. выше).
+- **Клиент:** `src/hooks/useCityNews.ts` — пуллинг не чаще раза в 3.5 минуты,
+  localStorage-кеш, AbortController + таймаут 4 с. Интеграция —
+  `TopBarDataTicker.tsx`: AI-строка вставляется в ротацию с бейджем «ЭФИР»;
+  если API недоступен — тикер работает как раньше (только статичные строки).
+
+### Шёпот города: `/api/matrix-quote?…&mode=whisper`
+
+Второй режим Matrix-прокси для моментов высокого стресса игрока: не
+философская цитата, а короткий тревожный шёпот от первого лица —
+атмосферный, СТРОГО без насилия:
+
+```
+GET /api/matrix-quote?scene=…&karma=…&act=…&mode=whisper
+← { quote, model, mode: 'whisper' }   // лимит 160 символов
+```
+
+- Формат ответа тот же, что у обычного режима (`quote`-поле), поэтому
+  клиент-обёртка — одна и та же.
+- `mode` входит в ключ кеша (шёпоты и цитаты не коллизуют),
+  10 инлайн-фолбэков-шёпотов, лимит санитизации 160 символов.
+- Клиентской интеграции пока нет — режим зарезервирован под будущие фичи
+  (например, триггер при стрессе ≥ 70).
+
+Тесты чистой логики (санитизация, фолбэки, вытеснение кеша, промпты) —
+`api/lib/cityNewsLogic.test.ts` и `api/lib/matrixWhisperLogic.test.ts`
+(`npx vitest run api/lib`); сами edge-функции под Node не импортируются
+(`export const config` — Edge-only), поэтому вся логика вынесена в
+`api/lib/`.
 
 ## Управление
 

@@ -3,7 +3,17 @@
  * FREEROUTER_KEY lives only in Vercel env vars — NEVER reaches the client bundle.
  * If unset → 503 + `fallback:true` quote → client falls back to static quotes.
  * See readme.md §«Динамические Matrix-цитаты (FreeRouter)» for full setup.
+ *
+ * GET /api/matrix-quote?scene=&karma=&act=[&theme=][&mode=quote|whisper]
+ *   mode=quote   (default) — философская Matrix-цитата (лимит 280 символов).
+ *   mode=whisper — «шёпот города»: короткий тревожный шёпот от первого лица
+ *                 для моментов высокого стресса игрока (лимит 160 символов,
+ *                 СТРОГО без насилия — только атмосферная тревога).
+ * Формат ответа одинаков для обоих режимов: { quote, model, mode, ... }.
+ * Промпт/фолбэки/санитизация whisper — в ./lib/matrixWhisperLogic (тестируется).
  */
+
+import { buildWhisperSystemPrompt, pickWhisperFallback, sanitizeWhisper } from './lib/matrixWhisperLogic';
 
 export const config = { runtime: 'edge' };
 
@@ -27,6 +37,7 @@ const FALLBACK_QUOTES = [
 ] as const;
 
 interface CacheEntry { quote: string; model: string; generatedAt: number }
+type QuoteMode = 'quote' | 'whisper';
 const responseCache = new Map<string, CacheEntry>();
 const ipLastRequest = new Map<string, number>();
 
@@ -43,11 +54,16 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}): 
   });
 }
 
-function cacheKey(scene: string, karma: number, act: number, theme: string | null): string {
-  return `${act}|${scene}|${karma}|${theme ?? ''}`;
+function cacheKey(scene: string, karma: number, act: number, theme: string | null, mode: QuoteMode): string {
+  // mode в ключе — иначе whisper и quote коллизовали бы в общем кеше.
+  return `${act}|${scene}|${karma}|${theme ?? ''}|${mode}`;
 }
 
-function pickFallback(): CacheEntry {
+function pickFallback(mode: QuoteMode = 'quote'): CacheEntry {
+  if (mode === 'whisper') {
+    const { quote, model, generatedAt } = pickWhisperFallback();
+    return { quote, model, generatedAt };
+  }
   const quote = FALLBACK_QUOTES[Math.floor(Math.random() * FALLBACK_QUOTES.length)]!;
   return { quote, model: 'fallback-static', generatedAt: Date.now() };
 }
@@ -70,7 +86,12 @@ interface FreeRouterResponse {
   model?: string;
 }
 
-async function callFreeRouter(apiKey: string, model: string, systemPrompt: string): Promise<{ quote: string | null; model: string }> {
+async function callFreeRouter(
+  apiKey: string,
+  model: string,
+  systemPrompt: string,
+  userMessage: string,
+): Promise<{ quote: string | null; model: string }> {
   // glm-5.2 is a reasoning model — it emits a hidden reasoning trace before
   // the final `content`. 400 tokens was empirically enough at integration
   // time, but live probes (2026-08) showed traces occasionally eating the
@@ -87,7 +108,7 @@ async function callFreeRouter(apiKey: string, model: string, systemPrompt: strin
       model,
       messages: [
         { role: 'system', content: systemPrompt },
-        { role: 'user', content: 'Сгенерируй цитату.' },
+        { role: 'user', content: userMessage },
       ],
       max_tokens: 900,
       temperature: 0.95,
@@ -127,7 +148,12 @@ export default async function handler(req: Request): Promise<Response> {
   const karmaRaw = url.searchParams.get('karma');
   const actRaw = url.searchParams.get('act');
   const theme = url.searchParams.get('theme');
+  const modeRaw = url.searchParams.get('mode');
   if (!scene) return json({ error: 'missing_param', param: 'scene' }, 400);
+  if (modeRaw !== null && modeRaw !== 'quote' && modeRaw !== 'whisper') {
+    return json({ error: 'invalid_param', param: 'mode', hint: 'quote|whisper' }, 400);
+  }
+  const mode: QuoteMode = modeRaw === 'whisper' ? 'whisper' : 'quote';
   const karmaNum = Number(karmaRaw);
   const actNum = Number(actRaw);
   if (!Number.isFinite(karmaNum)) return json({ error: 'missing_param', param: 'karma' }, 400);
@@ -137,8 +163,8 @@ export default async function handler(req: Request): Promise<Response> {
 
   const apiKey = process.env.FREEROUTER_KEY;
   if (!apiKey || apiKey === 'your-key-here') {
-    const fb = pickFallback();
-    return json({ error: 'freerouter_not_configured', quote: fb.quote, model: fb.model, fallback: true }, 503);
+    const fb = pickFallback(mode);
+    return json({ error: 'freerouter_not_configured', quote: fb.quote, model: fb.model, mode, fallback: true }, 503);
   }
 
   // Per-IP rate limit (in-memory, soft).
@@ -146,38 +172,43 @@ export default async function handler(req: Request): Promise<Response> {
   const now = Date.now();
   const last = ipLastRequest.get(ip);
   if (last && now - last < RATE_LIMIT_INTERVAL_MS) {
-    const cached = responseCache.get(cacheKey(scene, karma, act, theme));
-    if (cached && now - cached.generatedAt < CACHE_TTL_MS) return json({ quote: cached.quote, model: cached.model, cached: true });
+    const cached = responseCache.get(cacheKey(scene, karma, act, theme, mode));
+    if (cached && now - cached.generatedAt < CACHE_TTL_MS) return json({ quote: cached.quote, model: cached.model, mode, cached: true });
     return json({ error: 'rate_limited', retry_after_ms: RATE_LIMIT_INTERVAL_MS - (now - last) }, 429);
   }
   ipLastRequest.set(ip, now);
 
   // Response cache hit.
-  const key = cacheKey(scene, karma, act, theme);
+  const key = cacheKey(scene, karma, act, theme, mode);
   const cached = responseCache.get(key);
-  if (cached && now - cached.generatedAt < CACHE_TTL_MS) return json({ quote: cached.quote, model: cached.model, cached: true });
+  if (cached && now - cached.generatedAt < CACHE_TTL_MS) return json({ quote: cached.quote, model: cached.model, mode, cached: true });
 
   const model = process.env.FREEROUTER_MODEL || DEFAULT_MODEL;
   try {
-    const result = await callFreeRouter(apiKey, model, buildSystemPrompt(scene, karma, act, theme));
+    const systemPrompt =
+      mode === 'whisper'
+        ? buildWhisperSystemPrompt(scene, karma, act, theme)
+        : buildSystemPrompt(scene, karma, act, theme);
+    const userMessage = mode === 'whisper' ? 'Пошепчи.' : 'Сгенерируй цитату.';
+    const result = await callFreeRouter(apiKey, model, systemPrompt, userMessage);
     if (!result.quote || result.quote.length < 3) {
-      const fb = pickFallback();
+      const fb = pickFallback(mode);
       responseCache.set(key, fb);
       if (responseCache.size > 256) for (const [k, v] of responseCache) if (now - v.generatedAt > CACHE_TTL_MS) responseCache.delete(k);
-      return json({ quote: fb.quote, model: fb.model, fallback: true });
+      return json({ quote: fb.quote, model: fb.model, mode, fallback: true });
     }
-    const cleaned = sanitizeQuote(result.quote);
+    const cleaned = mode === 'whisper' ? sanitizeWhisper(result.quote) : sanitizeQuote(result.quote);
     const entry: CacheEntry = { quote: cleaned, model: result.model, generatedAt: now };
     responseCache.set(key, entry);
     if (responseCache.size > 256) for (const [k, v] of responseCache) if (now - v.generatedAt > CACHE_TTL_MS) responseCache.delete(k);
-    return json({ quote: cleaned, model: result.model });
+    return json({ quote: cleaned, model: result.model, mode });
   } catch (err) {
     // Hard failure → fall back to a static quote. 200+fallback so the client
     // treats it as usable. Cache to avoid hammering a degraded upstream.
-    const fb = pickFallback();
+    const fb = pickFallback(mode);
     responseCache.set(key, fb);
     if (responseCache.size > 256) for (const [k, v] of responseCache) if (now - v.generatedAt > CACHE_TTL_MS) responseCache.delete(k);
     const message = err instanceof Error ? err.message : 'unknown_error';
-    return json({ quote: fb.quote, model: fb.model, fallback: true, error: message.slice(0, 200) }, 200);
+    return json({ quote: fb.quote, model: fb.model, mode, fallback: true, error: message.slice(0, 200) }, 200);
   }
 }
