@@ -12,6 +12,17 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   combat_start: { type: 'sawtooth', frequency: 140, duration: 0.22, gain: 0.2 },
   combat_engage: { type: 'square', frequency: 95, duration: 0.18, gain: 0.22 },
   combat_hit: { type: 'square', frequency: 320, duration: 0.07, gain: 0.14 },
+  // ─── Differentiated combat impact SFX (Task 3.3-b1) ───
+  // combat_hit stays the player→enemy baseline; the presets below separate
+  // the remaining impact flavors so every hit doesn't sound identical.
+  /** Player takes a basic-attack hit — lower pitch, duller thud. */
+  combat_hit_player: { type: 'sawtooth', frequency: 180, duration: 0.11, gain: 0.17 },
+  /** Player takes a special attack — heavy low slam, longer tail. */
+  combat_special_hit: { type: 'sawtooth', frequency: 120, duration: 0.18, gain: 0.2 },
+  /** Player lands a critical hit — brighter, higher pitch, extra bite. */
+  combat_crit: { type: 'square', frequency: 520, duration: 0.12, gain: 0.19 },
+  /** Super-effective affinity hit (×2) — bright rising ping. */
+  combat_super: { type: 'triangle', frequency: 660, duration: 0.14, gain: 0.2 },
   ui_open: { type: 'sine', frequency: 440, duration: 0.05, gain: 0.1 },
   ui_close: { type: 'sine', frequency: 330, duration: 0.05, gain: 0.1 },
   item_use: { type: 'sine', frequency: 520, duration: 0.06, gain: 0.14 },

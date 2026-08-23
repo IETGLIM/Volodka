@@ -53,6 +53,8 @@ export interface ApplicationEventMap {
     prevSkills?: PlayerSkills;
     prevKarma?: number;
   };
+  /** Rest at home (restAtHome) — engine listeners fully restore stamina. */
+  'player:rest': { amount: number };
   'choice:made': { karmaChange: number; npcId?: string; relationChange?: number };
   'crafting:discovered': { recipeId: string; recipeName: string; rarity: string };
   'item:crafted': { recipeId: string; recipeName: string; category: string };

@@ -9,6 +9,7 @@ import { resetSharedVirtualControlsState } from '@/engine/VirtualControlsState';
 import { resetLoadingTimelineForSession } from '@/engine/performance/LoadingTimeline';
 import { invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import { resetCameraShake } from '@/engine/camera/cameraShake';
+import { resetPlayerStaminaForNewSession } from '@/engine/player/playerStamina';
 import { resetGlobalTimeScale } from '@/engine/camera/cinematicCamera';
 import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
 import { resetPoemRevealSession } from '@/engine/poemReveal/poemRevealOrchestrator';
@@ -42,6 +43,7 @@ export function resetEngineModuleRuntimeState(): void {
   invalidateStoryGraphIndex();
   resetKeyboardInputState();
   resetSharedVirtualControlsState();
+  resetPlayerStaminaForNewSession();
   resetLoadingTimelineForSession();
   clearAllSessionQualityOverrides();
 }

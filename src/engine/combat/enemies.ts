@@ -1,22 +1,65 @@
 /* ─── Combat System — Enemy Templates & Special Attacks ─── */
 
-import type { EnemyType, EnemySpecialAttack, SideEffect } from './types';
+import type { EnemyType, EnemySpecialAttack, SideEffect, CombatState } from './types';
 import type { EnemyTemplate } from './types';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { createBuff, addBuff } from './buffSystem';
 import {
   getEnemyAttackBoost,
   getEnemyDamageMultiplier,
-  getPlayerDefenseBoost,
-  getPlayerDamageReduction,
-  getPlayerVulnerability,
 } from './buffSystem';
-import {
-  COMBAT_CONSTANTS,
-  scaleDamageByFraction,
-} from './formulas';
+import { COMBAT_CONSTANTS } from './formulas';
 import { scaleEnemyDamageByDifficulty } from './combatDifficulty';
 import { getPlayerRngSeed, pickIndexFromSeed, rollEnemyDamage, SeededCombatRng } from './combatRng';
+import { computeSpecialIncomingDamage } from './enemyTurn';
+import { resolveCombatPerkModifiers, type CombatPerkModifiers } from '@/shared/perks/perkModifiers';
+
+/* ═══════════════════════════════════════════════════════════
+   Special-attack damage pipeline (Task 3.3-b1)
+   ═══════════════════════════════════════════════════════════ */
+
+/** Resolve spiritual-skill count + perk modifiers for the special pipeline.
+ *  Falls back to zero modifiers when the game bridge isn't registered
+ *  (pure unit tests) so specials stay callable in isolation. */
+function resolveSpecialPipelineContext(): {
+  spiritualSkillCount: number;
+  perkMods: CombatPerkModifiers;
+} {
+  try {
+    const snapshot = getGameSnapshot();
+    return {
+      spiritualSkillCount: snapshot.playerState.progression.unlockedSkills.filter(
+        (id) => id.startsWith('spirit_'),
+      ).length,
+      perkMods: resolveCombatPerkModifiers(snapshot.playerState.progression?.unlockedPerks ?? [], {
+        stress: snapshot.playerState.stress,
+        timeOfDay: snapshot.exploration?.timeOfDay,
+      }),
+    };
+  } catch {
+    return { spiritualSkillCount: 0, perkMods: resolveCombatPerkModifiers([]) };
+  }
+}
+
+/** Route a special attack's RAW damage through the full player-defense
+ *  pipeline (defend counter-window, defense_boost, damage_reduction,
+ *  vulnerability, spiritual skills, perk reductions) plus the boss-phase
+ *  damage multiplier. The caller pre-computes the offensive formula
+ *  (base + enemy.attack, difficulty/act/level scaling) — re-applying those
+ *  here would double-scale. Keeps «Защита» and buffs honest against every
+ *  special, boss or regular (audit 2-c: boss specials bypassed defense). */
+function applySpecialDamagePipeline(state: CombatState, rawDamage: number): number {
+  const { spiritualSkillCount, perkMods } = resolveSpecialPipelineContext();
+  return computeSpecialIncomingDamage({
+    combatState: state,
+    rawDamage,
+    spiritualSkillCount,
+    perkMods,
+    // Counter-window: the enemy readied this special last turn — a defending
+    // player gets the extra ×0.4 reduction (see COMBAT_CONSTANTS).
+    telegraphed: state.enemy.chargingSpecial != null,
+  }).damage;
+}
 
 /* ═══════════════════════════════════════════════════════════════
    Enemy Special Attacks (extracted for clarity)
@@ -137,30 +180,13 @@ const AGENT_SPECIALS: EnemySpecialAttack[] = [
       const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
       const enemyDmgMultiplier = getEnemyDamageMultiplier(state);
       const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: enemyDmgMultiplier });
-      let damage = rolled.damage * COMBAT_CONSTANTS.STEALTH_CRIT_MULTIPLIER;
+      const stealthRaw = rolled.damage * COMBAT_CONSTANTS.STEALTH_CRIT_MULTIPLIER;
       const nextState = rolled.state;
 
-      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
       const snapshot = getGameSnapshot();
-      damage = scaleEnemyDamageByDifficulty(damage, undefined, snapshot.playerState.progression.currentAct, snapshot.playerState.progression.level);
-
-      // Apply player defense_boost buff
-      const playerDefBoost = getPlayerDefenseBoost(state);
-      if (playerDefBoost > 0) {
-        damage = Math.max(1, damage - playerDefBoost);
-      }
-
-      // Apply buff-based damage reduction
-      const playerDmgReduction = getPlayerDamageReduction(state);
-      if (playerDmgReduction > 0) {
-        damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-      }
-
-      // Apply player vulnerability from defense_reduction debuffs
-      const playerVulnerability = getPlayerVulnerability(state);
-      if (playerVulnerability > 0) {
-        damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
-      }
+      const rawDamage = scaleEnemyDamageByDifficulty(stealthRaw, undefined, snapshot.playerState.progression.currentAct, snapshot.playerState.progression.level);
+      const damage = applySpecialDamagePipeline(nextState, rawDamage);
 
       const newPlayerHp = Math.max(0, nextState.playerHp - damage);
       return {
@@ -302,15 +328,11 @@ const FIREWALL_SPECIALS: EnemySpecialAttack[] = [
     execute: (state, enemy) => {
       const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
       const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.3 });
-      let damage = rolled.damage;
       const nextState = rolled.state;
-      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
       const fSnapshot = getGameSnapshot();
-      damage = scaleEnemyDamageByDifficulty(damage, undefined, fSnapshot.playerState.progression.currentAct, fSnapshot.playerState.progression.level);
-      const playerDmgReduction = getPlayerDamageReduction(nextState);
-      if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-      const playerVulnerability = getPlayerVulnerability(nextState);
-      if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+      const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, fSnapshot.playerState.progression.currentAct, fSnapshot.playerState.progression.level);
+      const damage = applySpecialDamagePipeline(nextState, rawDamage);
       const newPlayerHp = Math.max(0, nextState.playerHp - damage);
       return {
         ...nextState,
@@ -335,13 +357,11 @@ const NEXUS_GUARDIAN_SPECIALS: EnemySpecialAttack[] = [
       const s = addBuff(state, buff);
       const effectiveAttack = enemy.attack + getEnemyAttackBoost(s);
       const rolled = rollEnemyDamage(s, { attack: effectiveAttack, multiplier: 0.8 });
-      let damage = rolled.damage;
       const nextState = rolled.state;
-      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
       const nSnapshot = getGameSnapshot();
-      damage = scaleEnemyDamageByDifficulty(damage, undefined, nSnapshot.playerState.progression.currentAct, nSnapshot.playerState.progression.level);
-      const playerDmgReduction = getPlayerDamageReduction(nextState);
-      if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+      const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, nSnapshot.playerState.progression.currentAct, nSnapshot.playerState.progression.level);
+      const damage = applySpecialDamagePipeline(nextState, rawDamage);
       const newPlayerHp = Math.max(0, nextState.playerHp - damage);
       return {
         ...nextState,
@@ -399,15 +419,11 @@ const VOID_ECHO_SPECIALS: EnemySpecialAttack[] = [
     execute: (state, enemy) => {
       const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
       const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
-      let damage = rolled.damage;
       const nextState = rolled.state;
-      // Apply difficulty/act/level scaling (was missing — Fix #1)
+      // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
       const vSnapshot = getGameSnapshot();
-      damage = scaleEnemyDamageByDifficulty(damage, undefined, vSnapshot.playerState.progression.currentAct, vSnapshot.playerState.progression.level);
-      const playerDmgReduction = getPlayerDamageReduction(nextState);
-      if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-      const playerVulnerability = getPlayerVulnerability(nextState);
-      if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+      const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, vSnapshot.playerState.progression.currentAct, vSnapshot.playerState.progression.level);
+      const damage = applySpecialDamagePipeline(nextState, rawDamage);
       const newPlayerHp = Math.max(0, nextState.playerHp - damage);
       // 30% chance to skip player's next turn (stun) — now uses seeded RNG instead of deterministic formula (Fix #4)
       const stunRng = SeededCombatRng.fromState(nextState.rng);
@@ -573,15 +589,10 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const iSnapshot = getGameSnapshot();
           const karma = iSnapshot.playerState.karma;
-          let damage = karma > 50 ? Math.floor(karma * 0.15) : 5;
-          // Apply difficulty/act/level scaling (was missing — Fix #1)
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, iSnapshot.playerState.progression.currentAct, iSnapshot.playerState.progression.level);
-          const playerDefBoost = getPlayerDefenseBoost(state);
-          if (playerDefBoost > 0) damage = Math.max(1, damage - playerDefBoost);
-          const playerDmgReduction = getPlayerDamageReduction(state);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-          const playerVulnerability = getPlayerVulnerability(state);
-          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+          const karmaRaw = karma > 50 ? Math.floor(karma * 0.15) : 5;
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(karmaRaw, undefined, iSnapshot.playerState.progression.currentAct, iSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
           const newPlayerHp = Math.max(0, state.playerHp - damage);
           return { ...state, playerHp: newPlayerHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Аудит Совести! Ваши добрые дела обращаются против вас: -${damage} HP!`, type: 'enemy_special' as const, damage }] };
         },
@@ -632,15 +643,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
-          // Apply difficulty/act/level scaling (was missing — Fix #1)
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
           const eSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, eSnapshot.playerState.progression.currentAct, eSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-          const playerVulnerability = getPlayerVulnerability(nextState);
-          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, eSnapshot.playerState.progression.currentAct, eSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const buff = createBuff(nextState, 'Оглушение', 'enforcer_shield_bash', 'debuff', 'player', 1, { type: 'skip_turn' });
           const s = addBuff(nextState, buff);
           const newPlayerHp = Math.max(0, s.playerHp - damage);
@@ -693,13 +700,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.2 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
-          // Apply difficulty/act/level scaling (was missing — Fix #1)
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
           const dSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, dSnapshot.playerState.progression.currentAct, dSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, dSnapshot.playerState.progression.currentAct, dSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const newPlayerHp = Math.max(0, nextState.playerHp - damage);
           const healAmount = Math.floor(damage * 0.5);
           const newEnemyHp = Math.min(enemy.maxHp, enemy.hp + healAmount);
@@ -815,15 +820,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
             attack: effectiveAttack,
             multiplier: COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_BASE_MULTIPLIER + cappedPoemCount * COMBAT_CONSTANTS.POEM_HUNTER_DAMAGE_PER_POEM,
           });
-          let damage = rolled.damage;
           const nextState = rolled.state;
-          // Apply difficulty/act/level scaling (was missing — Fix #1)
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
           const pSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, pSnapshot.playerState.progression.currentAct, pSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-          const playerVulnerability = getPlayerVulnerability(nextState);
-          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, pSnapshot.playerState.progression.currentAct, pSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const newPlayerHp = Math.max(0, nextState.playerHp - damage);
           return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Казнь Стихотворца! -${damage} HP! (бонус от ${poemCount} стихов)`, type: 'enemy_special' as const, damage }] };
         },
@@ -1022,18 +1023,15 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           // First hit: 0.6 multiplier
           const roll1 = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 0.6 });
-          let dmg1 = roll1.damage;
           // Second hit: 0.8 multiplier (quantum fluctuation)
           const roll2 = rollEnemyDamage(roll1.state, { attack: effectiveAttack, multiplier: 0.8 });
-          let dmg2 = roll2.damage;
           const nextState = roll2.state;
           const qSnapshot = getGameSnapshot();
-          dmg1 = scaleEnemyDamageByDifficulty(dmg1, undefined, qSnapshot.playerState.progression.currentAct, qSnapshot.playerState.progression.level);
-          dmg2 = scaleEnemyDamageByDifficulty(dmg2, undefined, qSnapshot.playerState.progression.currentAct, qSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) { dmg1 = scaleDamageByFraction(dmg1, playerDmgReduction, 'reduction'); dmg2 = scaleDamageByFraction(dmg2, playerDmgReduction, 'reduction'); }
-          const playerVulnerability = getPlayerVulnerability(nextState);
-          if (playerVulnerability > 0) { dmg1 = scaleDamageByFraction(dmg1, playerVulnerability, 'vulnerability'); dmg2 = scaleDamageByFraction(dmg2, playerVulnerability, 'vulnerability'); }
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const raw1 = scaleEnemyDamageByDifficulty(roll1.damage, undefined, qSnapshot.playerState.progression.currentAct, qSnapshot.playerState.progression.level);
+          const raw2 = scaleEnemyDamageByDifficulty(roll2.damage, undefined, qSnapshot.playerState.progression.currentAct, qSnapshot.playerState.progression.level);
+          const dmg1 = applySpecialDamagePipeline(nextState, raw1);
+          const dmg2 = applySpecialDamagePipeline(nextState, raw2);
           const totalDamage = dmg1 + dmg2;
           const newPlayerHp = Math.max(0, nextState.playerHp - totalDamage);
           return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Суперпозиция! Двойная атака: -${dmg1} + -${dmg2} = -${totalDamage} HP!`, type: 'enemy_special' as const, damage: totalDamage }] };
@@ -1098,11 +1096,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const gSnapshot = getGameSnapshot();
           const stress = gSnapshot.playerState.stress;
-          let damage = Math.floor(stress * 0.2);
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, gSnapshot.playerState.progression.currentAct, gSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(state);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-          damage = Math.max(1, damage);
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(Math.floor(stress * 0.2), undefined, gSnapshot.playerState.progression.currentAct, gSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
           const newPlayerHp = Math.max(0, state.playerHp - damage);
           return { ...state, playerHp: newPlayerHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} Зеркало Скорби! Ваш стресс (${stress}) обращается в -${damage} HP!`, type: 'enemy_special' as const, damage }] };
         },
@@ -1202,12 +1198,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.8 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
           const rSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, rSnapshot.playerState.progression.currentAct, rSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, rSnapshot.playerState.progression.currentAct, rSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           // Sentinel damages itself too — 10% of its current HP
           const selfDamage = Math.max(1, Math.floor(enemy.hp * 0.1));
           const newEnemyHp = Math.max(1, nextState.enemy.hp - selfDamage);
@@ -1249,11 +1244,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           // Drain highest player skill
           const skills = dSnapshot.playerState.skills;
           const maxSkill = Math.max(skills.logic, skills.coding, skills.empathy, skills.writing, skills.intuition, skills.persuasion);
-          let damage = Math.floor(maxSkill * 0.5);
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, dSnapshot.playerState.progression.currentAct, dSnapshot.playerState.progression.level);
-          damage = Math.max(1, damage);
-          const playerDmgReduction = getPlayerDamageReduction(state);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(Math.floor(maxSkill * 0.5), undefined, dSnapshot.playerState.progression.currentAct, dSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
           const newPlayerHp = Math.max(0, state.playerHp - damage);
           const debuff = createBuff(state, 'Поглощение Навыка', 'devourer_consume', 'debuff', 'player', 3, { type: 'stat_drain', stat: 'empathy', value: 5 });
           const s = addBuff(state, debuff);
@@ -1269,12 +1262,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
           const dSnapshot2 = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, dSnapshot2.playerState.progression.currentAct, dSnapshot2.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, dSnapshot2.playerState.progression.currentAct, dSnapshot2.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           // Erase player buffs
           const remainingBuffs = nextState.buffs.filter(b => b.target !== 'player' || b.kind === 'debuff');
           const newPlayerHp = Math.max(0, nextState.playerHp - damage);
@@ -1317,15 +1309,14 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const roll1 = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 0.7 });
-          let dmg1 = roll1.damage;
           const roll2 = rollEnemyDamage(roll1.state, { attack: effectiveAttack, multiplier: 0.5 });
-          let dmg2 = roll2.damage;
           const nextState = roll2.state;
           const sSnapshot = getGameSnapshot();
-          dmg1 = scaleEnemyDamageByDifficulty(dmg1, undefined, sSnapshot.playerState.progression.currentAct, sSnapshot.playerState.progression.level);
-          dmg2 = scaleEnemyDamageByDifficulty(dmg2, undefined, sSnapshot.playerState.progression.currentAct, sSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) { dmg1 = scaleDamageByFraction(dmg1, playerDmgReduction, 'reduction'); dmg2 = scaleDamageByFraction(dmg2, playerDmgReduction, 'reduction'); }
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const raw1 = scaleEnemyDamageByDifficulty(roll1.damage, undefined, sSnapshot.playerState.progression.currentAct, sSnapshot.playerState.progression.level);
+          const raw2 = scaleEnemyDamageByDifficulty(roll2.damage, undefined, sSnapshot.playerState.progression.currentAct, sSnapshot.playerState.progression.level);
+          const dmg1 = applySpecialDamagePipeline(nextState, raw1);
+          const dmg2 = applySpecialDamagePipeline(nextState, raw2);
           const totalDamage = dmg1 + dmg2;
           const newPlayerHp = Math.max(0, nextState.playerHp - totalDamage);
           return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Залп Стрел! Двойной выстрел: -${dmg1} + -${dmg2} = -${totalDamage} HP!`, type: 'enemy_special' as const, damage: totalDamage }] };
@@ -1340,12 +1331,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.6 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
           const aSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, aSnapshot.playerState.progression.currentAct, aSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, aSnapshot.playerState.progression.currentAct, aSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const buff = createBuff(nextState, 'Меткий Выстрел', 'strelkov_aimed_shot', 'debuff', 'player', 1, { type: 'defense_reduction', value: 0.2 });
           const s = addBuff(nextState, buff);
           const newPlayerHp = Math.max(0, s.playerHp - damage);
@@ -1384,12 +1374,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.3 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
           const mSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, mSnapshot.playerState.progression.currentAct, mSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, mSnapshot.playerState.progression.currentAct, mSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const buff = createBuff(nextState, 'Зона Тьмы', 'mage_shadow_zone', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'empathy', value: 3 });
           const s = addBuff(nextState, buff);
           const newPlayerHp = Math.max(0, s.playerHp - damage);
@@ -1405,12 +1394,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.8 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
           const mSnapshot2 = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, mSnapshot2.playerState.progression.currentAct, mSnapshot2.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, mSnapshot2.playerState.progression.currentAct, mSnapshot2.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const newPlayerHp = Math.max(0, nextState.playerHp - damage);
           return { ...nextState, playerHp: newPlayerHp, log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} Тёмная Молния! Пурпурная вспышка: -${damage} HP!`, type: 'enemy_special' as const, damage }] };
         },
@@ -1465,12 +1453,15 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.25,
         cooldown: 4,
         execute: (state, enemy) => {
-          const dmg = scaleEnemyDamageByDifficulty(35 + enemy.attack * 1.5);
-          const newHp = Math.max(0, state.playerHp - dmg);
+          // Raw offensive formula (difficulty-scaled) → full player-defense
+          // pipeline (3.3-b1: «Защита» now works against boss specials).
+          const rawDamage = scaleEnemyDamageByDifficulty(35 + enemy.attack * 1.5);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
+          const newHp = Math.max(0, state.playerHp - damage);
           let s = { ...state, playerHp: newHp };
           const buff = createBuff(s, 'Переписывание', 'neuro_rewrite', 'debuff', 'player', 1, { type: 'skip_turn' });
           s = addBuff(s, buff);
-          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Переписывание памяти! -${Math.round(dmg)} HP, вы оглушены!`, type: 'enemy_special' as const }] };
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Переписывание памяти! -${damage} HP, вы оглушены!`, type: 'enemy_special' as const, damage }] };
         },
       },
       {
@@ -1480,9 +1471,10 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.2,
         cooldown: 5,
         execute: (state, enemy) => {
-          const dmg = scaleEnemyDamageByDifficulty(50 + enemy.attack * 2);
-          const newHp = Math.max(0, state.playerHp - dmg);
-          return { ...state, playerHp: newHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} ПЕРЕГРУЗКА СИСТЕМЫ! -${Math.round(dmg)} HP! Серверы воют!`, type: 'enemy_special' as const }] };
+          const rawDamage = scaleEnemyDamageByDifficulty(50 + enemy.attack * 2);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
+          const newHp = Math.max(0, state.playerHp - damage);
+          return { ...state, playerHp: newHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} ПЕРЕГРУЗКА СИСТЕМЫ! -${damage} HP! Серверы воют!`, type: 'enemy_special' as const, damage }] };
         },
       },
     ],
@@ -1518,12 +1510,13 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.35,
         cooldown: 3,
         execute: (state, enemy) => {
-          const dmg = scaleEnemyDamageByDifficulty(30 + enemy.attack * 1.2);
-          const newHp = Math.max(0, state.playerHp - dmg);
+          const rawDamage = scaleEnemyDamageByDifficulty(30 + enemy.attack * 1.2);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
+          const newHp = Math.max(0, state.playerHp - damage);
           let s = { ...state, playerHp: newHp };
           const buff = createBuff(s, 'Пожирание Сна', 'dream_devour', 'debuff', 'player', 2, { type: 'stat_drain', stat: 'karma', value: 5 });
           s = addBuff(s, buff);
-          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Пожиратель съедает ваш сон! -${Math.round(dmg)} HP, карма -5!`, type: 'enemy_special' as const }] };
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Пожиратель съедает ваш сон! -${damage} HP, карма -5!`, type: 'enemy_special' as const, damage }] };
         },
       },
       {
@@ -1536,9 +1529,9 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
           let s = state;
           const buff = createBuff(s, 'Кошмар', 'dream_nightmare', 'debuff', 'player', 2, { type: 'skip_turn' });
           s = addBuff(s, buff);
-          const dmg = scaleEnemyDamageByDifficulty(20);
-          s = { ...s, playerHp: Math.max(0, s.playerHp - dmg) };
-          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} КОШМАР! Вы парализованы страхом на 2 хода! -${Math.round(dmg)} HP!`, type: 'enemy_special' as const }] };
+          const damage = applySpecialDamagePipeline(s, scaleEnemyDamageByDifficulty(20));
+          s = { ...s, playerHp: Math.max(0, s.playerHp - damage) };
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} КОШМАР! Вы парализованы страхом на 2 хода! -${damage} HP!`, type: 'enemy_special' as const, damage }] };
         },
       },
       {
@@ -1548,12 +1541,13 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.2,
         cooldown: 5,
         execute: (state, enemy) => {
-          const dmg = scaleEnemyDamageByDifficulty(45 + enemy.attack * 1.8);
-          const newHp = Math.max(0, state.playerHp - dmg);
+          const rawDamage = scaleEnemyDamageByDifficulty(45 + enemy.attack * 1.8);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
+          const newHp = Math.max(0, state.playerHp - damage);
           let s = { ...state, playerHp: newHp };
           const buff = createBuff(s, 'Пустота', 'dream_void', 'debuff', 'player', 3, { type: 'stat_drain', stat: 'empathy', value: 4 });
           s = addBuff(s, buff);
-          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} ПУСТОТА поглощает вас! -${Math.round(dmg)} HP, эмпатия -4 на 3 хода!`, type: 'enemy_special' as const }] };
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} ПУСТОТА поглощает вас! -${damage} HP, эмпатия -4 на 3 хода!`, type: 'enemy_special' as const, damage }] };
         },
       },
     ],
@@ -1589,12 +1583,13 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.3,
         cooldown: 3,
         execute: (state, enemy) => {
-          const dmg = scaleEnemyDamageByDifficulty(40 + enemy.attack * 1.5);
-          const newHp = Math.max(0, state.playerHp - dmg);
+          const rawDamage = scaleEnemyDamageByDifficulty(40 + enemy.attack * 1.5);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
+          const newHp = Math.max(0, state.playerHp - damage);
           let s = { ...state, playerHp: newHp };
           const buff = createBuff(s, 'Компиляция', 'final_compile', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.4 });
           s = addBuff(s, buff);
-          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} КОМПИЛЯЦИЯ! Судьба определена. -${Math.round(dmg)} HP, защита -40%!`, type: 'enemy_special' as const }] };
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} КОМПИЛЯЦИЯ! Судьба определена. -${damage} HP, защита -40%!`, type: 'enemy_special' as const, damage }] };
         },
       },
       {
@@ -1604,12 +1599,13 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.25,
         cooldown: 4,
         execute: (state, enemy) => {
-          const dmg = scaleEnemyDamageByDifficulty(35 + enemy.attack * 1.3);
-          const newHp = Math.max(0, state.playerHp - dmg);
+          const rawDamage = scaleEnemyDamageByDifficulty(35 + enemy.attack * 1.3);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
+          const newHp = Math.max(0, state.playerHp - damage);
           let s = { ...state, playerHp: newHp };
           const buff = createBuff(s, 'Бесконечный Цикл', 'final_loop', 'debuff', 'player', 2, { type: 'skip_turn' });
           s = addBuff(s, buff);
-          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} БЕСКОНЕЧНЫЙ ЦИКЛ! Вы застряли в петле боли! -${Math.round(dmg)} HP!`, type: 'enemy_special' as const }] };
+          return { ...s, log: [...s.log, { turn: state.turn, text: `${enemy.emoji} БЕСКОНЕЧНЫЙ ЦИКЛ! Вы застряли в петле боли! -${damage} HP!`, type: 'enemy_special' as const, damage }] };
         },
       },
       {
@@ -1619,9 +1615,10 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         chance: 0.15,
         cooldown: 6,
         execute: (state, enemy) => {
-          const dmg = scaleEnemyDamageByDifficulty(70 + enemy.attack * 2.5);
-          const newHp = Math.max(0, state.playerHp - dmg);
-          return { ...state, playerHp: newHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} УДАЛЕНИЕ! Бит за битом! -${Math.round(dmg)} HP! Почти конец...`, type: 'enemy_special' as const }] };
+          const rawDamage = scaleEnemyDamageByDifficulty(70 + enemy.attack * 2.5);
+          const damage = applySpecialDamagePipeline(state, rawDamage);
+          const newHp = Math.max(0, state.playerHp - damage);
+          return { ...state, playerHp: newHp, log: [...state.log, { turn: state.turn, text: `${enemy.emoji} УДАЛЕНИЕ! Бит за битом! -${damage} HP! Почти конец...`, type: 'enemy_special' as const, damage }] };
         },
       },
     ],
@@ -1665,12 +1662,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.5 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
           const ckSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, ckSnapshot.playerState.progression.currentAct, ckSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, ckSnapshot.playerState.progression.currentAct, ckSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const buff = createBuff(nextState, 'Удар Гробницы', 'catacombs_tomb_strike', 'debuff', 'player', 1, { type: 'skip_turn' });
           const s = addBuff(nextState, buff);
           return { ...s, playerHp: Math.max(0, s.playerHp - damage), log: [...s.log, { turn: state.turn, text: `${enemy.emoji} Удар Гробницы! -${damage} HP, вы оглушены на 1 ход!`, type: 'enemy_special' as const, damage }] };
@@ -1700,14 +1696,11 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
         execute: (state, enemy) => {
           const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
           const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 2.0 });
-          let damage = rolled.damage;
           const nextState = rolled.state;
           const ceSnapshot = getGameSnapshot();
-          damage = scaleEnemyDamageByDifficulty(damage, undefined, ceSnapshot.playerState.progression.currentAct, ceSnapshot.playerState.progression.level);
-          const playerDmgReduction = getPlayerDamageReduction(nextState);
-          if (playerDmgReduction > 0) damage = scaleDamageByFraction(damage, playerDmgReduction, 'reduction');
-          const playerVulnerability = getPlayerVulnerability(nextState);
-          if (playerVulnerability > 0) damage = scaleDamageByFraction(damage, playerVulnerability, 'vulnerability');
+          // Difficulty/act/level scaling + full player-defense pipeline (3.3-b1)
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, ceSnapshot.playerState.progression.currentAct, ceSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
           const eBuff = createBuff(nextState, 'Ярость', 'catacombs_enrage_buff', 'buff', 'enemy', 3, { type: 'attack_boost', value: 8 });
           const s = addBuff(nextState, eBuff);
           return { ...s, playerHp: Math.max(0, s.playerHp - damage), log: [...s.log, { turn: state.turn, text: `${enemy.emoji} ЯРОСТЬ ХРАНИТЕЛЯ! -${damage} HP, враг +8 атака на 3 хода!`, type: 'enemy_special' as const, damage }] };

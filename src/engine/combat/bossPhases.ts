@@ -1,4 +1,4 @@
-/* ─── Combat System — Boss Phase System (Task 4b-C2) ───
+/* ─── Combat System — Boss Phase System (Task 4b-C2, integrated 3.3-b1) ───
  *
  * Defines phase thresholds, behavior changes, and transition logic
  * for multi-phase bosses (e.g. Хранитель Катакомб with 3 phases).
@@ -6,13 +6,14 @@
  * Each phase defines:
  *   - HP threshold range (upper/lower bounds as fractions)
  *   - Damage multiplier (scales outgoing damage)
- *   - Speed multiplier (affects turn order)
+ *   - Speed multiplier (affects enemy speed stat + action pacing)
  *   - Whether to apply invulnerability frames during transition
  *   - Visual flash color for phase transition notification
  *   - Whether the phase can summon adds
  *
- * The system is consumed by CombatSystem.ts's enemy turn logic and
- * the BossHealthBar phase pips component.
+ * Consumed by CombatSystem.ts (enemy-turn damage pipeline + phase-transition
+ * orchestration: multipliers, i-frames, adds, log/events) and by the
+ * BossHealthBar phase-pips component (real phase thresholds).
  */
 
 import type { CombatEnemy, EnemyType } from '@/shared/types/game';
@@ -184,6 +185,17 @@ export function getBossPhaseDamageMultiplier(enemy: CombatEnemy): number {
 export function getBossPhaseSpeedMultiplier(enemy: CombatEnemy): number {
   const phase = getActiveBossPhase(enemy);
   return phase?.speedMultiplier ?? 1.0;
+}
+
+/** HP fraction thresholds (descending) where a boss enters each phase —
+ *  e.g. [0.6, 0.3] for a 100/60/30 boss. Used by the BossHealthBar pips so
+ *  the visual phase markers match the ACTUAL mechanical phase boundaries.
+ *  Returns null for non-boss / unregistered types. */
+export function getBossPhaseThresholds(enemyType: EnemyType): number[] | null {
+  const phases = BOSS_PHASE_MAP[enemyType];
+  if (!phases || phases.length === 0) return null;
+  // Phase 0's upper bound is always 1.0 — only the transition points matter.
+  return phases.slice(1).map((p) => p.hpUpperBound);
 }
 
 /** Whether the boss is currently in invulnerability (just entered a new phase).

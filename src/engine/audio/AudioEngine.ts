@@ -1813,16 +1813,17 @@ class AudioEngine {
 
   /**
    * Play a procedural music stinger for key game moments.
-   * @param type — stinger type: tension, discovery, danger, emotional, mystery
+   * @param type — stinger type: tension, discovery, danger, emotional, mystery,
+   * victory (combat triumph), defeat (combat loss)
    */
-  playStinger(type: 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery'): void {
+  playStinger(type: 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery' | 'victory' | 'defeat'): void {
     if (this.disposed) return;
     whenAudioReady(() => {
       this._playStingerInternal(type);
     });
   }
 
-  private _playStingerInternal(type: 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery'): void {
+  private _playStingerInternal(type: 'tension' | 'discovery' | 'danger' | 'emotional' | 'mystery' | 'victory' | 'defeat'): void {
     this.initContext();
     this.resume();
 
@@ -2033,6 +2034,74 @@ class AudioEngine {
         };
         osc1.onended = cleanupMystery;
         osc2.onended = cleanupMystery;
+        break;
+      }
+      case 'victory': {
+        // Short triumph fanfare: fast ascending major arpeggio (C5-E5-G5-C6,
+        // 80ms apart) with a bright sustained top note — ~0.6s total.
+        const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+        notes.forEach((freq, i) => {
+          const delay = i * 0.08;
+          const isLast = i === notes.length - 1;
+          const osc = ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + delay);
+
+          const envGain = ctx.createGain();
+          envGain.gain.setValueAtTime(0, now + delay);
+          envGain.gain.linearRampToValueAtTime(isLast ? 0.18 : 0.13, now + delay + 0.015);
+          envGain.gain.exponentialRampToValueAtTime(0.001, now + delay + (isLast ? 0.55 : 0.22));
+
+          osc.connect(envGain);
+          envGain.connect(dest);
+          osc.start(now + delay);
+          safeStop(osc, now + delay + (isLast ? 0.6 : 0.3));
+          osc.onended = () => {
+            this.disconnectOneShot(osc, envGain);
+          };
+        });
+        // Fifth-pad under the final note for weight
+        const padOsc = ctx.createOscillator();
+        padOsc.type = 'sine';
+        padOsc.frequency.setValueAtTime(523.25, now + 0.24); // C5 root
+        const padGain = ctx.createGain();
+        padGain.gain.setValueAtTime(0, now + 0.24);
+        padGain.gain.linearRampToValueAtTime(0.06, now + 0.3);
+        padGain.gain.exponentialRampToValueAtTime(0.001, now + 0.75);
+        padOsc.connect(padGain);
+        padGain.connect(dest);
+        padOsc.start(now + 0.24);
+        safeStop(padOsc, now + 0.8);
+        padOsc.onended = () => {
+          this.disconnectOneShot(padOsc, padGain);
+        };
+        break;
+      }
+      case 'defeat': {
+        // Low minor lament: slow descending line A3 → F3 → D3 (natural
+        // minor), soft triangle waves with detune — ~1.5s, quiet and heavy.
+        const notes = [220, 174.61, 146.83]; // A3, F3, D3
+        notes.forEach((freq, i) => {
+          const delay = i * 0.35;
+          const isLast = i === notes.length - 1;
+          const osc = ctx.createOscillator();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + delay);
+          osc.detune.setValueAtTime(-7, now + delay);
+
+          const envGain = ctx.createGain();
+          envGain.gain.setValueAtTime(0, now + delay);
+          envGain.gain.linearRampToValueAtTime(0.11, now + delay + 0.08);
+          envGain.gain.exponentialRampToValueAtTime(0.001, now + delay + (isLast ? 0.8 : 0.45));
+
+          osc.connect(envGain);
+          envGain.connect(dest);
+          osc.start(now + delay);
+          safeStop(osc, now + delay + (isLast ? 0.85 : 0.5));
+          osc.onended = () => {
+            this.disconnectOneShot(osc, envGain);
+          };
+        });
         break;
       }
       default: {

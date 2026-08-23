@@ -33,6 +33,10 @@ export const COMBAT_CONSTANTS = {
   POEM_HUNTER_DAMAGE_BASE_MULTIPLIER: 1.5,
   POEM_HUNTER_DAMAGE_PER_POEM: 0.1,
   COMBO_ISTINA_DEFENSE_FACTOR: 0.5,
+  /** Telegraph counter-window: defending against a CHARGED (telegraphed)
+   *  special attack multiplies its damage by this factor on top of the
+   *  regular defend layers — rewards reacting to the «Готовит: …!» cue. */
+  TELEGRAPH_DEFEND_DAMAGE_FACTOR: 0.4,
 } as const;
 
 export type DamageVarianceProfile = 'player' | 'enemy';

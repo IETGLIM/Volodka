@@ -11,6 +11,7 @@ import { resetSceneTransitionDedupe } from './scene/sceneTransition';
 import { markGameDataReady, resetLoadingTimelineForSession } from './performance/LoadingTimeline';
 import { invalidateStoryGraphIndex } from './story/storyGraphIndex';
 import { resetKeyboardInputState } from './keyboardInputState';
+import { getPlayerStamina, tickPlayerStamina } from './player/playerStamina';
 
 describe('resetEngineModuleRuntimeState', () => {
   beforeEach(() => {
@@ -50,5 +51,18 @@ describe('resetEngineModuleRuntimeState', () => {
   it('clears keyboard input state without throwing', () => {
     resetKeyboardInputState();
     expect(() => resetEngineModuleRuntimeState()).not.toThrow();
+  });
+
+  it('fully restores player stamina for a new session', () => {
+    tickPlayerStamina({ dt: 10, sprinting: true, moving: true, crouching: false });
+    expect(getPlayerStamina().current).toBe(0);
+    expect(getPlayerStamina().exhausted).toBe(true);
+
+    resetEngineModuleRuntimeState();
+
+    const snap = getPlayerStamina();
+    expect(snap.current).toBe(snap.max);
+    expect(snap.exhausted).toBe(false);
+    expect(snap.sprintDraining).toBe(false);
   });
 });

@@ -57,12 +57,19 @@ export function TerminalButton({
   accentColor,
   children,
   gamepadHint,
+  title,
+  highlight,
 }: {
   onClick: () => void;
   disabled: boolean;
   accentColor: string;
   children: React.ReactNode;
   gamepadHint?: string;
+  /** Native tooltip — used for the defend counter-window hint (Russian). */
+  title?: string;
+  /** Attention pulse — e.g. the defend button while an enemy charges a
+   *  telegraphed special (counter-window cue). */
+  highlight?: boolean;
 }) {
   const c = ACCENT_MAP[accentColor] || ACCENT_MAP.slate;
 
@@ -70,8 +77,11 @@ export function TerminalButton({
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`cyber-hover-lift relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced combat-action-button active:scale-[0.97] active:brightness-110`}
-      style={!disabled ? { boxShadow: `0 0 10px ${c.glow}28, inset 0 0 10px ${c.glow}14` } : {}}
+      title={title}
+      className={`cyber-hover-lift relative flex-1 py-2.5 rounded border ${c.border} ${c.bg} ${c.text} ${c.hoverBg} disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-150 text-xs font-mono font-semibold flex items-center justify-center gap-1.5 overflow-hidden group combat-btn-enhanced combat-action-button active:scale-[0.97] active:brightness-110${highlight && !disabled ? ' animate-pulse' : ''}`}
+      style={highlight && !disabled
+        ? { boxShadow: `0 0 18px ${c.glow}55, inset 0 0 12px ${c.glow}25` }
+        : !disabled ? { boxShadow: `0 0 10px ${c.glow}28, inset 0 0 10px ${c.glow}14` } : {}}
     >
       <div
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"

@@ -6,9 +6,10 @@
  *   - Full-width bar (left padding to right padding of the combat UI).
  *   - Ornate cyberpunk border with a gold/red gradient.
  *   - Boss name (Russian) + "Акт N" / level indicator.
- *   - Phase indicator pips at the 100% / 66% / 33% thresholds. Pips light
- *     up as the boss HP drops past each threshold — purely visual, no
- *     phase mechanics are wired up.
+ *   - Phase indicator pips driven by the REAL boss-phase thresholds from
+ *     combat/bossPhases.ts (100/60/30) — pip i lights up when the boss
+ *     enters phase i+1, mirroring the mechanical phase transitions
+ *     (damage multipliers / i-frames / adds) applied by CombatSystem.
  *   - Animated framer-motion fill with a Dark-Souls-style damage preview
  *     ghost segment (reuses the CyberStatBar pattern: detect HP drops,
  *     spawn a translucent ghost that drains over ~500ms).
@@ -22,6 +23,7 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { isBossEnemyType } from '@/engine/combat/types';
+import { getBossPhases } from '@/engine/combat/bossPhases';
 import type { CombatEnemy, EnemyType } from '@/shared/types/game';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -70,33 +72,47 @@ interface PendingDamage {
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Phase pips — 3 indicators at 100% / 66% / 33% thresholds.
-   Each pip lights up when the boss HP drops below its threshold.
+   Phase pips — one indicator per boss phase, driven by the REAL
+   phase thresholds from combat/bossPhases.ts (100/60/30).
+   Pip i lights up when the boss ENTERS phase i+1 (HP ≤ threshold);
+   each pip is tinted with its phase's flashColor so the bar matches
+   the phase-transition screen flash.
    ══════════════════════════════════════════════════════════════ */
 
-const PHASE_THRESHOLDS = [100, 66, 33] as const;
+interface PhasePipsProps {
+  pct: number;
+  accent: string;
+  reducedMotion: boolean;
+  /** Descending HP% thresholds where each phase begins (e.g. [60, 30]). */
+  thresholdsPct: number[];
+  /** Per-phase accent colors (flashColor from bossPhases.ts). */
+  phaseColors: string[];
+}
 
 const PhasePips = memo(function PhasePips({
   pct,
   accent,
   reducedMotion,
-}: {
-  pct: number;
-  accent: string;
-  reducedMotion: boolean;
-}) {
+  thresholdsPct,
+  phaseColors,
+}: PhasePipsProps) {
+  const phaseCount = thresholdsPct.length + 1;
   return (
     <div className="flex items-center gap-1.5" aria-hidden="true">
-      {PHASE_THRESHOLDS.map((threshold, i) => {
-        const active = pct < threshold;
+      {Array.from({ length: phaseCount }, (_, i) => {
+        // Phase 1 pip is lit while the boss lives; phase i+1 pip lights when
+        // HP drops to/below that phase's upper threshold (mirrors
+        // getCurrentBossPhase: hpFrac ≤ hpUpperBound → phase active).
+        const active = i === 0 || pct <= thresholdsPct[i - 1];
+        const pipColor = phaseColors[i] ?? accent;
         return (
           <motion.div
-            key={threshold}
+            key={i}
             className="w-2.5 h-2.5 rounded-sm border"
             style={{
-              borderColor: active ? `${accent}88` : 'rgba(148,163,184,0.35)',
-              background: active ? accent : 'transparent',
-              boxShadow: active ? `0 0 8px ${accent}aa` : 'none',
+              borderColor: active ? `${pipColor}88` : 'rgba(148,163,184,0.35)',
+              background: active ? pipColor : 'transparent',
+              boxShadow: active ? `0 0 8px ${pipColor}aa` : 'none',
             }}
             initial={false}
             animate={{
@@ -124,10 +140,16 @@ interface BossFillProps {
   max: number;
   accent: string;
   reducedMotion: boolean;
+  /** Descending HP% phase boundaries (e.g. [60, 30]) — segment ticks +
+   *  gradient stops match the real boss-phase thresholds. */
+  phaseBoundariesPct: number[];
 }
 
-const BossFill = memo(function BossFill({ current, max, accent, reducedMotion }: BossFillProps) {
+const BossFill = memo(function BossFill({ current, max, accent, reducedMotion, phaseBoundariesPct }: BossFillProps) {
   const pct = max > 0 ? Math.min(100, Math.max(0, (current / max) * 100)) : 0;
+  // First boundary = phase 2 start (e.g. 60); second = phase 3 start (30).
+  const phase2Start = phaseBoundariesPct[0] ?? 60;
+  const phase3Start = phaseBoundariesPct[1] ?? 30;
 
   const prevValueRef = useRef(current);
   const damageKeyRef = useRef(0);
@@ -158,11 +180,12 @@ const BossFill = memo(function BossFill({ current, max, accent, reducedMotion }:
 
   // Boss fill uses a gold→red gradient (gold at high HP, shifting to red as
   // HP drops) so the bar's tone itself reflects the boss's desperation.
+  // Gradient stops sit on the REAL phase boundaries (bossPhases.ts).
   // The accent color is layered on top via the outer glow.
   const fillColor =
-    pct > 66
+    pct > phase2Start
       ? 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%)'
-      : pct > 33
+      : pct > phase3Start
         ? 'linear-gradient(90deg, #f59e0b 0%, #ef4444 60%, #b91c1c 100%)'
         : 'linear-gradient(90deg, #ef4444 0%, #b91c1c 70%, #7f1d1d 100%)';
 
@@ -174,8 +197,8 @@ const BossFill = memo(function BossFill({ current, max, accent, reducedMotion }:
         boxShadow: `inset 0 1px 2px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(255,255,255,0.04), 0 0 14px ${accent}33`,
       }}
     >
-      {/* Segment ticks at 33% / 66% — visual phase boundaries */}
-      {[33, 66].map((mark) => (
+      {/* Segment ticks at the real phase boundaries — visual phase markers */}
+      {phaseBoundariesPct.map((mark) => (
         <div
           key={mark}
           className="absolute top-0 bottom-0 w-px pointer-events-none"
@@ -271,6 +294,13 @@ export const BossHealthBar = memo(function BossHealthBar({ enemy, hidden }: Boss
   const data = BOSS_BAR_DATA[enemy.type];
   if (!data) return null;
 
+  // Real phase data (bossPhases.ts) — pips, segment ticks and gradient
+  // stops all derive from the same thresholds CombatSystem uses for the
+  // mechanical phase transitions (100/60/30).
+  const phases = getBossPhases(enemy.type);
+  const thresholdsPct = (phases ?? []).slice(1).map((p) => p.hpUpperBound * 100);
+  const phaseColors = (phases ?? []).map((p) => p.flashColor);
+
   const pct = enemy.maxHp > 0 ? Math.min(100, Math.max(0, (enemy.hp / enemy.maxHp) * 100)) : 0;
 
   return (
@@ -338,8 +368,14 @@ export const BossHealthBar = memo(function BossHealthBar({ enemy, hidden }: Boss
                 >
                   Акт {data.act}
                 </div>
-                {/* Phase pips */}
-                <PhasePips pct={pct} accent={data.accent} reducedMotion={reducedMotion} />
+                {/* Phase pips — real phase thresholds (bossPhases.ts) */}
+                <PhasePips
+                  pct={pct}
+                  accent={data.accent}
+                  reducedMotion={reducedMotion}
+                  thresholdsPct={thresholdsPct}
+                  phaseColors={phaseColors}
+                />
               </div>
             </div>
 
@@ -349,6 +385,7 @@ export const BossHealthBar = memo(function BossHealthBar({ enemy, hidden }: Boss
               max={enemy.maxHp}
               accent={data.accent}
               reducedMotion={reducedMotion}
+              phaseBoundariesPct={thresholdsPct.length > 0 ? thresholdsPct : [60, 30]}
             />
 
             {/* Tiny accent strip under the bar — adds visual weight */}

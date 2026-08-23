@@ -61,13 +61,47 @@ export function useCombatOrchestrator() {
       audioEngine.playSfx('combat_start');
     }, EventBusPriority.FX);
 
-    scope.on('combat:hit', ({ isPlayerHit, damage }) => {
-      audioEngine.playSfx('combat_hit');
+    scope.on('combat:hit', ({ isPlayerHit, source, isCritical }) => {
+      // Differentiated combat impact SFX (Task 3.3-b1): player hits enemy /
+      // enemy hits player / critical / super-effective (affinity ×2) / enemy
+      // special — each has its own preset instead of one combat_hit for all.
+      if (isPlayerHit) {
+        audioEngine.playSfx(source === 'enemy_special' ? 'combat_special_hit' : 'combat_hit_player');
+      } else if (isCritical || source === 'critical_hit') {
+        audioEngine.playSfx('combat_crit');
+      } else if (source === 'affinity_super') {
+        audioEngine.playSfx('combat_super');
+      } else {
+        audioEngine.playSfx('combat_hit');
+      }
       // NOTE: Camera shake is handled exclusively by AaaCombatCinematic, which
       // listens to combat:action + combat:hit + combat:bullet_time with
       // differentiated intensities (crit / super-effective / combo / normal).
       // Duplicating the shake here stacked 2-3 shakes per hit and felt jarring.
-      void isPlayerHit; void damage;
+    }, EventBusPriority.FX);
+
+    // Short triumph stinger on combat victory (fires right when the outcome
+    // is known — combat:end follows ~3s later and also fires on flee, so
+    // victory/defeat are the precise hooks).
+    scope.on('combat:victory', () => {
+      audioEngine.playStinger('victory');
+    }, EventBusPriority.FX);
+
+    // Low minor stinger on defeat.
+    scope.on('combat:defeat', () => {
+      audioEngine.playStinger('defeat');
+    }, EventBusPriority.FX);
+
+    // Telegraph: the enemy began charging a special — alarm cue for the
+    // one-turn counter-window («Готовит: …!»).
+    scope.on('combat:telegraph', () => {
+      audioEngine.playStinger('danger');
+    }, EventBusPriority.FX);
+
+    // Boss phase transition (100/60/30) — danger sting + the combat log's
+    // «… переходит в фазу …» beat.
+    scope.on('combat:boss_phase', () => {
+      audioEngine.playStinger('danger');
     }, EventBusPriority.FX);
 
     return withHmrCleanup(() => scope.dispose());

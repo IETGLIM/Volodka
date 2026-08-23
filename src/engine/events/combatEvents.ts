@@ -34,10 +34,32 @@ export interface CombatEvents {
   'combat:defeat': { enemyType: EnemyType; energyLost: number; karmaLost: number };
   'combat:fled': { enemyType: EnemyType };
   'combat:end': Record<string, never>;
-  'combat:hit': { damage: number; isPlayerHit: boolean; direction?: 'left' | 'right' | 'front' | 'back'; source?: string };
+  'combat:hit': { damage: number; isPlayerHit: boolean; direction?: 'left' | 'right' | 'front' | 'back'; source?: string; isCritical?: boolean };
   'combat:damage': { amount: number; source?: string; critical?: boolean };
   'combat:heal': { amount: number; source?: string };
   'combat:story_continue': { nodeId: string };
+  /** Boss phase transition (combat/bossPhases.ts) — UI flash, audio stinger,
+   *  announcer. Emitted when HP crosses a threshold (100/60/30). */
+  'combat:boss_phase': {
+    enemyType: EnemyType;
+    /** New phase index (0-based). */
+    phase: number;
+    /** Russian phase description (e.g. «Фаза 3: Ярость»). */
+    description: string;
+    /** Flash color for the phase-transition screen flash (hex). */
+    flashColor: string;
+    /** Outgoing damage multiplier of the new phase. */
+    damageMultiplier: number;
+  };
+  /** Telegraph: the enemy spent its turn CHARGING a special attack. The
+   *  special fires guaranteed on the enemy's next turn — the player gets a
+   *  one-turn counter-window (defend applies an extra ×0.4 damage cut). */
+  'combat:telegraph': {
+    enemyType: EnemyType;
+    attackId: string;
+    /** Russian special-attack name for the «Готовит: …!» indicator. */
+    attackName: string;
+  };
   /** Gamepad-triggered combat actions — emitted by useCombatGamepad hook. */
   'combat:gamepad_attack': Record<string, never>;
   'combat:gamepad_defend': Record<string, never>;

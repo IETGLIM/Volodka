@@ -134,6 +134,7 @@ export function CombatUI() {
                 availablePowers={ui.availablePowers}
                 gamepadConnected={ui.gamepadConnected}
                 gamepadSelectedIdx={ui.gamepadSelectedIdx}
+                enemyChargingName={combatState.enemy.chargingSpecial?.name ?? null}
                 onAttack={ui.handleAttack}
                 onDefend={ui.handleDefend}
                 onFlee={ui.handleFlee}

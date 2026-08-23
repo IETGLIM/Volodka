@@ -6,6 +6,7 @@ import type {
   CombatEnemy,
   CombatLogEntry,
   CombatReward,
+  EnemyChargingSpecial,
 } from '../definitions/combat';
 import type { CombatRngState } from './combatRng';
 
@@ -53,7 +54,17 @@ export interface CombatState {
 
   /** Seeded combat RNG state — advances on each roll for deterministic combat. */
   rng: CombatRngState;
+
+  /** Current boss phase index (see combat/bossPhases.ts; 0 = phase 1).
+   *  Undefined for non-boss enemies / legacy states — treated as 0.
+   *  Updated by CombatSystem when HP crosses a phase threshold. */
+  bossPhase?: number;
+  /** Enemy speed BEFORE any boss-phase speed multipliers — phase transitions
+   *  re-derive enemy.speed from this base so multipliers never compound. */
+  bossBaseSpeed?: number;
 }
+
+export type { EnemyChargingSpecial };
 
 export interface EnemySpecialAttack {
   /** Unique identifier */

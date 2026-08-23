@@ -16,6 +16,9 @@ type CombatActionBarProps = {
   availablePowers: CombatPower[];
   gamepadConnected: boolean;
   gamepadSelectedIdx: number;
+  /** Russian name of the special the enemy is CHARGING (telegraph) —
+   *  drives the defend-button counter-window hint + highlight. */
+  enemyChargingName?: string | null;
   onAttack: () => void;
   onDefend: () => void;
   onFlee: () => void;
@@ -33,6 +36,7 @@ export function CombatActionBar({
   availablePowers,
   gamepadConnected,
   gamepadSelectedIdx,
+  enemyChargingName,
   onAttack,
   onDefend,
   onFlee,
@@ -42,6 +46,11 @@ export function CombatActionBar({
 }: CombatActionBarProps) {
   const actionsDisabled = !isPlayerTurn || pendingAction;
   const poemDisabled = availablePowers.length === 0 || isSilenced;
+  // Counter-window tooltip: defending against a CHARGED special cuts its
+  // damage hard (extra ×0.4 — see computeSpecialIncomingDamage).
+  const defendTooltip = enemyChargingName
+    ? `Враг готовит «${enemyChargingName}»! Защита в этот ход сильно снизит урон спец-атаки.`
+    : 'Снижает входящий урон на 1 ход.';
 
   return (
     <>
@@ -74,6 +83,8 @@ export function CombatActionBar({
             disabled={actionsDisabled}
             accentColor="emerald"
             gamepadHint={gamepadConnected ? COMBAT_BUTTON_HINTS.defend : undefined}
+            title={defendTooltip}
+            highlight={Boolean(enemyChargingName)}
           >
             <Shield className="size-3.5" />
             ЗАЩИТА

@@ -61,6 +61,23 @@ export interface CombatEnemy {
   readonly lootTable: string[];
   readonly xpReward: number;
   specialCooldown: number;
+  /** Telegraphed special attack being charged (null/undefined when none).
+   *  Set on the enemy's turn instead of an instant special — the enemy spends
+   *  that turn "charging", and the special executes GUARANTEED on its next
+   *  turn (see CombatSystem.executeEnemyTurn + combat/bossPhases docs). */
+  chargingSpecial?: EnemyChargingSpecial | null;
+}
+
+/** Telegraph ("intention") marker for a charging special attack.
+ *  Drives the enemy-panel indicator «Готовит: Кошмар!» and the
+ *  defend counter-window (extra damage reduction vs charged specials). */
+export interface EnemyChargingSpecial {
+  /** id of the special attack being charged (EnemySpecialAttack.id). */
+  readonly attackId: string;
+  /** Russian display name shown in the UI indicator. */
+  readonly name: string;
+  /** Enemy turns remaining until the special strikes (usually 1). */
+  turnsToHit: number;
 }
 
 export type BuffTarget = 'player' | 'enemy';

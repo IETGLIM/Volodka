@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { EnemyWeaknessDisplay } from '@/components/game/hud/parts/EnemyWeaknessDisplay';
 import { BuffDebuffBar } from '@/components/game/combatUi/CombatStatusBadges';
 import { AnimatedHPBar } from '@/components/game/combatUi/CombatHpBars';
@@ -6,6 +6,36 @@ import { ComboCounter } from '@/components/game/combatUi/CombatDamageFx';
 import { EnemyPortrait } from '@/components/game/combatUi/CombatEnemyPortrait';
 import type { CombatBuff, CombatState } from '@/shared/types/game';
 import { getEnemyWeaknesses } from '@/engine/combat/combatAffinities';
+
+/* ── Telegraph indicator (Task 3.3-b1) ──
+ * Shown while the enemy is CHARGING a special attack (chargingSpecial).
+ * The special fires guaranteed next turn — defending during the charge
+ * window cuts its damage hard (extra ×0.4). */
+function TelegraphIndicator({ name }: { name: string }) {
+  return (
+    <motion.div
+      className="mt-1 flex items-center gap-1.5 px-2 py-1 rounded border border-rose-500/60 bg-rose-950/60"
+      style={{ boxShadow: '0 0 12px rgba(244,63,94,0.25)' }}
+      initial={{ opacity: 0, y: -6 }}
+      animate={{ opacity: [0.75, 1, 0.75], y: 0 }}
+      transition={{
+        opacity: { duration: 0.9, repeat: Infinity, ease: 'easeInOut' },
+        y: { duration: 0.25, ease: 'easeOut' },
+      }}
+      role="status"
+      aria-live="polite"
+      aria-label={`Враг готовит атаку: ${name}`}
+    >
+      <span className="text-xs" aria-hidden="true">⚡</span>
+      <span className="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-wider text-rose-300 truncate">
+        Готовит: {name}!
+      </span>
+      <span className="ml-auto text-[9px] font-mono text-rose-400/80 whitespace-nowrap hidden sm:inline">
+        Защита ослабит удар
+      </span>
+    </motion.div>
+  );
+}
 
 type CombatEnemyPanelProps = {
   combatState: CombatState;
@@ -53,6 +83,12 @@ export function CombatEnemyPanel({
           </div>
           {combatState.comboCount > 0 && <ComboCounter count={combatState.comboCount} />}
         </div>
+        {/* Telegraph: enemy is charging a special — counter-window cue */}
+        <AnimatePresence>
+          {enemy.chargingSpecial && (
+            <TelegraphIndicator key={enemy.chargingSpecial.attackId} name={enemy.chargingSpecial.name} />
+          )}
+        </AnimatePresence>
         <AnimatedHPBar current={enemy.hp} max={enemy.maxHp} label="ENEMY" isPlayer={false} />
         {enemyBuffs.length > 0 && (
           <div className="mt-2">

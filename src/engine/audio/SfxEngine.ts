@@ -10,7 +10,9 @@ export type StingerId =
   | 'discovery'
   | 'danger'
   | 'emotional'
-  | 'mystery';
+  | 'mystery'
+  | 'victory'
+  | 'defeat';
 
 class SfxEngineImpl {
   setVolume(scale: number): void {

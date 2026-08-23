@@ -81,6 +81,11 @@ import {
   resolveStatDrain,
 } from './combat/enemyTurn';
 import {
+  checkBossPhaseTransition,
+  getBossPhaseSpeedMultiplier,
+  type BossPhaseDefinition,
+} from './combat/bossPhases';
+import {
   endPlayerTurn as computeEndPlayerTurn,
   transitionToPlayerTurn as computeTransitionToPlayerTurn,
   gotoEnemyTurnEnd as computeGotoEnemyTurnEnd,
@@ -259,8 +264,13 @@ function notifyCombatDamage(entry: CombatLogEntry): void {
   eventBus.emit('combat:hit', {
     damage: entry.damage,
     isPlayerHit,
+    // Combat is strictly 1v1 turn-based: CombatEnemy carries no spatial data
+    // (no position/orientation — see shared/types/definitions/combat.ts), so
+    // there is no relative direction to derive. 'front' is the only truthful
+    // value; DirectionalDamageIndicator renders its full-screen variant.
     direction: isPlayerHit ? 'front' : undefined,
-    source: entry.type });
+    source: entry.type,
+    isCritical });
   eventBus.emit('combat:damage', {
     amount: entry.damage,
     source: entry.type,
@@ -284,6 +294,121 @@ function notifyNewCombatLogEntries(beforeLen: number): void {
   if (!state) return;
   for (const entry of state.log.slice(beforeLen)) {
     notifyCombatDamage(entry);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   §5.5 — BOSS PHASE TRANSITIONS (combat/bossPhases.ts integration)
+
+   Multi-phase bosses escalate when HP crosses a threshold (100/60/30).
+   On each forward transition the orchestrator applies:
+     - damageMultiplier — via the damage pipelines (enemyTurn.ts), which
+       read the CURRENT phase from enemy HP on every hit;
+     - speedMultiplier — mirrored onto enemy.speed (flee calc / UI) and
+       into the enemy-action delay (strict 1v1 alternation has no turn
+       order to race, so pacing is the honest expression of "speed");
+     - i-frames — a 1-hit absorption buff on the enemy (damage_reduction 1.0);
+     - canSummonAdds — combat is strictly 1v1, so "adds" become shadow
+       reinforcements: an enemy attack_boost + player energy drain
+       (mirrors the catacombs_summon_shades special);
+     - UI/audio events — flash color + 'combat:boss_phase' + combat log.
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Whether the enemy currently has full i-frames (phase-transition buff
+ *  with damage_reduction ≥ 1.0) — the player's next hit is absorbed. */
+function hasEnemyIframes(state: CombatState): boolean {
+  return sumBuffEffect(state, 'enemy', 'damage_reduction') >= 1;
+}
+
+/** Apply a boss phase transition (if any) to the current state.
+ *  Returns the same state object when no forward transition occurred. */
+function applyBossPhaseTransition(state: CombatState): CombatState {
+  const previousPhase = state.bossPhase ?? 0;
+  const transition: BossPhaseDefinition | null = checkBossPhaseTransition(state.enemy, previousPhase);
+  // Forward transitions only — bosses never heal, but a hypothetical heal
+  // must not re-grant i-frames / re-log the phase.
+  if (!transition || transition.phase <= previousPhase) return state;
+
+  let next: CombatState = {
+    ...state,
+    bossPhase: transition.phase,
+  };
+
+  // Speed multiplier — re-derived from the pre-phase base so multipliers
+  // never compound across transitions.
+  const baseSpeed = state.bossBaseSpeed ?? state.enemy.speed;
+  next = {
+    ...next,
+    bossBaseSpeed: baseSpeed,
+    enemy: {
+      ...next.enemy,
+      speed: Math.max(1, Math.floor(baseSpeed * transition.speedMultiplier)),
+    },
+  };
+
+  // I-frames: duration is invulnerabilityTurns + 1 because enemy buffs tick
+  // at the START of the enemy's turn — +1 keeps the buff alive through the
+  // enemy's next turn so it absorbs exactly ONE player hit.
+  if (transition.invulnerabilityOnEnter && transition.invulnerabilityTurns > 0) {
+    const iframeBuff = createBuff(
+      next,
+      'Фазовый переход',
+      `boss_phase_iframe_${transition.phase}`,
+      'buff',
+      'enemy',
+      transition.invulnerabilityTurns + 1,
+      { type: 'damage_reduction', value: 1 },
+    );
+    next = addBuff(next, iframeBuff);
+  }
+
+  // Adds (phase 2+ with canSummonAdds): strictly-1v1 substitute — shadow
+  // reinforcements buff the boss's attack and drain the player's energy.
+  if (transition.canSummonAdds) {
+    const shadesBuff = createBuff(
+      next,
+      'Тени',
+      `boss_phase_shades_${transition.phase}`,
+      'buff',
+      'enemy',
+      2,
+      { type: 'attack_boost', value: 6 },
+    );
+    next = addBuff(next, shadesBuff);
+    dispatchGameAction({ type: 'player/addEnergy', amount: -10 });
+  }
+
+  const phaseLog: CombatLogEntry = {
+    turn: state.turn,
+    text: `💥 ${state.enemy.emoji} ${state.enemy.name} — ${transition.description}! Урон ×${transition.damageMultiplier}!`,
+    type: 'info',
+  };
+  next = {
+    ...next,
+    log: appendLog(next.log, phaseLog),
+  };
+
+  // UI flash in the phase color + typed event for audio/announcer layers.
+  eventBus.emit('combat:boss_phase', {
+    enemyType: state.enemy.type,
+    phase: transition.phase,
+    description: transition.description,
+    flashColor: transition.flashColor,
+    damageMultiplier: transition.damageMultiplier,
+  });
+  eventBus.emit('fx:flash', { color: transition.flashColor, opacity: 0.4, duration: 350 });
+
+  return next;
+}
+
+/** Commit a boss phase transition (if any) after enemy HP changed. */
+function commitBossPhaseTransition(): void {
+  const cs = combat.getState();
+  if (!cs || cs.enemy.hp <= 0) return;
+  const next = applyBossPhaseTransition(cs);
+  if (next !== cs) {
+    combat.setState(next);
+    combat.notifyListeners();
   }
 }
 
@@ -400,7 +525,8 @@ function startCombatImmediate(
     targetsStat: template.targetsStat,
     lootTable: template.lootTable,
     xpReward: Math.floor(template.xpReward * scaleFactor * difficultySettings.xpMultiplier),
-    specialCooldown: 0 };
+    specialCooldown: 0,
+    chargingSpecial: null };
 
   const playerMaxHp = getPlayerMaxHp();
   const playerState = state.playerState;
@@ -432,6 +558,9 @@ function startCombatImmediate(
       lastPoemPowersUsed: [null, null],
       lastUsedPoemId: null,
       rng: combatRng,
+      // Boss phase tracking (bossPhases.ts) — phase 0 until HP crosses 60%.
+      bossPhase: 0,
+      bossBaseSpeed: enemy.speed,
     },
     state.activeTTLFlags,
   );
@@ -456,6 +585,25 @@ function startCombatImmediate(
 export function playerAttack(): CombatState | null {
   const cs = combat.getState();
   if (!cs || !cs.isPlayerTurn || cs.status !== 'active') return null;
+
+  // ── Boss phase-transition i-frames: a 'Фазовый переход' buff
+  // (damage_reduction ≥ 1.0) absorbs the player's hit entirely — the boss
+  // "skips" one attack while it transitions between phases.
+  if (hasEnemyIframes(cs)) {
+    const absorbedLog: CombatLogEntry = {
+      turn: cs.turn,
+      text: `🛡 ${cs.enemy.emoji} ${cs.enemy.name} неуязвим — ваш удар поглощён фазовым переходом!`,
+      type: 'info',
+    };
+    combat.setState({
+      ...cs,
+      comboCount: 0,
+      log: appendLog(cs.log, absorbedLog),
+    });
+    eventBus.emit('combat:action', { action: 'attack', damage: 0 });
+    eventBus.emit('camera:combat_impact', { intensity: 0.12 });
+    return endPlayerTurn();
+  }
 
   // Apply attack_boost buff to player
   const pAtk = getPlayerAttack() + getPlayerAttackBoost(cs);
@@ -586,6 +734,10 @@ export function playerAttack(): CombatState | null {
     return handleVictory();
   }
 
+  // Boss phase transition (100/60/30 thresholds) — multipliers, i-frames,
+  // adds, flash + log. No-op for regular enemies.
+  commitBossPhaseTransition();
+
   // Enemy turn
   return endPlayerTurn();
 }
@@ -598,11 +750,18 @@ export function playerDefend(): CombatState | null {
   const buff = createBuff(cs, 'Защита', 'player_defend', 'buff', 'player', 1, { type: 'damage_reduction', value: 0.3 });
   const s = addBuff(cs, buff);
 
+  // Telegraph counter-window hint: defending against a CHARGED special
+  // applies an extra ×0.4 multiplier (see computeSpecialIncomingDamage).
+  const chargingName = cs.enemy.chargingSpecial?.name;
+  const defendText = chargingName
+    ? `🛡️ Защита! «${chargingName}» будет значительно ослаблена!`
+    : '🛡️ Защита! Входящий урон снижен на 1 ход.';
+
   combat.setState({
     ...s,
     playerDefending: true,
     comboCount: 0, // Defending resets combo
-    log: appendLog(s.log, { turn: cs.turn, text: '🛡️ Защита! Входящий урон снижен на 1 ход.', type: 'player_defend' }) });
+    log: appendLog(s.log, { turn: cs.turn, text: defendText, type: 'player_defend' }) });
 
   eventBus.emit('combat:action', { action: 'defend' });
   return endPlayerTurn();
@@ -626,6 +785,17 @@ function amplifyPoemCombatResult(prev: CombatState, next: CombatState): CombatSt
   }
   const enemyDamage = prev.enemy.hp - next.enemy.hp;
   if (enemyDamage > 0) {
+    // Boss phase-transition i-frames absorb poem damage too — the ability's
+    // own log line stays, followed by the absorption note below.
+    if (hasEnemyIframes(prev)) {
+      result.enemy.hp = prev.enemy.hp;
+      result.log = [...result.log, {
+        turn: prev.turn,
+        text: `🛡 ${prev.enemy.emoji} ${prev.enemy.name} неуязвим — сила стиха рассеивается!`,
+        type: 'info' as const,
+      }];
+      return result;
+    }
     // Apply both passive skill multiplier and damage_multiplier buff
     const totalMult = mult * dmgMult;
     if (totalMult > 1) {
@@ -721,6 +891,9 @@ export function playerUsePoemPower(poemId: string): CombatState | null {
   eventBus.emit('combat:action', { action: 'poem_power' });
   eventBus.emit('poem:power_used', { poemId, powerName: ability.name });
   notifyNewCombatLogEntries(logLenBefore);
+
+  // Boss phase transition if the poem crossed a threshold (no-op otherwise).
+  commitBossPhaseTransition();
 
   const afterUse = combat.getState();
   if (afterUse) {
@@ -912,8 +1085,13 @@ function endPlayerTurn(): CombatState | null {
   eventBus.emit('combat:turn', { turn: next.turn, isPlayerTurn: false });
   combat.notifyListeners();
 
-  // Enemy acts after a brief delay for visual feedback
-  combat.schedule(800, () => executeEnemyTurn());
+  // Enemy acts after a brief delay for visual feedback. Boss phase speed
+  // multipliers (bossPhases.ts) compress the delay — an enraged boss acts
+  // noticeably sooner (strict 1v1 has no turn order to race, so pacing is
+  // where "speed" is expressed).
+  const speedMultiplier = getBossPhaseSpeedMultiplier(next.enemy);
+  const enemyDelayMs = Math.max(250, Math.floor(800 / Math.max(1, speedMultiplier)));
+  combat.schedule(enemyDelayMs, () => executeEnemyTurn());
 
   return combat.getState();
 }
@@ -1008,19 +1186,81 @@ function executeEnemyTurn() {
   // so the special-attack length check below doesn't crash.
   const safeTemplate: EnemyTemplate = template ?? { specialAttacks: [], attackBarks: [] };
   const enemySpecialCooldown = workingState.enemy.specialCooldown;
+  const charging = workingState.enemy.chargingSpecial ?? null;
 
-  if (enemySpecialCooldown <= 0 && safeTemplate.specialAttacks.length > 0) {
-    const specialRng = SeededCombatRng.fromState(workingState.rng);
-    for (const special of safeTemplate.specialAttacks) {
-      if (specialRng.roll(special.chance)) {
-        workingState = { ...workingState, rng: specialRng.getState() };
+  if (charging) {
+    // ── Telegraph resolution: a special charged on a previous turn fires
+    // GUARANTEED now. chargingSpecial stays on the enemy while executing so
+    // damage specials can apply the defend counter-window multiplier
+    // (computeSpecialIncomingDamage); cleared right after. ──
+    if (charging.turnsToHit > 1) {
+      // Multi-turn charge (not used by current templates) — still winding up.
+      workingState = {
+        ...workingState,
+        enemy: {
+          ...workingState.enemy,
+          chargingSpecial: { ...charging, turnsToHit: charging.turnsToHit - 1 },
+        },
+        log: appendLog(workingState.log, {
+          turn: workingState.turn,
+          text: `⚠️ ${workingState.enemy.emoji} ${workingState.enemy.name} продолжает готовить: ${charging.name}!`,
+          type: 'enemy_special' as const,
+        }),
+      };
+      // Fall through to a basic attack this turn.
+    } else {
+      const chargedSpecial = safeTemplate.specialAttacks.find(
+        (s) => s.id === charging.attackId,
+      );
+      if (chargedSpecial) {
         const logLenBefore = workingState.log.length;
-        const specialResult = special.execute(workingState, workingState.enemy);
+        const specialResult = chargedSpecial.execute(workingState, workingState.enemy);
         workingState = consumeSideEffects(specialResult);
         workingState = {
           ...workingState,
-          enemy: { ...workingState.enemy, specialCooldown: special.cooldown + 1 } };
+          enemy: {
+            ...workingState.enemy,
+            chargingSpecial: null,
+            specialCooldown: chargedSpecial.cooldown + 1,
+          },
+        };
         notifyNewCombatLogEntries(logLenBefore);
+        gotoEnemyTurnEnd(workingState);
+        return;
+      }
+      // Unknown attack id (template changed mid-charge) — drop the charge
+      // and fall through to the normal turn logic.
+      workingState = {
+        ...workingState,
+        enemy: { ...workingState.enemy, chargingSpecial: null },
+      };
+    }
+  } else if (enemySpecialCooldown <= 0 && safeTemplate.specialAttacks.length > 0) {
+    const specialRng = SeededCombatRng.fromState(workingState.rng);
+    for (const special of safeTemplate.specialAttacks) {
+      if (specialRng.roll(special.chance)) {
+        // ── Telegraph (Task 3.3-b1): instead of an instant special, the
+        // enemy spends THIS turn charging. The special executes guaranteed
+        // on its next turn — giving the player a one-turn counter-window
+        // (defend cuts the damage hard: extra ×0.4). ──
+        workingState = {
+          ...workingState,
+          rng: specialRng.getState(),
+          enemy: {
+            ...workingState.enemy,
+            chargingSpecial: { attackId: special.id, name: special.name, turnsToHit: 1 },
+          },
+          log: appendLog(workingState.log, {
+            turn: workingState.turn,
+            text: `⚠️ ${workingState.enemy.emoji} ${workingState.enemy.name} готовит: ${special.name}! Защищайтесь!`,
+            type: 'enemy_special' as const,
+          }),
+        };
+        eventBus.emit('combat:telegraph', {
+          enemyType: workingState.enemy.type,
+          attackId: special.id,
+          attackName: special.name,
+        });
         gotoEnemyTurnEnd(workingState);
         return;
       }
@@ -1389,4 +1629,13 @@ export function setCombatRngStateForTests(rng: CombatRngState): void {
   const cs = combat.getState();
   if (!cs) return;
   combat.setState({ ...cs, rng });
+}
+
+/** Replace the whole active combat state (tests / dev reproducibility).
+ *  Lets integration tests preset boss HP / phase markers / charging specials
+ *  without grinding through dozens of real turns. */
+export function setCombatStateForTests(state: CombatState): void {
+  if (!combat.getState()) return;
+  combat.setState(state);
+  combat.notifyListeners();
 }
