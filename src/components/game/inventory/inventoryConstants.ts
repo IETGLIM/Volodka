@@ -4,7 +4,8 @@ export type InventorySortOption = 'name' | 'rarity' | 'type' | 'quantity' | 'rec
 
 export const INVENTORY_CATEGORY_ICONS: Record<string, string> = {
   consumable: '💊',
-  equipment: '⚔️',
+  equipment: '🛡️',
+  weapon: '⚔️',
   key_item: '🔑',
   quest_item: '📜',
   book: '📖',
@@ -64,6 +65,7 @@ export const INVENTORY_CATEGORY_LABELS: Record<string, string> = {
 };
 
 export const INVENTORY_SLOT_LABELS: Record<string, string> = {
+  weapon: 'Оружие',
   head: 'Голова',
   body: 'Тело',
   legs: 'Ноги',
@@ -73,6 +75,7 @@ export const INVENTORY_SLOT_LABELS: Record<string, string> = {
 };
 
 export const INVENTORY_SLOT_ICONS: Record<string, string> = {
+  weapon: '⚔️',
   head: '🧠',
   body: '🛡️',
   legs: '👖',
@@ -82,6 +85,7 @@ export const INVENTORY_SLOT_ICONS: Record<string, string> = {
 };
 
 export const INVENTORY_SLOT_BORDER_COLORS: Record<string, string> = {
+  weapon: 'border-rose-500/40',
   head: 'border-cyan-500/40',
   body: 'border-emerald-500/40',
   legs: 'border-violet-500/40',
@@ -100,7 +104,8 @@ export const INVENTORY_SORT_OPTIONS: { value: InventorySortOption; label: string
 
 export const INVENTORY_CATEGORY_FILTER_OPTIONS: { value: string; label: string; icon: string }[] = [
   { value: 'all', label: 'Все', icon: '📦' },
-  { value: 'equipment', label: 'Оружие', icon: '⚔️' },
+  { value: 'weapon', label: 'Оружие', icon: '⚔️' },
+  { value: 'equipment', label: 'Экипировка', icon: '🛡️' },
   { value: 'consumable', label: 'Расходуемые', icon: '💊' },
   { value: 'misc', label: 'Материалы', icon: '🔧' },
   { value: 'book', label: 'Книги', icon: '📖' },

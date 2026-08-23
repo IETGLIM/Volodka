@@ -13,6 +13,7 @@ import {
   HardHat,
   Shirt,
   Gem,
+  Sword,
   BookOpen,
   Trophy,
   Package,
@@ -578,6 +579,7 @@ function NpcRelationBar({ npcId, value }: { npcId: string; value: number }) {
 
 /* ── Equipment slot icon ── */
 const SLOT_CONFIG: Record<EquipmentSlot, { label: string; Icon: typeof HardHat }> = {
+  weapon: { label: 'Оружие', Icon: Sword },
   head: { label: 'Голова', Icon: HardHat },
   body: { label: 'Тело', Icon: Shirt },
   legs: { label: 'Ноги', Icon: Activity },

@@ -81,6 +81,9 @@ const EquippedItemsSchema = z.object({
   feet: InventoryItemSchema.nullable().optional().default(null),
   hands: InventoryItemSchema.nullable().optional().default(null),
   accessory: InventoryItemSchema.nullable(),
+  // v4.7.2 weapon slot — optional+default keeps pre-4.7.2 saves valid
+  // (Zod backfills null on load; see SAVE_VERSION migrations note).
+  weapon: InventoryItemSchema.nullable().optional().default(null),
 });
 
 const PlayerStateSchema = z.object({

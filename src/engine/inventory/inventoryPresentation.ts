@@ -9,6 +9,7 @@ import {
 export type InventoryFilterCategory =
   | 'all'
   | 'equipment'
+  | 'weapon'
   | 'consumable'
   | 'misc'
   | 'book'
@@ -34,7 +35,9 @@ export function mapDefinitionToFilterCategory(
   if (!def) return 'misc';
   switch (def.category) {
     case 'equipment':
-      return 'equipment';
+      // v4.7.2: оружие — отдельная категория фильтра (честный UX — раньше
+      // фильтр «Оружие» показывал всю броню); броня и аксессуары — «Экипировка».
+      return def.equipmentSlot === 'weapon' ? 'weapon' : 'equipment';
     case 'consumable':
       return 'consumable';
     case 'book':

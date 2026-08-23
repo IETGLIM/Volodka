@@ -316,6 +316,10 @@ export function storePatchFromSave(payload: SavePayload): Partial<GameStoreState
         accessory: payload.playerState.equippedItems.accessory
           ? normalizeInventoryItem(payload.playerState.equippedItems.accessory)
           : null,
+        // v4.7.2 weapon slot — pre-4.7.2 saves have no field → null.
+        weapon: payload.playerState.equippedItems.weapon
+          ? normalizeInventoryItem(payload.playerState.equippedItems.weapon)
+          : null,
       },
       visitedNodeTimestamps: payload.playerState.visitedNodeTimestamps ?? {},
       rngSeed: payload.playerState.rngSeed ?? defaults.playerState.rngSeed,

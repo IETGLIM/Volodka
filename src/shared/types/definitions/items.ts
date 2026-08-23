@@ -2,7 +2,7 @@
 
 import type { ItemId } from '../brands';
 
-export type EquipmentSlot = 'head' | 'body' | 'legs' | 'feet' | 'hands' | 'accessory';
+export type EquipmentSlot = 'weapon' | 'head' | 'body' | 'legs' | 'feet' | 'hands' | 'accessory';
 
 /** Clothing/appearance modifiers that affect dialogue skill checks. */
 export interface DialogueModifier {

@@ -26,7 +26,7 @@ export function EquipmentPanel({
         Экипировка
       </h3>
       <div className="flex gap-2" role="group" aria-label="Слоты экипировки">
-        {(['head', 'body', 'legs', 'feet', 'hands', 'accessory'] as EquipmentSlot[]).map((slot) => {
+        {(['weapon', 'head', 'body', 'legs', 'feet', 'hands', 'accessory'] as EquipmentSlot[]).map((slot) => {
           const equipped = equippedItems[slot];
           const view = equipped ? resolveInventoryItemView(equipped) : null;
           const isSelected = selectedSlot === slot;
