@@ -56,7 +56,6 @@ import { useNpcBark } from '@/hooks/useNpcBark';
 import { useNpcNameLabel } from '@/hooks/useNpcNameLabel';
 import { NpcEmissiveGlow } from '@/components/3d/NpcEmissiveGlow';
 import { CapsuleImpostorNPC } from '@/components/3d/NpcImpostor';
-import { QuestMarker } from '@/components/3d/NpcQuestMarker';
 
 // Re-export frame advancers for NPCSystem.tsx
 export { advanceBarkRelationFrame } from '@/engine/npc/npcBarkResolver';
@@ -300,12 +299,13 @@ export function NPC({
         )}
       </group>
 
+      {/* Единственный квест-маркер над NPC — WoW-стиль (NpcInteractionIndicator):
+          жёлтый «!» — новый квест, серый «?» — в процессе, жёлтый «?» — сдача.
+          Раньше параллельно рендерились QuestMarker и NpcInteractionIndicator —
+          два перекрывающихся спрайта с конфликтующими цветами. */}
       <group ref={questMarkerRef} visible={false}>
         {npcTierHasQuestMarker(renderTier) && (
-          <>
-            <QuestMarker npcId={definition.id} />
-            <NpcInteractionIndicator npcId={definition.id} />
-          </>
+          <NpcInteractionIndicator npcId={definition.id} />
         )}
       </group>
     </group>

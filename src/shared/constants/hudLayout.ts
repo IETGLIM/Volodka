@@ -132,6 +132,12 @@ export function bottomTutorialTipPx(): number {
   );
 }
 
+/** Thin stamina strip — just above the bottom-center HUD stack
+ *  (toolbar / quick-use / poetry bar). Hidden while stamina is full. */
+export function bottomStaminaBarPx(isMobile = false): number {
+  return explorationBottomStackHeightPx(isMobile) + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
+}
+
 export function bottomCraftingToastPx(isMobile = false): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_CRAFTING_TOAST + mobileBottomReserve(isMobile);
 }

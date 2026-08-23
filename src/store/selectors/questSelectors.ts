@@ -175,7 +175,8 @@ function npcMatchesObjective(questId: string, objectiveId: string, npcId: string
   return obj?.type === 'npc_talked' && resolveCanonicalNpcId(obj.target ?? '') === canonical;
 }
 
-/** Floating !/?/✓ above an NPC — shared by NPC.tsx QuestMarker. */
+/** Семантика квест-маркера над NPC. Единственный рендерер — NpcInteractionIndicator
+ *  (WoW-палитра: жёлтый «!» / серый «?» / жёлтый «?»), поля icon/color — справочные. */
 export function getNpcQuestMarkerDisplay(npcId: string): NpcQuestMarkerDisplay | null {
   const quests = selectQuests();
   const canonicalNpcId = resolveCanonicalNpcId(npcId);

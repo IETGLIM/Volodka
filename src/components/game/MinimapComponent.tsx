@@ -9,12 +9,18 @@
    Features:
    - Circular player-centric rendering (player always at center, north rotates)
    - NPC dots colored by disposition: green (friendly), red (hostile), yellow (neutral)
-   - Quest objective markers (amber diamond)
-   - Scene exit arrows
+   - Quest objective markers via getQuestMarker() — the same live API the compass
+     (CompassPOIMarkers) and the world map use; yellow diamond = active objective,
+     green = ready to turn in
+   - Edge-clamping: off-radius quest targets snap to the rim with a direction
+     arrow (Cyberpunk/GTA style); targets in another scene point at the scene
+     exit that leads toward them
+   - Scene exit dots
    - Breadcrumb trail (recent player movement)
    - Radar sweep animation
    - Glass-morphism frame with corner brackets
-   - Toggleable via M key / tap to collapse → expand
+   - Toggleable via M key / tap: expanded map ↔ compact 44px pill
+     (north arrow + quest target with distance), smooth transition
    - Exploration-mode-only visibility
    - Quality-gated: simpler rendering on low/visualLite presets
    - Mobile-responsive: smaller size, repositioned to top-right
@@ -32,6 +38,7 @@ import {
   useNpcRelations,
   useGamePhase,
   useActiveQuests,
+  getQuestMarker,
 } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -71,6 +78,16 @@ const RELATION_HOSTILE = 25;
 const RELATION_FRIENDLY = 60;
 /** M key code */
 const TOGGLE_KEY = 'KeyM';
+/** Максимум квест-маркеров на миникарте одновременно (как в компасе) */
+const MAX_QUEST_MARKERS = 4;
+/** Цвет маркера активной цели квеста (жёлтый) */
+const QUEST_ACTIVE_COLOR = '#fbbf24';
+/** Цвет маркера квеста, готового к сдаче (зелёный) */
+const QUEST_READY_COLOR = '#00ff66';
+/** Размер свёрнутой «таблетки» — тапабельная зона (px) */
+const PILL_SIZE = 44;
+/** Частота обновления свёрнутой «таблетки» (мс) — дешевле rAF-цикла */
+const PILL_UPDATE_INTERVAL_MS = 200;
 
 /* ─── Disposition coloring ─── */
 
@@ -101,8 +118,36 @@ interface MinimapNPC {
 /* ─── Quest marker data ─── */
 
 interface MinimapQuestMarker {
+  questId: string;
+  /** Позиция в ТЕКУЩЕЙ сцене: сама цель либо ведущий к ней выход */
   worldX: number;
   worldZ: number;
+  /** Истинная цель в другой сцене — маркер ведёт к выходу */
+  offScene: boolean;
+  /** Название сцены цели (подпись в свёрнутой «таблетке») */
+  targetSceneName: string;
+  /** Все цели квеста выполнены — готов к сдаче */
+  ready: boolean;
+}
+
+/** Ближайший к точке выход сцены — направление «в другую локацию» */
+function findNearestExit(
+  exits: ReadonlyArray<{ position: [number, number, number] }>,
+  x: number,
+  z: number,
+): { position: [number, number, number] } | null {
+  let best: { position: [number, number, number] } | null = null;
+  let bestDist = Infinity;
+  for (const exit of exits) {
+    const dx = exit.position[0] - x;
+    const dz = exit.position[2] - z;
+    const d = dx * dx + dz * dz;
+    if (d < bestDist) {
+      bestDist = d;
+      best = exit;
+    }
+  }
+  return best;
 }
 
 /* ─── Scene exit data ─── */
@@ -216,18 +261,66 @@ export function MinimapComponent() {
     }));
   }, [sceneConfig]);
 
-  /* ── Quest markers (active quests with position in current scene) ── */
+  /* ── Quest markers ──
+     Живой источник — getQuestMarker() из questSelectors: ровно тот же API,
+     которым пользуются компас (CompassPOIMarkers) и карта мира. Раньше здесь
+     читалось несуществующее поле q.markerWorldPos, из-за чего маркеры
+     никогда не рисовались.
+
+     Цель может находиться в другой сцене. Простое надёжное решение:
+     маркер ставится на выход текущей сцены, который ведёт прямо в сцену цели
+     (exit.targetScene === marker.sceneId); если прямого выхода нет — на
+     ближайший к игроку выход: любой путь в другую локацию начинается
+     с выхода из текущей. Такие маркеры рисуются полупрозрачными —
+     «цель не здесь, идите к выходу». */
   const questMarkers = useMemo<MinimapQuestMarker[]>(() => {
-    return activeQuests
-      .map((q) => {
-        // Quest state may carry a marker position; guard for now
-        const marker = (q as unknown as { markerWorldPos?: [number, number] })
-          .markerWorldPos;
-        if (!marker) return null;
-        return { worldX: marker[0], worldZ: marker[1] };
-      })
-      .filter((m): m is MinimapQuestMarker => m !== null);
-  }, [activeQuests]);
+    const markers: MinimapQuestMarker[] = [];
+
+    for (const quest of activeQuests) {
+      const marker = getQuestMarker(quest.questId);
+      if (!marker) continue;
+
+      // «Готов к сдаче» — все записанные цели квеста выполнены
+      const objectiveValues = Object.values(quest.objectives);
+      const ready = objectiveValues.length > 0 && objectiveValues.every(Boolean);
+      const targetSceneName = SCENE_CONFIG[marker.sceneId]?.name ?? marker.sceneId;
+
+      if (marker.sceneId === currentSceneId) {
+        markers.push({
+          questId: quest.questId,
+          worldX: marker.position[0],
+          worldZ: marker.position[2],
+          offScene: false,
+          targetSceneName,
+          ready,
+        });
+        continue;
+      }
+
+      // Цель в другой сцене — ведём к выходу
+      const exits = sceneConfig?.exits ?? [];
+      const directExit = exits.find((exit) => exit.targetScene === marker.sceneId);
+      const exit = directExit ?? findNearestExit(exits, playerPos[0], playerPos[2]);
+      if (!exit) continue; // выходов нет — направление не определить
+
+      markers.push({
+        questId: quest.questId,
+        worldX: exit.position[0],
+        worldZ: exit.position[2],
+        offScene: true,
+        targetSceneName,
+        ready,
+      });
+    }
+
+    // Приоритет: готовые к сдаче → цели в этой сцене → цели в другой локации
+    markers.sort((a, b) => {
+      if (a.ready !== b.ready) return a.ready ? -1 : 1;
+      if (a.offScene !== b.offScene) return a.offScene ? 1 : -1;
+      return 0;
+    });
+    return markers.slice(0, MAX_QUEST_MARKERS);
+  }, [activeQuests, currentSceneId, sceneConfig, playerPos]);
 
   /* ── Mirror latest data into refs for the rAF loop ── */
   const npcsInSceneRef = useRef(npcsInScene);
@@ -236,6 +329,53 @@ export function MinimapComponent() {
   npcsInSceneRef.current = npcsInScene;
   sceneExitsRef.current = sceneExits;
   questMarkersRef.current = questMarkers;
+
+  /* ── Свёрнутая «таблетка»: живые север и квест-цель без rAF-цикла ── */
+  const [pillState, setPillState] = useState<{
+    northDeg: number;
+    questLabel: string | null;
+    questReady: boolean;
+  }>({ northDeg: 0, questLabel: null, questReady: false });
+
+  useEffect(() => {
+    if (expanded || mode !== 'exploration') return;
+
+    const update = () => {
+      // Север относительно взгляда игрока: карта вращается, «С» уходит по кругу.
+      // Стрелка «↑» повёрнутая на -yaw указывает на север (см. метку «С» на карте).
+      const yaw = sharedPlayerRotationRef.current;
+      const northDeg = Math.round((((-yaw * 180) / Math.PI) % 360 + 360) % 360) % 360;
+
+      const primary = questMarkersRef.current[0];
+      let questLabel: string | null = null;
+      let questReady = false;
+      if (primary) {
+        questReady = primary.ready;
+        if (primary.offScene) {
+          // Цель в другой локации — показываем её название
+          questLabel = primary.targetSceneName;
+        } else {
+          const livePos = sharedPlayerPositionRef.current;
+          const px = Number.isFinite(livePos.x) ? livePos.x : playerPos[0];
+          const pz = Number.isFinite(livePos.z) ? livePos.z : playerPos[2];
+          const dist = Math.hypot(primary.worldX - px, primary.worldZ - pz);
+          questLabel = `${Math.round(dist)} м`;
+        }
+      }
+
+      setPillState((prev) =>
+        prev.northDeg === northDeg
+          && prev.questLabel === questLabel
+          && prev.questReady === questReady
+          ? prev
+          : { northDeg, questLabel, questReady },
+      );
+    };
+
+    update();
+    const id = window.setInterval(update, PILL_UPDATE_INTERVAL_MS);
+    return () => window.clearInterval(id);
+  }, [expanded, mode, playerPos]);
 
   /* ── Visibility gate ── */
   const isVisible = mode === 'exploration' && !!sceneConfig && expanded;
@@ -383,43 +523,6 @@ export function MinimapComponent() {
         ctx.fill();
       }
 
-      // ── Quest markers (pulsing yellow dot for current objective) ──
-      for (const marker of questMarkersRef.current) {
-        const [mx, my] = worldToMap(marker.worldX, marker.worldZ, playerX, playerZ, yaw);
-        const [clx, cly] = clampToCircle(mx, my);
-        const dSize = visualLite ? 3 : 4;
-        ctx.save();
-        ctx.translate(clx, cly);
-        if (!visualLite && !reducedMotion) {
-          ctx.rotate((pulsePhaseRef.current * 1.2) % (Math.PI * 2));
-        }
-        // Glow ring — pulsing yellow
-        if (!visualLite) {
-          const questPulse = Math.sin(pulsePhaseRef.current * 2.5) * 0.5 + 0.5;
-          ctx.strokeStyle = `rgba(251, 191, 36, ${0.3 + questPulse * 0.4})`;
-          ctx.lineWidth = 1.5;
-          ctx.beginPath();
-          ctx.arc(0, 0, dSize + 2 + questPulse * 2, 0, Math.PI * 2);
-          ctx.stroke();
-          // Outer pulse ring
-          ctx.strokeStyle = `rgba(251, 191, 36, ${0.15 + questPulse * 0.15})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.arc(0, 0, dSize + 5 + questPulse * 3, 0, Math.PI * 2);
-          ctx.stroke();
-        }
-        // Diamond (solid yellow)
-        ctx.fillStyle = '#fbbf24';
-        ctx.beginPath();
-        ctx.moveTo(0, -dSize);
-        ctx.lineTo(dSize, 0);
-        ctx.lineTo(0, dSize);
-        ctx.lineTo(-dSize, 0);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-      }
-
       // ── NPC dots ──
       for (const npc of npcsInSceneRef.current) {
         const [nx, ny] = worldToMap(npc.worldX, npc.worldZ, playerX, playerZ, yaw);
@@ -518,6 +621,78 @@ export function MinimapComponent() {
         ctx.fill();
       }
 
+      // ── Quest markers — ПОВЕРХ виньетки, чтобы не гаснуть у края ──
+      // Жёлтый ромб — активная цель, зелёный — квест готов к сдаче.
+      // Цель за пределами радиуса прижимается к ободу (edge-clamping)
+      // и получает стрелку направления — как в Cyberpunk/GTA. Маркеры целей
+      // в другой сцене ведут к выходу и рисуются полупрозрачными.
+      for (const marker of questMarkersRef.current) {
+        const [mx, my] = worldToMap(marker.worldX, marker.worldZ, playerX, playerZ, yaw);
+        const ddx = mx - cx;
+        const ddy = my - cy;
+        const distFromCenter = Math.sqrt(ddx * ddx + ddy * ddy);
+        const clampR = innerR - 9;
+        const onEdge = distFromCenter > clampR;
+        const k = onEdge && distFromCenter > 0 ? clampR / distFromCenter : 1;
+        const clx = cx + ddx * k;
+        const cly = cy + ddy * k;
+
+        const markerColor = marker.ready ? QUEST_READY_COLOR : QUEST_ACTIVE_COLOR;
+        const markerAlpha = marker.offScene ? 0.75 : 1;
+        const dSize = visualLite ? 3 : 4;
+
+        ctx.save();
+        ctx.globalAlpha = markerAlpha;
+        ctx.translate(clx, cly);
+        // Вращение ромба — только на реальной позиции (у края важнее читаемость)
+        if (!onEdge && !visualLite && !reducedMotion) {
+          ctx.rotate((pulsePhaseRef.current * 1.2) % (Math.PI * 2));
+        }
+        // Пульсирующие кольца свечения
+        if (!visualLite) {
+          const questPulse = Math.sin(pulsePhaseRef.current * 2.5) * 0.5 + 0.5;
+          const rgb = marker.ready ? '0, 255, 102' : '251, 191, 36';
+          ctx.strokeStyle = `rgba(${rgb}, ${0.3 + questPulse * 0.4})`;
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.arc(0, 0, dSize + 2 + questPulse * 2, 0, Math.PI * 2);
+          ctx.stroke();
+          // Внешнее пульсирующее кольцо
+          ctx.strokeStyle = `rgba(${rgb}, ${0.15 + questPulse * 0.15})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(0, 0, dSize + 5 + questPulse * 3, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        // Ромб (цель квеста)
+        ctx.fillStyle = markerColor;
+        ctx.beginPath();
+        ctx.moveTo(0, -dSize);
+        ctx.lineTo(dSize, 0);
+        ctx.lineTo(0, dSize);
+        ctx.lineTo(-dSize, 0);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // Стрелка на ободе — направление на цель за пределами миникарты
+        if (onEdge) {
+          const angle = Math.atan2(ddy, ddx);
+          ctx.save();
+          ctx.globalAlpha = markerAlpha;
+          ctx.translate(cx + Math.cos(angle) * (innerR - 1.5), cy + Math.sin(angle) * (innerR - 1.5));
+          ctx.rotate(angle);
+          ctx.fillStyle = markerColor;
+          ctx.beginPath();
+          ctx.moveTo(3.5, 0);
+          ctx.lineTo(-2.5, -3);
+          ctx.lineTo(-2.5, 3);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
       // ── Outer ring border ──
       ctx.strokeStyle = cyberCyan(0.25);
       ctx.lineWidth = 1.5;
@@ -596,121 +771,203 @@ export function MinimapComponent() {
           className="fixed flex flex-col items-center"
           style={containerStyle}
         >
-          {/* Glass-morphism circular container */}
-          <div
-            className="relative flex items-center justify-center"
-            role="img"
-            aria-label={`Миникарта: ${currentSceneId}. Показывает позицию игрока, NPC и точки интереса.`}
-            aria-live="polite"
-            style={{
-              width: mapSize + 4,
-              height: mapSize + 4,
-              borderRadius: '50%',
-              background: 'rgba(6, 10, 22, 0.75)',
-              backdropFilter: `blur(${visualLite ? 4 : 10}px)`,
-              WebkitBackdropFilter: `blur(${visualLite ? 4 : 10}px)`,
-              border: '1.5px solid rgb(var(--cyber-cyan-rgb) / 0.2)',
-              boxShadow: `0 0 16px rgba(${CYBER_CYAN_RGB}, 0.08), inset 0 0 16px rgba(0, 0, 0, 0.3)`,
-              cursor: expanded ? 'pointer' : undefined,
-              overflow: 'hidden',
-            }}
-            onClick={handleToggle}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                handleToggle();
-              }
-            }}
-            tabIndex={0}
-            aria-roledescription="minimap toggle"
-          >
-            {/* Canvas */}
-            <canvas
-              ref={canvasRef}
-              className="rounded-full"
-              style={{
-                width: mapSize,
-                height: mapSize,
-                imageRendering: 'auto',
-              }}
-            />
-
-            {/* Scanline overlay (quality gate) */}
-            {!visualLite && (
-              <div
-                className="absolute inset-0 rounded-full pointer-events-none"
+          <AnimatePresence mode="wait" initial={false}>
+            {expanded ? (
+              /* ── Развёрнутая круглая миникарта ── */
+              <motion.div
+                key="minimap-expanded"
+                initial={reducedMotion ? false : { opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reducedMotion ? undefined : { opacity: 0, scale: 0.85 }}
+                transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }}
+                className="relative flex items-center justify-center"
+                role="img"
+                aria-label="Миникарта"
+                title="Свернуть миникарту"
                 style={{
-                  background:
-                    'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)',
+                  width: mapSize + 4,
+                  height: mapSize + 4,
+                  borderRadius: '50%',
+                  background: 'rgba(6, 10, 22, 0.75)',
+                  backdropFilter: `blur(${visualLite ? 4 : 10}px)`,
+                  WebkitBackdropFilter: `blur(${visualLite ? 4 : 10}px)`,
+                  border: '1.5px solid rgb(var(--cyber-cyan-rgb) / 0.2)',
+                  boxShadow: `0 0 16px rgba(${CYBER_CYAN_RGB}, 0.08), inset 0 0 16px rgba(0, 0, 0, 0.3)`,
+                  cursor: 'pointer',
+                  overflow: 'hidden',
                 }}
-              />
-            )}
-
-            {/* Corner brackets — decorative cyberpunk accents */}
-            <span
-              className="absolute pointer-events-none"
-              style={{
-                top: 2,
-                left: 2,
-                width: 10,
-                height: 10,
-                borderTop: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-                borderLeft: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-              }}
-            />
-            <span
-              className="absolute pointer-events-none"
-              style={{
-                top: 2,
-                right: 2,
-                width: 10,
-                height: 10,
-                borderTop: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-                borderRight: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-              }}
-            />
-            <span
-              className="absolute pointer-events-none"
-              style={{
-                bottom: 2,
-                left: 2,
-                width: 10,
-                height: 10,
-                borderBottom: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-                borderLeft: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-              }}
-            />
-            <span
-              className="absolute pointer-events-none"
-              style={{
-                bottom: 2,
-                right: 2,
-                width: 10,
-                height: 10,
-                borderBottom: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-                borderRight: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
-              }}
-            />
-
-            {/* M key hint — hidden on touch devices */}
-            {!isMobile && (
-              <div
-                className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-none opacity-50"
-                aria-hidden="true"
+                onClick={handleToggle}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                  }
+                }}
+                tabIndex={0}
               >
-                <kbd
-                  className="text-[7px] font-mono px-1 py-0.5 rounded"
+                {/* Canvas */}
+                <canvas
+                  ref={canvasRef}
+                  className="rounded-full"
                   style={{
-                    color: cyberCyan(0.6),
-                    border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',
-                    background: 'rgba(0, 0, 0, 0.4)',
+                    width: mapSize,
+                    height: mapSize,
+                    imageRendering: 'auto',
+                  }}
+                />
+
+                {/* Scanline overlay (quality gate) */}
+                {!visualLite && (
+                  <div
+                    className="absolute inset-0 rounded-full pointer-events-none"
+                    style={{
+                      background:
+                        'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px)',
+                    }}
+                  />
+                )}
+
+                {/* Corner brackets — decorative cyberpunk accents */}
+                <span
+                  className="absolute pointer-events-none"
+                  style={{
+                    top: 2,
+                    left: 2,
+                    width: 10,
+                    height: 10,
+                    borderTop: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                    borderLeft: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                  }}
+                />
+                <span
+                  className="absolute pointer-events-none"
+                  style={{
+                    top: 2,
+                    right: 2,
+                    width: 10,
+                    height: 10,
+                    borderTop: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                    borderRight: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                  }}
+                />
+                <span
+                  className="absolute pointer-events-none"
+                  style={{
+                    bottom: 2,
+                    left: 2,
+                    width: 10,
+                    height: 10,
+                    borderBottom: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                    borderLeft: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                  }}
+                />
+                <span
+                  className="absolute pointer-events-none"
+                  style={{
+                    bottom: 2,
+                    right: 2,
+                    width: 10,
+                    height: 10,
+                    borderBottom: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                    borderRight: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
+                  }}
+                />
+
+                {/* M key hint — hidden on touch devices */}
+                {!isMobile && (
+                  <div
+                    className="absolute bottom-1 left-1/2 -translate-x-1/2 flex items-center gap-1 pointer-events-none opacity-50"
+                    aria-hidden="true"
+                  >
+                    <kbd
+                      className="text-[7px] font-mono px-1 py-0.5 rounded"
+                      style={{
+                        color: cyberCyan(0.6),
+                        border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.15)',
+                        background: 'rgba(0, 0, 0, 0.4)',
+                      }}
+                    >
+                      M
+                    </kbd>
+                  </div>
+                )}
+              </motion.div>
+            ) : (
+              /* ── Свёрнутая «таблетка»: север + квест-цель с дистанцией ──
+                 Раньше сворачивание лишь останавливало rAF и оставляло
+                 застывший кадр; теперь canvas размонтируется, а вместо него
+                 живёт лёгкая 44px «таблетка» (обновление раз в 200 мс). */
+              <motion.div
+                key="minimap-collapsed"
+                initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={reducedMotion ? undefined : { opacity: 0, scale: 0.7 }}
+                transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }}
+              >
+                <button
+                  type="button"
+                  aria-label="Развернуть миникарту"
+                  title="Развернуть миникарту"
+                  onClick={handleToggle}
+                  className="flex flex-col items-center justify-center gap-0.5 select-none"
+                  style={{
+                    width: PILL_SIZE,
+                    height: PILL_SIZE,
+                    borderRadius: '50%',
+                    background: 'rgba(6, 10, 22, 0.75)',
+                    backdropFilter: `blur(${visualLite ? 4 : 10}px)`,
+                    WebkitBackdropFilter: `blur(${visualLite ? 4 : 10}px)`,
+                    border: '1.5px solid rgb(var(--cyber-cyan-rgb) / 0.2)',
+                    boxShadow: `0 0 16px rgba(${CYBER_CYAN_RGB}, 0.08), inset 0 0 16px rgba(0, 0, 0, 0.3)`,
+                    cursor: 'pointer',
                   }}
                 >
-                  M
-                </kbd>
-              </div>
+                  {/* Север — стрелка вращается вместе с игроком */}
+                  <span
+                    aria-hidden="true"
+                    className="font-mono leading-none"
+                    style={{
+                      display: 'inline-block',
+                      fontSize: 11,
+                      color: cyberCyan(0.75),
+                      transform: `rotate(${pillState.northDeg}deg)`,
+                      transition: 'transform 0.2s linear',
+                    }}
+                  >
+                    ↑
+                  </span>
+
+                  {/* Квест-цель: ромб + дистанция или название локации */}
+                  {pillState.questLabel ? (
+                    <span
+                      aria-hidden="true"
+                      className="flex items-center gap-1 leading-none"
+                    >
+                      <span
+                        style={{
+                          fontSize: 9,
+                          color: pillState.questReady ? QUEST_READY_COLOR : QUEST_ACTIVE_COLOR,
+                          textShadow: `0 0 4px ${
+                            pillState.questReady ? QUEST_READY_COLOR : QUEST_ACTIVE_COLOR
+                          }`,
+                        }}
+                      >
+                        ◆
+                      </span>
+                      <span
+                        className="font-mono"
+                        style={{ fontSize: 8, color: 'rgba(226, 232, 240, 0.85)' }}
+                      >
+                        {pillState.questLabel.length > 10
+                          ? `${pillState.questLabel.slice(0, 9)}…`
+                          : pillState.questLabel}
+                      </span>
+                    </span>
+                  ) : null}
+                </button>
+              </motion.div>
             )}
-          </div>
+          </AnimatePresence>
         </motion.div>
       )}
     </AnimatePresence>
