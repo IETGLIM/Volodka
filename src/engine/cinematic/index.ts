@@ -34,6 +34,11 @@ export { STREET_ARRIVAL_TIMELINE } from './streetArrivalTimeline';
 export { CITY_SQUARE_ARRIVAL_TIMELINE } from './citySquareArrivalTimeline';
 export { PROCEDURAL_AAA_ARRIVAL_TIMELINE } from './proceduralAaaArrivalTimeline';
 export {
+  PARK_DAY_ARRIVAL_TIMELINE,
+  LIBRARY_DAY_ARRIVAL_TIMELINE,
+  FACTORY_BASEMENT_ARRIVAL_TIMELINE,
+} from './streetLegendsArrivalTimelines';
+export {
   setCinematicLightCue,
   getCinematicLightCue,
   getCinematicNeonIntensityScale,

@@ -64,6 +64,11 @@ import { enterBulletTime } from './cinematicCamera';
 import { isCinematicTimelineActive, startCinematicTimeline } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { STREET_ARRIVAL_TIMELINE } from '@/engine/cinematic/streetArrivalTimeline';
 import { PROCEDURAL_AAA_ARRIVAL_TIMELINE } from '@/engine/cinematic/proceduralAaaArrivalTimeline';
+import {
+  PARK_DAY_ARRIVAL_TIMELINE,
+  LIBRARY_DAY_ARRIVAL_TIMELINE,
+  FACTORY_BASEMENT_ARRIVAL_TIMELINE,
+} from '@/engine/cinematic/streetLegendsArrivalTimelines';
 import { CITY_SQUARE_ARRIVAL_TIMELINE } from '@/engine/cinematic/citySquareArrivalTimeline';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { eventBus } from '@/engine/EventBus';
@@ -488,6 +493,14 @@ export function disposeFollowCamera(runtime: CameraRuntimeRefs, sceneId: SceneId
   runtime.cameraState.current = { mode: 'exploration', params: { sceneId } };
 }
 
+/** Street Legends arrivals fire once per session (id → seen), v4.7.6. */
+const streetLegendsArrivalsSeen = new Set<string>();
+function markArrivalSeen(timelineId: string): boolean {
+  if (streetLegendsArrivalsSeen.has(timelineId)) return false;
+  streetLegendsArrivalsSeen.add(timelineId);
+  return true;
+}
+
 export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneId): void {
   const { subsystems } = runtime;
   if (!subsystems.transition.current || !subsystems.spring.current) return;
@@ -515,6 +528,22 @@ export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneI
   if (sceneId === 'procedural_aaa' && !isCinematicTimelineActive()) {
     startCinematicTimeline({ def: PROCEDURAL_AAA_ARRIVAL_TIMELINE, options: {} });
     return;
+  }
+
+  // Street Legends arrivals (v4.7.6) — one-shot per session: локации пак
+  // «Уличные легенды» (park_day / library_day / factory_basement), режиссура
+  // входа играется только при первом визите, чтобы повторные заходы за
+  // прогрессом квестов не прерывали исследование.
+  if (!isCinematicTimelineActive()) {
+    const legendsTimeline =
+      sceneId === 'park_day' ? PARK_DAY_ARRIVAL_TIMELINE
+      : sceneId === 'library_day' ? LIBRARY_DAY_ARRIVAL_TIMELINE
+      : sceneId === 'factory_basement' ? FACTORY_BASEMENT_ARRIVAL_TIMELINE
+      : null;
+    if (legendsTimeline && markArrivalSeen(legendsTimeline.id)) {
+      startCinematicTimeline({ def: legendsTimeline, options: {} });
+      return;
+    }
   }
 
   startSceneTransition(
