@@ -32,7 +32,8 @@ export type StorySatellitePackId =
   | 'phase5Quests'
   | 'expansionQuests'
   | 'aaaExpansion'
-  | 'streetLegends';
+  | 'streetLegends'
+  | 'pierVoices';
 export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
@@ -130,6 +131,7 @@ const storySatelliteLoaders: Record<
   // Same pattern as aaaExpansion: merged in static buildStoryNodes(), needs a
   // lazy loader here so ensureStoryNode() can resolve sl_* nodes at runtime.
   streetLegends: () => import('../story/streetLegendsStory').then((m) => m.STREET_LEGENDS_STORY_NODES),
+  pierVoices: () => import('../story/pierVoicesStory').then((m) => m.PIER_VOICES_STORY_NODES),
 };
 
 /** Satellites loaded automatically when their parent act pack loads. */
@@ -155,6 +157,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'expansionQuests',
   'aaaExpansion',
   'streetLegends',
+  'pierVoices',
 ] as const;
 
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {
