@@ -17,7 +17,7 @@
  */
 
 import type { NPCRelation } from '@/shared/types/game';
-import { ALL_NPC_DEFINITIONS, NPCS_BY_FACTION } from '@/data/allNpcDefinitions';
+import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { getGameStore } from '../gameStore';
 import { useGameSelector } from './hooks';
 import {
@@ -41,6 +41,37 @@ export const FACTION_LABELS_RU: Record<FactionId, string> = {
   neutral: 'Нейтральные',
   tolpa: 'ТОЛПА',
 };
+
+/* ─── Faction aliases (v4.7.2 consolidation) ───
+ *
+ * Historically two faction vocabularies coexisted: the live canonical set
+ * above and a legacy set (streltsy / merchant_guild / underground /
+ * forest_folk) from engine/factionReputation.ts (dead module — removed),
+ * plus `it_guild` from early act-1 quests. Content written against the
+ * legacy ids silently dropped out of reputation aggregation (an NPC with
+ * faction 'merchant_guild' matched no canonical group → skipped), so 20+
+ * NPCs never counted toward any faction. normalizeFactionId() maps the
+ * legacy ids onto their closest canonical counterparts:
+ *   • streltsy (городская стража)      → guild — Гильдия порядка
+ *   • merchant_guild (торговая гильдия) → guild — торговое крыло Гильдии
+ *   • it_guild (IT-гильдия офиса)       → guild — офисные работники Гильдии
+ *   • underground (подполье)            → resistance — теневое крыло Сопротивления
+ *   • forest_folk (лесной народ)        → tolpa — чк-лес живёт в ТОЛПЕ
+ */
+export const FACTION_ALIASES: Readonly<Record<string, FactionId>> = {
+  streltsy: 'guild',
+  merchant_guild: 'guild',
+  it_guild: 'guild',
+  underground: 'resistance',
+  forest_folk: 'tolpa',
+};
+
+/** Map any content faction id onto a canonical one (unknown ids → neutral). */
+export function normalizeFactionId(raw: string): FactionId {
+  return FACTION_ALIASES[raw] ?? (FACTION_IDS as readonly string[]).includes(raw)
+    ? (FACTION_ALIASES[raw] ?? (raw as FactionId))
+    : 'neutral';
+}
 
 export interface FactionReputationEntry {
   /** Average relation across met NPCs in this faction (0–100). */
@@ -103,8 +134,9 @@ function buildRelationsByFaction(
 
   for (const npc of ALL_NPC_DEFINITIONS) {
     if (!npc.faction) continue;
-    const faction = npc.faction as FactionId;
-    if (!grouped.has(faction)) continue;
+    // Legacy ids (merchant_guild / streltsy / underground / it_guild / …)
+    // normalize onto canonical factions — see FACTION_ALIASES above.
+    const faction = normalizeFactionId(npc.faction);
     // An NPC is "met" if either the met_<id> flag is set OR the NPC has a
     // relation row (relation !== default — i.e. the baseline has been
     // touched). This mirrors npcDiscoveryTracker.ts.
@@ -151,7 +183,12 @@ function buildFactionReputationMap(
   const result = {} as FactionReputationMap;
   for (const factionId of FACTION_IDS) {
     const values = grouped.get(factionId) ?? [];
-    const totalMembers = NPCS_BY_FACTION[factionId]?.length ?? 0;
+    // totalMembers: count members through the SAME normalization as the
+    // grouping above, so legacy-id NPCs are included in their canonical
+    // faction's totals.
+    const totalMembers = ALL_NPC_DEFINITIONS.filter(
+      (n) => n.faction && normalizeFactionId(n.faction) === factionId,
+    ).length;
     const metCount = values.length;
     const avgRelation =
       metCount > 0
