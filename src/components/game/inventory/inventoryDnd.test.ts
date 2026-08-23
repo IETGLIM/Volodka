@@ -4,10 +4,14 @@ import {
   DRAG_MOUSE_THRESHOLD_PX,
   DRAG_TOUCH_DELAY_MS,
   DRAG_TOUCH_SLOP_PX,
+  getDndMirrorSnapshot,
+  isHotbarDropCompatible,
   isSlotDropCompatible,
   resolveDropTargetFromElement,
+  setDndMirror,
   shouldStartMouseDrag,
   shouldStartTouchDrag,
+  subscribeDndMirror,
 } from './inventoryDndLogic';
 
 /* Минимальный DOM-мок: элемент с data-атрибутами и цепочкой родителей. */
@@ -88,5 +92,52 @@ describe('пороги старта драга', () => {
     expect(shouldStartTouchDrag(DRAG_TOUCH_DELAY_MS, 3)).toBe(true);
     // Держали долго, но утащили палец — это скролл, не драг.
     expect(shouldStartTouchDrag(DRAG_TOUCH_DELAY_MS + 200, DRAG_TOUCH_SLOP_PX + 1)).toBe(false);
+  });
+
+});
+
+describe('хотбар как цель дропа (v4.7.5)', () => {
+  it('находит data-dnd-hotbar с индексом', () => {
+    const slot = el({ 'data-dnd-hotbar': '2' });
+    const inner = el({}, slot);
+    expect(resolveDropTargetFromElement(inner)).toEqual({ kind: 'hotbar', slot: 2 });
+  });
+
+  it('невалидный индекс хотбара игнорируется', () => {
+    expect(resolveDropTargetFromElement(el({ 'data-dnd-hotbar': 'x' }))).toBeNull();
+    expect(resolveDropTargetFromElement(el({ 'data-dnd-hotbar': '-1' }))).toBeNull();
+  });
+
+  it('в хотбар можно только расходуемые', () => {
+    expect(isHotbarDropCompatible('consumable')).toBe(true);
+    expect(isHotbarDropCompatible('equipment')).toBe(false);
+    expect(isHotbarDropCompatible(undefined)).toBe(false);
+  });
+});
+
+describe('DnD-зеркало (cross-tree подсветка хотбара)', () => {
+  it('публикует состояние и уведомляет подписчиков', () => {
+    const events: string[] = [];
+    const unsub = subscribeDndMirror(() => events.push('notify'));
+    try {
+      setDndMirror({ payload: null, target: { kind: 'hotbar', slot: 1 } });
+      expect(getDndMirrorSnapshot().target).toEqual({ kind: 'hotbar', slot: 1 });
+      expect(events).toEqual(['notify']);
+
+      setDndMirror({ payload: null, target: null });
+      expect(getDndMirrorSnapshot().target).toBeNull();
+      expect(events).toEqual(['notify', 'notify']);
+    } finally {
+      unsub();
+    }
+  });
+
+  it('после отписки уведомления не приходят', () => {
+    const events: string[] = [];
+    const unsub = subscribeDndMirror(() => events.push('n'));
+    unsub();
+    setDndMirror({ payload: null, target: { kind: 'inventory' } });
+    expect(events).toEqual([]);
+    setDndMirror({ payload: null, target: null });
   });
 });

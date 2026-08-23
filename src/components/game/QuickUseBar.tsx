@@ -12,6 +12,12 @@ import { useConsumableActions, useGameMode, useInventory } from '@/store/selecto
 import { usePlayerLevel } from '@/store/selectors/playerSelectors';
 import { useCollectedPoems } from '@/store/selectors/worldSelectors';
 import { useHotbarSlots, useSetHotbarSlot } from '@/store/selectors/uiSelectors';
+import { useSyncExternalStore } from 'react';
+import {
+  getDndMirrorSnapshot,
+  isHotbarDropCompatible,
+  subscribeDndMirror,
+} from '@/components/game/inventory/inventoryDndLogic';
 import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import { getItemDefinition } from '@/data/items';
 import type { ItemDefinition } from '@/data/items';
@@ -152,6 +158,12 @@ export function QuickUseBar() {
   const { addEnergy, addStress, addKarma, addSkill, removeItem } = useConsumableActions();
   const hotbarSlots = useHotbarSlots();
   const setHotbarSlot = useSetHotbarSlot();
+
+  /* ── v4.7.5: DnD-зеркало — подсветка слотов при перетаскивании
+        расходуемого из инвентаря (панель открыта, драг жив). ── */
+  const dnd = useSyncExternalStore(subscribeDndMirror, getDndMirrorSnapshot, getDndMirrorSnapshot);
+  const hotbarDragActive = !!dnd.payload?.item;
+  const hotbarDragCompatible = isHotbarDropCompatible(dnd.payload?.itemCategory);
 
   /* ── Cooldown state per slot ── */
   const [cooldownSlots, setCooldownSlots] = useState<Set<number>>(new Set());
@@ -378,7 +390,7 @@ export function QuickUseBar() {
         transition={{ duration: 0.35, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
         {/* Bar container */}
-        <div className="quick-use-bar relative panel-glass-dark-9 p-1.5 gap-1.5">
+        <div className={`quick-use-bar relative panel-glass-dark-9 p-1.5 gap-1.5 ${hotbarDragActive && hotbarDragCompatible ? 'quick-use-drop-armed' : ''}`}>
           {/* Neon border glow breathing */}
           <motion.div
             className="absolute inset-0 rounded-[8px] pointer-events-none"
@@ -398,10 +410,14 @@ export function QuickUseBar() {
             const isFlashing = flashSlots.has(i);
             const isOnCooldown = cooldownSlots.has(i);
             const isDimmed = !hasItem || isOnCooldown;
+            const hotbarDragOverThis =
+              hotbarDragActive && dnd.target?.kind === 'hotbar' && dnd.target.slot === i;
+            const hotbarRejectOverThis = hotbarDragOverThis && !hotbarDragCompatible;
 
             return (
               <div key={`slot-${i}`} className="relative">
                 <button
+                  data-dnd-hotbar={i}
                   onClick={() => {
                     if (hasItem) handleUseItemAtSlot(i);
                   }}
@@ -415,7 +431,7 @@ export function QuickUseBar() {
                       ? `Использовать ${slot.item!.name} [${i + 1}] (ПКМ — назначить)`
                       : `Пустой слот ${i + 1} (ПКМ — назначить)`
                   }
-                  className={`quick-use-slot tooltip-cyber ${isFlashing ? 'quick-use-flash' : ''} ${isDimmed ? 'opacity-40' : ''}`}
+                  className={`quick-use-slot tooltip-cyber ${isFlashing ? 'quick-use-flash' : ''} ${isDimmed ? 'opacity-40' : ''} ${hotbarDragOverThis ? 'quick-use-drop-ok' : ''} ${hotbarRejectOverThis ? 'quick-use-drop-reject' : ''}`}
                   data-tooltip={
                     hasItem
                       ? `${slot.item!.name} [${i + 1}] — ПКМ для назначения`

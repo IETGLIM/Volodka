@@ -49,7 +49,10 @@ export const InventoryCard = memo(function InventoryCard({
   const tooltipId = useId();
   const showTooltip = hovered || isFocused;
   const { beginItemPointerDown } = useInventoryDnd();
-  const canBeDragged = def?.category === 'equipment' && !!def.equipmentSlot;
+  // v4.7.5: экипировка — драг в слоты; расходуемые — драг в хотбар.
+  const canBeDragged =
+    (def?.category === 'equipment' && !!def.equipmentSlot) ||
+    def?.category === 'consumable';
 
   return (
     <>

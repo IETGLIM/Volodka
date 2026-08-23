@@ -38,10 +38,12 @@ import type { EquipmentSlot, InventoryItem } from '@/shared/types/game';
 import {
   resolveDropTargetFromElement,
   isSlotDropCompatible,
+  isHotbarDropCompatible,
   shouldStartMouseDrag,
   DRAG_TOUCH_DELAY_MS,
   DRAG_TOUCH_SLOP_PX,
   markDragEnded,
+  setDndMirror,
   type DropTarget,
   type DragPayload,
 } from '@/components/game/inventory/inventoryDndLogic';
@@ -80,6 +82,8 @@ export function useInventoryDnd(): DndContextValue {
 interface ProviderProps {
   onEquipDrop: (item: InventoryItem) => void;
   onUnequipDrop: (slot: EquipmentSlot) => void;
+  /** v4.7.5: дроп расходуемого в слот хотбара (index, itemId). */
+  onHotbarDrop: (slotIndex: number, itemId: string) => void;
   children: ReactNode;
 }
 
@@ -96,6 +100,7 @@ interface PendingDrag {
 export function InventoryDragProvider({
   onEquipDrop,
   onUnequipDrop,
+  onHotbarDrop,
   children,
 }: ProviderProps) {
   const [dragPayload, setDragPayload] = useState<DragPayload | null>(null);
@@ -105,8 +110,8 @@ export function InventoryDragProvider({
   const ghostRef = useRef<HTMLDivElement>(null);
   const dropTargetRef = useRef<DropTarget>(null);
   const payloadRef = useRef<DragPayload | null>(null);
-  const cbRef = useRef({ onEquipDrop, onUnequipDrop });
-  cbRef.current = { onEquipDrop, onUnequipDrop };
+  const cbRef = useRef({ onEquipDrop, onUnequipDrop, onHotbarDrop });
+  cbRef.current = { onEquipDrop, onUnequipDrop, onHotbarDrop };
 
   const cancelPending = useCallback(() => {
     const p = pendingRef.current;
@@ -120,6 +125,7 @@ export function InventoryDragProvider({
     markDragEnded();
     payloadRef.current = null;
     dropTargetRef.current = null;
+    setDndMirror({ payload: null, target: null });
     setDragPayload(null);
     setDropTarget(null);
   }, [cancelPending]);
@@ -136,6 +142,7 @@ export function InventoryDragProvider({
       activeRef.current = true;
       payloadRef.current = p.payload;
       setDragPayload(p.payload);
+      setDndMirror({ payload: p.payload, target: null });
       updateGhost(x, y);
       if (p.holdTimer) {
         clearTimeout(p.holdTimer);
@@ -194,6 +201,8 @@ export function InventoryDragProvider({
           icon: view.def?.icon,
           rarity: view.rarity,
           equipmentSlot: view.def?.equipmentSlot,
+          // Категория для совместимости с хотбаром (только consumable).
+          itemCategory: view.def?.category,
         },
         e,
       );
@@ -249,6 +258,7 @@ export function InventoryDragProvider({
           (target?.kind === 'slot' && dropTargetRef.current?.kind === 'slot' &&
             target.slot !== dropTargetRef.current.slot)) {
         dropTargetRef.current = target;
+        setDndMirror({ payload: payloadRef.current, target });
         setDropTarget(target);
       }
     };
@@ -264,6 +274,9 @@ export function InventoryDragProvider({
         if (payload.item && target?.kind === 'slot' &&
             isSlotDropCompatible(payload.equipmentSlot, target.slot)) {
           cbRef.current.onEquipDrop(payload.item);
+        } else if (payload.item && target?.kind === 'hotbar' &&
+            isHotbarDropCompatible(payload.itemCategory)) {
+          cbRef.current.onHotbarDrop(target.slot, payload.item.id);
         } else if (payload.fromSlot && target?.kind === 'inventory') {
           cbRef.current.onUnequipDrop(payload.fromSlot);
         }

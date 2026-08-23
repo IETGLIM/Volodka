@@ -14,6 +14,7 @@ import {
 } from '@/components/game/inventory/inventoryConstants';
 import { useInventoryPanel } from '@/components/game/inventory/useInventoryPanel';
 import { InventoryDragProvider } from '@/components/game/inventory/inventoryDnd';
+import { useSetHotbarSlot } from '@/store/selectors/uiSelectors';
 import type { InventoryFilterCategory } from '@/engine/inventory/inventoryPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -65,6 +66,9 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
     handleDropItem,
     selectedEquipItem: isEquippedSelection,
   } = useInventoryPanel(open, onOpenPoetryBook);
+
+  /* v4.7.5: назначение в хотбар перетаскиванием расходуемого. */
+  const setHotbarSlot = useSetHotbarSlot();
 
   const handleClose = useCallback(() => {
     resetPanelState();
@@ -275,6 +279,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
               <InventoryDragProvider
                 onEquipDrop={handleEquipItem}
                 onUnequipDrop={handleUnequipItem}
+                onHotbarDrop={(slotIndex, itemId) => setHotbarSlot(slotIndex, itemId)}
               >
               <EquipmentPanel
                 equippedItems={equippedItems}

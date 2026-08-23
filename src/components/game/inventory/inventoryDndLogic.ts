@@ -8,6 +8,7 @@ import type { EquipmentSlot } from '@/shared/types/game';
 
 export type DropTarget =
   | { kind: 'slot'; slot: EquipmentSlot }
+  | { kind: 'hotbar'; slot: number }
   | { kind: 'inventory' }
   | null;
 
@@ -20,6 +21,11 @@ export function resolveDropTargetFromElement(
   for (let i = 0; node && i < maxDepth; i++) {
     const slot = node.getAttribute?.('data-dnd-slot');
     if (slot) return { kind: 'slot', slot: slot as EquipmentSlot };
+    const hotbar = node.getAttribute?.('data-dnd-hotbar');
+    if (hotbar != null && hotbar !== '') {
+      const idx = Number.parseInt(hotbar, 10);
+      if (Number.isInteger(idx) && idx >= 0) return { kind: 'hotbar', slot: idx };
+    }
     if (node.getAttribute?.('data-dnd-inventory') === 'true') {
       return { kind: 'inventory' };
     }
@@ -34,6 +40,11 @@ export function isSlotDropCompatible(
   targetSlot: EquipmentSlot,
 ): boolean {
   return itemEquipmentSlot === targetSlot;
+}
+
+/** Можно ли назначить предмет в хотбар (только расходуемые). */
+export function isHotbarDropCompatible(itemCategory: string | undefined): boolean {
+  return itemCategory === 'consumable';
 }
 
 /** Порог старта драга: мышь — 6px; тач — лонг-пресс 250мс без большого сдвига. */
@@ -63,11 +74,48 @@ export interface DragPayload {
   rarity: import('@/data/items').ItemRarity;
   /** Куда этот предмет можно дропнуть (для подсветки целей). */
   equipmentSlot?: string;
+  /** Категория предмета — совместимость с хотбаром (consumable). */
+  itemCategory?: string;
 }
 
 /** Отметить завершение драга (для гашения следующего click). */
 export function markDragEnded(now = Date.now()): void {
   lastDragEndedAt = now;
+}
+
+/* ─── Cross-tree DnD-зеркало (v4.7.5) ───
+ *
+ * Провайдер DnD живёт внутри панели инвентаря, а хотбар — в HUD (другое
+ * React-поддерево). Чтобы хотбар подсвечивал цели во время драга, провайдер
+ * публикует {payload, target} в этот крошечный module-level стор, а внешние
+ * подписчики читают его через useSyncExternalStore (без prop-drilling и
+ * без общего контекста). Стор живёт только на время активного драга.
+ */
+
+export interface DndMirrorState {
+  payload: DragPayload | null;
+  target: DropTarget;
+}
+
+let dndMirror: DndMirrorState = { payload: null, target: null };
+const dndMirrorListeners = new Set<() => void>();
+
+function notifyDndMirror(): void {
+  for (const l of dndMirrorListeners) l();
+}
+
+export function getDndMirrorSnapshot(): DndMirrorState {
+  return dndMirror;
+}
+
+export function subscribeDndMirror(listener: () => void): () => void {
+  dndMirrorListeners.add(listener);
+  return () => dndMirrorListeners.delete(listener);
+}
+
+export function setDndMirror(next: DndMirrorState): void {
+  dndMirror = next;
+  notifyDndMirror();
 }
 
 /** Гасить ли клик после состоявшегося драга (click стреляет после pointerup). */
