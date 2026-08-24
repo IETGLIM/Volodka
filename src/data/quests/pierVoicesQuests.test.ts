@@ -34,7 +34,7 @@ describe('pierVoicesQuests pack — structure (v4.8.0)', () => {
 
         switch (obj.type) {
           case 'npc_talked':
-            expect(NPC_IDS.has(obj.target), `${quest.id}: NPC ${obj.target}`).toBe(true);
+            expect(NPC_IDS.has(obj.target!), `${quest.id}: NPC ${obj.target}`).toBe(true);
             break;
           case 'location_visited':
             expect(SCENE_ID_SET.has(obj.target as never), `${quest.id}: сцена ${obj.target}`).toBe(true);

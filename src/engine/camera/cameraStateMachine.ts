@@ -495,10 +495,10 @@ export function disposeFollowCamera(runtime: CameraRuntimeRefs, sceneId: SceneId
 }
 
 /** Street Legends arrivals fire once per session (id → seen), v4.7.6. */
-const streetLegendsArrivalsSeen = new Set<string>();
+const arrivalCinematicsSeen = new Set<string>();
 function markArrivalSeen(timelineId: string): boolean {
-  if (streetLegendsArrivalsSeen.has(timelineId)) return false;
-  streetLegendsArrivalsSeen.add(timelineId);
+  if (arrivalCinematicsSeen.has(timelineId)) return false;
+  arrivalCinematicsSeen.add(timelineId);
   return true;
 }
 
@@ -531,17 +531,19 @@ export function startSceneFlythrough(runtime: CameraRuntimeRefs, sceneId: SceneI
     acquireCameraOwnership('transition');
     return;
   }
-  if (sceneId === 'street_night' && !isCinematicTimelineActive()) {
-    startCinematicTimeline({ def: STREET_ARRIVAL_TIMELINE, options: {} });
-    return;
-  }
-  if (sceneId === 'city_square' && !isCinematicTimelineActive()) {
-    startCinematicTimeline({ def: CITY_SQUARE_ARRIVAL_TIMELINE, options: {} });
-    return;
-  }
-  if (sceneId === 'procedural_aaa' && !isCinematicTimelineActive()) {
-    startCinematicTimeline({ def: PROCEDURAL_AAA_ARRIVAL_TIMELINE, options: {} });
-    return;
+  // v4.8.1 FIX: ALL arrival cinematics play once per session — hero
+  // scenes (street_night, city_square) were repeating on every entry,
+  // which made the same overlay text appear again and again.
+  if (!isCinematicTimelineActive()) {
+    const heroTimeline =
+      sceneId === 'street_night' ? STREET_ARRIVAL_TIMELINE
+      : sceneId === 'city_square' ? CITY_SQUARE_ARRIVAL_TIMELINE
+      : sceneId === 'procedural_aaa' ? PROCEDURAL_AAA_ARRIVAL_TIMELINE
+      : null;
+    if (heroTimeline && markArrivalSeen(heroTimeline.id)) {
+      startCinematicTimeline({ def: heroTimeline, options: {} });
+      return;
+    }
   }
 
   // Street Legends arrivals (v4.7.6) — one-shot per session: локации пак
