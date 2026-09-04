@@ -10,6 +10,7 @@ import {
   type InventoryFilterCategory,
 } from '@/engine/inventory/inventoryPresentation';
 import { inventoryTelemetry } from '@/engine/inventory/inventoryTelemetry';
+import { buildEquipmentComparison } from '@/engine/inventory/inventoryTooltipPresentation';
 import type { InventorySortOption } from '@/components/game/inventory/inventoryConstants';
 import {
   useAddLoreEntry,
@@ -85,6 +86,13 @@ export function useInventoryPanel(
     if (selectedEquipItem) return resolveInventoryItemView(selectedEquipItem);
     return null;
   }, [filteredViews, selectedInventoryItem, selectedEquipItem]);
+
+  // v4.8.4: дельты экипировки против надетого в целевом слоте (панель деталей).
+  // Для уже надетого предмета сравнение с самим собой → null.
+  const selectedComparison = useMemo(
+    () => (selectedView ? buildEquipmentComparison(selectedView, equippedItems) : null),
+    [selectedView, equippedItems],
+  );
 
   useEffect(() => {
     if (!open) return;
@@ -315,6 +323,7 @@ export function useInventoryPanel(
     categoryCounts,
     selectedItem,
     selectedView,
+    selectedComparison,
     selectedItemId,
     selectedSlot,
     selectedEquipItem: !!selectedEquipItem,

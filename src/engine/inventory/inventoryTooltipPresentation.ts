@@ -1,11 +1,11 @@
-import { getRarityLabel, getItemDefinition, type ItemDefinition, type ItemRarity } from '@/data/items';
+import { getEquipmentSlot, getRarityLabel, getItemDefinition, type ItemDefinition, type ItemRarity } from '@/data/items';
 import type { InventoryItemView } from '@/engine/inventory/inventoryPresentation';
 import {
   INVENTORY_CATEGORY_LABELS,
   INVENTORY_SLOT_LABELS,
   INVENTORY_STAT_ICONS,
 } from '@/components/game/inventory/inventoryConstants';
-import type { TrainablePlayerSkill } from '@/shared/types/game';
+import type { EquipmentSlot, InventoryItem, TrainablePlayerSkill } from '@/shared/types/game';
 
 import { devWarn } from '@/shared/utils/devLog';
 const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
@@ -18,12 +18,32 @@ const SKILL_LABELS: Record<TrainablePlayerSkill, string> = {
   rhythm: '🎵 Ритм',
 };
 
+/** v4.8.4: имена навыков без эмодзи — для сравнительных строк и боевых бонусов. */
+const SKILL_LABELS_PLAIN: Record<TrainablePlayerSkill, string> = {
+  logic: 'Логика',
+  coding: 'Кодирование',
+  empathy: 'Эмпатия',
+  persuasion: 'Убеждение',
+  intuition: 'Интуиция',
+  writing: 'Письмо',
+  rhythm: 'Ритм',
+};
+
+/** Русское имя навыка по ключу (фолбэк — сам ключ). */
+export function getSkillLabel(skill: string): string {
+  return SKILL_LABELS_PLAIN[skill as TrainablePlayerSkill] ?? skill;
+}
+
+export type TooltipComparisonGroup = 'stats' | 'skills' | 'combat';
+
 export interface TooltipComparisonDelta {
   stat: string;
   label: string;
   delta: number;
   /** Whether a higher value is beneficial for the player. */
   positiveIsGood: boolean;
+  /** v4.8.4: группа строки (статы / навыки / боевые бонусы) — для сортировки и группировки UI. */
+  group: TooltipComparisonGroup;
 }
 
 /** v4.7.9: строка двухколоночного сравнения (Cyberpunk-стиль) — значение
@@ -38,6 +58,8 @@ export interface TooltipComparisonRow {
   delta: number;
   /** Whether a higher value is beneficial for the player. */
   positiveIsGood: boolean;
+  /** v4.8.4: группа строки (статы / навыки / боевые бонусы). */
+  group: TooltipComparisonGroup;
 }
 
 export interface TooltipComparison {
@@ -103,6 +125,68 @@ function resolveEffectsHeader(def: ItemDefinition): string {
   }
 }
 
+const STAT_LABELS: Record<string, string> = {
+  energy: 'Энергия',
+  stress: 'Стресс',
+  karma: 'Карма',
+};
+
+const STAT_POSITIVE_IS_GOOD: Record<string, boolean> = {
+  energy: true,
+  stress: false,
+  karma: true,
+};
+
+const COMBAT_GROUP_ORDER: Record<TooltipComparisonGroup, number> = {
+  stats: 0,
+  skills: 1,
+  combat: 2,
+};
+
+/** Разбор ключа агрегированной статы на человекочитаемую пару (лейбл, positiveIsGood, группа). */
+function describeStatKey(key: string): { label: string; positiveIsGood: boolean; group: TooltipComparisonGroup } {
+  if (key.startsWith('skill:')) {
+    const skillKey = key.slice(6);
+    return { label: getSkillLabel(skillKey), positiveIsGood: true, group: 'skills' };
+  }
+  if (key.startsWith('combat:')) {
+    // Формат: combat:<skill|all>:<flat|percent>
+    const [, target, type] = key.split(':');
+    const suffix = type === 'percent' ? ', %' : '';
+    const label = target === 'all' || !target
+      ? `Бой: все навыки${suffix}`
+      : `Бой: ${getSkillLabel(target)}${suffix}`;
+    return { label, positiveIsGood: true, group: 'combat' };
+  }
+  return {
+    label: STAT_LABELS[key] ?? key,
+    positiveIsGood: STAT_POSITIVE_IS_GOOD[key] ?? true,
+    group: 'stats',
+  };
+}
+
+/**
+ * v4.8.4: сравнение экипировки против надетого в целевом слоте.
+ * Единая точка правды для тултипа и панели деталей — раньше логика
+ * сравнения жила только в тултипе (v4.7.9), а панель деталей показывала
+ * один предмет без дельт. Учитывает effects И combatBonus.
+ */
+export function buildEquipmentComparison(
+  view: InventoryItemView,
+  equippedItems: Partial<Record<EquipmentSlot, InventoryItem | null>>,
+): TooltipComparison | null {
+  const def = view.def;
+  if (!def || def.category !== 'equipment' || view.isUnknown) return null;
+
+  const slot = (def.equipmentSlot ?? getEquipmentSlot(view.item.id)) as EquipmentSlot | undefined;
+  if (!slot) return null;
+
+  const equipped = equippedItems[slot] ?? null;
+  if (!equipped || equipped.id === view.item.id) return null;
+
+  return computeComparison(def, equipped.id);
+}
+
 function computeComparison(
   newDef: ItemDefinition,
   equippedItemId: string,
@@ -112,7 +196,7 @@ function computeComparison(
 
   const slotLabel = INVENTORY_SLOT_LABELS[equippedDef.equipmentSlot ?? ''] ?? equippedDef.equipmentSlot ?? '';
 
-  // Collect stat deltas
+  // Collect stat deltas — v4.8.4: боевые бонус тоже участвуют в сравнении
   const newStats = new Map<string, number>();
   const oldStats = new Map<string, number>();
 
@@ -132,31 +216,18 @@ function computeComparison(
     }
   }
 
+  for (const bonus of newDef.combatBonus ?? []) {
+    const key = `combat:${bonus.skill ?? 'all'}:${bonus.type}`;
+    newStats.set(key, (newStats.get(key) ?? 0) + bonus.value);
+  }
+  for (const bonus of equippedDef.combatBonus ?? []) {
+    const key = `combat:${bonus.skill ?? 'all'}:${bonus.type}`;
+    oldStats.set(key, (oldStats.get(key) ?? 0) + bonus.value);
+  }
+
   // Build delta list: all keys from both items
   const allKeys = new Set([...newStats.keys(), ...oldStats.keys()]);
   const deltas: TooltipComparisonDelta[] = [];
-
-  const STAT_LABELS: Record<string, string> = {
-    energy: 'Энергия',
-    stress: 'Стресс',
-    karma: 'Карма',
-  };
-
-  const STAT_POSITIVE_IS_GOOD: Record<string, boolean> = {
-    energy: true,
-    stress: false,
-    karma: true,
-  };
-
-  const SKILL_LABELS_LOCAL: Record<string, string> = {
-    logic: 'Логика',
-    coding: 'Кодирование',
-    empathy: 'Эмпатия',
-    persuasion: 'Убеждение',
-    intuition: 'Интуиция',
-    writing: 'Письмо',
-    rhythm: 'Ритм',
-  };
 
   for (const key of allKeys) {
     const newVal = newStats.get(key) ?? 0;
@@ -164,42 +235,28 @@ function computeComparison(
     const delta = newVal - oldVal;
     if (delta === 0) continue;
 
-    let label: string;
-    let positiveIsGood: boolean;
-
-    if (key.startsWith('skill:')) {
-      const skillKey = key.slice(6);
-      label = SKILL_LABELS_LOCAL[skillKey] ?? skillKey;
-      positiveIsGood = true;
-    } else {
-      label = STAT_LABELS[key] ?? key;
-      positiveIsGood = STAT_POSITIVE_IS_GOOD[key] ?? true;
-    }
-
-    deltas.push({ stat: key, label, delta, positiveIsGood });
+    const { label, positiveIsGood, group } = describeStatKey(key);
+    deltas.push({ stat: key, label, delta, positiveIsGood, group });
   }
 
   // v4.7.9: полные строки side-by-side — все статы обоих предметов,
   // включая равные (Cyberpunk-стиль: пустых строк нет, честная картина).
+  // v4.8.4: стабильный порядок — статы → навыки → бой, внутри группы по имени.
   const rows: TooltipComparisonRow[] = [];
   for (const key of allKeys) {
     const newVal = newStats.get(key) ?? 0;
     const oldVal = oldStats.get(key) ?? 0;
     const delta = newVal - oldVal;
 
-    let label: string;
-    let positiveIsGood: boolean;
-    if (key.startsWith('skill:')) {
-      const skillKey = key.slice(6);
-      label = SKILL_LABELS_LOCAL[skillKey] ?? skillKey;
-      positiveIsGood = true;
-    } else {
-      label = STAT_LABELS[key] ?? key;
-      positiveIsGood = STAT_POSITIVE_IS_GOOD[key] ?? true;
-    }
-
-    rows.push({ stat: key, label, newValue: newVal, equippedValue: oldVal, delta, positiveIsGood });
+    const { label, positiveIsGood, group } = describeStatKey(key);
+    rows.push({ stat: key, label, newValue: newVal, equippedValue: oldVal, delta, positiveIsGood, group });
   }
+
+  rows.sort((a, b) => {
+    const groupDiff = COMBAT_GROUP_ORDER[a.group] - COMBAT_GROUP_ORDER[b.group];
+    if (groupDiff !== 0) return groupDiff;
+    return a.label.localeCompare(b.label, 'ru');
+  });
 
   return {
     equippedItemId,
@@ -209,6 +266,20 @@ function computeComparison(
     deltas,
     rows,
   };
+}
+
+/**
+ * v4.8.4: строки боевых бонусов экипировки (⚔ +N к навыку / % на все навыки).
+ * Раньше combatBonus нигде не показывался игроку — дельты боя были невидимы.
+ */
+export function buildCombatBonusLines(def: ItemDefinition): string[] {
+  if (!def.combatBonus || def.combatBonus.length === 0) return [];
+  return def.combatBonus.map((bonus) => {
+    const sign = bonus.value > 0 ? '+' : '';
+    const target = bonus.skill ? getSkillLabel(bonus.skill) : 'все навыки';
+    const unit = bonus.type === 'percent' ? '%' : '';
+    return `⚔ ${target} ${sign}${bonus.value}${unit}`;
+  });
 }
 
 export function buildInventoryTooltipContent(

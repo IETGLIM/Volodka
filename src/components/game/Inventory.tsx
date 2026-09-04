@@ -50,6 +50,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
     filteredViews,
     selectedItem,
     selectedView,
+    selectedComparison,
     selectedItemId,
     focusedIndex,
     setFocusedIndex,
@@ -321,6 +322,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                       view={selectedView}
                       isEquipped={isEquippedSelection}
                       equippedSlot={selectedSlot}
+                      comparison={selectedComparison}
                       feedback={useFeedback}
                       pendingActionKey={pendingActionKey}
                       canUse={canUseItem}

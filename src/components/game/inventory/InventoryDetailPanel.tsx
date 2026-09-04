@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useMemo } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { Hand, Lock, Shield, Trash2, X } from 'lucide-react';
 import { getRarityBg, getRarityColor, getRarityLabel } from '@/data/items';
@@ -6,6 +7,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ItemIcon } from '@/components/game/shared/ItemIcon';
 import type { InventoryItemView } from '@/engine/inventory/inventoryPresentation';
+import {
+  buildCombatBonusLines,
+  type TooltipComparison,
+} from '@/engine/inventory/inventoryTooltipPresentation';
+import { EquipmentComparisonSection } from '@/components/game/inventory/EquipmentComparisonBlock';
 import {
   INVENTORY_CATEGORY_LABELS,
   INVENTORY_RARITY_DETAIL_BG,
@@ -20,6 +26,8 @@ interface InventoryDetailPanelProps {
   view: InventoryItemView;
   isEquipped: boolean;
   equippedSlot: EquipmentSlot | null;
+  /** v4.8.4: дельты против надетого в целевом слоте (только для экипировки). */
+  comparison: TooltipComparison | null;
   feedback: string | null;
   pendingActionKey: string | null;
   canUse: boolean;
@@ -37,6 +45,7 @@ export function InventoryDetailPanel({
   view,
   isEquipped,
   equippedSlot,
+  comparison,
   feedback,
   pendingActionKey,
   canUse,
@@ -58,6 +67,11 @@ export function InventoryDetailPanel({
   const iconName = def?.icon;
   const hasIcon = !!iconName;
   const isPending = pendingActionKey !== null;
+  // v4.8.4: боевые бонусы экипировки — раньше были невидимы игроку
+  const combatBonusLines = useMemo(
+    () => (isEquipment && def ? buildCombatBonusLines(def) : []),
+    [isEquipment, def],
+  );
 
   const useLabel = isConsumable
     ? 'Использовать'
@@ -208,6 +222,26 @@ export function InventoryDetailPanel({
           {isBook && def?.linkedContent && (
             <div className="text-xs text-cyan-400/70 italic">
               {def.linkedContent.type === 'poem' ? '📖 Откроет стихотворение' : '📜 Добавит запись в журнал'}
+            </div>
+          )}
+
+          {/* v4.8.4: боевые бонусы экипировки — отдельная секция */}
+          {combatBonusLines.length > 0 && (
+            <div className="space-y-1 rounded-md bg-slate-900/40 border border-rose-700/20 p-2">
+              <p className="font-mono text-[10px] uppercase tracking-wider text-rose-500/70">Боевые бонусы</p>
+              {combatBonusLines.map((line, i) => (
+                <div key={`cb-${i}`} className="text-xs flex items-center gap-1.5 text-amber-300 font-mono">
+                  <span className="text-rose-500/80" aria-hidden>▸</span>
+                  <span>{line}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* v4.8.4: сравнение с надетым в том же слоте (дельты ↑/↓, как в тултипе) */}
+          {comparison && comparison.rows.length > 0 && (
+            <div className="rounded-md bg-slate-900/40 border border-amber-500/20 p-2">
+              <EquipmentComparisonSection comparison={comparison} />
             </div>
           )}
 

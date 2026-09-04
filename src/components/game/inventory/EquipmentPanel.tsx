@@ -1,6 +1,8 @@
 import { Shield } from 'lucide-react';
 import { ItemIcon } from '@/components/game/shared/ItemIcon';
 import { resolveInventoryItemView } from '@/engine/inventory/inventoryPresentation';
+import { getSkillLabel } from '@/engine/inventory/inventoryTooltipPresentation';
+import type { ItemDefinition } from '@/data/items';
 import {
   INVENTORY_SLOT_BORDER_COLORS,
   INVENTORY_SLOT_ICONS,
@@ -12,6 +14,23 @@ import {
   wasDraggingRecently,
 } from '@/components/game/inventory/inventoryDndLogic';
 import type { EquipmentSlot, InventoryItem } from '@/shared/types/game';
+
+/**
+ * v4.8.4: краткая подпись главного бонуса надетого предмета на кнопке слота.
+ * Возвращает текст и «благоприятность» для цвета (emerald — польза, rose — вред).
+ */
+function formatPrimaryEffect(def: ItemDefinition): { text: string; good: boolean } | null {
+  const first = def.effects[0];
+  if (!first) return null;
+  const sign = first.value > 0 ? '+' : '';
+  if (first.skill) {
+    return { text: `${sign}${first.value} ${getSkillLabel(first.skill)}`, good: first.value > 0 };
+  }
+  if (first.stat === 'energy') return { text: `⚡ ${sign}${first.value}`, good: first.value > 0 };
+  if (first.stat === 'stress') return { text: `😰 ${sign}${first.value}`, good: first.value < 0 };
+  if (first.stat === 'karma') return { text: `☯ ${sign}${first.value}`, good: first.value > 0 };
+  return null;
+}
 
 interface EquipmentPanelProps {
   equippedItems: Record<EquipmentSlot, InventoryItem | null>;
@@ -35,6 +54,8 @@ export function EquipmentPanel({
         {(['weapon', 'head', 'body', 'legs', 'feet', 'hands', 'accessory'] as EquipmentSlot[]).map((slot) => {
           const equipped = equippedItems[slot];
           const view = equipped ? resolveInventoryItemView(equipped) : null;
+          // v4.8.4: микро-чип главного бонуса надетого предмета
+          const statChip = view?.def ? formatPrimaryEffect(view.def) : null;
           const isSelected = selectedSlot === slot;
           const slotBorderColor = INVENTORY_SLOT_BORDER_COLORS[slot];
           // Подсветка цели дропа (v4.7.4): совместимый слот — cyan-пульс,
@@ -89,9 +110,20 @@ export function EquipmentPanel({
                 <span>{INVENTORY_SLOT_LABELS[slot]}</span>
               </div>
               {equipped && view?.def ? (
-                <div className="flex items-center gap-1.5">
-                  <ItemIcon icon={view.def.icon} className="size-4 text-slate-100" />
-                  <span className="text-xs text-slate-200 truncate">{equipped.name}</span>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-1.5">
+                    <ItemIcon icon={view.def.icon} className="size-4 text-slate-100" />
+                    <span className="text-xs text-slate-200 truncate">{equipped.name}</span>
+                  </div>
+                  {statChip && (
+                    <div
+                      className={`text-[9px] font-mono leading-none truncate ${
+                        statChip.good ? 'text-emerald-300/90' : 'text-rose-300/90'
+                      }`}
+                    >
+                      {statChip.text}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center gap-1.5 opacity-30">
