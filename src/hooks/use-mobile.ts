@@ -52,10 +52,17 @@ export function useIsMobileVisual(): boolean {
   const [isMobile, setIsMobile] = useState<boolean>(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < VISUAL_MOBILE_BREAKPOINT);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    // FIX (perf): matchMedia вместо resize-листенера — событие change срабатывает
+    // только при пересечении брейкпоинта (а не на каждый пиксель перетаскивания
+    // окна), устранена рассинхронизация с useIsMobile (оба хука теперь
+    // media-query-based) и лишние пересчёты подписчиков при каждом resize.
+    const mql = window.matchMedia(`(max-width: ${VISUAL_MOBILE_BREAKPOINT - 1}px)`);
+    queueMicrotask(() => setIsMobile(mql.matches));
+    const onChange = (e: MediaQueryListEvent) => {
+      setIsMobile(e.matches);
+    };
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
   }, []);
 
   return isMobile;
@@ -78,10 +85,14 @@ export function useMobileVisualPerf(): MobileVisualPerf {
   const [narrow, setNarrow] = useState(false);
 
   useEffect(() => {
-    const check = () => setNarrow(window.innerWidth < 640);
-    check();
-    window.addEventListener('resize', check);
-    return () => window.removeEventListener('resize', check);
+    // FIX (perf): matchMedia вместо resize-листенера (см. useIsMobileVisual).
+    const mql = window.matchMedia('(max-width: 639px)');
+    queueMicrotask(() => setNarrow(mql.matches));
+    const onChange = (e: MediaQueryListEvent) => {
+      setNarrow(e.matches);
+    };
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
   }, []);
 
   return { visualLite, narrow, effectsScale: preset.effectsScale };

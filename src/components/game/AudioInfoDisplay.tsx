@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Volume2, VolumeX, Music } from 'lucide-react';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { musicEngine } from '@/engine/MusicEngine';
 import { readAudioSettings, AUDIO_SETTINGS_CHANGED, type AudioSettingsSnapshot } from '@/engine/audio/AudioSettings';
 import { SCENE_LABELS } from '@/engine/menu/menuConstants';
@@ -76,7 +77,7 @@ export function AudioInfoDisplay() {
   return (
     <div
       className="audio-info-widget glass-noise"
-      style={{ position: 'fixed', bottom: '8px', right: '8px', zIndex: 11 }}
+      style={{ position: 'fixed', bottom: '8px', right: '8px', zIndex: UI_LAYERS.HUD + 1 }}
       role="status"
       aria-label={`Аудио: ${isPlaying ? 'воспроизведение' : 'пауза'}`}
     >

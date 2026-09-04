@@ -29,6 +29,12 @@ export interface EventBusOptions {
   maxHandlersPerEvent?: number;
   /** Hard cap on onAny catch-all handlers (default 20). */
   maxAnyHandlers?: number;
+  /** Strict capacity mode: throw when the handler cap is reached (default true).
+   *  FIX (robustness): прод-синглтон переключён на нестрогий режим — раньше
+   *  21-я module-level подписка кидала исключение при БУТЕ игры (hard crash).
+   *  В проде превышение теперь деградирует в devWarn, в dev/тестах throw
+   *  сохранён как ранний детектор утечек подписок. */
+  strictCapacity?: boolean;
 }
 
 type EventHandler<T> = (payload: T) => void;
@@ -113,6 +119,8 @@ export class EventBusClass<TMap extends object = EventMap>
   /** Hard caps — subscription throws when exceeded (catches listener leaks). */
   private readonly maxHandlersPerEvent: number;
   private readonly maxAnyHandlers: number;
+  /** Строгий режим капа: throw (dev/тесты) или мягкая деградация (прод). */
+  private readonly strictCapacity: boolean;
 
   /** Whether this bus has been disposed — subscribe only after revive(). */
   private disposed = false;
@@ -127,14 +135,25 @@ export class EventBusClass<TMap extends object = EventMap>
   constructor(options: EventBusOptions = {}) {
     this.maxHandlersPerEvent = options.maxHandlersPerEvent ?? 20;
     this.maxAnyHandlers = options.maxAnyHandlers ?? 20;
+    this.strictCapacity = options.strictCapacity ?? true;
   }
 
   private assertHandlerCapacity(currentCount: number, limit: number, label: string): void {
     if (currentCount < limit) return;
-    throw new Error(
-      `[EventBus] Cannot subscribe — ${label} already has ${currentCount} handlers (limit: ${limit}). ` +
-        'Fix the subscription leak or call the returned unsubscribe function.',
-    );
+    if (this.strictCapacity) {
+      throw new Error(
+        `[EventBus] Cannot subscribe — ${label} already has ${currentCount} handlers (limit: ${limit}). ` +
+          'Fix the subscription leak or call the returned unsubscribe function.',
+      );
+    }
+    // Мягкая деградация (прод-синглтон): игра продолжает работать,
+    // превышение капа сигнализируется предупреждением вместо краша бута.
+    if (process.env.NODE_ENV !== 'production') {
+      devWarn(
+        `[EventBus] Capacity soft-limit exceeded — ${label} now has ${currentCount + 1} handlers ` +
+          `(limit: ${limit}). Possible subscription leak — check module-level on() calls.`,
+      );
+    }
   }
 
   private assertSubscribable(operation: 'on' | 'onAny'): void {
@@ -418,8 +437,13 @@ export function createEventBus<TMap extends object = EventMap>(
   return new EventBusClass<TMap>(options);
 }
 
-/** Singleton event bus instance — typed with the consolidated EventMap. */
-export const eventBus = createEventBus();
+/** Singleton event bus instance — typed with the consolidated EventMap.
+ *  FIX (robustness): в проде кап обработчиков деградирует мягко (devWarn),
+ *  а не кидает исключение на 21-й подписке — module-level подписка, попавшая
+ *  в кап при БУТЕ игры, раньше роняла весь экран загрузки. */
+export const eventBus = createEventBus({
+  strictCapacity: process.env.NODE_ENV !== 'production',
+});
 
 export function disposeEventBus(): void {
   eventBus.dispose();

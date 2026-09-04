@@ -477,7 +477,9 @@ const SkillSlotItem = memo(function SkillSlotItem({
               border: `1px solid ${COLORS.cyan}40`,
               borderRadius: 6,
               whiteSpace: 'nowrap',
-              zIndex: 100,
+              // FIX: сырой zIndex 100 (= UI_LAYERS.LOADING) — тултип живёт
+              // внутри стека компонента; канонический тултип-слой.
+              zIndex: UI_LAYERS.TOOLTIP,
               pointerEvents: 'none',
               boxShadow: `0 4px 16px rgba(0,0,0,0.5), 0 0 8px ${COLORS.cyan}20`,
             }}
