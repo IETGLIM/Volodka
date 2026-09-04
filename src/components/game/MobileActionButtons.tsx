@@ -20,6 +20,7 @@ import { usePlayerLevel } from '@/store/selectors/playerSelectors';
 import { useCollectedPoems } from '@/store/selectors/worldSelectors';
 import { areSharedVirtualControlsWritable, useVirtualControlsRef, clearSharedVirtualControls } from '@/engine/VirtualControlsState';
 import { fireInteractPress } from '@/engine/input/fireInteractPress';
+import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
@@ -45,11 +46,6 @@ export function MobileActionButtons() {
     // Reset after one frame — engine reads this in the next physics step
     requestAnimationFrame(() => { virtualControlsRef.current.jump = 0; });
   }, [virtualControlsRef]);
-
-  /* ── Open panel via synthetic keyboard event (I=inventory, J=journal) ── */
-  const openPanelViaKey = useCallback((code: string) => {
-    window.dispatchEvent(new KeyboardEvent('keydown', { code, bubbles: true }));
-  }, []);
 
   /* ── Onboarding gate: hide during first minutes ── */
   const level = usePlayerLevel();
@@ -220,7 +216,9 @@ export function MobileActionButtons() {
               e.preventDefault();
               e.stopPropagation();
               hapticLight();
-              openPanelViaKey('KeyI');
+              // Прямой вызов панельного свитчборда — без синтетического KeyI,
+              // которое раньше проходило по всем window-подписчикам.
+              firePanelShortcut('KeyI');
             }}
           >
             <Package size={18} aria-hidden="true" />
@@ -238,7 +236,7 @@ export function MobileActionButtons() {
               e.preventDefault();
               e.stopPropagation();
               hapticLight();
-              openPanelViaKey('KeyJ');
+              firePanelShortcut('KeyJ');
             }}
           >
             <BookOpen size={18} aria-hidden="true" />

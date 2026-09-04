@@ -7,9 +7,97 @@ import {
   applyEscapeDismissAction,
   resolveEscapeDismissAction,
 } from '@/engine/input/escapeDismissAction';
+import { registerPanelShortcutHandler } from '@/engine/input/panelShortcutDispatcher';
 import type { MinigamePanelSetters } from '@/shared/constants/minigames';
 import type { PanelType } from './types';
 import { blocksPanelShortcuts, type GamePhase } from '@/shared/gamePhase';
+
+/** Минимальный снапшот панельного состояния для свитчборда. */
+interface PanelSwitchboardState {
+  activePanel: PanelType;
+  mode: GamePhase;
+}
+
+interface PanelSwitchboardIo {
+  dispatchPanel: (panel: PanelType) => void;
+  closeAllPanels: () => void;
+}
+
+/**
+ * Свитчборд «чистых» панельных клавиш (без модификаторов).
+ * Единая точка правды для window-keydown И прямого вызова из мобильного HUD
+ * (panelShortcutDispatcher) — раньше мобильные кнопки дублировали поведение
+ * синтетическими KeyboardEvent, и любой новый шорткат требовал правок в двух
+ * местах. Модификаторные комбинации (Shift+T, Shift+S, Shift+P) обрабатываются
+ * только клавиатурным путём и сюда не попадают.
+ *
+ * @returns true — код распознан и панель переключена.
+ */
+function runPanelSwitchboard(
+  code: string,
+  ps: PanelSwitchboardState,
+  io: PanelSwitchboardIo,
+): boolean {
+  if (blocksPanelShortcuts(ps.mode)) return false;
+
+  switch (code) {
+    case 'KeyJ':
+      if (ps.activePanel !== 'journal') io.closeAllPanels();
+      io.dispatchPanel('journal');
+      return true;
+    case 'KeyQ':
+      io.dispatchPanel('quests');
+      return true;
+    case 'KeyI':
+      io.dispatchPanel('inventory');
+      return true;
+    case 'Tab':
+    case 'KeyM':
+      io.dispatchPanel('worldMap');
+      return true;
+    case 'KeyP':
+      io.dispatchPanel('poetry');
+      return true;
+    case 'KeyN':
+      io.dispatchPanel('npcRelation');
+      return true;
+    case 'KeyO':
+      io.dispatchPanel('adventureLog');
+      return true;
+    case 'KeyC':
+      io.dispatchPanel('characterProfile');
+      return true;
+    case 'KeyK':
+      io.dispatchPanel('codex');
+      return true;
+    case 'KeyL':
+      io.dispatchPanel('dialogueHistory');
+      return true;
+    case 'KeyH':
+      io.dispatchPanel('achievements');
+      return true;
+    case 'KeyT':
+      io.dispatchPanel('skillTree');
+      return true;
+    case 'KeyG':
+      io.dispatchPanel('crafting');
+      return true;
+    case 'KeyF':
+      io.dispatchPanel('fastTravel');
+      return true;
+    case 'KeyV':
+      io.dispatchPanel('perks');
+      return true;
+    case 'KeyB':
+      io.dispatchPanel('questBoard');
+      return true;
+    case 'KeyY':
+      io.dispatchPanel('karmaPoem');
+      return true;
+    default:
+      return false;
+  }
+}
 
 interface MinigameOpenFlags {
   codebreakerOpen: boolean;
@@ -168,49 +256,30 @@ export function useKeyboardShortcutManager({
 
       if (panelShortcutsBlocked) return;
 
-      if (e.code === 'KeyJ') {
-        if (ps.activePanel !== 'journal') closeAllPanelsRef.current();
-        dispatchPanel('journal');
-      }
-      if (e.code === 'KeyQ') dispatchPanel('quests');
-      if (e.code === 'KeyI') {
-        e.preventDefault();
-        dispatchPanel('inventory');
-      }
-      if (e.code === 'Tab') {
-        e.preventDefault();
-        dispatchPanel('worldMap');
-      }
-      // Poems are the game's core theme (the README documents P = Стихи).
-      // P opens the poetry book; Shift+P toggles photo mode (secondary feature).
-      if (e.code === 'KeyP' && !e.ctrlKey && !e.shiftKey) {
-        e.preventDefault();
-        dispatchPanel('poetry');
-      }
+      /* Модификаторные комбинации — только клавиатура, до свитчборда. */
       if (e.code === 'KeyP' && e.shiftKey) {
         e.preventDefault();
         eventBus.emit(PHOTO_EVENTS.toggle, PHOTO_EMPTY_PAYLOAD);
-      }
-      if (e.code === 'KeyM') dispatchPanel('worldMap');
-      if (e.code === 'KeyN') dispatchPanel('npcRelation');
-      if (e.code === 'KeyO') dispatchPanel('adventureLog');
-      if (e.code === 'KeyC') dispatchPanel('characterProfile');
-      if (e.code === 'KeyK') dispatchPanel('codex');
-      if (e.code === 'KeyL') dispatchPanel('dialogueHistory');
-      if (e.code === 'KeyH') dispatchPanel('achievements');
-      if (e.code === 'KeyT' && !e.shiftKey) dispatchPanel('skillTree');
-      if (e.code === 'KeyG') dispatchPanel('crafting');
-      if (e.code === 'KeyF') dispatchPanel('fastTravel');
-      if (e.code === 'KeyV') dispatchPanel('perks');
-      if (e.code === 'KeyB') dispatchPanel('questBoard');
-      if (e.code === 'KeyY') dispatchPanel('karmaPoem');
-      if (e.code === 'KeyS' && e.shiftKey && !e.ctrlKey) {
-        e.preventDefault();
-        dispatchPanel('stats');
+        return;
       }
       if (e.shiftKey && e.code === 'KeyT') {
         e.preventDefault();
         dispatchPanel('trading');
+        return;
+      }
+
+      /* Чистые панельные клавиши — общий свитчборд (клавиатура + мобильный HUD). */
+      if (runPanelSwitchboard(e.code, ps, {
+        dispatchPanel,
+        closeAllPanels: () => closeAllPanelsRef.current(),
+      })) {
+        e.preventDefault();
+        return;
+      }
+
+      if (e.code === 'KeyS' && e.shiftKey && !e.ctrlKey) {
+        e.preventDefault();
+        dispatchPanel('stats');
       }
       if (e.code === 'KeyR') {
         const store = useGameStore.getState();
@@ -274,4 +343,19 @@ export function useKeyboardShortcutManager({
     resetExamine,
     clearPendingTriggerZone,
   ]);
+
+  /* ── Прямой канал для мобильного HUD / геймпада ──
+   * Регистрируем свитчборд в panelShortcutDispatcher один раз на монтирование:
+   * все ref'ы стабильны, актуальное состояние читается внутри вызова.
+   * До этого MobileActionButtons эмулировал KeyI/KeyJ синтетическими
+   * KeyboardEvent — событие проходило по всем window-подписчикам, и поведение
+   * зависело от порядка листенеров. */
+  useEffect(() => {
+    return registerPanelShortcutHandler((code) =>
+      runPanelSwitchboard(code, panelStateRef.current, {
+        dispatchPanel: (panel) => dispatchPanelRef.current(panel),
+        closeAllPanels: () => closeAllPanelsRef.current(),
+      }),
+    );
+  }, []);
 }
