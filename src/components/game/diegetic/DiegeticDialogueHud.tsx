@@ -32,6 +32,8 @@ import { useNarrativeTypewriter } from '@/hooks/useNarrativeTypewriter';
 import { useNarrativeChoiceKeyboard } from '@/hooks/useNarrativeChoiceKeyboard';
 import { NarrativeChoiceList } from './NarrativeChoiceList';
 import { DialogueRelationBar } from '../dialogue/DialogueRelationBar';
+import { FactionAttitudeChip } from '../dialogue/FactionAttitudeChip';
+import { useNpcFactionAttitude } from '../dialogue/useNpcFactionAttitude';
 import { DialogueHistoryPanel } from '../dialogue/DialogueHistoryPanel';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -306,6 +308,9 @@ export function DiegeticDialogueHud() {
   const accentColor = npcId
     ? (NPC_PORTRAIT_COLORS[npcId]?.primary ?? ACCENT)
     : ACCENT;
+  // Отношение фракции говорящего (v4.8.6): чип «фракция · уровень» в шапке
+  // и реплика-флейвор для сильных уровней (союзник/враждебность).
+  const factionAttitude = useNpcFactionAttitude(npcId);
   // Relation with the current speaker (dialogue kind only). Shown as a color-coded
   // bar in the dialogue header — Disco Elysium-style relationship feedback.
   const speakerRelationValue = kind === 'dialogue' && dialogueNode?.speakerId
@@ -368,6 +373,14 @@ export function DiegeticDialogueHud() {
               >
                 {speaker}
               </p>
+              {factionAttitude ? (
+                <FactionAttitudeChip
+                  factionLabel={factionAttitude.factionLabel}
+                  tierLabel={factionAttitude.tierLabel}
+                  tier={factionAttitude.tier}
+                  metCount={factionAttitude.metCount}
+                />
+              ) : null}
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button
@@ -410,6 +423,20 @@ export function DiegeticDialogueHud() {
               {skillCheckBanner.success ? '✓' : '✗'} {skillCheckBanner.skill}
             </p>
           )}
+
+          {/* Реплика-флейвор репутации — только для сильных уровней
+              (союзник/враждебность), чтобы не шуметь на каждом узле. */}
+          {factionAttitude && (factionAttitude.tier === 'ally' || factionAttitude.tier === 'hostile') && factionAttitude.line ? (
+            <p
+              className="px-4 pb-1 font-serif text-xs italic leading-relaxed"
+              style={{
+                color: factionAttitude.tier === 'ally' ? 'rgba(110, 231, 183, 0.75)' : 'rgba(252, 165, 165, 0.78)',
+                textShadow: 'var(--hud-filmic-shadow)',
+              }}
+            >
+              {factionAttitude.line}
+            </p>
+          ) : null}
 
           <button
             type="button"
