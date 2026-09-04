@@ -146,10 +146,14 @@ const DEBUFF_COLORS = {
   background: 'rgba(255, 51, 102, 0.08)',
 } as const;
 
-/** Position style mappings */
+/** Position style mappings.
+ *  FIX (overlap): 'top-right' опущен с 16 до 84px — раньше трекер совпадал
+ *  пиксель-в-пиксель с DifficultyIndicator (top-4 right-4) и налегал на
+ *  правый кластер тайтл-бара. Правая колонка теперь: топ-бар (0–40) →
+ *  сложность (48–78) → баффы (84) → миникарта (146). */
 const POSITION_STYLES: Record<TrackerPosition, React.CSSProperties> = {
   'top-left': { top: 16, left: 16 },
-  'top-right': { top: 16, right: 16 },
+  'top-right': { top: 84, right: 16 },
   'bottom-left': { bottom: 16, left: 16 },
   'bottom-right': { bottom: 16, right: 16 },
 };

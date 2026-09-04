@@ -30,10 +30,9 @@ export function FloatingActionIndicator() {
   }, []);
 
   useEffect(() => {
-    // Listen for XP gain events
-    const unsubXp = eventBus.on('fx:xp_gain', (payload) => {
-      addAction('⬆', `+${payload.amount} XP`, '#22d3ee');
-    });
+    // FIX (dedup): fx:xp_gain-чип убран — XP уже показывается числом у прицела
+    // (DamageNumberFloat) и в ambient-ленте (HUDNotificationFeed); четвертый
+    // канал внизу-центра создавал «спам» из 4–5 одновременных « +X XP ».
 
     // Listen for quest events
     const unsubQuest = eventBus.on('quest:completed', () => {
@@ -53,7 +52,6 @@ export function FloatingActionIndicator() {
     });
 
     return () => {
-      unsubXp();
       unsubQuest();
       unsubChoice();
     };

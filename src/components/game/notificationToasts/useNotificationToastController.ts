@@ -123,10 +123,10 @@ export function useNotificationToastController() {
       eventBus.on('quest:objective_updated', (payload) => {
         toastManager.addToast('quest', `Квест обновлён: ${payload.questId}`);
       }),
-      // achievement:unlocked — 'Достижение разблокировано: [название]' golden toast
-      eventBus.on('achievement:unlocked', (payload) => {
-        toastManager.addToast('achievement', `Достижение разблокировано: ${payload.title ?? payload.achievementId ?? ''}`);
-      }),
+      // FIX (dedup): achievement:unlocked тост убран — достижение уже
+      // показывает угловой попап (AchievementNotification) с названием,
+      // описанием и звуком; для трофеев — полноэкранная кат-сцена.
+      // Текстовый тост был третьим дублирующим каналом.
     ];
 
     return () => unsubs.forEach((unsub) => unsub());

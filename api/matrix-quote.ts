@@ -17,8 +17,13 @@ import { buildWhisperSystemPrompt, pickWhisperFallback, sanitizeWhisper } from '
 
 export const config = { runtime: 'edge' };
 
-const FREEROUTER_ENDPOINT = 'https://freerouter.eu.cc/v1/chat/completions';
-const DEFAULT_MODEL = 'glm-5.2';
+const FREEROUTER_ENDPOINT = 'https://api.freerouter.eu.cc/v1/chat/completions';
+// FIX: прежний базовый URL https://freerouter.eu.cc/v1/... отдаёт HTML документации
+// (HTTP 405) — фича молча уходила в фолбэк. Реальный API-базовый URL
+// — https://api.freerouter.eu.cc (сверено с официальными docs и curl-пробой).
+// FIX (model): glm-5.2 отсутствует в каталоге провайдера (проверено GET /v1/models);
+// 'auto' — бесплатный роутер на актуальные модели (вход/выход по $0).
+const DEFAULT_MODEL = 'auto';
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const RATE_LIMIT_INTERVAL_MS = 3 * 1000;
 
@@ -92,11 +97,9 @@ async function callFreeRouter(
   systemPrompt: string,
   userMessage: string,
 ): Promise<{ quote: string | null; model: string }> {
-  // glm-5.2 is a reasoning model — it emits a hidden reasoning trace before
-  // the final `content`. 400 tokens was empirically enough at integration
-  // time, but live probes (2026-08) showed traces occasionally eating the
-  // whole budget → finish_reason "length" with empty content. 900 tokens
-  // leaves headroom for the trace + a 1-2 sentence Russian quote.
+  // 'auto' — не reasoning-модель: скрытого reasoning-trace нет. Бюджет 900
+  // токенов оставлен как запас прочности (история с glm reasoning-trace),
+  // теперь он целиком уходит в ответ — 1–2 предложения цитаты.
   const upstream = await fetch(FREEROUTER_ENDPOINT, {
     method: 'POST',
     headers: {

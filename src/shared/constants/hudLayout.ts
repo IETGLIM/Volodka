@@ -80,6 +80,23 @@ export function explorationAchievementTopPx(): number {
   return explorationMinimapTopPx() + EXPLORATION_HUD_LAYOUT.MINIMAP_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }
 
+/** FIX (overlap): QuestObjectiveCard — постоянный слот под миникартой.
+ *  Раньше карточка висела на top: clamp(168px, 18vh, 196px) и налегала на
+ *  вертикальный диапазон миникарты (146–342px). Теперь вся правая колонка
+ *  живёт по единой сетке: индикатор сложности → миникарта → квест-карта →
+ *  тосты достижений → стат-пипсы. */
+export function explorationQuestCardTopPx(): number {
+  return explorationAchievementTopPx();
+}
+
+/** Компактная квест-карта: бюджет высоты (заголовок + чеклист + прогресс). */
+export const QUEST_OBJECTIVE_CARD_HEIGHT = 216;
+
+/** Achievement toasts — под квест-картой в правой колонке */
+export function explorationAchievementCardSafeTopPx(): number {
+  return explorationQuestCardTopPx() + QUEST_OBJECTIVE_CARD_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
+}
+
 /** Stat/karma toasts — below achievement column */
 export function explorationStatToastTopPx(): number {
   return explorationAchievementTopPx() + 88;

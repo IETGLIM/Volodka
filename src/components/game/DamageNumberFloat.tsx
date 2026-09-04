@@ -259,15 +259,10 @@ export function DamageNumberFloat() {
     return unsub;
   }, [addNumber]);
 
-  /* ── Listen for combat:victory → XP number ── */
-  useEffect(() => {
-    const unsub = eventBus.on('combat:victory', (payload) => {
-      if (payload.xpGained > 0) {
-        addNumber('xp', payload.xpGained);
-      }
-    }, EventBusPriority.FX);
-    return unsub;
-  }, [addNumber]);
+  /* ── FIX (dedup): combat:victory XP-число убрано — CombatSystem после
+     victory диспетчит addXp → батчер эмитит fx:xp_gain, и старый листенер
+     combat:victory рисовал ВТОРОЕ одинаковое число у прицела.
+     Канонический эмиттер XP для UI — батчер (fx:xp_gain). ── */
 
   /* ── Listen for fx:xp_gain ── */
   useEffect(() => {

@@ -13,6 +13,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
+import { explorationQuestCardTopPx } from '@/shared/constants/hudLayout';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { HazardStatusIndicator } from '@/components/game/hud/parts/HazardStatusIndicator';
 import { CityWhisperOverlay } from '@/components/game/hud/parts/CityWhisperOverlay';
@@ -240,10 +241,17 @@ export function ExplorationHUD(props: HUDProps) {
           here to avoid duplicate rAF loops and visual overlap. */}
       {!isMobile && (
         <div
-          className="absolute top-4 right-4 flex flex-col items-end gap-2 pointer-events-auto hud-filmic-glow-breathe"
+          className="absolute top-12 right-4 flex flex-col items-end gap-2 pointer-events-auto hud-filmic-glow-breathe"
           style={{ zIndex: UI_LAYERS.HUD + 1 }}
         >
-          <DifficultyIndicator onClick={() => {}} />
+          {/* FIX (overlap): top-4 → top-12 — индикатор налегал на правый кластер
+              тайтл-бара (KarmaRing/LevelBadge/CompassIndicator, top-2 right-2,
+              высота ≈40px). Теперь вся правая колонка без наложений:
+              топ-бар (0–40) → сложность (48) → баффы (84) → миникарта (146). */}
+          {/* FIX: кнопка больше не мёртвая — открывает меню (вкладка настроек
+              содержит выбор сложности). Раньше onClick был пустой заглушкой,
+              хотя компонент обещает «Click to open the difficulty selector». */}
+          <DifficultyIndicator onClick={() => props.onOpenMenu?.()} />
         </div>
       )}
 
@@ -261,7 +269,7 @@ export function ExplorationHUD(props: HUDProps) {
             exit={{ opacity: 0, x: 18 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
             className="absolute right-4 pointer-events-auto hud-filmic-glow-breathe"
-            style={{ top: 'clamp(168px, 18vh, 196px)', zIndex: UI_LAYERS.HUD + 1, maxWidth: 300 }}
+            style={{ top: explorationQuestCardTopPx(), zIndex: UI_LAYERS.HUD + 1, maxWidth: 300 }}
           >
             <QuestObjectiveCard
               quest={activeQuestCardData}

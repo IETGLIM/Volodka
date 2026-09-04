@@ -29,8 +29,13 @@ import {
 
 export const config = { runtime: 'edge' };
 
-const FREEROUTER_ENDPOINT = 'https://freerouter.eu.cc/v1/chat/completions';
-const DEFAULT_MODEL = 'glm-5.2';
+const FREEROUTER_ENDPOINT = 'https://api.freerouter.eu.cc/v1/chat/completions';
+// FIX: прежний базовый URL https://freerouter.eu.cc/v1/... отдаёт HTML документации
+// (HTTP 405) — обе LLM-фичи молча уходили в фолбэк. Реальный API-базовый URL
+// — https://api.freerouter.eu.cc (сверено с официальными docs и curl-пробой).
+// FIX (model): glm-5.2 отсутствует в каталоге провайдера (проверено GET /v1/models);
+// 'auto' — бесплатный роутер на актуальные модели (вход/выход по $0).
+const DEFAULT_MODEL = 'auto';
 // Новости — дешёвый контент: кеш щедрее, чем у matrix-quote (5 мин → 10 мин).
 const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX_ENTRIES = 256;
@@ -64,9 +69,8 @@ interface FreeRouterResponse {
 }
 
 async function callFreeRouter(apiKey: string, model: string, systemPrompt: string): Promise<{ news: string | null; model: string }> {
-  // glm-5.2 — reasoning-модель: скрытый reasoning-trace съедает бюджет
-  // токенов, поэтому max_tokens=900 (как в matrix-quote), иначе content
-  // приходит пустым при finish_reason "length".
+  // 'auto' — не reasoning-модель: скрытого reasoning-trace нет, бюджет
+  // max_tokens уходит целиком в ответ (900 оставлено как запас прочности).
   const upstream = await fetch(FREEROUTER_ENDPOINT, {
     method: 'POST',
     headers: {
@@ -138,6 +142,8 @@ export default async function handler(req: Request): Promise<Response> {
   const cached = responseCache.get(key);
   if (cached && now - cached.generatedAt < CACHE_TTL_MS) return json({ news: cached.news, model: cached.model, cached: true });
 
+  // 'auto' — не reasoning-модель: скрытого reasoning-trace нет, бюджет
+  // max_tokens уходит целиком в ответ (см. примечание в readme).
   const model = process.env.FREEROUTER_MODEL || DEFAULT_MODEL;
   try {
     const result = await callFreeRouter(apiKey, model, buildCityNewsPrompt(ctx));

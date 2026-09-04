@@ -67,7 +67,6 @@ import '@/engine/audio/transitionSound';
 import { WeatherIndicator } from '../WeatherIndicator';
 import { AmbientAtmosphereCaption } from '../AmbientAtmosphereCaption';
 import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';
-import { SceneDiscoveryToast } from '@/components/game/SceneDiscoveryToast';
 import { HUDBootSequence } from '@/components/game/hud/parts/HUDBootSequence';
 import { HUDNotificationFeed } from '@/components/game/hud/parts/HUDNotificationFeed';
 import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
@@ -113,12 +112,9 @@ import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
 const LazyDataTerminalOverlay = lazy(() =>
   import('@/components/game/DataTerminalOverlay').then((m) => ({ default: m.DataTerminalOverlay })),
 );
-import { LevelUpNotification } from '@/components/game/LevelUpNotification';
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { ProximityWhisperOverlay } from '@/components/game/ProximityWhisperOverlay';
-import { QuickInventoryBar } from '@/components/hud/QuickInventoryBar';
 import { ScenePoiCompass } from '@/components/hud/ScenePoiCompass';
-import { AchievementPopup } from '@/components/game/hud/parts/AchievementPopup';
 import EnvironmentalEffectsOverlay from '@/components/game/hud/parts/EnvironmentalEffectsOverlay';
 import BuffDebuffTracker from '@/components/game/hud/parts/BuffDebuffTracker';
 import { SkillRechargeHUD } from '@/components/game/hud/parts/SkillRechargeHUD';
@@ -144,10 +140,14 @@ import { AudioInfoDisplay } from '../AudioInfoDisplay';
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
 
-/** Trophy achievement layer: mounts the watcher hook + popup. */
+/** Trophy achievement layer: mounts the watcher hook. FIX (dedup):
+ *  <AchievementPopup /> убран — трофейный unlock и так рендерит
+ *  полноэкранную кат-сцену AchievementUnlockCelebration (GameplayAchievementCelebration),
+ *  читающую те же trophyNotifications; карточка была дублем на том же экране.
+ *  Watcher остаётся — он единственный триггер оценки трофеев. */
 function TrophyAchievementLayer() {
   useTrophyAchievementWatcher();
-  return <AchievementPopup />;
+  return null;
 }
 
 /** Environmental effects overlay — wrapper that calls hooks at the top level. */
@@ -414,7 +414,11 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
   return (
     <>
       <GameplayLevelUpEffects />
-      <LevelUpNotification />
+      {/* FIX (dedup): <LevelUpNotification /> убран — он дублировал " +X XP "
+          тостом справа-снизу; XP теперь показывается в двух недублирующихся
+          каналах: плавающее число у прицела (DamageNumberFloat) и
+          ambient-лента (HUDNotificationFeed). Полноэкранное празднование
+          левел-апа по-прежнему в LevelUpEffect/LevelUpBanner. */}
       <GameplayEventNotifications />
       <GameplayCombatVisualFx />
       <GameplayScreenEffectsLayer />
@@ -495,7 +499,11 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
         <>
           <StressIndicator />
           <QuickUseBar />
-          <QuickInventoryBar />
+          {/* FIX (dedup + overlap): <QuickInventoryBar /> убран — он дублировал
+              QuickUseBar (оба — быстрые расходники внизу-центру), перекрывал
+              [E]-промпт (низ 234 vs бар 190–258) и crafting-тосты (188–244).
+              Быстрое использование предметов — в QuickUseBar (с DnD); полный
+              инвентарь — по Tab. */}
           <Suspense fallback={null}>
             <LazyCompassHUD />
           </Suspense>
@@ -556,12 +564,14 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       </Suspense>
       <ExplorationHintsPanel />
       <AmbientAtmosphereCaption />
-      {/* Filmic scene-discovery celebration — replaces the older neon SceneDiscoveryToast.
-          Subscribes to exploration:scene_discovered, renders a {count}/{total} kicker
-          with hud-filmic-caption styling. DayNightCycleIndicator was moved inside
-          <LazyHUD> by the progressive-reveal refactor (commit 3c92c50). */}
+      {/* Filmic scene-discovery celebration — единственный попап открытия локации.
+          Старый неоновый SceneDiscoveryToast удалён из монтирования: он дублировал
+          то же событие exploration:scene_discovered, и игрок видел две плашки на
+          каждую новую локацию. Subscribes to exploration:scene_discovered, renders
+          a {count}/{total} kicker with hud-filmic-caption styling.
+          DayNightCycleIndicator was moved inside <LazyHUD> by the progressive-reveal
+          refactor (commit 3c92c50). */}
       <SceneDiscoveryCelebration />
-      <SceneDiscoveryToast />
       <TutorialOverlay />
       <FirstPlayTutorial />
       <TrophyAchievementLayer />

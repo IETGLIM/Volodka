@@ -13,9 +13,14 @@ import { eventBus } from '@/engine/EventBus';
 import { playAchievementUnlockSound } from '@/engine/achievementAudio';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
-import { explorationAchievementTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
+import { explorationAchievementCardSafeTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
-import { CATEGORY_META, RARITY_META, type AchievementCategory } from '@/data/achievements';
+import { CATEGORY_META, RARITY_META, TROPHY_ACHIEVEMENTS, type AchievementCategory } from '@/data/achievements';
+
+/* ─── FIX (dedup): трофеи празднуются полноэкранной кут-сценой
+   AchievementUnlockCelebration и не должны ПОВТОРНО показываться
+   этим угловым попапом. Канонический источник ID — данные. ─── */
+const TROPHY_ID_SET = new Set<string>(TROPHY_ACHIEVEMENTS.map((t) => t.id));
 
 /* ─── Notification State ─── */
 
@@ -284,6 +289,10 @@ export function AchievementNotification() {
   /* ── Subscribe to achievement:unlocked events from EventBus ── */
   useEffect(() => {
     const unsub = eventBus.on('achievement:unlocked', (payload) => {
+      // FIX (dedup): трофеи показываются полноэкранной кат-сценой —
+      // здесь пропускаем, чтобы не было двух попапов одновременно.
+      if (TROPHY_ID_SET.has(payload.achievementId)) return;
+
       const notifId = `ach-${payload.achievementId}-${Date.now()}`;
       queueAchievement({
         id: notifId,
@@ -321,7 +330,7 @@ export function AchievementNotification() {
       data-exploration-ui
       style={{
         zIndex: UI_LAYERS.TOASTS + 1,
-        top: explorationAchievementTopPx(),
+        top: explorationAchievementCardSafeTopPx(),
         right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET,
         pointerEvents: 'none',
       }}

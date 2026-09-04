@@ -16,6 +16,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { SceneContextChip } from '@/components/game/hud/parts/SceneContextChip';
+import { PlayerStatusFrame } from '@/components/game/hud/parts/PlayerStatusFrame';
 import { TopBarDataTicker } from '@/components/game/hud/parts/TopBarDataTicker';
 import { ExplorationProgressBadge } from '@/components/game/hud/parts/ExplorationProgressBadge';
 import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
@@ -57,13 +58,19 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
       role="region"
       aria-label="Верхняя панель интерфейса: сцена, уровень, опыт, компас и время"
     >
-      {/* Top-left: scene context chip */}
+      {/* Top-left: WoW-стиль фрейм героя (портрет + бары ЭН/СТР/КАР) + сцена-чип.
+          Фрейм скрыт на мобильных (compact тач-HUD) — как и правый кластер.
+          FIX (orphan): KarmaHudMeter существовал, но не монтировался; его роль
+          теперь выполняет постоянный PlayerStatusFrame в топ-баре. */}
       <motion.div
         initial={reducedMotion ? false : { opacity: 0, y: -8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute top-2.5 left-2.5"
+        className="absolute top-2 left-2.5 flex items-start gap-2"
       >
+        <div className="hidden sm:block">
+          <PlayerStatusFrame />
+        </div>
         <SceneContextChip />
       </motion.div>
 

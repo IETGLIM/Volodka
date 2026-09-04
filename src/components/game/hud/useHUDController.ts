@@ -4,7 +4,7 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { useActiveQuests } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
-import { floatKarma, floatEnergy, floatStress, floatXP, floatLevelUp } from '@/components/game/FloatingText';
+import { floatKarma, floatEnergy, floatStress, floatLevelUp } from '@/components/game/FloatingText';
 import { showStatChange } from '@/components/game/microAnimations/statChangePool';
 import type { SkillAchievementNotice } from '@/components/game/hud/parts/AchievementPopup';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
@@ -216,8 +216,11 @@ export function useHUDController(props: HUDProps) {
       const delta = xp - prevXp.current;
       prevXp.current = xp;
       if (delta > 0) {
-        floatXP(delta);
-        showStatChange('Опыт', delta, '#22d3ee');
+        // FIX (dedup): floatXP(delta) и showStatChange('Опыт') убраны — они
+        // дублировали « +X XP » уже в 3–4 местах одновременно (плавающий текст
+        // у прицела, лента, тосты). Оставлен только пульс XP-бара как
+        // локальная обратная связь у самих баров; число — в DamageNumberFloat,
+        // запись — в HUDNotificationFeed.
         setLastXpDelta(delta);
         scheduleTimeout(() => setXpPulse(true), 0);
         scheduleTimeout(() => setXpPulse(false), 700);
