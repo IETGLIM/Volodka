@@ -1387,3 +1387,32 @@
   }
 }
 
+/* ══════════════════════════════════════════════════════════════
+   v4.8.6 — Полное истощение выносливости: «дыхание» полоски
+   Подсветка плавно нарастает/спадает — читается без цифр.
+   Гейт prefers-reduced-motion ниже.
+   ══════════════════════════════════════════════════════════════ */
+.stamina-bar-root.stamina-bar--exhausted > div[aria-hidden='true'] {
+  animation: stamina-exhausted-breath 1.6s ease-in-out infinite;
+}
+
+@keyframes stamina-exhausted-breath {
+  0%, 100% {
+    box-shadow:
+      inset 0 0 0 1px rgba(148, 163, 184, 0.18),
+      0 1px 6px rgba(0, 0, 0, 0.5),
+      0 0 4px rgba(251, 146, 60, 0.25);
+  }
+  50% {
+    box-shadow:
+      inset 0 0 0 1px rgba(148, 163, 184, 0.18),
+      0 1px 6px rgba(0, 0, 0, 0.5),
+      0 0 12px rgba(251, 146, 60, 0.55);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stamina-bar-root.stamina-bar--exhausted > div[aria-hidden='true'] {
+    animation: none;
+  }
+}

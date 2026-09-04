@@ -37,6 +37,9 @@ export function StaminaBar() {
 
       // Плавный fade in/out — полоска исчезает на полной стамине.
       root.style.opacity = visible ? '1' : '0';
+      // «Дыхание» подсветкой при полном истощении (v4.8.6) — CSS-анимация
+      // с prefers-reduced-motion-гейтом в hud-extensions.css.
+      root.classList.toggle('stamina-bar--exhausted', visible && exhausted);
 
       const fill = fillRef.current;
       if (fill) {
