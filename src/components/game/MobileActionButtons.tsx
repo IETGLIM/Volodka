@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect } from 'react';
-import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen } from 'lucide-react';
+import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen, Save, FolderOpen } from 'lucide-react';
 import { useGamePhase, useHotbarSlots } from '@/store/selectors';
 import { useConsumableActions, useInventory } from '@/store/selectors';
 import { usePlayerLevel } from '@/store/selectors/playerSelectors';
@@ -21,6 +21,7 @@ import { useCollectedPoems } from '@/store/selectors/worldSelectors';
 import { areSharedVirtualControlsWritable, useVirtualControlsRef, clearSharedVirtualControls } from '@/engine/VirtualControlsState';
 import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
+import { quickSaveGame, quickLoadGame } from './save/quickSaveLoad';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
@@ -99,6 +100,18 @@ export function MobileActionButtons() {
       return next;
     });
   }, [virtualControlsRef]);
+
+  /* ── Быстрое сохранение/загрузка (v4.8.6) — прямой вызов движка,
+   * честный тост по исходу; без синтетических клавиш. ── */
+  const handleQuickSave = useCallback(() => {
+    hapticLight();
+    quickSaveGame();
+  }, []);
+
+  const handleQuickLoad = useCallback(() => {
+    hapticLight();
+    quickLoadGame();
+  }, []);
 
   /* ── Debounced tap wrapper ── */
   const makeTapHandler = useCallback(
@@ -242,6 +255,42 @@ export function MobileActionButtons() {
             <BookOpen size={18} aria-hidden="true" />
           </button>
           <span className="mobile-action-btn__label">Журнал</span>
+        </div>
+      </div>
+
+      {/* Быстрое сохранение/загрузка — компактная пара под кластером действий.
+          Прямые вызовы движка (quickSaveLoad) — честные тосты, без клавиш. */}
+      <div className="mobile-save-load-row" role="group" aria-label="Сохранение и загрузка">
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            className="mobile-action-btn mobile-action-btn--save"
+            aria-label="Быстрое сохранение"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              makeTapHandler(handleQuickSave)();
+            }}
+          >
+            <Save size={16} aria-hidden="true" />
+          </button>
+          <span className="mobile-action-btn__label">Сохранить</span>
+        </div>
+
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            className="mobile-action-btn mobile-action-btn--load"
+            aria-label="Быстрая загрузка"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              makeTapHandler(handleQuickLoad)();
+            }}
+          >
+            <FolderOpen size={16} aria-hidden="true" />
+          </button>
+          <span className="mobile-action-btn__label">Загрузить</span>
         </div>
       </div>
     </div>

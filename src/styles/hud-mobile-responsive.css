@@ -385,8 +385,10 @@
 }
 
 /* Button label (tiny text under icon) */
+/* v4.8.6: 8px → 9px — читаемость на мобильных (аудит 2-b: 8px ниже
+   комфортного порога; сетка 44px-кнопок выдерживает +1px). */
 .mobile-action-btn__label {
-  font-size: 8px;
+  font-size: 9px;
   font-family: 'Manrope', system-ui, sans-serif;
   font-weight: 600;
   letter-spacing: 0.04em;

@@ -1333,3 +1333,57 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   v4.8.6 — Быстрые сохранение/загрузка на мобильном HUD
+   Компактная пара кнопок в одном стиле с кластером действий
+   (amber = сохранение, cyan = загрузка).
+   ══════════════════════════════════════════════════════════════ */
+.mobile-save-load-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 2px 10px 4px;
+  border-radius: 999px;
+  background: rgba(4, 10, 18, 0.45);
+  border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  pointer-events: auto;
+}
+
+.mobile-save-load-row .mobile-action-btn {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+}
+
+/* Сохранение — янтарный (тёплый «записывающий» акцент) */
+.mobile-action-btn--save {
+  border-color: rgb(var(--cyber-amber-rgb) / 0.4);
+  color: rgb(var(--cyber-amber-rgb));
+}
+
+.mobile-action-btn--save:active {
+  background: rgba(255, 171, 0, 0.14);
+  border-color: rgb(var(--cyber-amber-rgb) / 0.7);
+  box-shadow: 0 0 14px rgb(var(--cyber-amber-rgb) / 0.25);
+}
+
+/* Загрузка — cyan (возврат к записанному состоянию) */
+.mobile-action-btn--load {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.4);
+}
+
+.mobile-action-btn--load:active {
+  border-color: rgb(var(--cyber-cyan-rgb) / 0.7);
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+  .mobile-save-load-row {
+    gap: 8px;
+    padding: 2px 8px 2px;
+  }
+}
+
