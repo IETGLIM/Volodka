@@ -64,6 +64,8 @@ import {
 import { SceneTransitionOverlay } from '../SceneTransitionOverlay';
 import { SceneEntryTextOverlay } from '../SceneEntryTextOverlay';
 import '@/engine/audio/transitionSound';
+// Событийная тактильная отдача: урон/уровень/квест → вибрация (module-side effect).
+import '@/engine/feedback/hapticEventFeedback';
 import { WeatherIndicator } from '../WeatherIndicator';
 import { AmbientAtmosphereCaption } from '../AmbientAtmosphereCaption';
 import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';

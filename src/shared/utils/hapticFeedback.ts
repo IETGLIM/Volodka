@@ -16,6 +16,8 @@
 
 /* ─── Internal: safe vibrate wrapper ─── */
 
+import { readHapticsEnabled } from '@/shared/utils/hapticsSetting';
+
 /** Cached reference — avoids property lookups on every call. */
 let vibrateFn: ((pattern: VibratePattern) => boolean) | null = null;
 
@@ -35,6 +37,19 @@ function getVibrateFn(): ((pattern: VibratePattern) => boolean) | null {
   return vibrateFn;
 }
 
+/**
+ * Единая точка вибрации (v4.8.6): применяет мастер-настройку
+ * «Виброотклик» (SettingsPanel → Управление) ПЕРЕД каждым вызовом,
+ * чтобы переключение действовало мгновенно без перезагрузки.
+ * Все публичные хелперы идут через неё — даже будущие вызывающие
+ * получат гейт автоматически.
+ */
+function vibrateIfEnabled(pattern: VibratePattern): void {
+  if (!readHapticsEnabled()) return;
+  const fn = getVibrateFn();
+  if (fn) fn(pattern);
+}
+
 /* ─── Public API ─── */
 
 /**
@@ -42,8 +57,7 @@ function getVibrateFn(): ((pattern: VibratePattern) => boolean) | null {
  * Use for: menu navigation, UI taps, button presses, gentle confirmations.
  */
 export function hapticLight(): void {
-  const fn = getVibrateFn();
-  if (fn) fn(10);
+  vibrateIfEnabled(10);
 }
 
 /**
@@ -52,8 +66,7 @@ export function hapticLight(): void {
  * skill check result, poetry power activation.
  */
 export function hapticMedium(): void {
-  const fn = getVibrateFn();
-  if (fn) fn(20);
+  vibrateIfEnabled(20);
 }
 
 /**
@@ -62,8 +75,7 @@ export function hapticMedium(): void {
  * boss encounter start, critical failure.
  */
 export function hapticHeavy(): void {
-  const fn = getVibrateFn();
-  if (fn) fn(40);
+  vibrateIfEnabled(40);
 }
 
 /**
@@ -75,8 +87,7 @@ export function hapticHeavy(): void {
  *   hapticPattern([50, 30, 50, 30, 100]); // double-hit then slam
  */
 export function hapticPattern(pattern: number[]): void {
-  const fn = getVibrateFn();
-  if (fn && pattern.length > 0) fn(pattern);
+  if (pattern.length > 0) vibrateIfEnabled(pattern);
 }
 
 /* ─── Semantic presets ─── */

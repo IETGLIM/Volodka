@@ -28,6 +28,11 @@ import {
   readSkipArrivalCinematics,
   writeSkipArrivalCinematics,
 } from '@/engine/cinematic/arrivalCinematicsSetting';
+import {
+  readHapticsEnabled,
+  writeHapticsEnabled,
+  HAPTICS_DEFAULT,
+} from '@/shared/utils/hapticsSetting';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
 import {
   readVoiceOverEnabled,
@@ -401,6 +406,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   // ── Controls state ──
   const [mouseSens, setMouseSens] = useState(() => lsGetNumber('volodka_mouse_sens', 5));
   const [skipArrival, setSkipArrival] = useState(() => readSkipArrivalCinematics());
+  const [haptics, setHaptics] = useState(() => readHapticsEnabled());
   const [invertY, setInvertY] = useState(() => lsGetBool('volodka_invert_y', false));
   const [pointerLock, setPointerLock] = useState(() => lsGetBool('volodka_pointer_lock', false));
   const [difficulty, setDifficulty] = useState<GameDifficulty>(() => {
@@ -439,6 +445,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setMouseSens(DEFAULTS.volodka_mouse_sens as number);
     setInvertY(DEFAULTS.volodka_invert_y as boolean);
     setPointerLock(DEFAULTS.volodka_pointer_lock as boolean);
+    setHaptics(HAPTICS_DEFAULT);
+    writeHapticsEnabled(HAPTICS_DEFAULT);
     applyAudioSettings();
     applyVisualSettings();
     resetAccessibilitySettings();
@@ -570,6 +578,18 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             <p className="text-[10px] font-mono text-slate-500/80 leading-relaxed -mt-2">
               Пропускает короткие вступительные проходы камеры при входе в локацию.
               Сюжетные сцены и встречи не затрагиваются.
+            </p>
+            <CyberToggle
+              label="Виброотклик (вибрация)"
+              checked={haptics}
+              onChange={(v) => {
+                setHaptics(v);
+                writeHapticsEnabled(v);
+              }}
+            />
+            <p className="text-[10px] font-mono text-slate-500/80 leading-relaxed -mt-2">
+              Тактильная отдача на мобильных: касания кнопок, урон, повышение
+              уровня, завершение квеста. Действует сразу, без перезагрузки.
             </p>
             <SectionDivider />
             <div className="flex flex-col gap-2">
