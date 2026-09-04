@@ -4,6 +4,9 @@ import type { GameStoreState } from './types';
 import type { RewardBatchDraft, RewardBatchSideEffects } from './rewardBatchHelpers';
 import { getExplorationStore, getPlayerStore, getWorldStore } from './storeBindings';
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
+import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
+import { resolveTradeRelationValue } from '@/data/tradingData';
+import { buildFactionReputationMapFrom, normalizeFactionId } from './selectors/factionReputationSelectors';
 export interface PlayerReadsFromExploration { currentSceneId: SceneId; timeOfDay: number; }
 export interface PlayerReadsFromWorld { npcRelations: NPCRelation[]; npcAffinity: Record<string, number>; quests: QuestState[]; }
 export interface WorldReadsFromExploration { timeOfDay: number; }
@@ -36,6 +39,34 @@ export function readNpcRelationValue(stateOrNpcId: GameStoreState | string, npcI
     return readValue(getWorldStore().npcRelations, stateOrNpcId);
   }
   return readValue(stateOrNpcId.npcRelations, npcId!);
+}
+
+/**
+ * Торговое отношение NPC (v4.8.8): 80% личного + 20% средней репутации
+ * фракции среди ЗНАКОМЫХ членов. Единственный источник отношения для
+ * транзакций (buyItem/sellItem/canBuyItem/canSellItem в playerEconomySlice)
+ * — та же смесь, которую показывает TradingPanel, поэтому цена на кнопке
+ * совпадает с фактически списанной суммой. NPC без фракции (или фракции без
+ * знакомых членов) торгует по чисто личному отношению.
+ */
+export function readNpcTradeRelationValue(npcId: string): number {
+  const personal = readNpcRelationValue(npcId);
+  const canonical = resolveCanonicalNpcId(npcId);
+  const def = ALL_NPC_DEFINITIONS.find((n) => n.id === canonical);
+  if (!def?.faction) return resolveTradeRelationValue(personal, null);
+
+  // Свежий пересчёт по ЖИВЫМ slice-сторам — те же источники, что у
+  // readNpcRelationValue выше (combined-кэш стора обновляется микротаской
+  // и мог бы отстать на такт). Та же группировка, что в
+  // useFactionReputation, но без React-подписки.
+  const reputation = buildFactionReputationMapFrom(
+    getWorldStore().npcRelations,
+    getPlayerStore().playerState.flags,
+  );
+  const factionId = normalizeFactionId(def.faction);
+  const entry = reputation[factionId];
+  if (!entry || entry.metCount === 0) return resolveTradeRelationValue(personal, null);
+  return resolveTradeRelationValue(personal, entry.avgRelation);
 }
 export function pickPlayerCoreCrossActions(_get?: () => GameStoreState): PlayerCoreCrossActions { return { advanceTime: getExplorationStore().advanceTime }; }
 export function pickWorldCrossActions(_get?: () => GameStoreState): WorldCrossActions { return { pushNotification: getPlayerStore().pushNotification }; }

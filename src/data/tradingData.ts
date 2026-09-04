@@ -150,6 +150,40 @@ export const MERCHANT_INVENTORIES: MerchantInventory[] = [
   },
 ];
 
+/* ─── Торговое отношение: личное + репутация фракции (v4.8.8) ───
+ * Единая формула для ОТОБРАЖЕНИЯ (TradingPanel) и ТРАНЗАКЦИЙ
+ * (playerEconomySlice через readNpcTradeRelationValue). Раньше панель
+ * показывала цену по смеси «80% личное + 20% фракция», а слайс списывал
+ * кредиты по чисто личному отношению — игрок платил не ту сумму, которую
+ * видел на кнопке. Теперь обе стороны считают отношение одним хелпером. */
+
+/** Вес средней репутации фракции в торговом отношении (0..1). */
+export const TRADE_FACTION_WEIGHT = 0.2;
+
+/** Нейтральная база личного отношения (совпадает с worldSlice). */
+const TRADE_RELATION_NEUTRAL = 50;
+
+/**
+ * Смешивает личное отношение NPC с репутацией его фракции.
+ * `factionAvg === null` — фракции нет или незнакомых членов (торгуем по
+ * личному отношению). Результат зажат в 0..100 и округлён.
+ */
+export function resolveTradeRelationValue(
+  personalRelation: number,
+  factionAvg: number | null,
+): number {
+  const personal = Number.isFinite(personalRelation)
+    ? personalRelation
+    : TRADE_RELATION_NEUTRAL;
+  const clamp = (v: number) => Math.max(0, Math.min(100, Math.round(v)));
+  if (factionAvg === null || !Number.isFinite(factionAvg)) {
+    return clamp(personal);
+  }
+  const blended =
+    personal * (1 - TRADE_FACTION_WEIGHT) + factionAvg * TRADE_FACTION_WEIGHT;
+  return clamp(blended);
+}
+
 /* ─── Lookup helpers ─── */
 
 const MERCHANT_MAP = new Map<string, MerchantInventory>(

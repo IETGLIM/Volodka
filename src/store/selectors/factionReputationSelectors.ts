@@ -212,6 +212,19 @@ export function getFactionReputationMap(): FactionReputationMap {
   return aggregateReputationMemo();
 }
 
+/**
+ * Пересчитывает карту репутации по ЯВНЫМ данным (без combined-кэша стора):
+ * для синхронных движковых/слайсовых чтений, где микротаска кэша могла бы
+ * отстать на такт. Та же группировка, что в useFactionReputation — данные
+ * передаются живые (world.npcRelations + player.flags).
+ */
+export function buildFactionReputationMapFrom(
+  relations: readonly NPCRelation[],
+  flags: Record<string, boolean>,
+): FactionReputationMap {
+  return buildFactionReputationMap(relations, flags);
+}
+
 /* ──────────────────────────────────────────────────────────────
    React hook (shallow equality — keeps the returned map stable when
    the underlying avgRelation / metCount numbers don't change).

@@ -19,7 +19,7 @@ import {
   removeInventoryItem,
 } from '../inventoryHelpers';
 import type { GameStoreState } from '../types';
-import { pickPlayerEconomyCrossActions, readNpcRelationValue } from '../crossSliceReads';
+import { pickPlayerEconomyCrossActions, readNpcTradeRelationValue } from '../crossSliceReads';
 import { scheduleCraftingDiscovered, scheduleItemCrafted } from '../storeEffects';
 import { resolveCreditsMultiplier } from '@/shared/perks/perkModifiers';
 
@@ -142,7 +142,10 @@ export const createPlayerEconomySlice: StateCreator<
       return;
     }
 
-    const relationValue = readNpcRelationValue(npcId);
+    // v4.8.8: торговое отношение = 80% личное + 20% фракция — та же смесь,
+    // что показывает TradingPanel. Раньше транзакции считали по чисто
+    // личному отношению и списывали другую сумму, чем было на кнопке.
+    const relationValue = readNpcTradeRelationValue(npcId);
     const price = getBuyPrice(merchant, itemId, relationValue);
 
     if (state.playerState.credits < price) {
@@ -190,7 +193,7 @@ export const createPlayerEconomySlice: StateCreator<
       return;
     }
 
-    const relationValue = readNpcRelationValue(npcId);
+    const relationValue = readNpcTradeRelationValue(npcId);
 
     if (!merchantBuysItem(npcId, itemId, relationValue)) {
       pushNotification('stress', 'Этот торговец не покупает данный предмет');
@@ -246,7 +249,7 @@ export const createPlayerEconomySlice: StateCreator<
     const merchant = getMerchantInventory(npcId);
     if (!merchant) return false;
 
-    const relationValue = readNpcRelationValue(npcId);
+    const relationValue = readNpcTradeRelationValue(npcId);
     const price = getBuyPrice(merchant, itemId, relationValue);
 
     if (state.playerState.credits < price) return false;
@@ -272,7 +275,7 @@ export const createPlayerEconomySlice: StateCreator<
     const merchant = getMerchantInventory(npcId);
     if (!merchant) return false;
 
-    const relationValue = readNpcRelationValue(npcId);
+    const relationValue = readNpcTradeRelationValue(npcId);
 
     if (!merchantBuysItem(npcId, itemId, relationValue)) return false;
 

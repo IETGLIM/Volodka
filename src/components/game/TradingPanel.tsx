@@ -34,6 +34,7 @@ import {
   getBasePriceByRarity,
   isSellItemAccessible,
   merchantBuysItem,
+  resolveTradeRelationValue,
   CURRENCY_SYMBOL,
 } from '@/data/tradingData';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -111,10 +112,12 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
     [selectedNpcId],
   );
 
-  /* ── Отношение с учётом репутации фракции (v4.8.5) ──
-   * Изначально цены зависели только от личного отношения NPC. Теперь фракция
-   * тоже влияет: 80% личного отношения + 20% средней репутации фракции
-   * (среди ЗНАКОМЫХ членов — useFactionReputation). Неподписанный NPC без
+  /* ── Отношение с учётом репутации фракции (v4.8.5, единая формула v4.8.8) ──
+   * Цены зависят от личного отношения NPC и от фракции: 80% личного + 20%
+   * средней репутации фракции (среди ЗНАКОМЫХ членов — useFactionReputation).
+   * Формула живёт в resolveTradeRelationValue (tradingData.ts) — её же
+   * используют транзакции слайса (readNpcTradeRelationValue), поэтому цена
+   * на кнопке всегда совпадает со списанной суммой. Неподписанный NPC без
    * фракции или без знакомых членов фракции торгует по личному отношению. */
   const factionReputation = useFactionReputation();
   const selectedNpcDef = useMemo(
@@ -132,8 +135,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
   const relationValue = useMemo(() => {
     const rel = npcRelations.find((r) => r.npcId === selectedNpcId);
     const npcRel = rel?.value ?? 50;
-    if (!factionRepInfo) return npcRel;
-    return Math.round(npcRel * 0.8 + factionRepInfo.avg * 0.2);
+    return resolveTradeRelationValue(npcRel, factionRepInfo ? factionRepInfo.avg : null);
   }, [npcRelations, selectedNpcId, factionRepInfo]);
 
   // Buy items list with computed prices
