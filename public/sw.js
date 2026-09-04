@@ -52,6 +52,43 @@ const MEDIA_RE = /^\/(?:models|textures|hdri|menu)\/.+\.(?:glb|gltf|bin|webp|png
 const MEDIA_CACHE_MAX_ENTRIES = 120;
 
 /**
+ * v4.8.4: soft BYTE budget for the media cache (~180 MB). Entry count alone
+ * can't see mass: 120 HDRIs × 7 MB would blow the quota while a texture-heavy
+ * session fits easily. When sizes are known (content-length), oldest entries
+ * are evicted until the total fits; unknown sizes degrade gracefully to the
+ * entry-count cap above.
+ */
+const MEDIA_CACHE_MAX_BYTES = 180 * 1024 * 1024;
+
+/**
+ * v4.8.4: in-memory size table (url → estimated bytes) for byte-budget
+ * trimming. Lives for the SW instance; re-seeded lazily from the cache after
+ * a restart. Accounting is best-effort — failures fall back to count-only cap.
+ */
+const mediaSizeTable = new Map();
+let mediaSizeTableSeeded = false;
+
+function estimateResponseBytes(response) {
+  const len = Number(response && response.headers ? response.headers.get('content-length') : NaN);
+  return Number.isFinite(len) && len > 0 ? len : 0;
+}
+
+async function seedMediaSizeTable(cache) {
+  if (mediaSizeTableSeeded) return;
+  mediaSizeTableSeeded = true;
+  try {
+    const keys = await cache.keys();
+    for (const req of keys) {
+      const cached = await cache.match(req);
+      const bytes = estimateResponseBytes(cached);
+      if (bytes > 0) mediaSizeTable.set(req.url, bytes);
+    }
+  } catch {
+    // Size accounting is best-effort; count cap still applies.
+  }
+}
+
+/**
  * Install event — pre-cache the app shell (+ physics WASM).
  */
 self.addEventListener('install', (event) => {
@@ -151,17 +188,30 @@ async function cacheFirst(request, cacheName = CACHE_NAME) {
 }
 
 /**
- * Bounded cache-first for game media with oldest-entry trimming.
+ * Bounded cache-first for game media with LRU trimming.
+ * v4.8.4: hits refresh recency (delete + re-put marks the entry as newest),
+ * so rarely used media is evicted first — not just the oldest inserted.
  */
 async function boundedMediaCache(request) {
   const cached = await caches.match(request);
-  if (cached) return cached;
+  if (cached) {
+    // LRU touch: any failure here must not break serving the response.
+    try {
+      const cache = await caches.open(MEDIA_CACHE_NAME);
+      await cache.delete(request);
+      await cache.put(request, cached.clone());
+    } catch {
+      // Ignore — recency refresh is an optimization.
+    }
+    return cached;
+  }
 
   try {
     const response = await fetch(request);
     if (response.ok) {
       const cache = await caches.open(MEDIA_CACHE_NAME);
       await cache.put(request, response.clone());
+      mediaSizeTable.set(request.url, estimateResponseBytes(response));
       trimMediaCache(cache).catch(() => undefined);
     }
     return response;
@@ -173,16 +223,47 @@ async function boundedMediaCache(request) {
 }
 
 /**
- * Trim the media cache to MEDIA_MAX_ENTRIES by evicting oldest entries.
- * Cache keys preserve insertion order in most engines, which we use as a
- * cheap LRU approximation — good enough for a soft cap.
+ * Trim the media cache: (1) entry-count cap by oldest-entry eviction, then
+ * (2) v4.8.4 byte-budget cap when sizes are known. Cache keys preserve
+ * insertion order in most engines, which we use as the LRU approximation —
+ * hits refresh their position (see boundedMediaCache), so eviction targets
+ * the least recently used entries first.
  */
 async function trimMediaCache(cache) {
-  const keys = await cache.keys();
-  if (keys.length <= MEDIA_CACHE_MAX_ENTRIES) return;
-  const excess = keys.length - MEDIA_CACHE_MAX_ENTRIES;
-  for (let i = 0; i < excess; i++) {
+  // 1) Count-based cap (existing behavior)
+  let keys = await cache.keys();
+  if (keys.length > MEDIA_CACHE_MAX_ENTRIES) {
+    const excess = keys.length - MEDIA_CACHE_MAX_ENTRIES;
+    for (let i = 0; i < excess; i++) {
+      await cache.delete(keys[i]);
+      mediaSizeTable.delete(keys[i].url);
+    }
+    keys = keys.slice(excess);
+  }
+
+  // 2) Byte-budget cap (v4.8.4) — only when every size is known; otherwise
+  //    degrade silently to the count cap (unknown = don't guess).
+  if (keys.length === 0) return;
+  await seedMediaSizeTable(cache);
+
+  let total = 0;
+  let allKnown = true;
+  for (const req of keys) {
+    const bytes = mediaSizeTable.get(req.url);
+    if (bytes === undefined) {
+      allKnown = false;
+      break;
+    }
+    total += bytes;
+  }
+  if (!allKnown) return;
+
+  let i = 0;
+  while (total > MEDIA_CACHE_MAX_BYTES && i < keys.length - 1) {
     await cache.delete(keys[i]);
+    total -= mediaSizeTable.get(keys[i].url) || 0;
+    mediaSizeTable.delete(keys[i].url);
+    i++;
   }
 }
 
