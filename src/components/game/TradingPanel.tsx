@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { ItemIcon } from './shared/ItemIcon';
 import { useTradingPanelState } from '@/store/selectors';
+import { useFactionReputation, normalizeFactionId, FACTION_LABELS_RU } from '@/store/selectors/factionReputationSelectors';
 import { findNpcById } from '@/data/allNpcDefinitions';
 import {
   getItemDefinition,
@@ -110,16 +111,30 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
     [selectedNpcId],
   );
 
-  const relationValue = useMemo(() => {
-    const rel = npcRelations.find((r) => r.npcId === selectedNpcId);
-    return rel?.value ?? 50;
-  }, [npcRelations, selectedNpcId]);
-
-  const _npcDef = useMemo(
+  /* ── Отношение с учётом репутации фракции (v4.8.5) ──
+   * Изначально цены зависели только от личного отношения NPC. Теперь фракция
+   * тоже влияет: 80% личного отношения + 20% средней репутации фракции
+   * (среди ЗНАКОМЫХ членов — useFactionReputation). Неподписанный NPC без
+   * фракции или без знакомых членов фракции торгует по личному отношению. */
+  const factionReputation = useFactionReputation();
+  const selectedNpcDef = useMemo(
     () => (selectedNpcId ? findNpcById(selectedNpcId) : undefined),
     [selectedNpcId],
   );
-  void _npcDef;
+  const factionRepInfo = useMemo(() => {
+    const rawFaction = selectedNpcDef?.faction;
+    if (!rawFaction) return null;
+    const rep = factionReputation[normalizeFactionId(rawFaction)];
+    if (!rep || rep.metCount === 0) return null;
+    return { label: FACTION_LABELS_RU[normalizeFactionId(rawFaction)], avg: rep.avgRelation };
+  }, [selectedNpcDef, factionReputation]);
+
+  const relationValue = useMemo(() => {
+    const rel = npcRelations.find((r) => r.npcId === selectedNpcId);
+    const npcRel = rel?.value ?? 50;
+    if (!factionRepInfo) return npcRel;
+    return Math.round(npcRel * 0.8 + factionRepInfo.avg * 0.2);
+  }, [npcRelations, selectedNpcId, factionRepInfo]);
 
   // Buy items list with computed prices
   const buyItems = useMemo(() => {
@@ -228,6 +243,14 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
               <span className="flex items-center gap-1">
                 <span className={`size-1.5 rounded-full ${relationValue >= 65 ? 'bg-emerald-500' : relationValue <= 30 ? 'bg-red-500' : 'bg-amber-500'}`} />
                 Отношение: {relationValue}
+                {factionRepInfo && (
+                  <span
+                    className="text-cyan-500/80"
+                    title={`Репутация фракции «${factionRepInfo.label}» (${factionRepInfo.avg}/100) учтена в ценах`}
+                  >
+                    · фракция {factionRepInfo.label}
+                  </span>
+                )}
               </span>
             )}
             <span className="text-slate-600 font-mono">volodka://trade</span>
