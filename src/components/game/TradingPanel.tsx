@@ -20,6 +20,8 @@ import { ItemIcon } from './shared/ItemIcon';
 import { useTradingPanelState } from '@/store/selectors';
 import { useFactionReputation, normalizeFactionId, FACTION_LABELS_RU } from '@/store/selectors/factionReputationSelectors';
 import { findNpcById } from '@/data/allNpcDefinitions';
+import { resolveFactionAttitudeTier } from '@/shared/npcFactionAttitude';
+import { resolveMerchantFactionLine } from '@/shared/merchantTradeFlavor';
 import {
   getItemDefinition,
   getRarityColor,
@@ -64,6 +66,15 @@ interface TradingPanelProps {
 /* ══════════════════════════════════════════════════════════════
    Main Panel component
    ══════════════════════════════════════════════════════════════ */
+
+/** Цвет фракционной реплики торговца по уровню отношения (v4.8.8). */
+const MERCHANT_LINE_TIER_CLASSES: Record<string, string> = {
+  ally: 'text-emerald-400/80',
+  cordial: 'text-emerald-400/60',
+  neutral: 'text-slate-500',
+  wary: 'text-amber-400/80',
+  hostile: 'text-red-400/80',
+};
 
 export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps) {
   const {
@@ -137,6 +148,19 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
     const npcRel = rel?.value ?? 50;
     return resolveTradeRelationValue(npcRel, factionRepInfo ? factionRepInfo.avg : null);
   }, [npcRelations, selectedNpcId, factionRepInfo]);
+
+  /* ── Реплика торговца по уровню фракции (v4.8.8) ──
+   * Постоянная строка в шапке лавки: детерминированный выбор по npcId,
+   * чтобы реплика не мигала между рендерами. Без фракции — только базовое
+   * приветствие merchant.greeting. */
+  const merchantFactionLine = useMemo(() => {
+    if (!factionRepInfo || !selectedNpcId) return null;
+    const tier = resolveFactionAttitudeTier(factionRepInfo.avg);
+    return {
+      text: resolveMerchantFactionLine(tier, factionRepInfo.label, selectedNpcId),
+      cls: MERCHANT_LINE_TIER_CLASSES[tier] ?? 'text-slate-500',
+    };
+  }, [factionRepInfo, selectedNpcId]);
 
   // Buy items list with computed prices
   const buyItems = useMemo(() => {
@@ -290,12 +314,20 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
 
         {/* Merchant info bar */}
         {merchant && (
-          <div className="flex items-center justify-between mt-2 px-4">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-slate-400 italic">&ldquo;{merchant.greeting}&rdquo;</span>
+          <div className="flex items-start justify-between mt-2 px-4 gap-3">
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-xs text-slate-400 italic truncate">&ldquo;{merchant.greeting}&rdquo;</span>
+              {merchantFactionLine?.text && (
+                <span
+                  className={`text-[11px] italic leading-snug ${merchantFactionLine.cls}`}
+                  data-testid="merchant-faction-line"
+                >
+                  {merchantFactionLine.text}
+                </span>
+              )}
             </div>
             {discountPercent > 0 && (
-              <div className="flex items-center gap-1 px-2 py-0.5 rounded border border-emerald-500/20 bg-emerald-950/20">
+              <div className="flex items-center gap-1 px-2 py-0.5 rounded border border-emerald-500/20 bg-emerald-950/20 shrink-0">
                 <span className="text-[10px] text-emerald-400">Скидка: -{discountPercent}%</span>
               </div>
             )}
