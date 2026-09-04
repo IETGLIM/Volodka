@@ -35,6 +35,7 @@ import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
 import { AmbientParticles } from '@/components/game/hud/parts/AmbientParticles';
 import { SprintDrainOverlay } from '@/components/game/hud/parts/SprintDrainOverlay';
 import { StaminaBar } from '@/components/game/hud/parts/StaminaBar';
+import { MeleeStrikeHint } from '@/components/game/hud/parts/MeleeStrikeHint';
 import { AaaImmersiveGuide } from '@/components/game/hud/parts/AaaImmersiveGuide';
 import { AaaWorldMarkerSystem } from '@/components/game/hud/parts/AaaWorldMarkerSystem';
 import { ObjectiveBeacon } from '@/components/game/hud/parts/ObjectiveBeacon';
@@ -155,6 +156,8 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Тонкая полоска выносливости над нижним HUD-стеком — видна только
           когда стамина не полная (спринт её расходует). */}
       <StaminaBar />
+      {/* «Враг в зоне удара» — реал-тайм слой (v4.8.7), сосед CombatPreEngagementWarning. */}
+      <MeleeStrikeHint />
       <CombatPreEngagementWarning />
       <HazardStatusIndicator />
       {/* «Шёпот города»: тревожная строка при стрессе ≥70 (FreeRouter,

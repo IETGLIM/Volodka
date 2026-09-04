@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect } from 'react';
-import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen, Save, FolderOpen } from 'lucide-react';
+import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen, Save, FolderOpen, Sword } from 'lucide-react';
 import { useGamePhase, useHotbarSlots } from '@/store/selectors';
 import { useConsumableActions, useInventory } from '@/store/selectors';
 import { usePlayerLevel } from '@/store/selectors/playerSelectors';
@@ -27,7 +27,9 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import { getItemDefinition } from '@/data/items';
 import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
-import { hapticLight, hapticMedium, hapticItemPickup } from '@/shared/utils/hapticFeedback';
+import { hapticLight, hapticMedium, hapticItemPickup, hapticError } from '@/shared/utils/hapticFeedback';
+import { attemptMeleeStrike } from '@/engine/combat/realtime/meleeStrike';
+import { eventBus } from '@/engine/EventBus';
 
 const TAP_DEBOUNCE_MS = 280;
 
@@ -63,6 +65,28 @@ export function MobileActionButtons() {
   const handleInteract = useCallback(() => {
     hapticMedium();
     fireInteractPress('mobile_hud');
+  }, []);
+
+  /* ── Опережающий удар (v4.8.7) — реал-тайм замах до пошагового боя. ── */
+  const handleStrike = useCallback(() => {
+    const outcome = attemptMeleeStrike('mobile_hud');
+    if (outcome.status === 'hit') {
+      hapticMedium(); // дубль к событийной тактильности — прямой отклик кнопки
+      return;
+    }
+    if (outcome.status === 'tired') {
+      hapticError();
+      eventBus.emit('ui:exploration_message', {
+        text: 'Не хватает выносливости для удара',
+      });
+      return;
+    }
+    if (outcome.status === 'cooldown') {
+      hapticError();
+      return;
+    }
+    // «none» — врагов в зоне нет: короткий отклик без спама тостами.
+    hapticLight();
   }, []);
 
   /* ── Use Item handler — uses first hotbar slot's consumable ── */
@@ -163,8 +187,25 @@ export function MobileActionButtons() {
         <span className="mobile-action-btn__label">Действие</span>
       </div>
 
-      {/* Secondary row: Use Item + Run Toggle */}
+      {/* Secondary row: Strike + Use Item + Run Toggle */}
       <div className="flex items-center gap-2">
+        {/* Опережающий удар (v4.8.7) — янтарный акцент, как «Сохранить» */}
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            className="mobile-action-btn mobile-action-btn--strike"
+            aria-label="Опережающий удар"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              makeTapHandler(handleStrike)();
+            }}
+          >
+            <Sword size={18} aria-hidden="true" />
+          </button>
+          <span className="mobile-action-btn__label">Удар</span>
+        </div>
+
         {/* Use Item */}
         <div className="flex flex-col items-center">
           <button

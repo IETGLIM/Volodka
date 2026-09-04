@@ -1416,3 +1416,147 @@
     animation: none;
   }
 }
+
+/* ══════════════════════════════════════════════════════════════
+   v4.8.7 — «Опережающий удар»: HUD-подсказка + мобильная кнопка
+   ══════════════════════════════════════════════════════════════ */
+
+/* Стеклянная янтарная капсула над нижним HUD-стеком (сосед
+   CombatPreEngagementWarning): «⚔ {враг} · удар — ЛКМ». */
+.melee-strike-hint {
+  position: absolute;
+  left: 50%;
+  bottom: 168px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 14px 7px;
+  border-radius: 999px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: rgb(var(--cyber-amber-rgb) / 0.92);
+  background: linear-gradient(
+    180deg,
+    rgba(20, 12, 4, 0.72) 0%,
+    rgba(0, 0, 0, 0.62) 100%
+  );
+  border: 1px solid rgb(var(--cyber-amber-rgb) / 0.38);
+  box-shadow:
+    0 0 18px rgb(var(--cyber-amber-rgb) / 0.16),
+    inset 0 0 10px rgb(var(--cyber-amber-rgb) / 0.07);
+  backdrop-filter: blur(6px);
+  pointer-events: none;
+  animation: melee-strike-hint-in 240ms ease-out;
+}
+
+.melee-strike-hint__icon {
+  color: rgb(var(--cyber-amber-rgb));
+  filter: drop-shadow(0 0 4px rgb(var(--cyber-amber-rgb) / 0.7));
+}
+
+.melee-strike-hint__enemy {
+  font-weight: 600;
+  color: rgba(255, 236, 200, 0.95);
+  text-shadow: 0 0 8px rgb(var(--cyber-amber-rgb) / 0.55);
+  max-width: 34ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.melee-strike-hint__sep {
+  color: rgb(var(--cyber-amber-rgb) / 0.5);
+}
+
+.melee-strike-hint__action {
+  color: rgb(var(--cyber-amber-rgb) / 0.8);
+}
+
+/* «Выносливости не хватает» — капсула тускнеет, читается как disabled. */
+.melee-strike-hint[data-tired='true'] {
+  color: rgba(148, 163, 184, 0.75);
+  border-color: rgba(148, 163, 184, 0.28);
+  box-shadow:
+    0 0 10px rgba(0, 0, 0, 0.4),
+    inset 0 0 8px rgba(0, 0, 0, 0.3);
+}
+
+.melee-strike-hint[data-tired='true'] .melee-strike-hint__icon {
+  color: rgba(148, 163, 184, 0.7);
+  filter: none;
+}
+
+.melee-strike-hint[data-tired='true'] .melee-strike-hint__enemy {
+  color: rgba(203, 213, 225, 0.8);
+  text-shadow: none;
+}
+
+.melee-strike-hint[data-tired='true'] .melee-strike-hint__action {
+  color: rgba(148, 163, 184, 0.7);
+}
+
+@keyframes melee-strike-hint-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Умеренная «жизнь» капсулы — только пока ударить можно. */
+.melee-strike-hint:not([data-tired='true']) {
+  animation:
+    melee-strike-hint-in 240ms ease-out,
+    melee-strike-hint-pulse 2.2s ease-in-out 240ms infinite;
+}
+
+@keyframes melee-strike-hint-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 18px rgb(var(--cyber-amber-rgb) / 0.16),
+      inset 0 0 10px rgb(var(--cyber-amber-rgb) / 0.07);
+  }
+  50% {
+    box-shadow:
+      0 0 26px rgb(var(--cyber-amber-rgb) / 0.3),
+      inset 0 0 12px rgb(var(--cyber-amber-rgb) / 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .melee-strike-hint,
+  .melee-strike-hint:not([data-tired='true']) {
+    animation: none;
+  }
+}
+
+/* На узких экранах капсула не спорит с мобильным кластером действий. */
+@media (max-width: 768px) {
+  .melee-strike-hint {
+    bottom: 208px;
+    font-size: 10px;
+    padding: 5px 11px 6px;
+    gap: 5px;
+  }
+  .melee-strike-hint__enemy {
+    max-width: 20ch;
+  }
+}
+
+/* Мобильная кнопка «Удар» — янтарный акцент в ряду действий
+   (в паре с «Сохранить», но холоднее по заливке: боевое действие). */
+.mobile-action-btn--strike {
+  border-color: rgb(var(--cyber-amber-rgb) / 0.45);
+  color: rgb(var(--cyber-amber-rgb) / 0.95);
+}
+
+.mobile-action-btn--strike:active {
+  background: rgba(255, 171, 0, 0.16);
+  border-color: rgb(var(--cyber-amber-rgb) / 0.75);
+  box-shadow: 0 0 16px rgb(var(--cyber-amber-rgb) / 0.3);
+}

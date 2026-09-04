@@ -13,6 +13,7 @@ import { FootstepDust } from './FootstepDust';
 import { DialogueFocusTracker } from './DialogueFocusTracker';
 import { DynamicProps } from './DynamicProps';
 import { PatrollingCreeps } from './PatrollingCreeps';
+import { MeleeStrikeFx } from './MeleeStrikeFx';
 import { useNpcAmbientBarkSystem } from '@/engine/npc/npcAmbientBarkSystem';
 import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
@@ -97,6 +98,8 @@ export function PhysicsSceneNpcMounts({ livePlayerPositionRef }: PhysicsSceneNpc
       <AmbientNPCs livePlayerPositionRef={livePlayerPositionRef} />
       <DynamicProps />
       <PatrollingCreeps livePlayerPositionRef={livePlayerPositionRef} />
+      {/* v4.8.7: искры «Опережающего удара» — рядом с крипами, тот же слой. */}
+      <MeleeStrikeFx />
     </>
   );
 }
