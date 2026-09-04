@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.8.4** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.8.5** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1134,6 +1134,40 @@ flash-эффектом при падении кармы. Смонтирован 
   resilience; стрип ломает инициализацию физики при недоступности внешнего WASM.
 - Пошаговый комбат — перевод в реал-тайм 3D требует hitbox-систем и ребаланса
   всех врагов; архитектура (события, presentation beat, hazards) готова к миграции.
+
+## v4.8.5 — прямой канал панелей, миникарта-zoom, VO-субтитры, фракции в торговле
+
+### Ввод: панельный свитчборд без синтетических клавиш
+- `engine/input/panelShortcutDispatcher.ts` — регистрируемый обработчик
+  (`registerPanelShortcutHandler` / `firePanelShortcut`); единственная
+  реализация — `runPanelSwitchboard` в `useKeyboardShortcutManager`
+  (модификаторные комбинации обработываются до свитчборда). window-keydown и
+  мобильный HUD идут через одну и ту же функцию — семантика клавиатуры и
+  тача гарантированно совпадает; при несмонтированном оркестраторе —
+  деградация к синтетическому событию (legacy).
+
+### Миникарта: множитель радиуса обзора
+- `engine/minimapZoomSetting.ts` — три уровня (×1.35/×1/×0.7) в localStorage
+  (`volodka_minimap_zoom_index`); `viewRadius = clamp(base * multiplier, ≥4)`;
+  контролы — строка под кругом внутри слота `MINIMAP_HEIGHT` (196px),
+  сетка правой колонки HUD не меняется.
+
+### Аудио: голосовые линии → события и субтитры
+- `voiceLinePlayer.playVoiceLineForNode(nodeId, { text, speaker })`:
+  при недоступном VO-файле и включённой opt-in настройке
+  (`voiceOverSettings`, localStorage `volodka_voice_over_enabled`) реплика
+  идёт через `speechSynthesis` (ru-голос; отсутствие ru-голосов = тихий skip;
+  параметры utterance из `emotion` реестра).
+- События `audio:voice_line_start` / `audio:voice_line_end` (audioEvents);
+  потребитель — `VoiceLineSubtitleHud` (гл. слой `UI_LAYERS.VOICE_SUBTITLE`),
+  шрифт через `--subtitle-scale`; `stopVoiceLinePlayback` глушит и аудио,
+  и синтез, и закрывает субтитр.
+
+### Торговля: blended-отношение
+- `TradingPanel`: `effective = round(0.8·npcRel + 0.2·factionAvg)`, где
+  `factionAvg` — средняя репутация фракции торговца среди знакомых
+  (`useFactionReputation` + `normalizeFactionId`). Влияние видно в подвале
+  панели; семантика `minRelation`-порогов сохранена (тот же blended-значение).
 
 ## v4.8.4 — lookahead-ритм музыки, дельты экипировки, байтовый кэш
 
