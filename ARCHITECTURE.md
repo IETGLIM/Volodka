@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.8.7** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.8.8** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1132,11 +1132,66 @@ flash-эффектом при падении кармы. Смонтирован 
 - Первые 18 стихов (`poem_1…poem_18`) — прямое требование правообладателя.
 - Inline-base64 Rapier в physics-wasm чанке (829КБ gzip) — осознанный fallback
   resilience; стрип ломает инициализацию физики при недоступности внешнего WASM.
-- Пошаговый комбат остаётся ядром встречи: реал-тайм слой v4.8.7
-  («Опережающий удар») пока отвечает только за СТАРТ встречи с ослабленным
-  врагом. Полный перевод в реал-тайм 3D требует hitbox-систем, реал-тайм HP
-  и ребаланса всех врагов — архитектура (realtime/, события, presentation
+- Пошаговый комбат остаётся ядром встречи: реал-тайм слой (v4.8.7 удар
+  первым + v4.8.8 память HP крипов и добивание до боя) отвечает за СТАРТ и
+  ИСХОД встречи до/вместо пошаговой фазы. Полный перевод боя в реал-тайм
+  3D по-прежнему требует hitbox-систем, реал-тайм HP ВО ВРЕМЯ боя и
+  ребаланса всех врагов — архитектура (realtime/, события, presentation
   beat, hazards) готова к следующим инкрементам.
+
+## v4.8.8 — «Добивание до боя»: реал-тайм HP крипов, честные цены торговли
+
+### Реал-тайм HP крипов (`engine/combat/realtime/creepVitality.ts`)
+- Модуль-одиночка (без стора и React, паттерн meleeStrike): реестр
+  остатков HP по creepId. Пишет PatrollingCreeps — на `combat:fled` читает
+  `getCombatState().enemy.hp/maxHp` и вызывает `noteCreepWeakened`; читают
+  meleeStrike (решение «добивание или встреча») и applyStrike (встреча
+  стартует с запомненным HP вместо константы 0.75).
+- Монотонность (повторное ранение берёт минимум), ленивая регенерация
+  `CREEP_VITALITY_REGEN_MS = 90 с` (без таймеров — проверка при чтении),
+  зажим 0..1 (полные HP снимают запись). Очистка: смена сцены
+  (`clearAllCreepVitality`), победа (крип мёртв), поражение (крип лечится).
+- Пошаговый CombatSystem НЕ хранит HP между сессиями (state обнуляется
+  endSession) — память живёт в реал-тайм слое, слои по-прежнему не
+  пересекаются.
+
+### Добивание до боя (`meleeStrike.ts`, `rewards.ts §9.3`)
+- Порог `MELEE_STRIKE_FINISHER_HP_PCT = 0.35`. Ветка после всех гейтов
+  замаха: `computeCreepFinisherRewards({xpReward шаблона, множитель
+  сложности})` → dispatch addKarma/addXp/addCredits → `clearCreepVitality`
+  → события `combat:melee_strike{finished:true}` + `combat:creep_finished`
+  → `target.applyFinisher()`. Без боевого RNG-сеанса — детерминировано.
+- XP = 60% шаблона (мин. 1), карма 2, кредиты по `computeCombatCredits`
+  от урезанного XP; лут не выпадает. Балансная логика: игрок экономит
+  финальные ходы, но теряет лут и комбо-бонусы победы.
+- `MeleeStrikeTarget.enemyType` стал обязательным (награды/событие);
+  `applyFinisher` опционален — его отсутствие даёт защитный fallback на
+  обычную встречу.
+- Событие `combat:creep_finished` — единственный новый combat-канал
+  (Combat 25); слушатель PatrollingCreeps добавляет creepId в defeated
+  (снятие со сцены, как при combat:victory).
+
+### Презентация ослабления
+- HP-полоска крипа: два MeshBasicMaterial-прева (фон #160406 + заполнение
+  #ff4757), геометрия заполнения сдвинута на полширины (анкер слева,
+  scale.x = hpPct), билборд копирует quaternion камеры, позиция — над
+  positionRef крипа (вне вращающейся группы). Видна только exploring &&
+  !inArena; depthTest оставлен — стены перекрывают полоску.
+- MeleeStrikeHint: `data-finishable` (Skull, «добить — ЛКМ», красная
+  капсула) — CSS в hud-extensions.css; MeleeStrikeFx — scale 1.0/opacity 1
+  при finished; хаптика — hapticHeavy.
+
+### Торговля: единое отношение + реплики
+- `tradingData.resolveTradeRelationValue` (TRADE_FACTION_WEIGHT 0.2) —
+  чистая формула смеси; `crossSliceReads.readNpcTradeRelationValue` —
+  торговое отношение для синхронных транзакций слайса (репутация фракции
+  по ЖИВЫМ slice-сторам через `buildFactionReputationMapFrom` — combined-
+  кэш gameStore обновляется микротаской и мог отстать). buyItem/sellItem/
+  canBuyItem/canSellItem и гейты minRelation считают по ней же — цена на
+  кнопке = списанная сумма.
+- `shared/merchantTradeFlavor.resolveMerchantFactionLine` — постоянная
+  реплика торговца по tier фракции (все 5 уровней, «%f», детерминизм по
+  хешу npcId djb2); TradingPanel рендерит под приветствием с цветом tier.
 
 ## v4.8.7 — «Опережающий удар»: реал-тайм слой до пошагового боя, фракционные барки
 
