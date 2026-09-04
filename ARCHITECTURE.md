@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.8.6** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.8.7** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1132,8 +1132,54 @@ flash-эффектом при падении кармы. Смонтирован 
 - Первые 18 стихов (`poem_1…poem_18`) — прямое требование правообладателя.
 - Inline-base64 Rapier в physics-wasm чанке (829КБ gzip) — осознанный fallback
   resilience; стрип ломает инициализацию физики при недоступности внешнего WASM.
-- Пошаговый комбат — перевод в реал-тайм 3D требует hitbox-систем и ребаланса
-  всех врагов; архитектура (события, presentation beat, hazards) готова к миграции.
+- Пошаговый комбат остаётся ядром встречи: реал-тайм слой v4.8.7
+  («Опережающий удар») пока отвечает только за СТАРТ встречи с ослабленным
+  врагом. Полный перевод в реал-тайм 3D требует hitbox-систем, реал-тайм HP
+  и ребаланса всех врагов — архитектура (realtime/, события, presentation
+  beat, hazards) готова к следующим инкрементам.
+
+## v4.8.7 — «Опережающий удар»: реал-тайм слой до пошагового боя, фракционные барки
+
+### Реал-тайм замах (`engine/combat/realtime/`)
+- `meleeSweep.ts` — чистая геометрия сектора удара (reach 2.7 м + конус
+  ~58°, вплотную ≤1.4 м — без конуса), без импортов Three/Rapier (паттерн
+  creepTactics). Конвенция взгляда: forward = (sin(yaw), cos(yaw)) при
+  `sharedCameraYawRef.current` — подтверждена QuestDirectionArrow и
+  interactionTargetQuery.
+- `meleeStrike.ts` — модуль-одиночка: реестр целей
+  (`registerMeleeStrikeTarget` — провайдеры позиции/LOS/engage от
+  PatrollingCreeps), единая точка `attemptMeleeStrike(source)` (гейты фазы
+  exploration → замах → LOS → кулдаун 0.9 с → выносливость 22 → событие
+  `combat:melee_strike` → `target.applyStrike()`), зеркало HUD-подсказки
+  (`reportMeleeStrikeCandidate` / `getMeleeStrikeHint`, поллинг без
+  рендеров, паттерн StaminaBar).
+- `playerStamina.consumePlayerStamina(amount)` — разовый расход вне
+  спринта: без частичного списания, ставит ту же задержку регенерации.
+- Старт встречи: `introHpPct` (0.75) идёт через `EncounterContext` →
+  `CombatStartOptions` → `startCombatImmediate` — враг вступает с долей HP
+  (floor, min 1) и строкой лога; `maxHp`/награды/фазы босса считаются от
+  полного HP. Опция аддитивна: deferred-gate (combatStartGate) тоже знает
+  introHpPct — бой, отложенный переходом сцены, не теряет ослабление.
+- Ввод: `useEKeyInteraction` ЛКМ — сначала замах, «hit/tired/cooldown»
+  consumes клик, «none» — взаимодействие как раньше; мобильная кнопка
+  «Удар» в MobileActionButtons (прямой вызов, хаптика по исходу). Слой
+  живёт только в exploration — с пошаговым боем не пересекается.
+- FX: `MeleeStrikeFx` (PhysicsSceneNpcMounts) — первый рантайм-потребитель
+  пула `combatHitSparkPool` (8/16): acquire → императивная анимация 0.45 с
+  в skippable-системе `misc` → release; без React-состояния на удар.
+  Хаптика — в `hapticEventFeedback` (троттлинг общий с combat:damage).
+- HUD: `MeleeStrikeHint` (ExplorationHUD, рядом с
+  CombatPreEngagementWarning) — стеклянная янтарная капсула, poll 150 мс,
+  честное «не хватает выносливости», reduced-motion гейт пульса.
+
+### Фракционные барки (`shared/npcFactionBark.ts`)
+- Чистый shared: `resolveNpcFactionBark(tier, factionLabel, rng)` — только
+  ally (45%)/hostile (60%), отдельные броски «сработает ли» и «какая
+  строка», метка фракции в шаблон («%f»). Слабые уровни молчат (контроль
+  шума, как FACTION_ATTITUDE_LINES в диалоге).
+- Проводка: `useNpcBark` → `useNpcFactionAttitude` (стор остаётся в
+  компонентном слое) → `computeBark(definition, factionContext?)` —
+  приоритет: квестовая барка → фракционная → по личному отношению.
 
 ## v4.8.6 — честные сохранения, мобильные сейв/лоад, хаптика, фракции в диалогах
 
