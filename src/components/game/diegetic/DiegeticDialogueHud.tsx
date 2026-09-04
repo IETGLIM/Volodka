@@ -185,10 +185,11 @@ export function DiegeticDialogueHud() {
       return;
     }
     if (kind === 'dialogue') {
-      playVoiceLineForNode(nodeId);
+      // Текст + спикер идут в субтитр голосовой линии / синтез речи (opt-in).
+      playVoiceLineForNode(nodeId, { text: resolvedText, speaker });
     }
     return () => stopVoiceLinePlayback();
-  }, [isOpen, nodeId, kind]);
+  }, [isOpen, nodeId, kind, resolvedText, speaker]);
 
   useEffect(() => {
     if (!isOpen) {

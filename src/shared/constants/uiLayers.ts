@@ -34,6 +34,8 @@ export const UI_LAYERS = {
   DAMAGE_FLASH: 51,
   /** Panels (inventory, quests, poetry, journal) — above toasts and examine */
   PANEL: 60,
+  /** Subtitles for voice lines (VO / TTS) — above dialogue, below panels */
+  VOICE_SUBTITLE: 37,
   /** HUD tooltips — above panels, below poem overlay */
   TOOLTIP: 62,
   /** Cinematic transition (fade-to-black) */

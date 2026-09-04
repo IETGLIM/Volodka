@@ -507,7 +507,8 @@ export function DialogueRenderer() {
       stopVoiceLinePlayback();
       return;
     }
-    playVoiceLineForNode(node.id);
+    // Текст + спикер идут в субтитр голосовой линии / синтез речи (opt-in).
+    playVoiceLineForNode(node.id, { text: resolvedText, speaker: node.speaker ?? null });
     // Spatial bark — gives NPCs a positional procedural voice. Replaces the
     // silent 404 fallback (public/audio/vo/*.ogg doesn't exist) with a
     // formant-filtered tone anchored at the NPC's world position. PannerNode

@@ -108,6 +108,7 @@ import {
 } from './lazyPanels';
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { DiegeticDialogueHud } from '@/components/game/diegetic/DiegeticDialogueHud';
+import { VoiceLineSubtitleHud } from '@/components/game/voiceOver/VoiceLineSubtitleHud';
 import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
 const LazyDataTerminalOverlay = lazy(() =>
   import('@/components/game/DataTerminalOverlay').then((m) => ({ default: m.DataTerminalOverlay })),
@@ -724,6 +725,8 @@ export const GameplayNarrativeOverlay = memo(function GameplayNarrativeOverlay()
         </ErrorBoundary>
       )}
       <DiegeticDialogueHud />
+      {/* Субтитры голосовых линий (VO / opt-in синтез речи) */}
+      <VoiceLineSubtitleHud />
       <InnerMonologueOverlay />
     </>
   );

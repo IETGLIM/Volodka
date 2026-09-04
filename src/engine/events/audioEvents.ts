@@ -18,4 +18,19 @@ export interface AudioEvents {
   'audio:ambient_stinger': {
     cue: string;
   };
+  /**
+   * Реплика с озвучкой началась (VO-файл или синтез речи).
+   * Payload слушает VoiceLineSubtitleHud — субтитры голосовых линий.
+   */
+  'audio:voice_line_start': {
+    nodeId: string;
+    /** Имя говорящего для субтитра (уже локализовано; null — «Голос»). */
+    speaker: string | null;
+    /** Текст реплики. Отсутствует — субтитр не рисуем (нечего показывать). */
+    text?: string;
+  };
+  /** Реплика закончилась (естественно, ошибкой или принудительным стопом). */
+  'audio:voice_line_end': {
+    nodeId: string;
+  };
 }

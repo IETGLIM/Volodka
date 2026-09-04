@@ -29,6 +29,12 @@ import {
   writeSkipArrivalCinematics,
 } from '@/engine/cinematic/arrivalCinematicsSetting';
 import { applyAudioSettings } from '@/engine/audio/AudioSettings';
+import {
+  readVoiceOverEnabled,
+  writeVoiceOverEnabled,
+  VOICE_OVER_DEFAULT,
+} from '@/engine/audio/voiceOverSettings';
+import { stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
 import { applyVisualSettings } from '@/engine/visualSettings';
 import {
   accessibilitySliderBounds,
@@ -89,6 +95,7 @@ const DEFAULTS: Record<string, number | boolean> = {
   volodka_sfx_volume: 80,
   volodka_ambient_volume: 60,
   volodka_muted: false,
+  volodka_voice_over_enabled: VOICE_OVER_DEFAULT,
   volodka_postfx: true,
   volodka_scanlines: true,
   volodka_particles: true,
@@ -378,6 +385,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   const [sfxVol, setSfxVol] = useState(() => lsGetNumber('volodka_sfx_volume', 80));
   const [ambientVol, setAmbientVol] = useState(() => lsGetNumber('volodka_ambient_volume', 60));
   const [muted, setMuted] = useState(() => lsGetBool('volodka_muted', false));
+  const [voiceOver, setVoiceOver] = useState(() => readVoiceOverEnabled());
 
   // ── Visual state ──
   const [postfx, setPostfx] = useState(() => lsGetBool('volodka_postfx', true));
@@ -417,6 +425,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
     setSfxVol(DEFAULTS.volodka_sfx_volume as number);
     setAmbientVol(DEFAULTS.volodka_ambient_volume as number);
     setMuted(DEFAULTS.volodka_muted as boolean);
+    setVoiceOver(VOICE_OVER_DEFAULT);
+    stopVoiceLinePlayback();
     setPostfx(DEFAULTS.volodka_postfx as boolean);
     setScanlines(DEFAULTS.volodka_scanlines as boolean);
     setParticles(DEFAULTS.volodka_particles as boolean);
@@ -477,6 +487,22 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               checked={muted}
               onChange={(v) => { setMuted(v); persist('volodka_muted', v); applyAudioSettings(); }}
             />
+            <CyberToggle
+              label="Озвучка реплик (синтез речи)"
+              checked={voiceOver}
+              onChange={(v) => {
+                setVoiceOver(v);
+                persist('volodka_voice_over_enabled', v);
+                writeVoiceOverEnabled(v);
+                if (!v) stopVoiceLinePlayback();
+              }}
+            />
+            <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed">
+              Реплики диалогов проговариваются системным синтезатором речи.
+              Понадобится русский голос в ОС; субтитры реплик показываются
+              внизу экрана. Голосовые файлы (VO) озвучиваются независимо
+              от этой настройки.
+            </p>
           </motion.div>
         );
 
