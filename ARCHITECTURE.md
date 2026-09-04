@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.8.1** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.8.3** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1063,3 +1063,74 @@ denylist насилия, eviction, фолбэки) — 38 юнит-тестов;
 38 нод aaaExpansionStory.ts не имели ленивого загрузчика (ensureStoryNode
 кидал not found) — добавлены в STANDALONE_STORY_SATELLITE_ORDER. Новый пак
 streetLegends (5 квестов, 30 нод) подключён по тому же паттерну.
+
+## v4.8.3 — экспертный аудит (132 этапа) и стабилизация
+
+Полный отчёт изучения кодовой базы (132 обязательных этапа, статический анализ
+~430k строк `src/`) — [`docs/EXPERT_ANALYSIS_STAGES.md`](./docs/EXPERT_ANALYSIS_STAGES.md).
+
+### Критические фиксы геймплея
+
+| Баг | Файл | Суть |
+|-----|------|------|
+| Камера за стеной в тесных коридорах | `engine/camera/cinematicCamera.ts` | `Math.max(minDistance, hit−margin)` выталкивал камеру ЗА препятствие, если стена ближе minDistance+margin (1.35м). Теперь `safe ≤ hit−margin`, пол `CAMERA_COLLISION_MIN_CLEARANCE=0.2`. Исправлен и reverse-проход |
+| Залипание блока ПКМ | `hooks/useGamePhysics.ts` | RMB-блок включался по любому ПКМ в окне (в т.ч. по DOM-панелям) и не снимался при alt-tab. Добавлен гейт `isCanvasAreaTarget` + cleanup по `blur`/`visibilitychange` |
+| Потеря подписки sprint-launch | `engine/camera/strategies/explorationStrategy.ts` | module-level `eventBus.on` без unsubscribe умирал после dispose/revive. Переведён на `registerModuleGlobalCleanupBinder`; порядок revive: `reviveEventBus()` → `reviveModuleGlobalCleanupBindings()` |
+| Потеря Z-шейка | `engine/camera/cameraShake.ts` + `applyCameraFrame.ts` | shake-офсет был `{x,y}` — Z-компонента отбрасывалась. Добавлена ось Z (60% от X/Y — «удар в спину») |
+| Ложный hard-brake после телепорта | `engine/player/playerFinalizeFrame.ts` | `__lastSprintSpeed` не сбрасывался при смене сцены → шейк+SFX без торможения. Запись валидна только в сцене-владельце |
+| Shift+R мутировал камеру в кат-сценах | `engine/camera/useCameraOrbitInput.ts` | добавлен гейт `shouldBlockOrbit()` |
+| Клобберинг геймпада | `engine/player/virtualJoystickBridge.ts` | `stop()` безусловно занулял все оси; теперь только если джойстик был активен |
+| Ложные битые ссылки диалогов | `story/aaaExpansionStory.ts`, `story/pierStory.ts` | проверено рантайм-скриптом: хаб-узлы `*_explore_mode` генерируются из `SCENE_EXPLORE_HUB_DEFS` — граф цел (727 узлов). Правка не потребовалась |
+
+### Дедупликация уведомлений (правая/левая колонки HUD)
+
+- **Discovery-попап ×2 → 1**: убран устаревший `SceneDiscoveryToast`, остался `SceneDiscoveryCelebration`.
+- **XP ×7 → 2 канала**: одно событие `fx:xp_gain` рендерилось в 5 компонентах + дубль `combat:victory` в `DamageNumberFloat` + store-диф в `useHUDController`. Осталось: плавающее число у прицела (`DamageNumberFloat`) + запись в ленте (`HUDNotificationFeed`). Пульс XP-бара сохранён.
+- **Достижения ×3 → 1**: убраны текстовый тост и `AchievementPopup`-карточка; трофеи показывают только полноэкранную `AchievementUnlockCelebration`, обычные — `AchievementNotification`.
+- **QuickInventoryBar удалён из монтирования**: дублировал QuickUseBar и перекрывал [E]-промпт (низ 234 vs бар 190–258) и crafting-тосты (188–244).
+
+### Единая сетка правой колонки HUD (устранение наложений)
+
+```
+топ-бар кластер (top-2, h≈40) → DifficultyIndicator (top-12=48) →
+BuffDebuffTracker (top=84) → миникарта (146..342) →
+QuestObjectiveCard (explorationQuestCardTopPx()=348) →
+achievement-тосты (explorationAchievementCardSafeTopPx()=570) → стат-пипсы
+```
+Новые слоты — в `shared/constants/hudLayout.ts`; QuestObjectiveCard больше не
+налегает на миникарту; DifficultyIndicator открывает меню (кнопка больше не мёртвая).
+
+### WoW-стиль фрейм героя
+
+Новый `components/game/hud/parts/PlayerStatusFrame.tsx` — портрет (монограмма
+«В» + бейдж уровня) и три анимированных бара: **Энергия** (зелёный), **Стресс**
+(розовый), **Карма** (синий, −100…+100 → 0…100%) с числами, тиром и
+flash-эффектом при падении кармы. Смонтирован в топ-бар слева (desktop-only).
+Существовавший, но нигде не смонтированный `KarmaHudMeter` оставлен как утилита.
+
+### FreeRouter (LLM-фичи) — починен эндпоинт и модель
+
+- **Эндпоинт**: `https://freerouter.eu.cc/v1/...` отдаёт HTML документации (HTTP 405) —
+  matrix-quote и city-news молча уходили в фолбэк. Реальный API —
+  `https://api.freerouter.eu.cc/v1/chat/completions` (сверено с docs и curl-пробой).
+- **Модель**: `glm-5.2` отсутствует в каталоге провайдера (GET /v1/models:
+  `auto`, `claude-opus-5`, `grok-4.6`). Дефолт → `auto` (бесплатный роутер, $0/$0).
+- Ключ по-прежнему только в `FREEROUTER_KEY` env; фолбэки без ключа сохранены.
+- Требование к балансу ключа: провайдер требует ежедневного claim на дашборде
+  (`no_credits` при пустом балансе) — на клиент и деплой не влияет.
+
+### Перф-полировка
+
+- `FrameBudgetRunner`: убраны 2 спред-аллокации/кадр (≈120/сек мусора GC).
+- `playerMainMovement`: один `getGameSnapshot()` вместо двух в горячем пути.
+- `AmbientEngine`: кэш noise-буфера по sampleRate вместо синтеза ~192k сэмплов на каждый кроссфейд.
+- `useDeviceTier`: синхронная детекция тира в `useState` — мобильные больше не
+  начинают грузить 2k-HDRI (6.66 МБ) до первого useEffect (риск 'medium'-флэша).
+
+### Сознательно не тронуто
+
+- Первые 18 стихов (`poem_1…poem_18`) — прямое требование правообладателя.
+- Inline-base64 Rapier в physics-wasm чанке (829КБ gzip) — осознанный fallback
+  resilience; стрип ломает инициализацию физики при недоступности внешнего WASM.
+- Пошаговый комбат — перевод в реал-тайм 3D требует hitbox-систем и ребаланса
+  всех врагов; архитектура (события, presentation beat, hazards) готова к миграции.

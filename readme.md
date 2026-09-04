@@ -78,7 +78,7 @@ npm run assets:status            # сводка pipeline и пропусков
 
 ## Качество и визуальный бар
 
-Текущая версия пакета: **4.8.1** (`package.json` / `APP_VERSION`).
+Текущая версия пакета: **4.8.3** (`package.json` / `APP_VERSION`).
 
 - `npm run lint` — ESLint для `src`.
 - `npm run typecheck` — TypeScript gate.
@@ -131,7 +131,7 @@ Environment variables:
 |----------|----------|
 | `VITE_SITE_URL` | Canonical URL и OG preview, например `https://volodka.vercel.app` |
 | `FREEROUTER_KEY` | (опционально) ключ FreeRouter API: динамические Matrix-цитаты, режим «шёпота» и городской тикер (см. ниже) |
-| `FREEROUTER_MODEL` | (опционально) имя модели, по умолчанию `glm-5.2` |
+| `FREEROUTER_MODEL` | (опционально) имя модели, по умолчанию `auto` (v4.8.2: `glm-5.2` удалён из каталога провайдера) |
 
 ## Динамические Matrix-цитаты (FreeRouter, опционально)
 
@@ -153,7 +153,7 @@ Function:
 ```
 браузер  →  /api/matrix-quote?scene=…&karma=…&act=…
           (тот же origin, ключа в коде нет)
-Edge fn  →  https://freerouter.eu.cc/v1/chat/completions
+Edge fn  →  https://api.freerouter.eu.cc/v1/chat/completions
             Authorization: Bearer ${process.env.FREEROUTER_KEY}
           ← { quote, model }
 браузер  ←  { quote, model }
@@ -234,7 +234,8 @@ GET /api/city-news?act=1..7&scene=<sceneId>&hour=0..23
 - **Кеш:** 10 минут на `(act, scene, hour)` — новости дешевле цитат.
   Rate limit: 1 запрос / 3 секунды на IP, как у matrix-quote.
 - **Фолбэки:** 10 инлайн-новостей на русском (Гильдия, «Синяя яма», Косая 12 —
-  в лоре Володни). `max_tokens=900` — glm-5.2 reasoning-модель (см. выше).
+  в лоре Володни). `max_tokens=900` — запас прочности с эпохи reasoning-модели
+  (v4.8.2: `auto` без скрытого reasoning-trace, бюджет уходит в ответ).
 - **Клиент:** `src/hooks/useCityNews.ts` — пуллинг не чаще раза в 3.5 минуты,
   localStorage-кеш, AbortController + таймаут 4 с. Интеграция —
   `TopBarDataTicker.tsx`: AI-строка вставляется в ротацию с бейджем «ЭФИР»;
@@ -298,6 +299,29 @@ GET /api/matrix-quote?scene=…&karma=…&act=…&mode=whisper
 | F3 | Панель разработчика в dev |
 
 ---
+
+## Changelog (v4.8.3)
+
+**Экспертный аудит кодовой базы (132 этапа) и стабилизация** — полный отчёт:
+[`docs/EXPERT_ANALYSIS_STAGES.md`](./docs/EXPERT_ANALYSIS_STAGES.md).
+
+- **Камера**: устранён проход сквозь стены в тесных коридорах (клэмп
+  safe-distance ≤ hit−margin, включая reverse-проход); Z-шейк «удара в спину»
+  больше не теряется; Shift+R не сбивает камеру в кат-сценах.
+- **Управление**: блок ПКМ не залипает после alt-tab и не включается по кликам
+  по DOM-панелям; геймпад не глушится при остановке тач-джойстика.
+- **HUD без дублей**: открытие локации — один попап; XP — 2 канала вместо 7;
+  достижение — 1 уведомление вместо 3; удалён дублирующий QuickInventoryBar.
+- **Единая сетка правой колонки**: топ-бар → сложность → баффы → миникарта →
+  квест-карта → ачивки; наложения устранены; DifficultyIndicator открывает меню.
+- **Фрейм героя (WoW-стиль)**: портрет + бары Энергия/Стресс/Карма в топ-баре.
+- **FreeRouter починен**: рабочий эндпоинт `api.freerouter.eu.cc` (старый
+  отдавал HTML) и модель `auto` (glm-5.2 удалён из каталога провайдера).
+- **Перф**: −2 спред-аллокации/кадр в фрейм-лупе; один снапшот стора вместо
+  двух в движении; кэш noise-буфера амбиента; мобильные больше не грузят
+  2k-HDRI из-за 'medium'-флэша тира устройства.
+- **Локализация**: error-экраны 3D-канваса на русском.
+- Проверки: tsc 0 ошибок · eslint 0 · 245+ тестов зелёных · сборка успешна.
 
 ## Changelog (v4.7.0)
 
