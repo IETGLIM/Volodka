@@ -51,8 +51,22 @@ const BarRow = memo(function BarRow({
         {label}
       </span>
       <div className="relative h-[7px] w-[104px] overflow-hidden rounded-full border border-white/10 bg-slate-950/70">
+        {/* Ghost-чип (AAA): бледный слой с ЗАДЕРЖАННОЙ анимацией к тому же
+            значению. При уроне основная заливка падает быстро (0.3с), а
+            ghost остаётся широким ещё ~0.28с и догоняет медленно (0.55с) —
+            читается как «свежий урон» (WoW/MOBA). При лечении ghost растёт
+            под заливкой и всегда скрыт ею. */}
         <motion.div
-          className="h-full rounded-full"
+          className="absolute inset-y-0 left-0 rounded-full"
+          style={{ background: 'rgba(255, 130, 130, 0.4)' }}
+          initial={false}
+          animate={{ width: `${pct}%` }}
+          transition={reducedMotion
+            ? { duration: 0 }
+            : { delay: 0.28, duration: 0.55, ease: 'easeOut' }}
+        />
+        <motion.div
+          className="relative h-full rounded-full"
           style={{ background: fill, boxShadow: flash ? '0 0 10px rgba(239,68,68,0.85)' : glow }}
           initial={false}
           animate={{ width: `${pct}%` }}

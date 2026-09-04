@@ -26,6 +26,12 @@ import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineO
 const PITCH_MIN = -0.5;
 const PITCH_MAX = 1.3;
 const ORBIT_SENSITIVITY = 0.004;
+/**
+ * Pinch-zoom (2 пальца): экспонента чувствительности на пиксель изменения
+ * размаха. 0.008 → размах 200px ≈ exp(-1.6) ≈ 0.2x дистанции (5x зум-ин).
+ * Согласовано по ощущению с ZOOM_WHEEL_EXP (колесо).
+ */
+const PINCH_ZOOM_EXP = 0.008;
 /** Clamp for the rAF inertia dt — tab switches / rAF throttling must not
  *  teleport the camera or blow up the decay math. */
 const INERTIA_DT_MAX_S = 0.1;
@@ -164,6 +170,9 @@ export function useCameraOrbitInput(
     // The loop also (re)starts on new drag input — previously it stopped for
     // good once the velocity decayed, so momentum never applied after that.
     let _inertiaRaf = 0;
+    // Pinch-zoom состояние (живёт в замыкании эффекта, сбрасывается на blur/unmount)
+    let _isPinching = false;
+    let _pinchLastDist = 0;
     let _inertiaPrevTime = 0;
     let _inertiaLoopActive = false;
     const updateInertia = (now: number) => {
@@ -247,6 +256,10 @@ export function useCameraOrbitInput(
       mmbDown = false;
       lmbLookActive = false;
       isDraggingRef.current = false;
+      // Pinch-состояние тоже сбрасываем — иначе «залипший» pinch заблокирует
+      // одиночный орбит после alt-tab посреди жеста.
+      _isPinching = false;
+      _pinchLastDist = 0;
       exitPointerLockIfOurs(canvasEl);
     };
 
@@ -335,6 +348,19 @@ export function useCameraOrbitInput(
     const onTouchStart = (e: TouchEvent) => {
       if (shouldBlockOrbit()) return;
 
+      // ── PINCH-ZOOM (AAA-мобилки): 2 пальца на canvas → зум камеры.
+      // Раньше pinch отсутствовал (только 1-палец орбит) — мобильные игроки
+      // не могли приблизить/отдалить камеру. ──
+      if (e.touches.length === 2 && isCanvasAreaTarget(e.target)) {
+        isDraggingRef.current = false; // орбит одиночным пальцем отключается
+        _isPinching = true;
+        _pinchLastDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY,
+        );
+        return;
+      }
+
       if (e.touches.length === 1 && isCanvasAreaTarget(e.target)) {
         isDraggingRef.current = true;
         lastMouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
@@ -342,6 +368,36 @@ export function useCameraOrbitInput(
     };
 
     const onTouchMove = (e: TouchEvent) => {
+      // ── Pinch: инкрементальный зум как у колеса (exp-фактор) ──
+      if (_isPinching && e.touches.length === 2) {
+        const dist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY,
+        );
+        const delta = dist - _pinchLastDist;
+        _pinchLastDist = dist;
+        if (Math.abs(delta) < 0.5) return;
+
+        if (firstPersonRef?.current && fovRef) {
+          // Как у колеса: pinch наружу (delta>0) → FOV меньше → визуальный зум-ин.
+          fovRef.current = Math.max(
+            FIRST_PERSON_FOV_MIN,
+            Math.min(FIRST_PERSON_FOV_MAX, fovRef.current - delta * 0.035),
+          );
+        } else {
+          // Pinch наружу (delta>0) → камера ближе: exp(-delta·k) < 1.
+          const factor = Math.exp(-delta * PINCH_ZOOM_EXP);
+          const newDist = Math.max(
+            MIN_DISTANCE,
+            Math.min(MAX_DISTANCE, distanceRef.current * factor),
+          );
+          distanceRef.current = newDist;
+          interactionDistanceRef.current = newDist;
+        }
+        zoomSnapRef.current = 1;
+        return;
+      }
+
       if (!isDraggingRef.current || e.touches.length !== 1) return;
       const dx = e.touches[0].clientX - lastMouseRef.current.x;
       const dy = e.touches[0].clientY - lastMouseRef.current.y;
@@ -356,7 +412,22 @@ export function useCameraOrbitInput(
       );
     };
 
-    const onTouchEnd = () => {
+    const onTouchEnd = (e: TouchEvent) => {
+      if (_isPinching) {
+        if (e.touches.length < 2) {
+          _isPinching = false;
+          _pinchLastDist = 0;
+        }
+        // Остался ровно 1 палец → бесшовно переармим орбит без рывка:
+        // lastMouse должен прыгнуть на позицию оставшегося пальца.
+        if (e.touches.length === 1 && !shouldBlockOrbit() && isCanvasAreaTarget(e.target)) {
+          isDraggingRef.current = true;
+          lastMouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        } else if (e.touches.length === 0) {
+          isDraggingRef.current = false;
+        }
+        return;
+      }
       isDraggingRef.current = false;
     };
 
