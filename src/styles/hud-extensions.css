@@ -1497,6 +1497,40 @@
   color: rgba(148, 163, 184, 0.7);
 }
 
+/* v4.8.8: «добить — ЛКМ» — капсула перекрашивается в красный: цель
+   ослаблена до порога добивания (creepVitality), удар снимет крипа
+   без пошагового боя. */
+.melee-strike-hint[data-finishable='true'] {
+  border-color: rgba(255, 71, 87, 0.45);
+  background: linear-gradient(
+    180deg,
+    rgba(64, 8, 16, 0.55) 0%,
+    rgba(40, 4, 10, 0.45) 100%
+  );
+  box-shadow:
+    0 0 18px rgba(255, 71, 87, 0.22),
+    inset 0 0 10px rgba(255, 71, 87, 0.12);
+}
+
+.melee-strike-hint[data-finishable='true'] .melee-strike-hint__icon {
+  color: #ff6b7a;
+}
+
+.melee-strike-hint[data-finishable='true'] .melee-strike-hint__enemy {
+  color: #ffc9cf;
+  text-shadow: 0 0 8px rgba(255, 71, 87, 0.45);
+}
+
+.melee-strike-hint[data-finishable='true'] .melee-strike-hint__action {
+  color: #ff8b96;
+}
+
+/* Добивание важнее усталости: если обе правды совпали, красный остаётся
+   читаемым (tired лишь слегка тускнит фон, но не подпись действия). */
+.melee-strike-hint[data-finishable='true'][data-tired='true'] .melee-strike-hint__action {
+  color: #e8798a;
+}
+
 @keyframes melee-strike-hint-in {
   from {
     opacity: 0;

@@ -17,8 +17,9 @@
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { AdditiveBlending, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, PointLight, Vector3 } from 'three';
+import { AdditiveBlending, DoubleSide, Group, Mesh, MeshBasicMaterial, MeshPhysicalMaterial, PlaneGeometry, PointLight, Vector3 } from 'three';
 import { Html } from '@react-three/drei';
+import { useThree } from '@react-three/fiber';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { getGameSnapshot } from "@/engine/GameActionDispatcher";
@@ -31,6 +32,7 @@ import type { GamePhase } from '@/shared/gamePhase';
 import { eventBus } from '@/engine/EventBus';
 import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManager';
 import { startEncounter } from '@/engine/combat/encounterPresentation';
+import { getCombatState } from '@/engine/CombatSystem';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import { getEnemyAiConfig } from '@/engine/combat/enemyAiBehaviors';
 import {
@@ -38,6 +40,13 @@ import {
   registerMeleeStrikeTarget,
   reportMeleeStrikeCandidate,
 } from '@/engine/combat/realtime/meleeStrike';
+import {
+  clearAllCreepVitality,
+  clearCreepVitality,
+  getCreepWeakenedHpPct,
+  isCreepFinishable,
+  noteCreepWeakened,
+} from '@/engine/combat/realtime/creepVitality';
 import { MELEE_STRIKE_REACH_M } from '@/engine/combat/realtime/meleeSweep';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
@@ -84,6 +93,12 @@ const COOLDOWN_AFTER_ESCAPE_S = 8;
 const HOVER_HEIGHT = 0.9;
 const CREEP_ALERT_S = 0.55;
 const CREEP_CHASE_FOOTSTEP_S = 0.48;
+
+/* ── v4.8.8: HP-полоска ослабленного крипа (метры) ── */
+const CREEP_HP_BAR_FILL_W = 0.72;
+const CREEP_HP_BAR_FILL_H = 0.055;
+/** Высота полоски над позицией крипа (HOVER_HEIGHT ≈ 0.9 → над головой). */
+const CREEP_HP_BAR_Y = 1.0;
 
 /** Poem power «Путеводная Звезда» (poem_3) — TTL flag that guides the player
  *  past dangers: creep vision shrinks to this fraction while active. */
@@ -168,6 +183,8 @@ export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProp
   useEffect(() => {
     setDefeated(new Set());
     engagedCreepIdRef.current = null;
+    // v4.8.8: память HP крипов не переживает смену сцены.
+    clearAllCreepVitality();
   }, [sceneId]);
 
   useEffect(() => {
@@ -177,13 +194,32 @@ export function PatrollingCreeps({ livePlayerPositionRef }: PatrollingCreepsProp
       if (engaged) {
         engagedCreepIdRef.current = null;
         setDefeated((prev) => new Set(prev).add(engaged));
+        // Крип повержен — запись о его HP больше не нужна.
+        clearCreepVitality(engaged);
       }
     });
     scope.on('combat:defeat', () => {
+      const creepId = engagedCreepIdRef.current;
       engagedCreepIdRef.current = null;
+      // Крип отстоял своё — полностью регенерирует к следующей встрече.
+      if (creepId) clearCreepVitality(creepId);
     });
+    // v4.8.8: побег НЕ обнуляет урон крипа — остаток HP запоминается, и
+    // при новой встрече враг вступает ослабленным (а при ≤35% добивается
+    // ударом до боя). Полная регенерация — через CREEP_VITALITY_REGEN_MS.
     scope.on('combat:fled', () => {
+      const creepId = engagedCreepIdRef.current;
       engagedCreepIdRef.current = null;
+      if (!creepId) return;
+      const cs = getCombatState();
+      if (cs && cs.enemy.maxHp > 0) {
+        noteCreepWeakened(creepId, cs.enemy.hp / cs.enemy.maxHp);
+      }
+    });
+    // v4.8.8: добивание ударом до боя — крип снимается со сцены, как при
+    // победе. Реестр целей/память HP чистит meleeStrike.
+    scope.on('combat:creep_finished', ({ creepId }) => {
+      setDefeated((prev) => new Set(prev).add(creepId));
     });
     scope.on('combat:end', () => {
       engagedCreepIdRef.current = null;
@@ -290,6 +326,20 @@ function Creep({
     new Vector3(def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]),
   );
 
+  // ── v4.8.8: HP-полоска ослабленного крипа ──
+  // Билборд к камере над крипом, когда у него есть запомненный остаток HP
+  // (после побега игрока). Дешёвая пара плоскостей — без Html/текстур.
+  const camera = useThree((s) => s.camera);
+  const hpBarGroupRef = useRef<Group>(null);
+  const hpBarFillRef = useRef<Mesh>(null);
+  // Геометрия заполнения сдвинута на полширины вправо: scale.x ужимает
+  // полоску слева направо (анкер по левому краю, как в любых RPG).
+  const hpBarFillGeometry = useMemo(() => {
+    const g = new PlaneGeometry(CREEP_HP_BAR_FILL_W, CREEP_HP_BAR_FILL_H);
+    g.translate(CREEP_HP_BAR_FILL_W / 2, 0, 0);
+    return g;
+  }, []);
+
   /** Lazily resolve the scene nav mesh (built once per scene, then cached). */
   function resolveNavMesh(): NavMeshGraph | null {
     if (!navMeshResolvedRef.current) {
@@ -323,15 +373,17 @@ function Creep({
     spawnedRef.current = spawned;
   }, [spawned]);
 
-  // ── Реал-тайм «Опережающий удар» (v4.8.7) ──
+  // ── Реал-тайм «Опережающий удар» (v4.8.7, добивание v4.8.8) ──
   // Крип регистрируется как цель замаха: живая позиция (positionRef),
-  // LOS по vision-блокерам сцены и вовлечение в бой с ослабленным врагом.
-  // Вовлечение — точная копия контактной ветки CHASE (см. useFrameTick),
-  // чтобы презентация/победа/побег работали как раньше.
+  // LOS по vision-блокерам сцены, вовлечение в бой с ослабленным врагом
+  // и добивание до боя (крип в памяти HP ≤ 35%). Вовлечение — точная
+  // копия контактной ветки CHASE (см. useFrameTick), чтобы
+  // презентация/победа/побег работали как раньше.
   useEffect(() => {
     const unregister = registerMeleeStrikeTarget({
       id: def.id,
       name: def.name,
+      enemyType: def.enemyType,
       getPosition: () => positionRef.current,
       canStrike: () =>
         spawnedRef.current
@@ -345,6 +397,7 @@ function Creep({
         const player = livePlayerPositionRef.current;
         return hasCreepLineOfSight(pos.x, pos.z, player.x, player.z, visionBlockers);
       },
+      getFinisherXpReward: () => ENEMY_TEMPLATES[def.enemyType]?.xpReward ?? 0,
       applyStrike: () => {
         if (engageQueuedRef.current) return;
         engageQueuedRef.current = true;
@@ -360,12 +413,26 @@ function Creep({
         pos.z = player.z + Math.cos(faceYaw) * 2.4;
         headingRef.current = faceYaw + Math.PI;
 
+        // v4.8.8: после побега из прошлой встречи крип вступает с
+        // ЗАПОМНЕННЫМ остатком HP (свежий удар первым — 75% как раньше).
         startEncounter({
           source: 'creep',
           enemyType: def.enemyType,
           encounterName: def.name,
           creepId: def.id,
-          introHpPct: MELEE_STRIKE_INTRO_ENEMY_HP_PCT });
+          introHpPct:
+            getCreepWeakenedHpPct(def.id) ?? MELEE_STRIKE_INTRO_ENEMY_HP_PCT,
+        });
+      },
+      applyFinisher: () => {
+        if (engageQueuedRef.current) return;
+        // Крип повержен без боя: замораживаем его до размонта (родитель
+        // добавит id в defeated по combat:creep_finished).
+        engageQueuedRef.current = true;
+        stateRef.current = 'engaged';
+        setEngaging(false);
+        setDueling(false);
+        contactBurstRef.current = 0;
       },
     });
     return unregister;
@@ -428,7 +495,7 @@ function Creep({
     const dz = player.z - pos.z;
     const playerDist = Math.sqrt(dx * dx + dz * dz);
 
-    // ── HUD-подсказка «враг в зоне удара» (v4.8.7) ──
+    // ── HUD-подсказка «враг в зоне удара» (v4.8.7, добивание v4.8.8) ──
     // Отчёт в реал-тайм слой каждый кадр (дешёвый map.set). LOS считаем
     // только когда крип в зоне удара — обычно не больше одного такого.
     const strikeEligible =
@@ -438,11 +505,13 @@ function Creep({
       && (stateRef.current === 'patrol'
         || stateRef.current === 'chase'
         || stateRef.current === 'return');
+    const weakenedPct = getCreepWeakenedHpPct(def.id);
+    const finishable = weakenedPct !== null && isCreepFinishable(weakenedPct);
     if (strikeEligible && playerDist <= MELEE_STRIKE_REACH_M) {
       const clear = hasCreepLineOfSight(pos.x, pos.z, player.x, player.z, visionBlockers);
-      reportMeleeStrikeCandidate(def.id, def.name, playerDist, clear);
+      reportMeleeStrikeCandidate(def.id, def.name, playerDist, clear, finishable);
     } else {
-      reportMeleeStrikeCandidate(def.id, def.name, playerDist, false);
+      reportMeleeStrikeCandidate(def.id, def.name, playerDist, false, false);
     }
 
     // During engage / combat, face the player at duel distance.
@@ -829,6 +898,26 @@ function Creep({
     if (duelRingMatRef.current && inArena) {
       duelRingMatRef.current.opacity = 0.22 + combatPulse * 0.28 + burst * 0.35;
     }
+
+    // ── v4.8.8: HP-полоска ослабленного крипа ──
+    // Только в исследовании и вне арены (в бою HP показывает боевой UI).
+    // Билборд к камере; видим только если крип ослаблен — стены его
+    // перекрывают (depthTest включён), сквозь-стенной wallhack исключён.
+    const hpBar = hpBarGroupRef.current;
+    if (hpBar) {
+      const barPct = exploring && !inArena ? getCreepWeakenedHpPct(def.id) : null;
+      if (barPct !== null) {
+        hpBar.visible = true;
+        hpBar.position.set(pos.x, pos.y + CREEP_HP_BAR_Y, pos.z);
+        hpBar.quaternion.copy(camera.quaternion);
+        if (hpBarFillRef.current) {
+          const w = Math.max(0.03, barPct);
+          hpBarFillRef.current.scale.x = w;
+        }
+      } else {
+        hpBar.visible = false;
+      }
+    }
   });
 
   if (!spawned) return null;
@@ -837,13 +926,14 @@ function Creep({
   const visionWidth = Math.tan(def.visionHalfAngle) * visionLength * 2;
 
   return (
-    <group ref={groupRef} position={[def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]]}>
-      <CreepBody
-        enemyType={def.enemyType}
-        color={def.color}
-        animStateRef={bodyAnimRef}
-        bodyMatRef={bodyMatRef}
-      />
+    <>
+      <group ref={groupRef} position={[def.waypoints[0][0], HOVER_HEIGHT, def.waypoints[0][1]]}>
+        <CreepBody
+          enemyType={def.enemyType}
+          color={def.color}
+          animStateRef={bodyAnimRef}
+          bodyMatRef={bodyMatRef}
+        />
 
       {/* Vision cone projected on the ground (reads as stealth UI).
           Wrapped in a group so poem effects can scale it around the creep. */}
@@ -933,6 +1023,24 @@ function Creep({
           </Html>
         </>
       )}
-    </group>
+      </group>
+
+      {/* v4.8.8: HP-полоска ослабленного крипа — отдельный билборд-корень
+          (вне вращающейся группы крипа), виден только в исследовании при
+          запомненном уроне после побега. Стены перекрывают её (depthTest). */}
+      <group ref={hpBarGroupRef} visible={false}>
+        <mesh>
+          <planeGeometry args={[CREEP_HP_BAR_FILL_W + 0.06, CREEP_HP_BAR_FILL_H + 0.034]} />
+          <meshBasicMaterial color="#160406" transparent opacity={0.72} depthWrite={false} />
+        </mesh>
+        <mesh
+          ref={hpBarFillRef}
+          geometry={hpBarFillGeometry}
+          position={[-CREEP_HP_BAR_FILL_W / 2, 0, 0.001]}
+        >
+          <meshBasicMaterial color="#ff4757" transparent opacity={0.95} depthWrite={false} />
+        </mesh>
+      </group>
+    </>
   );
 }

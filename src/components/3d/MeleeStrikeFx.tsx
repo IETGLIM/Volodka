@@ -36,7 +36,8 @@ export function MeleeStrikeFx() {
   const liveRef = useRef<LiveSpark[]>([]);
 
   useEffect(() => {
-    const unsub = eventBus.on('combat:melee_strike', ({ x, y, z }) => {
+    // v4.8.8: добивание читается крупнее — искра ярче и размашистее.
+    const unsub = eventBus.on('combat:melee_strike', ({ x, y, z, finished }) => {
       const group = groupRef.current;
       if (!group) return;
       const mesh = acquireCombatHitSpark();
@@ -44,9 +45,9 @@ export function MeleeStrikeFx() {
 
       _impact.set(x, y + 0.6, z);
       mesh.position.copy(_impact);
-      mesh.scale.setScalar(0.6);
+      mesh.scale.setScalar(finished ? 1.0 : 0.6);
       const material = mesh.material as import('three').MeshBasicMaterial;
-      material.opacity = 0.9;
+      material.opacity = finished ? 1 : 0.9;
 
       group.add(mesh);
       liveRef.current.push({ mesh, ageS: 0 });

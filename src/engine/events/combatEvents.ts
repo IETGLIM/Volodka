@@ -91,11 +91,29 @@ export interface CombatEvents {
     source: 'mouse' | 'mobile_hud' | 'gamepad';
     /** Всегда true в текущей версии (промахи не эмитятся). */
     hit: boolean;
+    /** v4.8.8: удар стал ДОБИВАНИЕМ — крип повержен до пошаговой фазы. */
+    finished: boolean;
     creepId: string;
     enemyName: string;
     /** Точка удара (мировые координаты) — спавн искр. */
     x: number;
     y: number;
     z: number;
+  };
+  /** v4.8.8 «Добивание» — крип повержен ударом ДО пошагового боя
+   *  (реал-тайм слой: creepVitality + meleeStrike). Награды уже начислены
+   *  (урезанные computeCreepFinisherRewards); слушатель PatrollingCreeps
+   *  снимает крипа со сцены, как при combat:victory. */
+  'combat:creep_finished': {
+    creepId: string;
+    enemyType: EnemyType;
+    enemyName: string;
+    /** Точка добивания (мировые координаты). */
+    x: number;
+    y: number;
+    z: number;
+    xpGained: number;
+    karmaGained: number;
+    creditsGained: number;
   };
 }

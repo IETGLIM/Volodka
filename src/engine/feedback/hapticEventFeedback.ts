@@ -29,6 +29,7 @@ import { registerModuleGlobalCleanupBinder } from '@/engine/core/GlobalCleanupSe
 import {
   hapticCombatHit,
   hapticError,
+  hapticHeavy,
   hapticLevelUp,
   hapticMedium,
   hapticQuestComplete,
@@ -82,12 +83,17 @@ function bindHapticEventListeners(): void {
     }),
 
     // v4.8.7 «Опережающий удар» — тактильный отклик попадания до боя
-    // (см. engine/combat/realtime/meleeStrike.ts).
-    eventBus.on('combat:melee_strike', () => {
+    // (см. engine/combat/realtime/meleeStrike.ts). v4.8.8: добивание
+    // ощущается тяжелее — враг повержен без боя.
+    eventBus.on('combat:melee_strike', ({ finished }) => {
       const now = performance.now();
       if (now - lastCombatHapticAt < COMBAT_HAPTIC_THROTTLE_MS) return;
       lastCombatHapticAt = now;
-      hapticCombatHit();
+      if (finished) {
+        hapticHeavy();
+      } else {
+        hapticCombatHit();
+      }
     }),
   );
 }

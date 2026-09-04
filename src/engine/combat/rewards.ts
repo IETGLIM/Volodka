@@ -187,6 +187,53 @@ export function buildVictoryLogEntries(
 }
 
 /* ═══════════════════════════════════════════════════════════════
+   §9.3 — Creep Finisher Rewards (realtime layer, v4.8.8)
+   ═══════════════════════════════════════════════════════════════ */
+
+/** Доля XP врага при добивании до боя (вместо полных наград победы). */
+export const CREEP_FINISHER_XP_SCALE = 0.6;
+
+/** Фиксированная карма за добивание (без боевых бонусов комбо). */
+export const CREEP_FINISHER_KARMA = 2;
+
+/** Вход `computeCreepFinisherRewards`. */
+export interface ComputeCreepFinisherRewardsInput {
+  /** xpReward шаблона врага (ENEMY_TEMPLATES[type].xpReward). */
+  xpReward: number;
+  /** Множитель кредитов сложности (difficultySettings.creditsMultiplier). */
+  creditsMultiplier: number;
+}
+
+/** Результат: урезанные награды добивания (без лута — трофеи выпадают
+ *  только за честную победу в пошаговом бою). */
+export interface ComputedCreepFinisherRewards {
+  xpGained: number;
+  karmaGained: number;
+  creditsGained: number;
+}
+
+/**
+ * Награды за добивание ослабленного крипа ударом до боя (creepVitality +
+ * meleeStrike). Детерминировано — боевой RNG-сеанс не существует вне боя.
+ * XP = 60% от шаблона (минимум 1), карма фиксированная, кредиты — по той
+ * же формуле боевых кредитов от урезанного XP. Честно дешевле полной
+ * победы: игрок экономит ходы, но теряет лут и комбо-бонусы.
+ */
+export function computeCreepFinisherRewards(
+  input: ComputeCreepFinisherRewardsInput,
+): ComputedCreepFinisherRewards {
+  const xpGained = Math.max(
+    1,
+    Math.floor(Math.max(0, input.xpReward) * CREEP_FINISHER_XP_SCALE),
+  );
+  const multiplier = Number.isFinite(input.creditsMultiplier)
+    ? Math.max(0, input.creditsMultiplier)
+    : 1;
+  const creditsGained = Math.max(1, Math.floor(computeCombatCredits(xpGained, 0) * multiplier));
+  return { xpGained, karmaGained: CREEP_FINISHER_KARMA, creditsGained };
+}
+
+/* ═══════════════════════════════════════════════════════════════
    §9.2 — Defeat Penalty
    ═══════════════════════════════════════════════════════════════ */
 

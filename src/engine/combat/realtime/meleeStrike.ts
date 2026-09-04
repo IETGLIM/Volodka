@@ -1,18 +1,23 @@
 /* ─── Volodka RPG – «Опережающий удар»: реал-тайм слой до пошагового боя ───
- *                                                              (v4.8.7)
+ *                                                              (v4.8.8)
  *
- * Первый инкремент бэклога «реал-тайм 3D-комбат» (приоритет C). Вместо
- * пассивного контакта (creep подошёл на 1.15 м) игрок может ударить первым:
- *   ЛКМ / кнопка «Удар» → секторный замах (meleeSweep.ts) → если враг в
- *   зоне и в конусе взгляда → бой стартует с ОСЛАБЛЕННЫМ врагом.
+ * Инкременты бэклога «реал-тайм 3D-комбат» (приоритет C):
+ *   • v4.8.7 — удар первым: ЛКМ / кнопка «Удар» → секторный замах
+ *     (meleeSweep.ts) → если враг в зоне и в конусе взгляда → бой
+ *     стартует с ОСЛАБЛЕННЫМ врагом;
+ *   • v4.8.8 — память HP крипов (creepVitality.ts): после побега игрока
+ *     крип не «забывает» урон и вступает в новую встречу ослабленным, а
+ *     сильно ослабленный (≤ 35%) ДОБИВАЕТСЯ ударом до боя — урезанные
+ *     награды, без пошаговой фазы (computeCreepFinisherRewards).
  *
  * Архитектура (как PlayerRigidBodyState / interactionSession — модульные
  * одиночки движка, без стора и React):
  *   • PatrollingCreeps регистрирует цели (MeleeStrikeTarget) на маунт —
- *     провайдеры живой позиции, LOS и «выполнить удар» (вовлечение в бой).
+ *     провайдеры живой позиции, LOS и «выполнить удар» (вовлечение в бой);
  *   • attemptMeleeStrike — единая точка входа из ввода (ЛКМ/мобильная
  *     кнопка): гейты фазы → выносливость → кулдаун → замах → событие
- *     combat:melee_strike → target.applyStrike() (старт встречи с introHpPct).
+ *     combat:melee_strike → добивание ИЛИ target.applyStrike() (старт
+ *     встречи с introHpPct);
  *   • reportMeleeStrikeCandidate / getMeleeStrikeHint — зеркала для
  *     HUD-подсказки «враг в зоне удара» (поллинг без рендеров, паттерн
  *     StaminaBar).
@@ -22,7 +27,10 @@
  */
 
 import { eventBus } from '@/engine/EventBus';
-import { getGameSnapshot } from '@/engine/GameActionDispatcher';
+import {
+  dispatchGameAction,
+  getGameSnapshot,
+} from '@/engine/GameActionDispatcher';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { isSceneTransitionInProgress } from '@/engine/core/sceneTransitionGuard';
 import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
@@ -31,6 +39,13 @@ import {
   getPlayerStamina,
 } from '@/engine/player/playerStamina';
 import { sharedCameraYawRef, sharedPlayerPositionRef } from '@/engine/PlayerRotationState';
+import type { EnemyType } from '@/shared/types/game';
+import { computeCreepFinisherRewards } from '../rewards';
+import {
+  clearCreepVitality,
+  getCreepWeakenedHpPct,
+  isCreepFinishable,
+} from './creepVitality';
 import {
   MELEE_STRIKE_REACH_M,
   resolveMeleeSweep,
@@ -53,19 +68,27 @@ export interface MeleeStrikeTarget {
   readonly id: string;
   /** Русское имя (шаблон врага) — для тоста и HUD-подсказки. */
   readonly name: string;
+  /** Тип врага — попадает в combat:creep_finished (награды по шаблону). */
+  readonly enemyType: EnemyType;
   /** Живая позиция кинематического крипа (мировые координаты). */
   getPosition(): { x: number; y: number; z: number };
   /** Можно ли бить прямо сейчас (exploring, не engaged/cooldown/defeated). */
   canStrike(): boolean;
   /** Стено-проверка по vision-блокерам сцены (creepTactics.hasCreepLineOfSight). */
   hasLineOfSight(): boolean;
+  /** XP-награда шаблона врага — для наград добивания (v4.8.8). */
+  getFinisherXpReward?(): number;
   /** Выполнить удар: вовлечь крипа и стартовать встречу с introHpPct. */
   applyStrike(): void;
+  /** Добивание (v4.8.8): крип повержен без пошаговой фазы. Провайдер
+   *  ставит крипа в неагрессивное состояние — родитель снимает его с
+   * цены по событию combat:creep_finished. Отсутствует → обычный путь. */
+  applyFinisher?(): void;
 }
 
 /** Итог попытки удара — вызывающий ввод решает, «съедать» ли клик. */
 export type MeleeStrikeOutcome =
-  | { status: 'hit'; creepId: string; enemyName: string }
+  | { status: 'hit'; creepId: string; enemyName: string; finished: boolean }
   | { status: 'tired' }
   | { status: 'cooldown' }
   | { status: 'none' };
@@ -91,6 +114,8 @@ export interface MeleeStrikeHintEntry {
   atMs: number;
   /** Бить можно, но выносливости не хватает. */
   tired: boolean;
+  /** Цель ослаблена до порога добивания (v4.8.8). */
+  finishable: boolean;
 }
 
 export interface MeleeStrikeHint {
@@ -98,6 +123,7 @@ export interface MeleeStrikeHint {
   name: string;
   distM: number;
   tired: boolean;
+  finishable: boolean;
 }
 
 const hintEntries = new Map<string, MeleeStrikeHintEntry>();
@@ -110,13 +136,14 @@ export function reportMeleeStrikeCandidate(
   name: string,
   distM: number,
   eligible: boolean,
+  finishable = false,
 ): void {
   if (!eligible) {
     hintEntries.delete(id);
     return;
   }
   const tired = getPlayerStamina().current < MELEE_STRIKE_STAMINA_COST;
-  hintEntries.set(id, { id, name, distM, atMs: Date.now(), tired });
+  hintEntries.set(id, { id, name, distM, atMs: Date.now(), tired, finishable });
 }
 
 /** Ближайшая живая подсказка для HUD (null — показывать нечего). */
@@ -128,7 +155,13 @@ export function getMeleeStrikeHint(): MeleeStrikeHint | null {
     if (!best || entry.distM < best.distM) best = entry;
   }
   if (!best) return null;
-  return { id: best.id, name: best.name, distM: best.distM, tired: best.tired };
+  return {
+    id: best.id,
+    name: best.name,
+    distM: best.distM,
+    tired: best.tired,
+    finishable: best.finishable,
+  };
 }
 
 /* ── Замах ── */
@@ -154,8 +187,10 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   if (strikeTargets.size === 0) return { status: 'none' };
 
   // Фазовые гейты — слой живёт только в исследовании, как и PatrollingCreeps.
+  let snapshot: ReturnType<typeof getGameSnapshot> | null = null;
   try {
-    if (getGameSnapshot().mode !== 'exploration') return { status: 'none' };
+    snapshot = getGameSnapshot();
+    if (snapshot.mode !== 'exploration') return { status: 'none' };
   } catch {
     return { status: 'none' };
   }
@@ -205,9 +240,61 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   const target = hit.target;
   const pos = target.getPosition();
 
+  // ── v4.8.8: добивание ослабленного крипа до пошагового боя ──
+  // Крип с остатком HP ≤ MELEE_STRIKE_FINISHER_HP_PCT (после побега игрока
+  // из прошлой встречи — creepVitality.ts) повержается одним ударом:
+  // урезанные награды без боевого RNG-сеанса, лут не выпадает.
+  const weakenedPct = getCreepWeakenedHpPct(target.id);
+  if (
+    weakenedPct !== null
+    && isCreepFinishable(weakenedPct)
+    && target.applyFinisher
+  ) {
+    const rewards = computeCreepFinisherRewards({
+      xpReward: target.getFinisherXpReward?.() ?? 0,
+      creditsMultiplier: snapshot?.difficultySettings?.creditsMultiplier ?? 1,
+    });
+
+    dispatchGameAction({ type: 'player/addKarma', amount: rewards.karmaGained });
+    dispatchGameAction({ type: 'player/addXp', amount: rewards.xpGained });
+    dispatchGameAction({ type: 'player/addCredits', amount: rewards.creditsGained });
+    clearCreepVitality(target.id);
+
+    eventBus.emit('combat:melee_strike', {
+      source,
+      hit: true,
+      finished: true,
+      creepId: target.id,
+      enemyName: target.name,
+      x: pos.x,
+      y: pos.y,
+      z: pos.z,
+    });
+    eventBus.emit('combat:creep_finished', {
+      creepId: target.id,
+      enemyType: target.enemyType,
+      enemyName: target.name,
+      x: pos.x,
+      y: pos.y,
+      z: pos.z,
+      xpGained: rewards.xpGained,
+      karmaGained: rewards.karmaGained,
+      creditsGained: rewards.creditsGained,
+    });
+    eventBus.emit('ui:exploration_message', {
+      text: `☠ Добивание — ${target.name} повержен без боя!`,
+    });
+
+    // Крип снимается с цены (родитель уберёт его по combat:creep_finished).
+    target.applyFinisher();
+
+    return { status: 'hit', creepId: target.id, enemyName: target.name, finished: true };
+  }
+
   eventBus.emit('combat:melee_strike', {
     source,
     hit: true,
+    finished: false,
     creepId: target.id,
     enemyName: target.name,
     x: pos.x,
@@ -219,8 +306,9 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
     text: `⚡ Опережающий удар — ${target.name} ослаблен!`,
   });
 
-  // Вовлечение крипа + старт встречи с ослабленным врагом (encounterTypes).
+  // Вовлечение крипа + старт встречи с ослабленным врагом (encounterTypes):
+  // после побега из прошлой встречи крип вступает с ЗАПОМНЕННЫМ HP.
   target.applyStrike();
 
-  return { status: 'hit', creepId: target.id, enemyName: target.name };
+  return { status: 'hit', creepId: target.id, enemyName: target.name, finished: false };
 }

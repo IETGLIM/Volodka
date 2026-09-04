@@ -1,7 +1,9 @@
-/* ─── v4.8.7: тесты реал-тайм слоя «Опережающий удар» (meleeStrike.ts) ───
+/* ─── v4.8.7/v4.8.8: тесты реал-тайм слоя «Опережающий удар» (meleeStrike.ts) ───
  * Гейты фазы мокаются по образцу CombatSystem.test.ts; геометрия — через
  * настоящую resolveMeleeSweep. Проверяются: замах/попадание, LOS-фильтр,
- * кулдаун, выносливость, реестр целей и HUD-зеркало подсказки.
+ * кулдаун, выносливость, реестр целей, HUD-зеркало подсказки, а также
+ * добивание ослабленного крипа до боя (creepVitality, v4.8.8): награды,
+ * события и запрет повторной встречи.
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -10,7 +12,9 @@ vi.mock('@/engine/GameActionDispatcher', () => ({
   getGameSnapshot: () => ({
     mode: 'exploration',
     exploration: { playerPosition: [0, 0, 0] as [number, number, number] },
+    difficultySettings: { creditsMultiplier: 1 },
   }),
+  dispatchGameAction: (action: unknown) => dispatchAction(action),
 }));
 
 vi.mock('@/engine/interaction/interactionSession', () => ({
@@ -26,6 +30,7 @@ vi.mock('@/engine/cinematic/cinematicTimelineOrchestrator', () => ({
 }));
 
 const consumeStamina = vi.fn((_amount: number) => true);
+const dispatchAction = vi.fn();
 
 vi.mock('@/engine/player/playerStamina', () => ({
   consumePlayerStamina: (amount: number) => consumeStamina(amount),
@@ -44,31 +49,41 @@ import {
   resetMeleeStrikeForTests,
   type MeleeStrikeTarget,
 } from '@/engine/combat/realtime/meleeStrike';
+import {
+  noteCreepWeakened,
+  resetCreepVitalityForTests,
+} from '@/engine/combat/realtime/creepVitality';
 
-function makeTarget(overrides: Partial<MeleeStrikeTarget> = {}): MeleeStrikeTarget & { strikes: number } {
+function makeTarget(overrides: Partial<MeleeStrikeTarget> = {}): MeleeStrikeTarget & { strikes: number; finished: number } {
   const target = {
     id: 'creep_test',
     name: 'Тестовый демон',
+    enemyType: 'system_daemon' as const,
     strikes: 0,
+    finished: 0,
     getPosition: () => ({ x: 0, y: 0.9, z: 2.0 }),
     canStrike: () => true,
     hasLineOfSight: () => true,
     applyStrike: () => { target.strikes += 1; },
+    applyFinisher: () => { target.finished += 1; },
     ...overrides,
   };
-  return target as MeleeStrikeTarget & { strikes: number };
+  return target as MeleeStrikeTarget & { strikes: number; finished: number };
 }
 
 describe('meleeStrike (v4.8.7 «Опережающий удар»)', () => {
   beforeEach(() => {
     resetMeleeStrikeForTests();
+    resetCreepVitalityForTests();
     consumeStamina.mockClear();
+    dispatchAction.mockClear();
     consumeStamina.mockImplementation(() => true);
     sharedCameraYawRef.current = 0; // взгляд вдоль +Z
   });
 
   afterEach(() => {
     resetMeleeStrikeForTests();
+    resetCreepVitalityForTests();
     vi.restoreAllMocks();
   });
 
@@ -81,10 +96,12 @@ describe('meleeStrike (v4.8.7 «Опережающий удар»)', () => {
 
     const outcome = attemptMeleeStrike('mouse');
     expect(outcome.status).toBe('hit');
+    expect(outcome.status === 'hit' && outcome.finished).toBe(false);
     expect(target.strikes).toBe(1);
+    expect(target.finished).toBe(0);
     expect(consumeStamina).toHaveBeenCalledWith(MELEE_STRIKE_STAMINA_COST);
     expect(strikes).toHaveLength(1);
-    expect(strikes[0]).toMatchObject({ creepId: 'creep_test', hit: true, x: 0, z: 2.0 });
+    expect(strikes[0]).toMatchObject({ creepId: 'creep_test', hit: true, finished: false, x: 0, z: 2.0 });
     unsub();
   });
 
@@ -152,11 +169,115 @@ describe('meleeStrike (v4.8.7 «Опережающий удар»)', () => {
 
     const hint = getMeleeStrikeHint();
     expect(hint?.id).toBe('creep_near');
+    expect(hint?.finishable).toBe(false);
 
     reportMeleeStrikeCandidate('creep_near', 'Близкий', 1.5, false);
     expect(getMeleeStrikeHint()?.id).toBe('creep_far');
 
     reportMeleeStrikeCandidate('creep_far', 'Далёкий', 2.5, false);
     expect(getMeleeStrikeHint()).toBeNull();
+  });
+});
+
+describe('meleeStrike: добивание ослабленного крипа (v4.8.8)', () => {
+  beforeEach(() => {
+    resetMeleeStrikeForTests();
+    resetCreepVitalityForTests();
+    consumeStamina.mockClear();
+    dispatchAction.mockClear();
+    consumeStamina.mockImplementation(() => true);
+    sharedCameraYawRef.current = 0;
+  });
+
+  afterEach(() => {
+    resetMeleeStrikeForTests();
+    resetCreepVitalityForTests();
+    vi.restoreAllMocks();
+  });
+
+  it('finishable target (≤35% hp) → finished: no encounter, rewards dispatched', () => {
+    const target = makeTarget({ getFinisherXpReward: () => 25 });
+    registerMeleeStrikeTarget(target);
+    noteCreepWeakened('creep_test', 0.3); // после побега игрока
+
+    const strikes: unknown[] = [];
+    const finishes: unknown[] = [];
+    const unsubStrike = eventBus.on('combat:melee_strike', (p) => strikes.push(p));
+    const unsubFinish = eventBus.on('combat:creep_finished', (p) => finishes.push(p));
+
+    const outcome = attemptMeleeStrike('mouse');
+
+    expect(outcome).toEqual({ status: 'hit', creepId: 'creep_test', enemyName: 'Тестовый демон', finished: true });
+    // Встреча НЕ стартует — пошаговая фаза пропущена.
+    expect(target.strikes).toBe(0);
+    expect(target.finished).toBe(1);
+
+    // Урезанные награды: floor(25*0.6)=15 XP, карма 2, кредиты ≥ 1.
+    const types = dispatchAction.mock.calls.map((c) => (c[0] as { type: string; amount?: number }).type);
+    expect(types).toEqual(['player/addKarma', 'player/addXp', 'player/addCredits']);
+    const amounts = dispatchAction.mock.calls.map((c) => (c[0] as { amount?: number }).amount);
+    expect(amounts[0]).toBe(2);
+    expect(amounts[1]).toBe(15);
+    expect(amounts[2]).toBeGreaterThanOrEqual(1);
+
+    // События: strike с finished:true + creep_finished с наградами.
+    expect(strikes).toHaveLength(1);
+    expect(strikes[0]).toMatchObject({ creepId: 'creep_test', hit: true, finished: true });
+    expect(finishes).toHaveLength(1);
+    expect(finishes[0]).toMatchObject({
+      creepId: 'creep_test',
+      enemyType: 'system_daemon',
+      enemyName: 'Тестовый демон',
+      xpGained: 15,
+      karmaGained: 2,
+    });
+
+    // Память HP очищена — крип повержен.
+    unsubStrike();
+    unsubFinish();
+  });
+
+  it('weakened target above threshold → normal weakened encounter (finished: false)', () => {
+    const target = makeTarget();
+    registerMeleeStrikeTarget(target);
+    noteCreepWeakened('creep_test', 0.6);
+
+    const outcome = attemptMeleeStrike('mouse');
+    expect(outcome.status === 'hit' && outcome.finished).toBe(false);
+    expect(target.strikes).toBe(1);
+    expect(target.finished).toBe(0);
+    expect(dispatchAction).not.toHaveBeenCalled();
+  });
+
+  it('finishable target without applyFinisher falls back to the encounter', () => {
+    const target = makeTarget();
+    delete (target as Partial<MeleeStrikeTarget>).applyFinisher;
+    registerMeleeStrikeTarget(target);
+    noteCreepWeakened('creep_test', 0.2);
+
+    const outcome = attemptMeleeStrike('mouse');
+    expect(outcome.status === 'hit' && outcome.finished).toBe(false);
+    expect(target.strikes).toBe(1);
+    expect(dispatchAction).not.toHaveBeenCalled();
+  });
+
+  it('fresh (full-hp) target never finishes', () => {
+    const target = makeTarget();
+    registerMeleeStrikeTarget(target);
+    // Никаких noteCreepWeakened — крип здоров.
+    const outcome = attemptMeleeStrike('mouse');
+    expect(outcome.status === 'hit' && outcome.finished).toBe(false);
+    expect(target.strikes).toBe(1);
+  });
+
+  it('hint mirror reports the finishable flag of the candidate', () => {
+    const target = makeTarget({ id: 'creep_weak' });
+    registerMeleeStrikeTarget(target);
+
+    reportMeleeStrikeCandidate('creep_weak', 'Ослабленный', 1.5, true, true);
+    expect(getMeleeStrikeHint()).toMatchObject({ id: 'creep_weak', finishable: true });
+
+    reportMeleeStrikeCandidate('creep_weak', 'Ослабленный', 1.5, true, false);
+    expect(getMeleeStrikeHint()).toMatchObject({ id: 'creep_weak', finishable: false });
   });
 });
