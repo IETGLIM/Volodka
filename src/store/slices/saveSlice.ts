@@ -31,11 +31,28 @@ export interface SaveSliceState {
   // lastSaveTimestamp lives in UISlice, not here — but save actions need it
 }
 
+/* ─── Типизированные результаты (v4.8.6) ───
+ * Раньше saveGame/loadGame возвращали void, и вызывающие (F5/F9, меню паузы,
+ * мобильный HUD) не могли понять, сохранилось ли что-то на самом деле:
+ * F5 показывал «Игра сохранена» даже когда saveGame молча пропускал запись
+ * (кат-сцена/бой/диалог) или падал. Теперь действие возвращает исход, а
+ * engine/save/quickSaveLoad.ts превращает его в честный русский тост.
+ * Существующие вызовы, игнорирующие результат, не ломаются. */
+export type SaveGameOutcome =
+  | { status: 'saved'; timestamp: number }
+  | { status: 'skipped'; reason: 'cutscene' | 'combat' | 'interaction' }
+  | { status: 'failed'; reason: 'serialize' | 'storage_unavailable' | 'write' };
+
+export type LoadGameOutcome =
+  | { status: 'loaded'; recoveredFromBackup: boolean }
+  | { status: 'empty' }
+  | { status: 'failed'; reason: 'corrupt' | 'unexpected' };
+
 export interface SaveSliceActions {
   resetGame: () => void;
   resetForNewPlaythrough: (options?: NewPlaythroughResetOptions) => void;
-  saveGame: (options?: { source?: 'auto' | 'manual' }) => void;
-  loadGame: () => void;
+  saveGame: (options?: { source?: 'auto' | 'manual' }) => SaveGameOutcome;
+  loadGame: () => LoadGameOutcome;
 }
 
 export type SaveSlice = SaveSliceState & SaveSliceActions;
@@ -87,15 +104,15 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
     const state = getCombinedGameState();
     if (state.activeCutsceneId) {
       devWarn('[saveGame] Skipping save during cutscene');
-      return;
+      return { status: 'skipped', reason: 'cutscene' } as const;
     }
     if (state.combatActive) {
       devWarn('[saveGame] Skipping save during combat');
-      return;
+      return { status: 'skipped', reason: 'combat' } as const;
     }
     if (isInteractionLockedFromStore()) {
       devWarn('[saveGame] Skipping save during NPC interaction');
-      return;
+      return { status: 'skipped', reason: 'interaction' } as const;
     }
     const source = options?.source ?? 'manual';
     const payload = pickSavePayload(state);
@@ -110,7 +127,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
         kind: 'save_failed',
         message: 'Не удалось подготовить данные сохранения.',
       });
-      return;
+      return { status: 'failed', reason: 'serialize' } as const;
     }
 
     try {
@@ -119,7 +136,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
           kind: 'save_failed',
           message: 'Нет доступа к локальному хранилищу.',
         });
-        return;
+        return { status: 'failed', reason: 'storage_unavailable' } as const;
       }
 
       const timestamp = Date.now();
@@ -128,12 +145,14 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
         ...(source === 'auto' ? { lastAutoSaveTimestamp: timestamp } : {}),
       });
       emitGameSaved(timestamp, source);
+      return { status: 'saved', timestamp } as const;
     } catch {
       console.error('[saveGame] Failed to write save to localStorage');
       emitGameSystemAlert({
         kind: 'save_failed',
         message: 'Запись сохранения прервана.',
       });
+      return { status: 'failed', reason: 'write' } as const;
     }
   },
 
@@ -143,7 +162,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
 
       switch (resolved.status) {
         case 'empty':
-          return;
+          return { status: 'empty' } as const;
 
         case 'corrupt':
           console.error(
@@ -156,7 +175,7 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
             kind: 'load_failed',
             message: resolved.primaryError,
           });
-          return;
+          return { status: 'failed', reason: 'corrupt' } as const;
 
         case 'recovered-from-backup':
           devWarn(
@@ -187,7 +206,8 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       resetGuidedStoryFromStore();
       resetEngineRuntimeFromStore();
 
-      if (resolved.status === 'recovered-from-backup') {
+      const recoveredFromBackup = resolved.status === 'recovered-from-backup';
+      if (recoveredFromBackup) {
         emitGameSystemAlert({
           kind: 'load_recovered',
           message: 'Основное сохранение повреждено — загружена резервная копия.',
@@ -195,12 +215,14 @@ export const createSaveSlice: StateCreator<GameStoreState, [], [], SaveSlice> = 
       }
 
       emitGameLoaded();
+      return { status: 'loaded', recoveredFromBackup } as const;
     } catch (err) {
       console.error('[loadGame] Unexpected error:', err);
       emitGameSystemAlert({
         kind: 'load_failed',
         message: 'Ошибка загрузки сохранения.',
       });
+      return { status: 'failed', reason: 'unexpected' } as const;
     }
   },
 });

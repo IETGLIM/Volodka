@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
+import { quickSaveGame, quickLoadGame } from '../save/quickSaveLoad';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import type { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { FilmGrain, CinematicBars } from '@/components/game/cinematic';
@@ -30,7 +31,9 @@ const PAUSE_ACTIONS: Array<{
     id: 'quick-save',
     label: 'Быстрое сохранение',
     run: ({ closeAllPanels }) => {
-      useGameStore.getState().saveGame({ source: 'manual' });
+      // v4.8.6: честный тост по исходу (раньше кнопка молчала и при блокировке
+      // боем/диалогом, и при ошибке записи).
+      quickSaveGame();
       closeAllPanels();
     },
   },
@@ -43,7 +46,9 @@ const PAUSE_ACTIONS: Array<{
     id: 'load',
     label: 'Загрузить',
     run: ({ closeAllPanels }) => {
-      useGameStore.getState().loadGame();
+      // v4.8.6: подтверждение/предупреждение вместо молчаливого патча;
+      // в бою/кат-сцене/диалоге загрузка теперь безопасно отклоняется.
+      quickLoadGame();
       closeAllPanels();
     },
   },

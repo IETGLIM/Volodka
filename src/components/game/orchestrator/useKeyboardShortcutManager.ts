@@ -8,6 +8,7 @@ import {
   resolveEscapeDismissAction,
 } from '@/engine/input/escapeDismissAction';
 import { registerPanelShortcutHandler } from '@/engine/input/panelShortcutDispatcher';
+import { quickSaveGame, quickLoadGame } from '../save/quickSaveLoad';
 import type { MinigamePanelSetters } from '@/shared/constants/minigames';
 import type { PanelType } from './types';
 import { blocksPanelShortcuts, type GamePhase } from '@/shared/gamePhase';
@@ -298,38 +299,21 @@ export function useKeyboardShortcutManager({
         e.preventDefault();
         dispatchPanel('shortcuts');
       }
-      // Quick save — F5. Defer serialize/localStorage off the keydown critical path.
+      // Quick save — F5. Тяжёлая сериализация — вне критического пути keydown;
+      // честный тост по исходу (v4.8.6: раньше «Игра сохранена» показывалась
+      // даже когда saveGame молча пропускал запись).
       if (e.code === 'F5') {
         e.preventDefault();
         queueMicrotask(() => {
-          try {
-            useGameStore.getState().saveGame({ source: 'manual' });
-            void import('sonner').then(({ toast }) => {
-              toast.success('Игра сохранена', {
-                description: 'Прогресс записан (F5).',
-                duration: 2500,
-              });
-            });
-          } catch {
-            /* store not ready — ignore */
-          }
+          quickSaveGame();
         });
       }
-      // Quick load — F9. Defer deserialize/patch off the keydown critical path.
+      // Quick load — F9. В бою/кат-сцене/диалоге — предупреждение вместо
+      // опасного патча сейва под живым runtime'ом.
       if (e.code === 'F9') {
         e.preventDefault();
         queueMicrotask(() => {
-          try {
-            useGameStore.getState().loadGame();
-            void import('sonner').then(({ toast }) => {
-              toast.success('Игра загружена', {
-                description: 'Последнее сохранение восстановлено (F9).',
-                duration: 2500,
-              });
-            });
-          } catch {
-            /* store not ready — ignore */
-          }
+          quickLoadGame();
         });
       }
     };
