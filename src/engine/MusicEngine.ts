@@ -109,6 +109,28 @@ const INTENSITY_TEMPO_MULTIPLIER: Record<MusicIntensityLayer, number> = {
   combat: 1.28,
 };
 
+/* ──────────────────── v4.8.4: Lookahead-планировщик («A Tale of Two Clocks») ────────────────────
+ * Раньше бас/мелодия шли через setInterval(beatMs), а аккорды — через цепочку setTimeout.
+ * Проблемы: (1) дрожание таймера ±4мс+ размывало ритм; (2) в скрытом табе Chrome троттлит
+ * setInterval до ≥1000мс — пульсы баса срывались, слои рассинхронизировались; (3) огибающие
+ * стартовали «сейчас по колбэку», а не на точной сетке AudioContext.
+ *
+ * Решение: стенные часы тикают раз в LOOKAHEAD_TICK_MS и расписывают все события (пульсы
+ * баса, ноты мелодии, смены аккордов) вперёд по точной сетке ctx.currentTime. В скрытом
+ * табе горизонт расширяется (троттлинг 1с < LOOKAHEAD_AHEAD_HIDDEN), а «протухшая» сетка
+ * реанкорится без взрывного доигрывания пропущенных событий. */
+/** Частота тика планировщика (стенные часы). */
+const LOOKAHEAD_TICK_MS = 100;
+/** Горизонт планирования в видимом табе (сек). */
+const LOOKAHEAD_AHEAD_VISIBLE = 0.4;
+/** Горизонт в скрытом табе — должен покрывать троттлинг таймеров (≥1с) с запасом. */
+const LOOKAHEAD_AHEAD_HIDDEN = 2.6;
+/** Допуск «сетка протухла» — за ним включается реанкоринг (fast-forward без доигрывания). */
+const GRID_STARVATION_EPSILON = 0.05;
+/** Предохранитель циклов планирования от бесконечности при аномальных интервалах. */
+const SCHEDULE_LOOP_GUARD_BEATS = 64;
+const SCHEDULE_LOOP_GUARD_CHORDS = 8;
+
 interface SceneMusicConfig {
   /** Scale to use for melody and chord generation */
   scale: ScaleDef;
@@ -722,9 +744,18 @@ class MusicEngine {
   private currentConfig: SceneMusicConfig | null = null;
 
   // Pad layer state
+  // v4.8.4: голос хранит параметры своей атаки — при lookahead-планировании смены
+  // аккорда фейд retiring-голоса считается по ТАЙМЛАЙНУ (а не по мгновенному
+  // .gain.value в момент планирования, когда атака ещё не доиграна).
   private padOscillators: Array<{
     osc: OscillatorNode;
     gain: GainNode;
+    /** Абсолютное время старта голоса (ctx). */
+    start: number;
+    /** Целевой уровень после атаки. */
+    level: number;
+    /** Абсолютное время конца атаки (ctx). */
+    attackEnd: number;
   }> = [];
   private padGain: GainNode | null = null;
   private padFilter: BiquadFilterNode | null = null;
@@ -747,11 +778,23 @@ class MusicEngine {
   private bassFilter: BiquadFilterNode | null = null;
 
   // Melody layer state
-  private melodyTimer: ReturnType<typeof setInterval> | null = null;
+  // v4.8.4: melodyTimer удалён — мелодия живёт в lookahead-планировщике
 
   // Timers
-  private chordTimer: ReturnType<typeof setTimeout> | null = null;
-  private bassTimer: ReturnType<typeof setInterval> | null = null;
+  // v4.8.4: chordTimer/bassTimer удалены — единый lookahead-планировщик ведёт
+  // бас, мелодию и смены аккордов на точной сетке AudioContext.currentTime.
+  private schedulerTimer: ReturnType<typeof setInterval> | null = null;
+  /** Абсолютное время (ctx) следующего басового бита. */
+  private nextBeatTime = 0;
+  /** Счётчик басовых битов (позиция в такте — пульс на 1-й и 3-й доле). */
+  private beatCounter = 0;
+  /** Абсолютное время (ctx) следующего шанса мелодии (без множителя интенсивности — как раньше). */
+  private nextMelodyTime = 0;
+  /** Абсолютное время (ctx) следующей смены аккорда. */
+  private nextChordTime = 0;
+  /** visibilitychange-обработчик планировщика (расширяет горизонт в скрытом табе). */
+  private schedulerVisibilityHandler: (() => void) | null = null;
+  private schedulerDocHidden = false;
   private pendingStopCleanupTimer: ReturnType<typeof setTimeout> | null = null;
 
   // Blur/focus handlers for audio context suspend/resume
@@ -814,9 +857,9 @@ class MusicEngine {
   setIntensityLayer(layer: MusicIntensityLayer): void {
     if (this.intensityLayer === layer) return;
     this.intensityLayer = layer;
-    if (this.currentConfig) {
-      this.rescheduleChordChange(this.currentConfig);
-    }
+    // v4.8.4: сетку не перестраиваем — планировщик читает актуальный темп
+    // (beat/chordDurationSec) на каждом тике, поэтому смена интенсивности
+    // подхватывается со следующего планируемого события без рассинхрона.
   }
 
   /**
@@ -1013,18 +1056,8 @@ class MusicEngine {
       clearTimeout(this.pendingStopCleanupTimer);
       this.pendingStopCleanupTimer = null;
     }
-    if (this.chordTimer) {
-      clearTimeout(this.chordTimer as unknown as number);
-      this.chordTimer = null;
-    }
-    if (this.bassTimer) {
-      clearInterval(this.bassTimer as unknown as number);
-      this.bassTimer = null;
-    }
-    if (this.melodyTimer) {
-      clearInterval(this.melodyTimer as unknown as number);
-      this.melodyTimer = null;
-    }
+    // v4.8.4: единый планировщик вместо трёх независимых таймеров
+    this.stopScheduler();
 
     const ctx = this.ctx;
     const shouldFade =
@@ -1191,14 +1224,11 @@ class MusicEngine {
     // ── Start pad layer ──
     this.playPadChord(config, now);
 
-    // ── Start bass layer ──
+    // ── Start bass layer (цепочка осцилляторов; пульсы ведёт планировщик) ──
     this.startBassLayer(config, now);
 
-    // ── Start melody layer ──
-    this.startMelodyLayer(config);
-
-    // ── Schedule chord changes ──
-    this.scheduleChordChange(config);
+    // ── v4.8.4: единый lookahead-планировщик баса/мелодии/аккордов ──
+    this.startScheduler(config, now);
 
     this.currentScene = sceneId;
   }
@@ -1217,7 +1247,6 @@ class MusicEngine {
     if (outgoing.length > 0) {
       this.retirePadVoices(outgoing, now, 2);
     }
-
     // Build chord from scale
     const chordMidi = buildChord(
       config.scale,
@@ -1251,7 +1280,7 @@ class MusicEngine {
       voiceGain.connect(this.padFilter);
 
       osc.start(now);
-      this.padOscillators.push({ osc, gain: voiceGain });
+      this.padOscillators.push({ osc, gain: voiceGain, start: now, level: 0.5 / chordMidi.length, attackEnd: now + 2 });
 
       // Detuned chorus voice (+7 cents for richness)
       const chorusOsc = ctx.createOscillator();
@@ -1270,13 +1299,19 @@ class MusicEngine {
       chorusGain.connect(this.padFilter);
 
       chorusOsc.start(now);
-      this.padOscillators.push({ osc: chorusOsc, gain: chorusGain });
+      this.padOscillators.push({ osc: chorusOsc, gain: chorusGain, start: now, level: 0.25 / chordMidi.length, attackEnd: now + 2.5 });
     }
   }
 
   /** Fade out and stop a batch of pad voices — each call owns its voice list (no shared prev slot). */
   private retirePadVoices(
-    voices: Array<{ osc: OscillatorNode; gain: GainNode }>,
+    voices: Array<{
+      osc: OscillatorNode;
+      gain: GainNode;
+      start?: number;
+      level?: number;
+      attackEnd?: number;
+    }>,
     startTime: number,
     durationSec: number,
   ): void {
@@ -1284,7 +1319,18 @@ class MusicEngine {
 
     for (const voice of voices) {
       try {
-        voice.gain.gain.setValueAtTime(voice.gain.gain.value, startTime);
+        // v4.8.4: значение на момент startTime берём из ТАЙМЛАЙНА атаки голоса,
+        // а не из мгновенного .gain.value (при lookahead-планировании фейд
+        // может быть расписан раньше, чем доиграется атака уходящего аккорда).
+        const attackSpan = voice.attackEnd !== undefined && voice.start !== undefined
+          ? Math.max(0.001, voice.attackEnd - voice.start)
+          : 0;
+        const target = voice.level ?? voice.gain.gain.value;
+        const progress = attackSpan > 0 && voice.start !== undefined
+          ? Math.min(1, Math.max(0, (startTime - voice.start) / attackSpan))
+          : 1;
+        const valueAtStart = 0.001 + (target - 0.001) * progress;
+        voice.gain.gain.setValueAtTime(valueAtStart, startTime);
         voice.gain.gain.linearRampToValueAtTime(0.001, startTime + durationSec);
       } catch {
         // node may already be stopping
@@ -1323,44 +1369,168 @@ class MusicEngine {
     this.pendingPadRetirements = [];
   }
 
-  /** Schedule the next chord change */
-  private scheduleChordChange(config: SceneMusicConfig): void {
-    this.rescheduleChordChange(config);
+  /* ═══════════════════ LOOKAHEAD SCHEDULER (v4.8.4) ═══════════════════ */
+
+  /** Длительность басового бита (сек) — с множителем интенсивности, как раньше. */
+  private beatDurationSec(config: SceneMusicConfig): number {
+    return 60 / (config.tempo * INTENSITY_TEMPO_MULTIPLIER[this.intensityLayer]);
   }
 
-  private rescheduleChordChange(config: SceneMusicConfig): void {
-    if (this.chordTimer) {
-      clearTimeout(this.chordTimer as unknown as number);
+  /** Длительность шага мелодии (сек) — БЕЗ множителя интенсивности (сохранено прежнее поведение). */
+  private melodyStepSec(config: SceneMusicConfig): number {
+    return 60 / config.tempo;
+  }
+
+  /** Интервал смены аккорда (сек) — с множителем интенсивности. */
+  private chordIntervalSec(config: SceneMusicConfig): number {
+    return config.chordChangeInterval / INTENSITY_TEMPO_MULTIPLIER[this.intensityLayer];
+  }
+
+  /**
+   * Запустить lookahead-планировщик для новой сцены. Первый аккорд уже
+   * сыгран startMusicForScene → следующая смена аккорда через один интервал.
+   */
+  private startScheduler(config: SceneMusicConfig, startTime: number): void {
+    this.stopScheduler();
+
+    this.nextBeatTime = startTime;
+    this.beatCounter = 0;
+    this.nextMelodyTime = startTime;
+    this.nextChordTime = startTime + this.chordIntervalSec(config);
+    this.schedulerDocHidden = typeof document !== 'undefined' ? document.hidden : false;
+
+    if (typeof document !== 'undefined') {
+      this.schedulerVisibilityHandler = () => {
+        this.schedulerDocHidden = document.hidden;
+      };
+      document.addEventListener('visibilitychange', this.schedulerVisibilityHandler);
     }
 
-    const myGeneration = this.sceneGeneration;
-    const intervalMs =
-      (config.chordChangeInterval * 1000) / INTENSITY_TEMPO_MULTIPLIER[this.intensityLayer];
+    this.schedulerTimer = setInterval(() => this.schedulerTick(), LOOKAHEAD_TICK_MS);
+  }
 
-    this.chordTimer = setTimeout(() => {
-      if (this.disposed || !this.currentConfig || this.currentScene === null) return;
-      if (this.sceneGeneration !== myGeneration) return; // Stale callback
+  /** Полностью остановить планировщик (таймер + visibility-обработчик). */
+  private stopScheduler(): void {
+    if (this.schedulerTimer) {
+      clearInterval(this.schedulerTimer as unknown as number);
+      this.schedulerTimer = null;
+    }
+    if (this.schedulerVisibilityHandler && typeof document !== 'undefined') {
+      document.removeEventListener('visibilitychange', this.schedulerVisibilityHandler);
+    }
+    this.schedulerVisibilityHandler = null;
+  }
 
-      // Advance chord degree (random walk through scale, with bias toward I, IV, V)
-      const numDegrees = config.scale.intervals.length;
-      const commonDegrees = [0, 3, 4]; // I, IV, V in scale degrees
-      if (Math.random() < 0.4) {
-        // 40% chance to jump to a common degree
-        this.currentChordDegree = pickRandom(commonDegrees) % numDegrees;
-      } else {
-        // Step by 1-2 degrees
-        const step = Math.random() < 0.6 ? 1 : 2;
-        this.currentChordDegree = (this.currentChordDegree + step) % numDegrees;
+  /**
+   * Тик планировщика: расписать все события баса/мелодии/аккордов в пределах
+   * горизонта вперёд по точной сетке ctx.currentTime.
+   */
+  private schedulerTick(): void {
+    const ctx = this.ctx;
+    const config = this.currentConfig;
+    if (!ctx || !config || this.disposed || this.currentScene === null) return;
+
+    const now = ctx.currentTime;
+    const ahead = this.schedulerDocHidden ? LOOKAHEAD_AHEAD_HIDDEN : LOOKAHEAD_AHEAD_VISIBLE;
+
+    // Скрытый таб троттлит тики — если сетка «протухла», реанкорим её
+    // (fast-forward без взрывного доигрывания пропущенных событий).
+    if (this.nextBeatTime < now - GRID_STARVATION_EPSILON) {
+      this.reanchorBeatGrid(config, now);
+    }
+    if (this.nextMelodyTime < now - GRID_STARVATION_EPSILON) {
+      this.reanchorMelodyGrid(config, now);
+    }
+    if (this.nextChordTime < now - GRID_STARVATION_EPSILON) {
+      this.reanchorChordGrid(config, now);
+    }
+
+    let guard = 0;
+    while (this.nextBeatTime < now + ahead && guard++ < SCHEDULE_LOOP_GUARD_BEATS) {
+      this.scheduleBassPulse(config, this.nextBeatTime, this.beatCounter);
+      this.beatCounter++;
+      this.nextBeatTime += this.beatDurationSec(config);
+    }
+
+    guard = 0;
+    while (this.nextMelodyTime < now + ahead && guard++ < SCHEDULE_LOOP_GUARD_BEATS) {
+      // Решение о ноте принимается в момент планирования — то же распределение,
+      // что раньше, но огибающая стартует точно на сетке.
+      if (this.masterGainNode && Math.random() <= config.melodyChance) {
+        this.playMelodyNote(config, this.nextMelodyTime);
       }
+      this.nextMelodyTime += this.melodyStepSec(config);
+    }
 
-      const ctx = this.ctx;
-      if (ctx) {
-        this.playPadChord(config, ctx.currentTime);
-      }
+    guard = 0;
+    while (this.nextChordTime < now + ahead && guard++ < SCHEDULE_LOOP_GUARD_CHORDS) {
+      this.advanceChordDegree(config);
+      this.playPadChord(config, this.nextChordTime);
+      this.nextChordTime += this.chordIntervalSec(config);
+    }
+  }
 
-      // Schedule next
-      this.scheduleChordChange(config);
-    }, intervalMs) as unknown as ReturnType<typeof setTimeout>;
+  /** Пульс баса на точной сетке: атака 0.1с → спад до 30% → релиз к концу бита. */
+  private scheduleBassPulse(config: SceneMusicConfig, t: number, beatIndex: number): void {
+    const bassGain = this.bassGain;
+    if (!bassGain) return;
+
+    // Пульс на 1-й и 3-й доле такта (как в прежнем setInterval-варианте)
+    const beatInBar = beatIndex % 4;
+    if (beatInBar !== 0 && beatInBar !== 2) return;
+
+    const beatDur = this.beatDurationSec(config);
+    const bassLevel = config.bassGain * this.musicVolume;
+    try {
+      bassGain.gain.setValueAtTime(0.001, t);
+      bassGain.gain.linearRampToValueAtTime(bassLevel, t + 0.1);
+      bassGain.gain.linearRampToValueAtTime(bassLevel * 0.3, t + beatDur / 2);
+      bassGain.gain.linearRampToValueAtTime(0.001, t + beatDur);
+    } catch {
+      /* узел мог быть остановлен — пропуск пульса безопасен */
+    }
+  }
+
+  /** Случайное блуждание по ступеням лада со смещением к I/IV/V (общее для всех сеток). */
+  private advanceChordDegree(config: SceneMusicConfig): void {
+    const numDegrees = config.scale.intervals.length;
+    const commonDegrees = [0, 3, 4]; // I, IV, V в ступенях лада
+    if (Math.random() < 0.4) {
+      // 40% шанс прыжка на «общую» ступень
+      this.currentChordDegree = pickRandom(commonDegrees) % numDegrees;
+    } else {
+      // Шаг на 1-2 ступени
+      const step = Math.random() < 0.6 ? 1 : 2;
+      this.currentChordDegree = (this.currentChordDegree + step) % numDegrees;
+    }
+  }
+
+  /** Реанкоринг басовой сетки: fast-forward на целое число битов без доигрывания. */
+  private reanchorBeatGrid(config: SceneMusicConfig, now: number): void {
+    const beatDur = this.beatDurationSec(config);
+    const missed = Math.max(1, Math.ceil((now - this.nextBeatTime) / beatDur));
+    this.beatCounter += missed;
+    this.nextBeatTime += missed * beatDur;
+  }
+
+  /** Реанкоринг мелодической сетки (без множителя интенсивности). */
+  private reanchorMelodyGrid(config: SceneMusicConfig, now: number): void {
+    const step = this.melodyStepSec(config);
+    const missed = Math.max(1, Math.ceil((now - this.nextMelodyTime) / step));
+    this.nextMelodyTime += missed * step;
+  }
+
+  /** Реанкоринг аккордовой сетки: пропущенные интервалы проходят тем же блужданием. */
+  private reanchorChordGrid(config: SceneMusicConfig, now: number): void {
+    const interval = this.chordIntervalSec(config);
+    let missed = 0;
+    while (this.nextChordTime < now - GRID_STARVATION_EPSILON && missed < SCHEDULE_LOOP_GUARD_CHORDS) {
+      this.nextChordTime += interval;
+      missed++;
+    }
+    for (let i = 0; i < missed; i++) {
+      this.advanceChordDegree(config);
+    }
   }
 
   /* ═══════════════════ BASS LAYER ═══════════════════ */
@@ -1397,65 +1567,22 @@ class MusicEngine {
     this.bassOsc.start(now);
 
     // Start bass pulse pattern
-    this.startBassPulse(config);
-  }
-
-  /** Pulse the bass gain on the beat */
-  private startBassPulse(config: SceneMusicConfig): void {
-    if (this.bassTimer) {
-      clearInterval(this.bassTimer as unknown as number);
-    }
-
-    const beatMs = (60 / config.tempo) * 1000 / INTENSITY_TEMPO_MULTIPLIER[this.intensityLayer]; // ms per beat
-    const beatCount = { value: 0 };
-
-    this.bassTimer = setInterval(() => {
-      if (this.disposed || !this.bassGain || !this.ctx) return;
-
-      const now = this.ctx.currentTime;
-      beatCount.value++;
-
-      // Play bass on beats 1 and 3 of a 4-beat bar (half-note pulse)
-      const beatInBar = beatCount.value % 4;
-      if (beatInBar === 0 || beatInBar === 2) {
-        // Pulse: quick attack, slow release
-        const bassLevel = config.bassGain * this.musicVolume;
-        this.bassGain.gain.setValueAtTime(0.001, now);
-        this.bassGain.gain.linearRampToValueAtTime(bassLevel, now + 0.1);
-        this.bassGain.gain.linearRampToValueAtTime(bassLevel * 0.3, now + beatMs / 2000);
-        this.bassGain.gain.linearRampToValueAtTime(0.001, now + beatMs / 1000);
-      }
-    }, beatMs) as unknown as ReturnType<typeof setInterval>;
+    // v4.8.4: пульсы ведёт lookahead-планировщик (startScheduler),
+    // setInterval-вариант удалён — ритм больше не зависит от дрожания таймеров.
   }
 
   /* ═══════════════════ MELODY LAYER ═══════════════════ */
 
-  /** Start the melody layer — sparse random notes from the scale */
-  private startMelodyLayer(config: SceneMusicConfig): void {
-    if (this.melodyTimer) {
-      clearInterval(this.melodyTimer as unknown as number);
-    }
-
-    const beatMs = (60 / config.tempo) * 1000;
-
-    this.melodyTimer = setInterval(() => {
-      if (this.disposed || !this.ctx || !this.masterGainNode) return;
-
-      // Only play melody note based on chance
-      if (Math.random() > config.melodyChance) return;
-
-      this.playMelodyNote(config);
-    }, beatMs) as unknown as ReturnType<typeof setInterval>;
-  }
-
   /** Play a single melody note from the scale */
-  private playMelodyNote(config: SceneMusicConfig): void {
+  private playMelodyNote(config: SceneMusicConfig, startTime?: number): void {
     const ctx = this.ctx;
     const dest = this.masterGainNode;
     if (!ctx || !dest) return;
 
     const myGeneration = this.sceneGeneration;
-    const now = ctx.currentTime;
+    // v4.8.4: startTime — точная сетка планировщика; фолбэк «сейчас» сохранён
+    // для прямых вызовов (тесты), где горизонт планирования не задан.
+    const now = typeof startTime === 'number' && Number.isFinite(startTime) ? startTime : ctx.currentTime;
 
     // Pick a random scale degree
     const degree = Math.floor(Math.random() * config.scale.intervals.length);
@@ -1497,7 +1624,11 @@ class MusicEngine {
     osc.start(now);
     safeStop(osc, now + noteDuration + 0.1);
 
-    // Clean up filter/gain after note ends
+    // Clean up filter/gain after note ends.
+    // v4.8.4: с lookahead нота может стартовать позже «сейчас» — отсчитываем
+    // очистку от реального времени старта ноты, а не от момента планирования,
+    // иначе узлы отключаются до того, как нота доиграет.
+    const startDelaySec = Math.max(0, now - ctx.currentTime);
     setTimeout(() => {
       if (this.disposed || this.sceneGeneration !== myGeneration) {
         try { melodyFilter.disconnect(); } catch { /* ignore */ }
@@ -1506,7 +1637,7 @@ class MusicEngine {
       }
       try { melodyFilter.disconnect(); } catch { /* ignore */ }
       try { envGain.disconnect(); } catch { /* ignore */ }
-    }, (noteDuration + 0.5) * 1000);
+    }, (startDelaySec + noteDuration + 0.5) * 1000);
   }
 
   /* ═══════════════════ UTILITIES ═══════════════════ */
