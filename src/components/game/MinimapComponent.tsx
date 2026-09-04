@@ -53,6 +53,16 @@ import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { cyberCyan, CYBER_CYAN_RGB } from '@/shared/constants/cyberPalette';
 import {
+  MINIMAP_ZOOM_LEVELS,
+  MINIMAP_ZOOM_DEFAULT_INDEX,
+  MINIMAP_VIEW_RADIUS_MIN,
+  clampMinimapZoomIndex,
+  readMinimapZoomIndex,
+  writeMinimapZoomIndex,
+  getMinimapZoomRadiusMultiplier,
+} from '@/engine/minimapZoomSetting';
+import { hapticLight } from '@/shared/utils/hapticFeedback';
+import {
   sharedPlayerPositionRef,
   sharedPlayerRotationRef,
 } from '@/engine/PlayerRotationState';
@@ -192,6 +202,20 @@ export function MinimapComponent() {
     setExpanded((prev) => !prev);
   }, []);
 
+  /* ── Zoom (масштаб обзора) — persisted, контекстные кнопки на рамке ── */
+  const [zoomIndex, setZoomIndex] = useState(() => readMinimapZoomIndex());
+  useEffect(() => {
+    writeMinimapZoomIndex(zoomIndex);
+  }, [zoomIndex]);
+  /** delta: +1 — приблизить («крупный»), −1 — отдалить («обзор»). */
+  const changeZoom = useCallback((delta: number) => {
+    hapticLight();
+    setZoomIndex((prev) => clampMinimapZoomIndex(prev + delta));
+  }, []);
+  const handleZoomIn = useCallback(() => changeZoom(+1), [changeZoom]);
+  const handleZoomOut = useCallback(() => changeZoom(-1), [changeZoom]);
+  const zoomLabel = MINIMAP_ZOOM_LEVELS[zoomIndex]?.labelRu ?? MINIMAP_ZOOM_LEVELS[MINIMAP_ZOOM_DEFAULT_INDEX].labelRu;
+
   /* ── M-key toggle ── */
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
@@ -215,14 +239,18 @@ export function MinimapComponent() {
     prevSceneIdRef.current = currentSceneId;
   }
 
-  /* ── Compute view radius from scene dimensions ── */
+  /* ── Compute view radius from scene dimensions × zoom level ── */
   const viewRadius = useMemo(() => {
-    if (!sceneConfig) return BASE_VIEW_RADIUS;
-    const [sceneW, sceneD] = sceneConfig.size;
-    const halfDiag = Math.sqrt(sceneW * sceneW + sceneD * sceneD) / 2;
-    // Show at least half the scene diagonal or the base radius
-    return Math.max(BASE_VIEW_RADIUS, halfDiag);
-  }, [sceneConfig]);
+    const base = (() => {
+      if (!sceneConfig) return BASE_VIEW_RADIUS;
+      const [sceneW, sceneD] = sceneConfig.size;
+      const halfDiag = Math.sqrt(sceneW * sceneW + sceneD * sceneD) / 2;
+      // Show at least half the scene diagonal or the base radius
+      return Math.max(BASE_VIEW_RADIUS, halfDiag);
+    })();
+    // Приближение/отдаление: множитель уровня × базовый радиус сцены
+    return Math.max(MINIMAP_VIEW_RADIUS_MIN, base * getMinimapZoomRadiusMultiplier(zoomIndex));
+  }, [sceneConfig, zoomIndex]);
 
   /* ── Compute NPCs in scene ── */
   const npcsInScene = useMemo<MinimapNPC[]>(() => {
@@ -968,6 +996,73 @@ export function MinimapComponent() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          {/* ── Масштаб обзора (только в развёрнутом виде) ──
+              Строчка живёт ПОД кругом, внутри зарезервированного слота
+              MINIMAP_HEIGHT (196px): круг 164px + строчка 18px — правая
+              колонка HUD не наезжает на квест-карту. */}
+          {expanded && (
+            <div
+              className="flex items-center gap-1 select-none"
+              style={{ marginTop: 2, height: 18 }}
+              role="group"
+              aria-label="Масштаб миникарты"
+            >
+              <button
+                type="button"
+                aria-label="Отдалить миникарту"
+                title="Отдалить обзор"
+                disabled={zoomIndex === 0}
+                onClick={handleZoomOut}
+                className="flex items-center justify-center transition-opacity disabled:opacity-25 disabled:cursor-default"
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: '50%',
+                  fontSize: 12,
+                  lineHeight: 1,
+                  fontFamily: 'var(--font-mono, monospace)',
+                  color: cyberCyan(0.8),
+                  border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+                  background: 'rgba(2, 6, 16, 0.72)',
+                  boxShadow: `0 0 8px rgba(${CYBER_CYAN_RGB}, 0.06)`,
+                  cursor: 'pointer',
+                }}
+              >
+                −
+              </button>
+              <span
+                className="font-mono whitespace-nowrap text-center"
+                style={{ fontSize: 8, color: cyberCyan(0.55), minWidth: 40 }}
+                aria-hidden="true"
+              >
+                {zoomLabel}
+              </span>
+              <button
+                type="button"
+                aria-label="Приблизить миникарту"
+                title="Приблизить обзор"
+                disabled={zoomIndex === MINIMAP_ZOOM_LEVELS.length - 1}
+                onClick={handleZoomIn}
+                className="flex items-center justify-center transition-opacity disabled:opacity-25 disabled:cursor-default"
+                style={{
+                  width: 18,
+                  height: 18,
+                  borderRadius: '50%',
+                  fontSize: 12,
+                  lineHeight: 1,
+                  fontFamily: 'var(--font-mono, monospace)',
+                  color: cyberCyan(0.8),
+                  border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
+                  background: 'rgba(2, 6, 16, 0.72)',
+                  boxShadow: `0 0 8px rgba(${CYBER_CYAN_RGB}, 0.06)`,
+                  cursor: 'pointer',
+                }}
+              >
+                +
+              </button>
+            </div>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
