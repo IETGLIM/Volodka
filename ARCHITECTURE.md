@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.8.5** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.8.6** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1134,6 +1134,47 @@ flash-эффектом при падении кармы. Смонтирован 
   resilience; стрип ломает инициализацию физики при недоступности внешнего WASM.
 - Пошаговый комбат — перевод в реал-тайм 3D требует hitbox-систем и ребаланса
   всех врагов; архитектура (события, presentation beat, hazards) готова к миграции.
+
+## v4.8.6 — честные сохранения, мобильные сейв/лоад, хаптика, фракции в диалогах
+
+### Сохранение/загрузка: типизированный исход + единая точка обратной связи
+- `SaveSliceActions.saveGame/loadGame` возвращают `SaveGameOutcome`/
+  `LoadGameOutcome` (saved/skipped{reason}/failed{reason},
+  loaded/empty/failed) — вызывающие впервые могут отличить «сохранилось» от
+  «молча пропущено». Возвращаемое значение аддитивно: прежние вызовы без
+  обработки результата не сломаны.
+- `components/game/save/quickSaveLoad.ts` — единственная точка быстрого
+  сохранения/загрузки (F5/F9 + меню паузы + мобильный HUD). Слой модуля —
+  компонентный (вызывает действия стора и рисует тосты): engine/shared не
+  могут импортировать store (границы eslint). Тосты только для
+  saved/skipped/empty — ошибки и «восстановлено из резервной копии» уже
+  озвучены `game:system_alert` слайса, дублей в каналах уведомлений нет.
+- Гвард загрузки `isLoadBlockedNow()`: combat/cutscene/interaction запрещают
+  патч сейва (runtime движка сбрасывается `resetEngineRuntimeFromStore`, а
+  боевой runtime не персистится). F9 в бою — предупреждение вместо поломки.
+
+### Тактильная отдача: событийный модуль + мастер-гейт
+- `engine/feedback/hapticEventFeedback.ts` — module-singleton поверх
+  типизированного eventBus: `combat:damage` (троттлинг 350 мс),
+  `player:levelup`, `skill:level_up`, `quest:completed`, `perk:unlocked`,
+  `player:physics_degraded`. Подписки биндятся при загрузке и
+  переустанавливаются через `registerModuleGlobalCleanupBinder` —
+  dispose/revive шины не оставляют модуль глухим (паттерн sprint-launch).
+- Гейт «Виброотклик» (`hapticsSetting.ts`, localStorage
+  `volodka_haptics_enabled`, дефолт ВКЛ) применяется внутри
+  `hapticFeedback.vibrateIfEnabled` перед каждым вызовом — переключение
+  мгновенно и покрывает ВСЕ источники вибрации, включая будущие.
+
+### Репутация фракции в диалогах
+- Чистая презентация в `shared/npcFactionAttitude.ts` (пороги из
+  `npcRelationThresholds`: 65/55/45/30) — shared не импортирует
+  engine/store. Мост в `useNpcFactionAttitude` (компонентный слой):
+  `ALL_NPC_DEFINITIONS.faction` → `normalizeFactionId` →
+  `useFactionReputation` (среднее по знакомым членам) → уровень/подпись/
+  реплика. NPC без фракции — чип не рисуется.
+- Монтирование: шапка `DiegeticDialogueHud` (чип рядом с именем) + строка
+  флейвора над текстом только для ally/hostile — слабые уровни видны в чипе,
+  текст не шумит на каждом узле.
 
 ## v4.8.5 — прямой канал панелей, миникарта-zoom, VO-субтитры, фракции в торговле
 
