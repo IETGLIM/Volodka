@@ -4,15 +4,38 @@ import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import type { NPCDefinition } from '@/shared/types/game';
 import { resolveNpcQuestBark } from '@/engine/npc/npcQuestBark';
 import { resolveNpcBarkForRelation } from '@/shared/npcBark';
+import { resolveNpcFactionBark } from '@/shared/npcFactionBark';
+import type { FactionAttitudeTier } from '@/shared/npcFactionAttitude';
 
 /** Cached relation value per NPC — updated once per interaction session, not per-frame */
 const _barkRelationCache = new Map<string, { value: number; frame: number }>();
 let _barkRelationFrame = 0;
 
-/** Compute bark text based on active side quests, then NPC relation level */
-export function computeBark(definition: NPCDefinition): string | null {
+/** Контекст фракции NPC — приходит из компонентного слоя (useNpcFactionAttitude),
+ *  потому что движок не импортирует стор: границы слоёв (ARCHITECTURE.md). */
+export interface BarkFactionContext {
+  readonly tier: FactionAttitudeTier;
+  readonly factionLabel: string;
+}
+
+/**
+ * Compute bark text based on active side quests, faction attitude, then NPC
+ * relation level. Фракционная барка (v4.8.7) подмешивается только для сильных
+ * уровней (ally/hostile) и с вероятностью — не вытесняет квестовые барки.
+ */
+export function computeBark(
+  definition: NPCDefinition,
+  faction?: BarkFactionContext | null,
+): string | null {
   const questBark = resolveNpcQuestBark(definition.id);
   if (questBark) return questBark;
+
+  // Фракционная барка — до обычной: она «дороже» по смыслу и уже
+  // вероятностно ограничена внутри resolveNpcFactionBark.
+  if (faction) {
+    const factionBark = resolveNpcFactionBark(faction.tier, faction.factionLabel);
+    if (factionBark) return factionBark;
+  }
 
   if (!definition.barkTexts) return null;
 

@@ -4,9 +4,10 @@ import { useRef, useState, useEffect } from 'react';
 import type { NPCDefinition } from '@/shared/types/game';
 import { eventBus } from '@/engine/EventBus';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
-import { computeBark } from '@/engine/npc/npcBarkResolver';
+import { computeBark, type BarkFactionContext } from '@/engine/npc/npcBarkResolver';
 import { formatNpcActivityHint } from '@/engine/npc/npcActivityPresentation';
 import { npcTierHasProximityBark, npcTierHasNameLabels, type NpcRenderTier } from '@/engine/npc/npcRenderTier';
+import { useNpcFactionAttitude } from '@/components/game/dialogue/useNpcFactionAttitude';
 
 /* ─── Speech bubble timing ─── */
 const THINKING_DURATION = 1.2; // seconds before bark text appears
@@ -42,6 +43,17 @@ export function useNpcBark({
   // Proximity bark refs
   const barkCooldownRef = useRef(0);
   const hasBarkedRef = useRef(false);
+
+  // ── Фракционное отношение (v4.8.7) ──
+  // Мост на репутацию фракций (store/selectors) живёт в компонентном слое;
+  // resolver получает готовый контекст, не касаясь стора. Ref-зеркало —
+  // чтобы updateBarkFrame (замыкание кадра) видел свежее значение.
+  const factionAttitude = useNpcFactionAttitude(npcId);
+  const factionContextRef = useRef<BarkFactionContext | null>(null);
+  factionContextRef.current =
+    factionAttitude && (factionAttitude.tier === 'ally' || factionAttitude.tier === 'hostile')
+      ? { tier: factionAttitude.tier, factionLabel: factionAttitude.factionLabel }
+      : null;
 
   // Speech bubble state
   const [barkPhase, setBarkPhase] = useState<BarkPhase>('hidden');
@@ -125,7 +137,7 @@ export function useNpcBark({
       if (dist < 3.0 && !hasBarkedRef.current && barkCooldownRef.current <= 0 && barkPhase === 'hidden') {
         hasBarkedRef.current = true;
         barkCooldownRef.current = 15;
-        const bark = computeBark(definition);
+        const bark = computeBark(definition, factionContextRef.current);
         if (bark) {
           setBarkText(bark);
           setBarkPhase('thinking');
