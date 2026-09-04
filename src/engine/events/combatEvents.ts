@@ -84,4 +84,18 @@ export interface CombatEvents {
   };
   /** Phase 11: Combat consumable item used — for UI animation feedback. */
   'combat:item_used': { itemId: string; name: string; emoji: string };
+  /** v4.8.7 «Опережающий удар» — реал-тайм замах до пошагового боя
+   *  (meleeStrike.ts). Эмитится только при ПОПАДАНИИ: FX-искры (пул
+   *  combatTransientPool) и хаптика реагируют на попадание. */
+  'combat:melee_strike': {
+    source: 'mouse' | 'mobile_hud' | 'gamepad';
+    /** Всегда true в текущей версии (промахи не эмитятся). */
+    hit: boolean;
+    creepId: string;
+    enemyName: string;
+    /** Точка удара (мировые координаты) — спавн искр. */
+    x: number;
+    y: number;
+    z: number;
+  };
 }

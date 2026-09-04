@@ -25,6 +25,7 @@ import {
 } from '@/engine/interaction/interactiveTriggerProximity';
 import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 import { getGamePhase } from '@/shared/gamePhase';
+import { attemptMeleeStrike } from '@/engine/combat/realtime/meleeStrike';
 
 export interface UseEKeyInteractionOptions {
   livePlayerPositionRef: MutableRefObject<Vector3>;
@@ -151,6 +152,17 @@ export function useEKeyInteraction({
       const dx = e.clientX - downX;
       const dy = e.clientY - downY;
       if (dx * dx + dy * dy > LMB_CLICK_DRAG_THRESHOLD_PX * LMB_CLICK_DRAG_THRESHOLD_PX) return;
+
+      // v4.8.7 «Опережающий удар»: ЛКМ сначала пробует реал-тайм замах.
+      // «hit»/«tired»/«cooldown» означают, что игрок целился во врага —
+      // клик consumed, взаимодействие не запускается. «none» — врагов в
+      // зоне нет, ЛКМ ведёт себя как прежде (взаимодействие).
+      const strike = attemptMeleeStrike('mouse');
+      if (strike.status !== 'none') {
+        e.preventDefault();
+        return;
+      }
+
       if (firePrimaryInteraction()) {
         e.preventDefault();
       }

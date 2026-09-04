@@ -431,11 +431,14 @@ registerCombatStartExecutor((enemyType, options) => {
     source: options?.encounterSource ?? 'story',
     enemyType,
     encounterName: options?.encounterName,
-    creepId: options?.creepId });
+    creepId: options?.creepId,
+    introHpPct: options?.introHpPct });
 });
 
 registerEncounterCommitHandler((ctx) => {
-  startCombatImmediate(ctx.enemyType, { encounterName: ctx.encounterName });
+  startCombatImmediate(ctx.enemyType, {
+    encounterName: ctx.encounterName,
+    introHpPct: ctx.introHpPct });
 });
 
 registerHmrDispose(disposeCombatSystem);
@@ -465,6 +468,9 @@ export interface CombatStartOptions {
    *  первого. Наполняется вызывающей стороной (encounter roll) либо самим
    *  бойцом при story-encounters на акте 3+. */
   pendingEnemies?: EnemyType[];
+  /** v4.8.7 «Опережающий удар»: враг вступает с долей HP (0 < pct < 1).
+   *  Ставится реал-тайм слоем (meleeStrike.ts) через EncounterContext. */
+  introHpPct?: number;
 }
 
 export function startCombat(
@@ -482,7 +488,8 @@ export function startCombat(
     source: options?.encounterSource ?? 'story',
     enemyType,
     encounterName: options?.encounterName,
-    creepId: options?.creepId });
+    creepId: options?.creepId,
+    introHpPct: options?.introHpPct });
   return getCombatState()?.status === 'active' ? getCombatState() : null;
 }
 
@@ -532,6 +539,20 @@ function startCombatImmediate(
     specialCooldown: 0,
     chargingSpecial: null };
 
+  // v4.8.7 «Опережающий удар»: враг вступает ослабленным, если реал-тайм
+  // слой (meleeStrike.ts) зафиксировал удар игрока первым. Честный пакт:
+  // maxHp остаётся полным (бар HP читается как «отсечено сверху»), награды
+  // и фазы босса считаются от maxHp — меняется только стартовый hp.
+  const introHpPct = options?.introHpPct;
+  let strikeLogLine: CombatLogEntry | null = null;
+  if (introHpPct !== undefined && Number.isFinite(introHpPct) && introHpPct > 0 && introHpPct < 1) {
+    enemy.hp = Math.max(1, Math.floor(enemy.hp * introHpPct));
+    strikeLogLine = {
+      turn: 0,
+      text: `⚡ Опережающий удар: ${enemy.name} вступает в бой ослабленным!`,
+      type: 'info' };
+  }
+
   const playerMaxHp = getPlayerMaxHp();
   const playerState = state.playerState;
   const combatRng = initCombatRngForEncounter(playerState, resolvedType);
@@ -548,6 +569,7 @@ function startCombatImmediate(
       enemyDefending: false,
       log: [
         { turn: 0, text: `${enemy.emoji} ${enemy.name} появляется!`, type: 'info' },
+        ...(strikeLogLine ? [strikeLogLine] : []),
       ],
       status: 'active',
       powerCooldowns: {},

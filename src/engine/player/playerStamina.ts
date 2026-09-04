@@ -142,6 +142,20 @@ export function restorePlayerStamina(): void {
   sharedStamina.regenDelay = 0;
 }
 
+/**
+ * Разовое расходование выносливости вне спринта (v4.8.7 «Опережающий удар»).
+ * Возвращает false, если выносливости меньше нужного — списания нет
+ * (никаких частичных расходов). После списания действует та же задержка
+ * регенерации, что и после спринта — честная цена за действие.
+ */
+export function consumePlayerStamina(amount: number): boolean {
+  if (!Number.isFinite(amount) || amount <= 0) return false;
+  if (sharedStamina.current < amount) return false;
+  sharedStamina.current -= amount;
+  sharedStamina.regenDelay = Math.max(sharedStamina.regenDelay, STAMINA_REGEN_DELAY);
+  return true;
+}
+
 /** New game / engine reset — full restore + clears the drain flag. */
 export function resetPlayerStaminaForNewSession(): void {
   restorePlayerStamina();

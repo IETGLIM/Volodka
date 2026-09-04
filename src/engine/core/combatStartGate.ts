@@ -13,6 +13,8 @@ export interface DeferredCombatStartOptions {
   encounterName?: string;
   encounterSource?: EncounterSource;
   creepId?: string;
+  /** v4.8.7 «Опережающий удар»: доля HP, с которой враг вступает в бой. */
+  introHpPct?: number;
 }
 
 /** Max wait for scene:loaded before flushing deferred combat / clearing async guard. */

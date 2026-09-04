@@ -80,6 +80,15 @@ function bindHapticEventListeners(): void {
     eventBus.on('player:physics_degraded', (payload) => {
       if (payload.degraded) hapticError();
     }),
+
+    // v4.8.7 «Опережающий удар» — тактильный отклик попадания до боя
+    // (см. engine/combat/realtime/meleeStrike.ts).
+    eventBus.on('combat:melee_strike', () => {
+      const now = performance.now();
+      if (now - lastCombatHapticAt < COMBAT_HAPTIC_THROTTLE_MS) return;
+      lastCombatHapticAt = now;
+      hapticCombatHit();
+    }),
   );
 }
 

@@ -33,6 +33,12 @@ import { isSceneTransitionInProgress } from '@/engine/core/SceneTransitionManage
 import { startEncounter } from '@/engine/combat/encounterPresentation';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import { getEnemyAiConfig } from '@/engine/combat/enemyAiBehaviors';
+import {
+  MELEE_STRIKE_INTRO_ENEMY_HP_PCT,
+  registerMeleeStrikeTarget,
+  reportMeleeStrikeCandidate,
+} from '@/engine/combat/realtime/meleeStrike';
+import { MELEE_STRIKE_REACH_M } from '@/engine/combat/realtime/meleeSweep';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
 import { getCreepsForScene, type CreepPatrolDef } from '@/data/creepPatrols';
@@ -308,9 +314,62 @@ function Creep({
 
   // Spawn gating re-checked on mount only (flags rarely flip mid-scene)
   const [spawned, setSpawned] = useState(() => creepSpawnAllowed(def));
+  // Ref-зеркало spawned — регистрация замаха читает его без перерегистрации.
+  const spawnedRef = useRef(spawned);
   useEffect(() => {
     setSpawned(creepSpawnAllowed(def));
   }, [def]);
+  useEffect(() => {
+    spawnedRef.current = spawned;
+  }, [spawned]);
+
+  // ── Реал-тайм «Опережающий удар» (v4.8.7) ──
+  // Крип регистрируется как цель замаха: живая позиция (positionRef),
+  // LOS по vision-блокерам сцены и вовлечение в бой с ослабленным врагом.
+  // Вовлечение — точная копия контактной ветки CHASE (см. useFrameTick),
+  // чтобы презентация/победа/побег работали как раньше.
+  useEffect(() => {
+    const unregister = registerMeleeStrikeTarget({
+      id: def.id,
+      name: def.name,
+      getPosition: () => positionRef.current,
+      canStrike: () =>
+        spawnedRef.current
+        && frameCtxRef.current.exploring
+        && !engageQueuedRef.current
+        && (stateRef.current === 'patrol'
+          || stateRef.current === 'chase'
+          || stateRef.current === 'return'),
+      hasLineOfSight: () => {
+        const pos = positionRef.current;
+        const player = livePlayerPositionRef.current;
+        return hasCreepLineOfSight(pos.x, pos.z, player.x, player.z, visionBlockers);
+      },
+      applyStrike: () => {
+        if (engageQueuedRef.current) return;
+        engageQueuedRef.current = true;
+        stateRef.current = 'engaged';
+        engagedCreepIdRef.current = def.id;
+        setEngaging(true);
+        contactBurstRef.current = 1;
+
+        const pos = positionRef.current;
+        const player = livePlayerPositionRef.current;
+        const faceYaw = Math.atan2(player.x - pos.x, player.z - pos.z);
+        pos.x = player.x + Math.sin(faceYaw) * 2.4;
+        pos.z = player.z + Math.cos(faceYaw) * 2.4;
+        headingRef.current = faceYaw + Math.PI;
+
+        startEncounter({
+          source: 'creep',
+          enemyType: def.enemyType,
+          encounterName: def.name,
+          creepId: def.id,
+          introHpPct: MELEE_STRIKE_INTRO_ENEMY_HP_PCT });
+      },
+    });
+    return unregister;
+  }, [def, engagedCreepIdRef, frameCtxRef, livePlayerPositionRef, visionBlockers]);
 
   useEffect(() => {
     const scope = eventBus.createScope();
@@ -368,6 +427,23 @@ function Creep({
     const dx = player.x - pos.x;
     const dz = player.z - pos.z;
     const playerDist = Math.sqrt(dx * dx + dz * dz);
+
+    // ── HUD-подсказка «враг в зоне удара» (v4.8.7) ──
+    // Отчёт в реал-тайм слой каждый кадр (дешёвый map.set). LOS считаем
+    // только когда крип в зоне удара — обычно не больше одного такого.
+    const strikeEligible =
+      exploring
+      && spawned
+      && !engageQueuedRef.current
+      && (stateRef.current === 'patrol'
+        || stateRef.current === 'chase'
+        || stateRef.current === 'return');
+    if (strikeEligible && playerDist <= MELEE_STRIKE_REACH_M) {
+      const clear = hasCreepLineOfSight(pos.x, pos.z, player.x, player.z, visionBlockers);
+      reportMeleeStrikeCandidate(def.id, def.name, playerDist, clear);
+    } else {
+      reportMeleeStrikeCandidate(def.id, def.name, playerDist, false);
+    }
 
     // During engage / combat, face the player at duel distance.
     if (inArena) {

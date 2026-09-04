@@ -8,6 +8,7 @@ import {
   isPlayerSprintDraining,
   restorePlayerStamina,
   resetPlayerStaminaForNewSession,
+  consumePlayerStamina,
   STAMINA_EXHAUST_UNLOCK_BONUS,
   STAMINA_IDLE_REGEN_MULTIPLIER,
 } from '@/engine/player/playerStamina';
@@ -183,5 +184,45 @@ describe('shared stamina singleton', () => {
     expect(snap.current).toBe(snap.max);
     expect(snap.exhausted).toBe(false);
     expect(snap.sprintDraining).toBe(false);
+  });
+});
+
+describe('consumePlayerStamina (v4.8.7 «Опережающий удар»)', () => {
+  beforeEach(() => {
+    restorePlayerStamina();
+  });
+
+  it('drains the shared state and returns true when stamina is enough', () => {
+    const before = getPlayerStamina().current;
+    expect(consumePlayerStamina(22)).toBe(true);
+    expect(getPlayerStamina().current).toBeCloseTo(before - 22, 5);
+  });
+
+  it('returns false and does NOT partially drain when stamina is insufficient', () => {
+    while (getPlayerStamina().current > 20) {
+      tickPlayerStamina({ dt: 0.5, sprinting: true, moving: true, crouching: false });
+    }
+    const before = getPlayerStamina().current;
+    expect(consumePlayerStamina(22)).toBe(false);
+    expect(getPlayerStamina().current).toBe(before);
+  });
+
+  it('sets the regen delay like a sprint drain (honest cost)', () => {
+    consumePlayerStamina(22);
+    // Sprint would hold the delay at STAMINA_REGEN_DELAY; consume matches it.
+    expect(getPlayerStamina().current).toBeLessThan(100);
+    // One non-sprint tick counts the delay down, no regen yet.
+    tickPlayerStamina({ dt: 0.5, sprinting: false, moving: true, crouching: false });
+    const held = getPlayerStamina().current;
+    tickPlayerStamina({ dt: 0.5, sprinting: false, moving: true, crouching: false });
+    expect(getPlayerStamina().current).toBe(held);
+  });
+
+  it('rejects non-positive and non-finite amounts', () => {
+    expect(consumePlayerStamina(0)).toBe(false);
+    expect(consumePlayerStamina(-5)).toBe(false);
+    expect(consumePlayerStamina(Number.NaN)).toBe(false);
+    expect(consumePlayerStamina(Number.POSITIVE_INFINITY)).toBe(false);
+    expect(getPlayerStamina().current).toBe(getPlayerStamina().max);
   });
 });
