@@ -35,33 +35,29 @@ export function FrameBudgetRunner() {
 
     resetFrameProfilerCounters();
     frameIndexRef.current += 1;
-    frameCtxRef.current = {
-      state,
-      delta: Math.min(delta, 0.05),
-      game: createFrameGameSnapshot(getGameSnapshot()),
-    };
+    // FIX (perf GC): мутируем поля контекста вместо спреда
+    // { ...frameCtxRef.current, ... } — 2 спреда × 60fps ≈ 120 лишних
+    // аллокаций/сек + мусор для GC. game-снапшот создаётся один раз
+    // здесь (pre_physics) и переиспользуется пост-фазами этого же кадра.
+    frameCtxRef.current.state = state;
+    frameCtxRef.current.delta = Math.min(delta, 0.05);
+    frameCtxRef.current.game = createFrameGameSnapshot(getGameSnapshot());
     runFrameBudgetForPhase(frameCtxRef.current, 'pre_physics');
   }, FRAME_PHASE_R3F_PRIORITY.pre_physics);
 
   useFrame((state, delta) => {
     if (!isFrameSimulationActive()) return;
 
-    frameCtxRef.current = {
-      ...frameCtxRef.current,
-      state,
-      delta: Math.min(delta, 0.05),
-    };
+    frameCtxRef.current.state = state;
+    frameCtxRef.current.delta = Math.min(delta, 0.05);
     runFrameBudgetForPhase(frameCtxRef.current, 'post_physics');
   }, FRAME_PHASE_R3F_PRIORITY.post_physics);
 
   useFrame((state, delta) => {
     if (!isFrameSimulationActive()) return;
 
-    frameCtxRef.current = {
-      ...frameCtxRef.current,
-      state,
-      delta: Math.min(delta, 0.05),
-    };
+    frameCtxRef.current.state = state;
+    frameCtxRef.current.delta = Math.min(delta, 0.05);
     runFrameBudgetForPhase(frameCtxRef.current, 'pre_render');
   }, FRAME_PHASE_R3F_PRIORITY.pre_render);
 

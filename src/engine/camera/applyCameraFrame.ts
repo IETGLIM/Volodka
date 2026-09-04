@@ -220,7 +220,7 @@ export function applyCameraFrame(
   cam.position.set(
     spring.position.x + shakeOffset.x,
     spring.position.y + shakeOffset.y,
-    spring.position.z,
+    spring.position.z + shakeOffset.z, // Z-шейк (удар «в спину» по оси взгляда) больше не теряется
   );
 
   if (

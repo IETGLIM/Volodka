@@ -26,6 +26,9 @@ import { shouldKeepFirstPersonExplorationCamera } from '@/engine/interaction/int
 import type { CameraModeStrategy } from '../types';
 import { consumeLandingFovDip } from '../landingImpact';
 import { eventBus } from '@/engine/EventBus';
+import {
+  registerModuleGlobalCleanupBinder,
+} from '@/engine/core/GlobalCleanupService';
 
 // ── Sprint-start FOV kick (envelope decays after the walk→run transition) ──
 let _sprintKickEnvelope = 0;
@@ -49,12 +52,26 @@ const _scratchLookDir = new Vector3();
 const _scratchRight = new Vector3();
 const _worldUp = new Vector3(0, 1, 0);
 
-// Arm cinematic sprint launch boost from the exact edge event
-if (typeof window !== 'undefined') {
-  eventBus.on('player:sprint_start' as any, () => {
+// Arm cinematic sprint launch boost from the exact edge event.
+// FIX (revive-safety): раньше подписка была анонимной на уровне модуля без
+// сохранённого unsubscribe — disposeGameEngine() стирал её вместе с EventBus,
+// а reviveGameEngine() не переподписывал, и спринт-панч FOV/наклона молча
+// умирал после ремоунта оркестратора (ErrorBoundary/StrictMode).
+// Теперь подписка переустанавливается через registerModuleGlobalCleanupBinder:
+// binder вызывается при загрузке модуля и снова из reviveGameEngine().
+let _unsubSprintStart: (() => void) | null = null;
+
+function bindSprintStartListener(): void {
+  _unsubSprintStart?.();
+  _unsubSprintStart = null;
+  if (typeof window === 'undefined') return;
+  _unsubSprintStart = eventBus.on('player:sprint_start', () => {
     _sprintLaunchBoost = 1.0; // full punch
   });
 }
+
+registerModuleGlobalCleanupBinder(bindSprintStartListener);
+bindSprintStartListener();
 
 /** Default spring-based exploration camera with look-ahead and breathing bob */
 export const explorationStrategy: CameraModeStrategy = {

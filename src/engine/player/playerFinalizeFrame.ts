@@ -49,6 +49,12 @@ const ANIM_LOWER_THRESHOLD = 0.15;
  */
 let prevAnimForFootstep: string = 'idle';
 
+/** FIX: сцена, в которой был записан __lastSprintSpeed. Глобаль не
+ *  сбрасывалась при смене сцены: спринт → телепорт/переход → первый кадр
+ *  стоя давал ложный player:hard_brake (шейк + SFX без реального торможения).
+ *  Храним сцену-владелец записи; несовпадение = трактуем как «не бежал». */
+let lastSprintSpeedSceneId: string | null = null;
+
 /** Animations, footsteps, position sync, ground enforce, DEV timing. */
 export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
   const scratch = deps.frameScratchRef.current;
@@ -194,6 +200,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
       // Also emit a brake-ready state for future decel detection (used by camera)
       window.__lastSprintSpeed = horizontalSpeed;
+      lastSprintSpeedSceneId = deps.sceneId;
     }
 
     prevAnimForFootstep = currentAnim;
@@ -257,7 +264,10 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     // AAA Phase B: cinematic hard brake / stop detection
     // When player was sprinting and suddenly stops, emit a powerful brake event
     // for dust explosion, camera yank, body recovery, and audio.
-    const wasFast = (window.__lastSprintSpeed ?? 0) > 5.0;
+    // FIX: смена сцены (телепорт/переход) инвалидирует старую запись скорости —
+    // в новой сцене «прошлого спринта» не было, brake не срабатывает.
+    const brakeValid = lastSprintSpeedSceneId === deps.sceneId;
+    const wasFast = brakeValid && (window.__lastSprintSpeed ?? 0) > 5.0;
     if (wasFast && horizontalSpeed < 1.2 && deps.isGroundedRef.current) {
       eventBus.emit('player:hard_brake', {
         position: [finalPos.x, finalPos.y, finalPos.z],
@@ -279,6 +289,7 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
       } catch {}
 
       window.__lastSprintSpeed = 0;
+      lastSprintSpeedSceneId = null;
     }
 
     // Session 12-B: keep prevAnimForFootstep in sync with currentAnimRef even

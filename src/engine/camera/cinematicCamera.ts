@@ -47,6 +47,14 @@ const BREATHING_IDLE_DELAY = 3.0;     // seconds before breathing starts
 const BREATHING_INTENSITY_MAX = 1.0;  // full breathing intensity
 const BREATHING_FADE_IN_SPEED = 0.5;  // how fast breathing ramps in
 
+/**
+ * Абсолютный минимум дистанции камеры от точки взгляда при коллизии со стеной.
+ * Гарантирует, что камера никогда не уйдёт ЗА препятствие: раньше
+ * Math.max(minDistance, hit − margin) размещал камеру за стеной, если та была
+ * ближе, чем minDistance + margin (тесные коридоры, двери, интерьеры).
+ */
+const CAMERA_COLLISION_MIN_CLEARANCE = 0.2;
+
 /* ── Combat camera ── */
 export const COMBAT_FOV = 85;
 const COMBAT_ZOOM_FOV = 70;           // zoomed-in FOV on impact
@@ -233,7 +241,14 @@ export function resolveCameraCollision(
   for (const hit of hits) {
     if (!isCameraCollisionHit(hit.object)) continue;
     if (hit.distance < fullDistance - margin) {
-      const safeDistance = Math.max(minDistance, hit.distance - margin);
+      // Клэмп: камера никогда не размещается ЗА стеной. Ранее Math.max(minDistance, …)
+      // выталкивал камеру за препятствие в тесных коридорах (стена ближе
+      // minDistance + margin ⇒ safeDistance > дистанции до стены).
+      // minDistance сохраняется только когда до стены ещё есть запас.
+      const safeDistance = Math.max(
+        Math.min(minDistance, hit.distance - margin),
+        CAMERA_COLLISION_MIN_CLEARANCE,
+      );
       out.copy(lookTarget).addScaledVector(_camDir, safeDistance);
       return out;
     }
@@ -250,9 +265,15 @@ export function resolveCameraCollision(
   for (const hit of reverseHits) {
     if (!isCameraCollisionHit(hit.object)) continue;
     if (hit.distance < fullDistance) {
-      // Camera is inside or very close to a wall — pull it toward the lookTarget
-      // Place the camera just in front of the wall (toward the player)
-      const safeDistance = Math.max(minDistance, fullDistance - hit.distance - margin);
+      // Camera is inside or very close to a wall — pull it toward the lookTarget.
+      // Стена находится на (fullDistance - hit.distance) от lookTarget; камера
+      // обязана остаться МЕЖДУ lookTarget и стеной (с запасом margin),
+      // иначе Math.max(minDistance, …) снова отбрасывал бы её за стену.
+      const wallDistance = fullDistance - hit.distance;
+      const safeDistance = Math.max(
+        Math.min(minDistance, wallDistance - margin),
+        CAMERA_COLLISION_MIN_CLEARANCE,
+      );
       out.copy(lookTarget).addScaledVector(_camDir, safeDistance);
       return out;
     }

@@ -172,10 +172,14 @@ export function disposeGameEngine(): void {
 export function reviveGameEngine(): void {
   engineDisposed = false;
   resumeAutoCloseTimers();
-  reviveModuleGlobalCleanupBindings();
 
   reviveFrameVisibility();
   reviveEventBus();
+  // FIX: биндеры модулей (которые могут переподписываться на eventBus)
+  // должны выполняться ПОСЛЕ reviveEventBus(), иначе on() на диспоузнутой
+  // шине срабатывает через auto-revive и шумит dev-предупреждением.
+  reviveModuleGlobalCleanupBindings();
+
   bindSceneLoadedBridge();
   bindInteractionSessionListeners();
   bindGpuContextRestoreListener();

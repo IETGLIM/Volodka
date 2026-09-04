@@ -5,6 +5,7 @@ import { useEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import { bindKeyboardInput, sampleKeyboardMovement } from '@/engine/keyboardInputState';
 import { applyMouseBothButtonsForward } from '@/engine/VirtualControlsState';
 import { sharedPlayerBlockRef } from '@/engine/PlayerRotationState';
+import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 
 export interface VirtualControls {
   forward: number;
@@ -91,23 +92,42 @@ export function usePlayerControls(
     const updateMouseMove = (buttons: number) => {
       mouseOwnsForward = applyMouseBothButtonsForward(buttons, mouseOwnsForward);
     };
+    // Блок и «обе кнопки = вперёд» активны только для canvas-области:
+    // ПКМ по DOM-панелям/меню больше не включает боевую стойку.
     const onMouseDown = (e: MouseEvent) => {
       updateMouseMove(e.buttons);
-      // RMB → block state flag
-      if (e.buttons & 2) sharedPlayerBlockRef.current = true;
+      // RMB → block state flag (только canvas-область)
+      if (e.buttons & 2 && isCanvasAreaTarget(e.target)) sharedPlayerBlockRef.current = true;
     };
     const onMouseUp = (e: MouseEvent) => {
       updateMouseMove(e.buttons);
       if (!(e.buttons & 2)) sharedPlayerBlockRef.current = false;
     };
     const onMouseMove = (e: MouseEvent) => updateMouseMove(e.buttons);
+    // FIX: при потере фокуса окна (alt-tab) или скрытии вкладки мышь уже не
+    // «отпустит» кнопку — раньше блок залипал до следующего mouseup.
+    const clearStickyMouseState = () => {
+      if (mouseOwnsForward) {
+        applyMouseBothButtonsForward(0, true);
+        mouseOwnsForward = false;
+      }
+      sharedPlayerBlockRef.current = false;
+    };
+    const onWindowBlur = () => clearStickyMouseState();
+    const onVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') clearStickyMouseState();
+    };
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
     window.addEventListener('mousemove', onMouseMove, { passive: true });
+    window.addEventListener('blur', onWindowBlur);
+    document.addEventListener('visibilitychange', onVisibilityChange);
     return () => {
       window.removeEventListener('mousedown', onMouseDown);
       window.removeEventListener('mouseup', onMouseUp);
       window.removeEventListener('mousemove', onMouseMove);
+      window.removeEventListener('blur', onWindowBlur);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       if (mouseOwnsForward) {
         applyMouseBothButtonsForward(0, true);
       }

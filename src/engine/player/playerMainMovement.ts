@@ -197,22 +197,23 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   // Perk movement speed multiplier (cyber_reflexes always, night_owl /
   // shadow_walker at night, invisible detection reduction). Read from the
   // cached game snapshot so the hot path stays O(1).
-  const perkSnap = getGameSnapshot();
+  // FIX (perf): был второй getGameSnapshot() ниже для погоды — один снапшот
+  // переиспользуется для перков и погоды (одна выборка/кадр вместо двух).
+  const frameSnap = getGameSnapshot();
   const perkSpeedMult = resolveMovementSpeedMultiplier(
-    perkSnap.playerState.progression?.unlockedPerks ?? [],
-    { timeOfDay: perkSnap.exploration?.timeOfDay },
+    frameSnap.playerState.progression?.unlockedPerks ?? [],
+    { timeOfDay: frameSnap.exploration?.timeOfDay },
   );
   let weatherSpeedMult = 1;
   if (isOutdoor) {
     try {
-      const world = getGameSnapshot();
-      if (world.weatherEnabled) {
+      if (frameSnap.weatherEnabled) {
         const wt = determineWeatherType(
-          world.weatherEnabled,
-          world.rainIntensity ?? 0,
+          frameSnap.weatherEnabled,
+          frameSnap.rainIntensity ?? 0,
           false,
-          world.exploration.currentSceneId,
-          world.exploration.timeOfDay ?? 12,
+          frameSnap.exploration.currentSceneId,
+          frameSnap.exploration.timeOfDay ?? 12,
         );
         weatherSpeedMult = getWeatherEffect(wt).movementSpeed;
       }

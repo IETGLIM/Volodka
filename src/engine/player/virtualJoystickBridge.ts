@@ -91,11 +91,15 @@ export function stopVirtualJoystickBridge(): void {
     unsubscribe();
     unsubscribe = null;
   }
-  // Zero out any residual joystick input
+  // FIX: читаем последнее состояние джойстика и зануляем оси ТОЛЬКО если
+  // их писал джойстик (был активен). Раньше stop() безусловно затирал все
+  // оси sharedVirtualControlsRef вопреки собственному комментарию
+  // «don't clobber gamepad» — это могло прибить активный ввод геймпада/
+  // D-pad на кадр и дольше (до следующего их тика).
+  const joystickState = joystickStore.getState();
+  if (!joystickState.active || joystickState.magnitude < 0.01) return;
+
   const vc = sharedVirtualControlsRef.current;
-  // Only zero if the current values look like joystick output
-  // (don't clobber gamepad or D-pad values)
-  // We zero all axes since the joystick was the last writer
   vc.forward = 0;
   vc.backward = 0;
   vc.left = 0;

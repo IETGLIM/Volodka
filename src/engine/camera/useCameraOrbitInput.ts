@@ -362,6 +362,10 @@ export function useCameraOrbitInput(
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.code === 'KeyR' && e.shiftKey) {
+        // FIX: гейт shouldBlockOrbit() — раньше Shift+R мутировал yaw/pitch
+        // во время кат-сцен/диалогов/таймлайнов, и смещённые рефы протекали
+        // в пост-катсценную позу камеры.
+        if (shouldBlockOrbit()) return;
         e.preventDefault();
         const currentSceneId = getGameSnapshot().exploration.currentSceneId;
         const config = getSceneConfig(currentSceneId);

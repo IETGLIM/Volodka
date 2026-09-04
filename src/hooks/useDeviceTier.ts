@@ -28,7 +28,13 @@ function detectDeviceTier(prefersReducedMotion: boolean): DeviceTier {
 /** Coarse GPU/CPU tier for toggling cinematic post-processing. */
 export function useDeviceTier(): DeviceTier {
   const prefersReducedMotion = useReducedMotion();
-  const [tier, setTier] = useState<DeviceTier>('medium');
+  // FIX (perf): раньше первый рендер всегда был 'medium', и мобильные
+  // (coarsePointer → 'low') успевали начать загрузку 2k-HDRI (6.66 МБ),
+  // пока useEffect не выставлял реальный тир. detectDeviceTier синхронен
+  // (matchMedia/deviceMemory) — вычисляем корректный тир сразу в useState.
+  const [tier, setTier] = useState<DeviceTier>(() =>
+    typeof window === 'undefined' ? 'medium' : detectDeviceTier(false),
+  );
 
   useEffect(() => {
     setTier(detectDeviceTier(!!prefersReducedMotion));

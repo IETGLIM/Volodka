@@ -215,7 +215,7 @@ class Canvas3DErrorBoundary extends Component<
             gap: '16px',
           }}
         >
-          <div>3D engine error</div>
+          <div>Ошибка 3D-движка</div>
           <button
             onClick={this.handleManualRetry}
             disabled={this.state.isRemounting}
@@ -231,7 +231,7 @@ class Canvas3DErrorBoundary extends Component<
               letterSpacing: '0.1em',
             }}
           >
-            {this.state.isRemounting ? 'RETRYING...' : 'RETRY'}
+            {this.state.isRemounting ? 'ПЕРЕЗАПУСК…' : 'ПОВТОРИТЬ'}
           </button>
         </div>
       );
@@ -252,7 +252,7 @@ class Canvas3DErrorBoundary extends Component<
             letterSpacing: '0.1em',
           }}
         >
-          Loading...
+          Загрузка…
         </div>
       );
     }

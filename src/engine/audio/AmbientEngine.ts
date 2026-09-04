@@ -78,6 +78,26 @@ const AMBIENT_DUCK_GAIN: Record<AmbientDuckProfile, number> = {
   cinematic: 0.38,
 };
 
+/* ── FIX (perf): кэш noise-буферов по sampleRate. Раньше 4-секундный буфер
+   (~192k сэмплов Math.random) синтезировался синхронно при КАЖДОМ кроссфейде
+   амбиента (смена сцены, reduced-motion) — 1–2 мс мейн-треда + GC-мусор.
+   Буфер белого шума детерминированно одинаков — пересоздавать его незачем. ── */
+const _noiseBufferCache = new Map<number, AudioBuffer>();
+
+function getSharedNoiseBuffer(ctx: AudioContext): AudioBuffer {
+  const cached = _noiseBufferCache.get(ctx.sampleRate);
+  if (cached) return cached;
+
+  const bufferSize = Math.ceil(ctx.sampleRate * 4); // 4-second noise buffer
+  const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < bufferSize; i++) {
+    data[i] = Math.random() * 2 - 1;
+  }
+  _noiseBufferCache.set(ctx.sampleRate, buffer);
+  return buffer;
+}
+
 export class AmbientSoundPlayer {
   private ctx: AudioContext | null = null;
   private destination: GainNode | null = null;
@@ -337,12 +357,7 @@ export class AmbientSoundPlayer {
     // ── Noise layer ──
     if (def.noise) {
       const noiseConf = def.noise;
-      const bufferSize = Math.ceil(ctx.sampleRate * 4); // 4-second noise buffer
-      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
+      const buffer = getSharedNoiseBuffer(ctx);
 
       const noiseSource = ctx.createBufferSource();
       noiseSource.buffer = buffer;
