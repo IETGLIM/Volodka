@@ -10,7 +10,7 @@ import {
   CheckCircle2, Circle, Trophy, BookOpen, EyeOff,
   Clock, AlertTriangle, RotateCcw, ChevronRight, Sparkles,
   Lightbulb, Shield, Swords, Zap, Star, Package, MapPin, MessageCircle, Gamepad2,
-  ListChecks,
+  ListChecks, Users,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import type {
@@ -56,6 +56,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
 import { remainingQuestHours } from '@/engine/quest/questTimeLimits';
+import { FACTION_LABELS_RU, normalizeFactionId } from '@/store/selectors/factionGrouping';
 
 interface QuestsPanelProps {
   open: boolean;
@@ -83,6 +84,37 @@ function DifficultyBadge({ difficulty }: { difficulty?: QuestDifficulty }) {
     <span className={`inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-md border ${config.bgColor} ${config.borderColor} ${config.color}`}>
       <Icon className="size-2.5" />
       {config.label}
+    </span>
+  );
+}
+
+/* ── Чип фракции на карточке квеста (v4.8.9) ──
+ * Показывает `faction` из определения квеста, нормализованный к каноничным
+ * id из factionGrouping. Цвета согласованы с FactionAttitudeChip (диалоги)
+ * и FactionReputationPanel: изумрудный — Сеть, янтарный — Гильдия,
+ * красный — Сопротивление, лаймовый — ТОЛПА, каменный — нейтральные. */
+const FACTION_CHIP_VISUALS: Record<string, { color: string; border: string; bg: string }> = {
+  network: { color: 'rgb(110, 231, 183)', border: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(6, 78, 59, 0.3)' },
+  guild: { color: 'rgb(252, 211, 77)', border: 'rgba(245, 158, 11, 0.4)', bg: 'rgba(69, 47, 6, 0.3)' },
+  resistance: { color: 'rgb(252, 165, 165)', border: 'rgba(239, 68, 68, 0.45)', bg: 'rgba(76, 5, 25, 0.35)' },
+  tolpa: { color: 'rgb(190, 242, 100)', border: 'rgba(132, 204, 22, 0.4)', bg: 'rgba(58, 69, 10, 0.3)' },
+  neutral: { color: 'rgb(203, 213, 225)', border: 'rgba(148, 163, 184, 0.35)', bg: 'rgba(30, 41, 59, 0.4)' },
+};
+
+function FactionQuestChip({ faction }: { faction?: string }) {
+  if (!faction) return null;
+  const canonical = normalizeFactionId(faction);
+  const label = FACTION_LABELS_RU[canonical];
+  const visual = FACTION_CHIP_VISUALS[canonical] ?? FACTION_CHIP_VISUALS.neutral;
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-md border"
+      style={{ color: visual.color, borderColor: visual.border, background: visual.bg }}
+      title={`Задание связано с фракцией «${label}» — репутация влияет на отношение и торговлю`}
+      data-testid="quest-faction-chip"
+    >
+      <Users className="size-2.5" />
+      {label}
     </span>
   );
 }
@@ -718,6 +750,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                       </Badge>
                                     )}
                                     <DifficultyBadge difficulty={def.difficulty} />
+                                    <FactionQuestChip faction={def.faction} />
                                     {hasPoemBypass(qs.questId) && (
                                       <Sparkles className="size-3.5 text-purple-400" />
                                     )}
