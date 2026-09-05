@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.8.8** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.8.9** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1138,6 +1138,40 @@ flash-эффектом при падении кармы. Смонтирован 
   3D по-прежнему требует hitbox-систем, реал-тайм HP ВО ВРЕМЯ боя и
   ребаланса всех врагов — архитектура (realtime/, события, presentation
   beat, hazards) готова к следующим инкрементам.
+
+## v4.8.9 — «Мёртвые главы оживают»: достижимость квестов, паритет реестра диалогов
+
+### Достижимость квестов (`shared/validation/questReachability.ts` + CLI)
+- **Проблема**: активация квеста возможна только через `triggerQuest`
+  (диалог/story-нода), `zone.linkedQuestId`, кинематограф или spine-правила.
+  Статический BFS (`computeQuestReachability`) от корней — диалоги NPC с
+  расписаниями (+ return/milestone-узлы), зоны, explore-хабы, пролог,
+  кинематографические активации — показал: 51 из 147 квестов не имел ни
+  одного пути активации. Полностью мёртвыми были пак-ы «Уличные легенды»,
+  «Голоса Пирса» и AAA-расширение.
+- **Паритет реестра диалогов** (`narrativePackRegistry`): добавлены 9
+  отсутствовавших runtime-лоадеров (`part2Expanded…part5Expanded`,
+  `returns`, `milestones`, `act4New`, `act3ExpandedDialogues`,
+  `act4ExpandedDialogues`) — 220 узлов статического `DIALOGUE_NODES` не
+  попадали в сессионный кэш; milestone-диалоги (relationMilestones
+  @50/@80 Альберта/Заремы/Марии/Солныш) не резолвились
+  `ensureDialogueNode`. `milestones` включён в `BOOTSTRAP_DIALOGUE_PACKS`.
+- **27 коллизий return-узлов**: `returnDialogues` (генератор заглушек
+  mkReturn) при слиянии затирал авторские return-узлы пак-файлов
+  (в т.ч. `albert_return` — вход в дерево `act1_albert_alliance`).
+  Теперь returnDialogues — fallback: сливается первым и в статическом
+  `dialogue/index.ts`, и в runtime `DIALOGUE_PACK_ORDER`.
+- **Оживление 15 квестов** (96 → 117): хуки-выборы в приветствиях гиверов
+  (Гриша/Лёня/Тамара/Уличный поэт/Баба Зина/Трофим/Марат-эхо/Ритка/Мастер)
+  с гейтами `requiredAct` + флаги завершения предыдущих цепочек;
+  расписания и `dialogueNodeId` для безрасписанных NPC (Мастер завода,
+  Марина, Марат-эхо, Старик на скамье, Умирающий поэт); мост-диалог
+  `trofim_fourth_voice_gate` и новые узлы Марины (`marina_greeting`,
+  `marina_waiting_asked`).
+- **Гварды**: `questReachability.test.ts` (пак-ы sl_*/pv_* достижимы
+  целиком, бейзлайн недостижимых 30 не растёт) и
+  `narrativePackParity.test.ts` (runtime-кэш покрывает статический
+  реестр; авторские return-узлы побеждают заглушки).
 
 ## v4.8.8 — «Добивание до боя»: реал-тайм HP крипов, честные цены торговли
 
