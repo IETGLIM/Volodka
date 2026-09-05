@@ -148,7 +148,9 @@ export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
     // цели — зоны и предметы; подсказка гивера — через сцену библиотеки
   },
   catastrophe_echo: {
-    // цели — зоны и флаги дата-центра; Лена — точка входа
+    // Лена — точка входа; остальные цели — зоны дата-центра (v4.10.0:
+    // зоны-сеттеры в guild_mainframe, сцена-уэйпоинты ниже).
+    find_datacenter_entrance: 'lena',
   },
 };
 
@@ -223,9 +225,9 @@ export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
     return_book_to_tamara: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
   },
   factory_secret_blueprint: {
-    find_blueprint_cache: { sceneId: 'abandoned_factory', position: [4.0, 0, -4.5] },
-    retrieve_blueprint: { sceneId: 'abandoned_factory', position: [4.0, 0, -4.5] },
-    decide_blueprint_fate: { sceneId: 'abandoned_factory', position: [4.0, 0, -4.5] },
+    find_blueprint_cache: { sceneId: 'abandoned_factory', position: [-4.0, 0, -4.0] },
+    retrieve_blueprint: { sceneId: 'abandoned_factory', position: [-4.0, 0, -4.0] },
+    decide_blueprint_fate: { sceneId: 'abandoned_factory', position: [-4.4, 0, -3.6] },
   },
   // ── Act 5 side quests ──
   dreamworld_lost_child: {
@@ -236,11 +238,11 @@ export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
     guide_child_home: { sceneId: 'sleep_dream', position: [0, 0, 5.0] },
   },
   void_echo_poem: {
-    hear_first_echo: { sceneId: 'river_pier', position: [-1.8, 0, -2.9] },
-    hear_second_echo: { sceneId: 'rooftop_edge', position: [0, 0.01, 0] },
+    hear_first_echo: { sceneId: 'river_pier', position: [-0.6, 0, -6.8] },
+    hear_second_echo: { sceneId: 'rooftop_edge', position: [-2.4, 0, 2.2] },
     hear_third_echo: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
-    confront_void_poet: { sceneId: 'sleep_dream', position: [0, 0, -5.0] },
-    claim_void_poem: { sceneId: 'sleep_dream', position: [0, 0, -5.0] },
+    confront_void_poet: { sceneId: 'sleep_dream', position: [-4.5, 0, -6.5] },
+    claim_void_poem: { sceneId: 'sleep_dream', position: [-4.5, 0, -6.5] },
   },
   /* ── FIX (v4.9.0): сцены-подсказки для флаговых/предметных целей
      оживлённых квестов — чтобы StoryGuidanceHUD и миникарта вели игрока ── */
@@ -331,10 +333,14 @@ export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
     find_recording_device: { sceneId: 'factory_basement', position: [1.0, 0, 1.0] },
     listen_to_recordings: { sceneId: 'factory_basement', position: [1.0, 0, 1.0] },
   },
+  /* ── FIX (v4.10.0): «Эхо Катастрофы» уводит в настоящий дата-центр —
+     сцены-уэйпоинты согласованы с зонами catastrophe_* (guild_mainframe) ── */
   catastrophe_echo: {
-    navigate_corridors: { sceneId: 'factory_basement', position: [-1.0, 0, -2.5] },
-    locate_core_terminal: { sceneId: 'factory_basement', position: [2.5, 0, -1.0] },
-    extract_memory_fragment: { sceneId: 'factory_basement', position: [2.5, 0, -1.0] },
+    find_datacenter_entrance: { sceneId: 'guild_mainframe', position: [0, 0, 5.0] },
+    navigate_corridors: { sceneId: 'guild_mainframe', position: [-2.0, 0, 2.0] },
+    locate_core_terminal: { sceneId: 'guild_mainframe', position: [-5.5, 0, -3.0] },
+    extract_memory_fragment: { sceneId: 'guild_mainframe', position: [-5.5, 0, -3.0] },
+    escape_lockdown: { sceneId: 'guild_mainframe', position: [5.5, 0, 3.0] },
   },
 };
 

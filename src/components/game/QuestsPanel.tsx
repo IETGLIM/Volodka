@@ -10,7 +10,7 @@ import {
   CheckCircle2, Circle, Trophy, BookOpen, EyeOff,
   Clock, AlertTriangle, RotateCcw, ChevronRight, Sparkles,
   Lightbulb, Shield, Swords, Zap, Star, Package, MapPin, MessageCircle, Gamepad2,
-  ListChecks, Users, User,
+  ListChecks, Users, User, Moon, Waves,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import type {
@@ -115,6 +115,65 @@ function FactionQuestChip({ faction }: { faction?: string }) {
     >
       <Users className="size-2.5" />
       {label}
+    </span>
+  );
+}
+
+/* ── Русские тултипы типов целей (v4.10.0) ──
+ * Развёрнутая карточка показывает иконку цели с подсказкой по типу —
+ * вместо безликого кружка-статуса. */
+const OBJECTIVE_TYPE_TOOLTIPS: Record<string, string> = {
+  npc_talked: 'Цель — разговор: найдите персонажа и поговорите с ним',
+  flag_set: 'Цель — событие: происходит по ходу сюжета или при ключевой находке',
+  item_collected: 'Цель — предмет: отыщите и получите его в мире',
+  location_visited: 'Цель — локация: побывайте в нужном месте',
+  poem_collected: 'Цель — стихотворение: соберите его в свою тетрадь',
+  minigame_completed: 'Цель — мини-игра: пройдите испытание',
+  custom: 'Особая цель задания',
+};
+
+function getObjectiveTypeTooltip(type: string): string {
+  return OBJECTIVE_TYPE_TOOLTIPS[type] ?? 'Цель задания';
+}
+
+/* ── Тематический чип контент-пака (v4.10.0) ──
+ * Рядом с чипом фракции: «Мир Снов» — фиолетовая палитра сна,
+ * «Пустота» — фуксия эха между мирами. Тематика выводится из id квеста. */
+const QUEST_THEME_VISUALS = {
+  dream: {
+    label: 'Мир Снов',
+    color: 'rgb(216, 180, 254)',
+    border: 'rgba(168, 85, 247, 0.45)',
+    bg: 'rgba(59, 7, 100, 0.35)',
+    tooltip: 'Квест из пака «Мир Снов» — сон, дитя у фонаря и тетрадь Владимира',
+  },
+  void: {
+    label: 'Пустота',
+    color: 'rgb(240, 171, 252)',
+    border: 'rgba(217, 70, 239, 0.45)',
+    bg: 'rgba(74, 4, 78, 0.35)',
+    tooltip: 'Квест из пака «Пустота» — эхо между мирами и неписаный стих',
+  },
+} as const;
+
+const QUEST_THEME_BY_QUEST_ID: Record<string, keyof typeof QUEST_THEME_VISUALS> = {
+  dreamworld_lost_child: 'dream',
+  void_echo_poem: 'void',
+};
+
+function QuestThemeChip({ questId }: { questId: string }) {
+  const theme = QUEST_THEME_BY_QUEST_ID[questId];
+  if (!theme) return null;
+  const visual = QUEST_THEME_VISUALS[theme];
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-1.5 py-0.5 text-[10px] rounded-md border"
+      style={{ color: visual.color, borderColor: visual.border, background: visual.bg }}
+      title={visual.tooltip}
+      data-testid="quest-theme-chip"
+    >
+      {theme === 'dream' ? <Moon className="size-2.5" /> : <Waves className="size-2.5" />}
+      {visual.label}
     </span>
   );
 }
@@ -760,6 +819,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     )}
                                     <DifficultyBadge difficulty={def.difficulty} />
                                     <FactionQuestChip faction={def.faction} />
+                                    <QuestThemeChip questId={qs.questId} />
                                     {hasPoemBypass(qs.questId) && (
                                       <Sparkles className="size-3.5 text-purple-400" />
                                     )}
@@ -1032,15 +1092,21 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                             }
                                           }}
                                         >
+                                          {/* v4.10.0: иконка цели по типу с русской подсказкой —
+                                              вместо безликого кружка-статуса */}
                                           {completed ? (
                                             <ObjectiveCheckmark justCompleted={completed} />
-                                          ) : obj.type === 'flag_set' ? (
-                                            <div className="flex items-center gap-1 mt-0.5 shrink-0">
-                                              <Zap className="size-3 text-yellow-500/60" />
-                                              <span className="text-[8px] font-mono text-yellow-400/50 tracking-wider whitespace-nowrap">В процессе...</span>
-                                            </div>
                                           ) : (
-                                            <Circle className="size-3.5 mt-0.5 shrink-0 text-slate-500" />
+                                            <div
+                                              className="flex items-center gap-1 mt-0.5 shrink-0"
+                                              title={getObjectiveTypeTooltip(obj.type)}
+                                              data-testid="quest-objective-type-icon"
+                                            >
+                                              {getObjectiveTypeIcon(obj.type)}
+                                              {obj.type === 'flag_set' && (
+                                                <span className="text-[8px] font-mono text-yellow-400/50 tracking-wider whitespace-nowrap">В процессе...</span>
+                                              )}
+                                            </div>
                                           )}
                                           <div className="flex-1">
                                             <span className={completed ? 'quest-objective-complete' : ''}>{obj.description}</span>
