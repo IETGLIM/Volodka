@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.8.9** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.9.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1138,6 +1138,47 @@ flash-эффектом при падении кармы. Смонтирован 
   3D по-прежнему требует hitbox-систем, реал-тайм HP ВО ВРЕМЯ боя и
   ребаланса всех врагов — архитектура (realtime/, события, presentation
   beat, hazards) готова к следующим инкрементам.
+
+## v4.9.0 — «Почтальон оживлённых глав»: сквозные реестры, AAA-пак и гиверы-заглушки
+
+### Kind-recovery: сквозные реестры story/dialogue (`engine/narrative/narrativeKindResolution.ts`)
+- Граф повествования сквозной: хуки приветствий ведут прямо в story-узлы
+  (`next: 'aaa_*_start'`), `visitStoryNode` меняет `currentNodeId` без смены
+  kind оверлея. Рендеры искали узел только в «своём» реестре и показывали
+  ошибку загрузки.
+- `guessNarrativeKind(nodeId)` — синхронная догадка по кэшам реестров
+  (однозначное вхождение ровно в одном); `resolveNarrativeKindByLoading`
+  — асинхронное дозагрузкой паков. `narrativeChoiceExecutor` открывает
+  оверлей с kind цели; `DialogueRenderer`/`StoryRenderer` переоткрывают
+  оверлей синхронно по кэшам и асинхронно через ensure-фолбэк чужого
+  реестра. Хуки с `next: null` + `visitStoryNode` продолжаются story-узлом
+  через `presentNarrativeBeat` (раньше оверлей закрывался, старт-флаги
+  цепочки не выставлялись).
+
+### Достижимость 117 → 145 из 147
+- **Анализатор стал точнее**: учитывает `triggerQuest`/`visitStoryNode`
+  в node-эффектах узлов (рендер применяет их при визите — так активируется
+  `poetry_broadcast`) и в эффектах триггер-зон (интеракция применяет
+  эффекты — так активируется `solnysh_roof_wine`).
+- **AAA-пак (8 квестов)**: хуки в приветствиях гиверов с гейтами
+  `requiredAct` + флаги предпосылок + `missingFlag` от повторного запуска.
+- **Гиверы-заглушки**: 14 NPC получили `dialogueNodeId` (готовые деревья
+  в `act4_newDialogues` / `act4_expandedDialogues` / `act3_expandedDialogues`)
+  и 12 расписаний (`npcSchedules`) — Торговец Борис, Кузнец Игнат,
+  Умирающий старик, Информант Серёжа, Капитан Гарольд, Контакт из Сети,
+  Поэт Макс, Библиотекарь Фёдор, Радист Катя, Контрабандист Гриша,
+  Снабженец Общины, Поставщик Союза.
+- **Зоны добычи (7)** в существующих сценах (`forest_clearing`,
+  `abandoned_factory`, `park_day`, `river_pier`, `office_day`) закрывают
+  цели `item_collected`; сеттеры флагов в диалогах (`archive_puzzle_solved`,
+  `bunker_message_decoded`, `bunker_sender_found`, `goods_transport_started`,
+  `patrol_avoided`, `blacksmith_special_done`) делают квесты завершаемыми.
+- **Бейзлайн регрессии 30 → 2**: остаток — `dreamworld_lost_child` и
+  `void_echo_poem` (цели ссылаются на несуществующие сцены «Мира Снов»;
+  контент-пак целиком в бэклоге).
+- **Маркеры навигации**: `questNpcMarkers` расширен NPC-подсказками и
+  сценами-уэйпоинтами всех оживлённых квестов; тесты проверяют валидность
+  ссылок против реестров NPC и `SCENE_DEFINITIONS`.
 
 ## v4.8.9 — «Мёртвые главы оживают»: достижимость квестов, паритет реестра диалогов
 
