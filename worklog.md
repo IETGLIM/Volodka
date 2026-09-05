@@ -4295,3 +4295,60 @@ Stage Summary:
 - 97 filmic CSS keyframes. ~70 examine zones. ~105 thought cabinet items (IDs to 105). ~107 lore entries. ~77 matrix quotes. ~87 daily missions. ~67 creep patrols.
 - Poems untouched. Physics invariants preserved. APOCALYPSE RAMP values sane.
 - Vercel deployment still stale — user needs to check Vercel dashboard / webhook.
+
+---
+Task ID: V4.14 (main) — «Модели на местах, часть 2»: GLB-пропсы и оболочки всех сцен
+Agent: main (orchestrator)
+Task: «Проблема с моделями неисправлена. Проверь их позиции и расчёты. Проверь все сцены.» —
+аудит и ремонт САМИХ GLB-моделей (v4.13 выравнивал только NPC-якоря/коллайдеры).
+
+Work Log:
+- Восстановление: sandbox выжил, origin/main == 85809ce (v4.13.0); 2 локальных коммита
+  (45e8a41 + 85809ce) были не запушены — запушены первыми делом (новый PAT владельца).
+- Explore-агент + собственные замеры: парсинг on-disk GLB (accessors × node-TRS,
+  деавантизация как в three.js; скрипт /tmp/volodka-check/bounds2.mjs) — сверены
+  фактические габариты ~30 GLB против конфигов. Выявлены 11 классов дефектов.
+- КЛЮЧЕВОЕ: v4.13 проверял 635 NPC/spawn/trigger-точек против коллайдеров, но слой
+  GLB-пропсов (dressing/manifest/оболочки/инстансы) не проверялся вовсе — там и жили
+  «полузарытые» и «парящие» модели. Подтверждено: floors size = Rapier HALF-extents
+  (SceneColliderSelector: CuboidCollider args=def.size) — пробелов в полах НЕТ.
+- Движок: InstancedProp выпекает матрицы нод в клоны геометрии (+dispose, скинned
+  не трогаем) + normalizeFootY; fitPropGltf/useGltfPropPlacement — anchorY 'max'
+  (подвесы); GltfAsset — groundAnchor для manifest-бандлов.
+- Данные: INTERIOR_SHELL_SOURCE_BOUNDS_M переписан по замерам (corridor/pier/
+  basement/factory/forestClearing); удалены маунты interior_corridor (плитка 0.72 м),
+  interior_rooftop (башня вне плиты крыши), river_pier backdrop (плитка вместо пирса);
+  масштабы фонов: factory 0.8→1.5, танки 1.35/1.45→2.6/3.0; подвесные лампы
+  fitAxis height 0.95 м + anchorY 'max' (было ×3 к цели, 1.85 м, протыкали потолок);
+  улица — groundAnchor наземных пропсов (lamp_alt −0.395, tyre −0.30, power_box
+  −0.252); пары баков 1.2→0.67; лестницы 0.95–1.25→0.5–0.62; терминалы пересажены
+  на мебель (basement 0.41 / bunker 0.61 / guild 1.1, второй убран / library_basement
+  коробка 0.47; stale offset −0.28 при minY=0 — снят); серверы y 0.15–0.55→0.02;
+  veg_tree_pine («авокадо» 4×6×3 см) → kenney_forest_tree 4.3 м (15 точек парк+лес);
+  коллайдер стола volodka_room 1.85×0.82→2.46×0.98×1.16 (полуразмеры [1.23,0.49,0.58]);
+  бутылка ×0.45 (был merged-меш 66 см).
+- Аудит: placementAudit покрывает dressing+manifest (777 точек); правила: y > 0.08 —
+  настольные/настенные (пол не ждём), outdoor — структурный пол накрывает габариты,
+  допуск габаритов 3 м для фасадных пропсов, «встроенность» — только npc/spawn.
+- 3 теста-снапшота, запиравших СТАРОЕ поведение (river_pier-маунт, 12 авокадо,
+  corridor walkable), переписаны под новые инварианты.
+- Верификация: tsc 0; eslint 0 новых (1 pre-existing warning); vitest 2476/2476
+  (409 файлов); vite build 41 c; validate:content 0 ошибок; analyze-model-placement
+  777 точек HIGH=0 MEDIUM=0 LOW=0; npm run validate — зелёный.
+- Коммиты (все запушены 85809ce..9919ff5): 25733c5 fix движок · ac9a7c7 fix данные ·
+  6afcf18 test аудит · 9919ff5 docs v4.14.0 (CHANGELOG + package.json 4.14.0).
+
+Stage Summary:
+- Версия 4.14.0. origin/main == 9919ff5. Токен владельца использован только через
+  export GH_TOKEN + unset (не в файлах, не в логах репозитория).
+- Ключевые решения: (1) «интерьеры» Kenney размером с предметы — это фоновые
+  реквизиты, а не комнаты: walkable-оболочка только apartment_envelope;
+  (2) anchorY 'max' — канон для подвесов; groundAnchor — канон для наземных
+  raw-scale пропсов; (3) dressing не капсульная проверка — сидит в своих
+  коллайдерах сознательно.
+- Риски/дальше: kenney_city_guitar — 'radio' интерим (0.42×1.02) — нужен настоящий
+  GLB гитары; painted_wooden_table fitAxis 'width' даёт столы 0.62 м (цель высоты
+  0.78 не достигается) — предметы на столах кафе авторы клали по 0.55–0.78, при
+  смене fitAxis нужно пересчитать NPC-места у столов v4.13; InstancedProp в
+  street — единственный потребитель normalizeFootY; Vercel деплой (проверить,
+  что автодеплой поднял 4 коммита v4.14.0).
