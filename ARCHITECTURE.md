@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.11.0** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.12.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1138,6 +1138,43 @@ flash-эффектом при падении кармы. Смонтирован 
   3D по-прежнему требует hitbox-систем, реал-тайм HP ВО ВРЕМЯ боя и
   ребаланса всех врагов — архитектура (realtime/, события, presentation
   beat, hazards) готова к следующим инкрементам.
+
+## v4.12.0 — «Честный промах»: RNG скоупа в реал-тайм слое
+
+### Чистый модуль `meleeMiss.ts`
+- `computeMeleeMissChance({ distanceMeters, angleDeg, isBackstab,
+  isFinishable, rng })` — решает попытку замаха ПОСЛЕ гейтов замаха/LOS
+  и расхода выносливости (промах «стоит сил»). Возвращает эффективный
+  шанс промаха: 0 — попадание, >0 — промах (значение уходит в событие
+  `combat:melee_miss`).
+- Формула: база 0.06 + 0.14 × distFactor (0 на point-blank 1.4 м → 1 на
+  reach 2.7 м, константы meleeSweep) + 0.14 × angleFactor (0 в центре
+  взгляда → 1 на краю конуса ~58.4°); point-blank — база без надбавок;
+  зажим [0, 0.35] (`clampMeleeMissChance`, `MELEE_MISS_HARD_CAP`).
+- Бросок честный: промах, если `rng() ≥ 1 − шанс` — P(промах) = шанс
+  при rng() ~ U[0,1]. RNG инжектится параметром (в рантайме
+  Math.random): rng() = 0 — всегда попадание.
+
+### Инвариант детерминизма
+- `isBackstab` (стелс, задняя дуга неосведомлённого крипа) и
+  `isFinishable` (остаток ≤ 35% HP с провайдером applyFinisher) → шанс
+  ВСЕГДА 0: они уже гейтятся геометрией/состоянием — честный RNG их не
+  оспаривает, кубик даже не бросается.
+- При промахе `applyStrike` НЕ вызывается и `combat:melee_strike` НЕ
+  эмитится — крип не знает о сорванном замахе; эмитится
+  `combat:melee_miss` (поля сессии + missChance) и «💨 Промах!» через
+  существующий `ui:exploration_message`.
+
+### Кулдаун и презентация
+- Кулдаун после промаха — 0.45 с (`MELEE_MISS_COOLDOWN_SEC`, вдвое
+  короче попадания 0.9 с — честный second-chance); после попадания —
+  прежние 0.9 с. Новый исход `'miss'` в `MeleeStrikeOutcome` — клик
+  consumed, взаимодействие не запускается.
+- Хаптика: `hapticMiss()` — тик [8], троттлинг общий с боевыми
+  (hapticEventFeedback). FX: серо-белая (#d1d5db) маленькая искра 0.4 в
+  MeleeStrikeFx — цвет/размер на каждом acquire из пула; анимация растёт
+  от baseScale (обычная 0.6 — прежняя траектория). Зеркало подсказки
+  `getMeleeStrikeHint` не менялось (промах — мгновенное событие).
 
 ## v4.11.0 — «Удар в спину»: стелс в реал-тайм слое, тихое добивание с бонусом XP
 
