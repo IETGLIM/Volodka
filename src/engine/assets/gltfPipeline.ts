@@ -27,6 +27,7 @@ import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.j
 import { useGLTF } from '@react-three/drei';
 
 import { devLog, devWarn } from '@/shared/utils/devLog';
+import { recordAssetFailure } from '@/engine/diagnostics/runtimeDiagnostics';
 /** Copy from node_modules/three/examples/jsm/libs/basis/ → public/basis/ */
 const DRACO_DECODER_PATH = '/draco/gltf/';
 const BASIS_TRANSCODER_PATH = '/basis/';
@@ -154,6 +155,7 @@ async function ensureKtx2Loader(): Promise<unknown | null> {
   } catch (err) {
     devWarn('⚠ KTX2Loader dynamic import failed — KTX2 textures will not load:', err);
     mark('gltf:ktx2-error');
+    recordAssetFailure('other', 'ktx2:transcoder-init');
     return null;
   }
 }

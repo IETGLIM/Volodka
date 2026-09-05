@@ -19,6 +19,7 @@
 import * as RapierOriginal from '@dimforge/rapier3d-compat-original';
 
 import { devLog, devWarn } from '@/shared/utils/devLog';
+import { markRapierStatus } from '@/engine/diagnostics/runtimeDiagnostics';
 // Re-export all original exports (World, RigidBody, etc.)
 export * from '@dimforge/rapier3d-compat-original';
 
@@ -53,6 +54,7 @@ export async function init(): Promise<void> {
           module_or_path: EXTERNAL_WASM_URL,
         });
         initMode = 'external';
+        markRapierStatus('external');
         if (process.env.NODE_ENV !== 'production') {
           devLog(`[rapierCompat] ✓ Initialized with external WASM: ${EXTERNAL_WASM_URL}`);
         }
@@ -71,12 +73,14 @@ export async function init(): Promise<void> {
       };
       await (RapierOriginal as unknown as { init: (opts?: unknown) => Promise<void> }).init({});
       initMode = 'inline';
+      markRapierStatus('inline');
       if (process.env.NODE_ENV !== 'production') {
         devLog('[rapierCompat] ✓ Initialized with inline base64 WASM (fallback)');
       }
     } catch (err) {
       console.warn = originalWarn;
       initMode = 'failed';
+      markRapierStatus('failed');
       initPromise = null;
       throw err;
     } finally {

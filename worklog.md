@@ -4352,3 +4352,54 @@ Stage Summary:
   смене fitAxis нужно пересчитать NPC-места у столов v4.13; InstancedProp в
   street — единственный потребитель normalizeFootY; Vercel деплой (проверить,
   что автодеплой поднял 4 коммита v4.14.0).
+
+---
+Task ID: V4.14.1 (main) — аудит «Куда делись текстуры? Что с физикой и камерой?»
+Agent: main (orchestrator)
+Task: жалоба игрока «Куда делись текстуры? Что с физикой и камерой?» — найти причину
+статическими средствами (dev-server/browser запрещены).
+
+Work Log:
+- Полный статический аудит слоёв «текстуры/физика/камера» в HEAD:
+  (1) ассеты: public/textures/polyhaven — все 20 карт 1k/2k на диске, имена
+      совпадают с getPolyHavenMapUrl; HDRI 4 шт; menu plate; 185 GLB в git;
+  (2) декодеры: public/draco/gltf/* и public/basis/* на месте, пути совпадают
+      с DRACO_DECODER_PATH/BASIS_TRANSCODER_PATH, CSP пропускает 'self'+wasm-unsafe-eval;
+  (3) материалы: usePolyHavenPbr/PolyHavenStandardMaterial/weatherEnvironmentMaterials
+      клонируют материалы, UV и карты сохраняются; InstancedProp-выпечка матриц
+      корректна (matrixWorld → clone, UV не трогаются, материалы общие);
+  (4) якоря v4.14: anchorY 'max' и groundAnchor — opt-in, дефолты 'min'/false;
+  (5) физика: коллайдер стола volodka_room не пересекает defaultSpawn [0,0,2];
+      правки коллайдеров v4.13 — только устранение невидимых стен/спавнов в препятствиях;
+  (6) камера: explorationStrategy цела (ramp-tame значения), cameraConstants не менялись;
+  (7) PRUNE-ГИПОТЕЗА: смоделирован keep-set prune-deploy-assets.ts против public/ —
+      вырезаются ТОЛЬКО мёртвые файлы (props_lod1/2, interiors *.draco/*.meshopt —
+      не в манифесте, room_bedroom — легаси, 15 неиспользуемых _rigs). Рантайм-цепочка
+      env_cafe_props (lod0 + props.draco/meshopt) полностью покрыта. Prune корректен.
+  (8) единственная внешняя текстура GLB (lamp_post.glb → colormap.png) в keep-наборе.
+- ВЫВОД: в HEAD дефекта НЕТ. Наиболее вероятная причина жалоб — устаревший прод-деплой:
+  автодеплой Vercel стоял ещё со времён WS26 (15+ коммитов), т.е. прод БЕЗ фиксa
+  v4.12.1 (CSP резал gstatic → все draco-GLB на проде не грузились: «пропали текстуры»).
+- ДЕЛИВЕРАБЛ: прод-самодиагностика на устройстве игрока —
+  src/engine/diagnostics/runtimeDiagnostics.ts (синглтон: THREE.DefaultLoadingManager
+  onError/onItemError → классификация gltf/texture/audio/other, дедуп, буфер 32,
+  WeakSet-идемпотентность attach, статус Rapier: pending/external/inline/failed);
+  хуки: rapierCompat.init → markRapierStatus (3 точки), gltfPipeline KTX2-fail →
+  recordAssetFailure('ktx2:transcoder-init');
+  src/components/game/hud/parts/AssetDiagnosticsBadge.tsx (F8/клик: бейдж при
+  отказах/физика-fail, панель — статус физики, пресет качества, список отказов,
+  подсказка «пришлите скриншот консоли»; нулевой рендер при отсутствии проблем);
+  подключён в ExplorationHUD рядом с PhysicsDegradedDevBadge.
+- Верификация: tsc 0; eslint 0 новых (4 pre-existing no-console в rapierCompat);
+  vitest 2486/2486 (+10 новых тестов diagnostics, 410 файлов); build 42 c;
+  npm run validate: content 0, act1 0, placement 777 точек HIGH=0 MEDIUM=0 LOW=0.
+
+Stage Summary:
+- v4.14.1. В коде дефект «пропавших текстур» не воспроизводится; добавлена
+  прод-диагностика, чтобы следующий запуск у игрока дал точные данные (F8).
+- Ключевые решения: диагностика prod-safe (не DEV-only, в отличие от
+  PhysicsDegradedDevBadge); attach LoadingManager идемпотентен (WeakSet) —
+  иначе повторная навеска дважды считала отказы (найдено тестом).
+- Риски/дальше: (1) проверить Vercel-деплой — если автодеплой всё ещё стоит,
+  руками редеплоить main; у игрока F8 покажет точную причину; (2) kenney_city_guitar
+  'radio'-интерим и cafe-столы 0.62 м (см. v4.14.0) — в бэклоге.

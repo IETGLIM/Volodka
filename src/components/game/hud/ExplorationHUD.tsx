@@ -28,6 +28,7 @@ import { InteractionRadarPulse } from '@/components/game/hud/parts/InteractionRa
 import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
 import { LootProximityIndicator } from '@/components/game/hud/parts/LootProximityIndicator';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
+import { AssetDiagnosticsBadge } from '@/components/game/hud/parts/AssetDiagnosticsBadge';
 import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
 import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
 import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVignette';
@@ -237,6 +238,7 @@ export function ExplorationHUD(props: HUDProps) {
       <NPCProximityIndicator />
       <LootProximityIndicator />
       <PhysicsDegradedDevBadge />
+      <AssetDiagnosticsBadge />
 
       {/* Difficulty indicator — top-right. The main rotating canvas minimap is
           mounted separately by OrchestratorGameplayLayer as <GameplayMinimap>
