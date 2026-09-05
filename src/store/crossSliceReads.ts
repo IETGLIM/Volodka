@@ -6,7 +6,7 @@ import { getExplorationStore, getPlayerStore, getWorldStore } from './storeBindi
 import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { resolveTradeRelationValue } from '@/data/tradingData';
-import { buildFactionReputationMapFrom, normalizeFactionId } from './selectors/factionReputationSelectors';
+import { buildFactionReputationMapFrom, normalizeFactionId } from './selectors/factionGrouping';
 export interface PlayerReadsFromExploration { currentSceneId: SceneId; timeOfDay: number; }
 export interface PlayerReadsFromWorld { npcRelations: NPCRelation[]; npcAffinity: Record<string, number>; quests: QuestState[]; }
 export interface WorldReadsFromExploration { timeOfDay: number; }
