@@ -34,14 +34,23 @@
     touch-action: auto;
   }
 
-  /* Cyberpunk selection colors with glow */
+  /* Cyberpunk selection colors with glow.
+   * ВАЖНО: по спецификации ::selection применяет только color, background-color,
+   * text-shadow и text-decoration — background-image (градиенты) браузеры
+   * отбрасывают, а шорткат background: сбрасывает фон в прозрачный («невидимое
+   * выделение»). Держим рабочий background-color; градиент — progressive
+   * enhancement первой строкой (там, где поддержан, он перекроет цвет).
+   * Канонический источник стиля выделения — ТОЛЬКО здесь; дубликаты в
+   * cyberpunk-theme.css / aaa-luxury.css / game-polish.css удалены (каскадный дрейф). */
   ::selection {
-    background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
+    background-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+    background-image: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
     color: #e0f7fa;
     text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
   }
   ::-moz-selection {
-    background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
+    background-color: rgb(var(--cyber-cyan-rgb) / 0.3);
+    background-image: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
     color: #e0f7fa;
     text-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.4);
   }

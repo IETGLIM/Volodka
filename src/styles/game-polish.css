@@ -42,17 +42,8 @@
   scrollbar-color: rgba(0, 229, 255, 0.15) rgba(0, 229, 255, 0.03);
 }
 
-/* ─── 2. Custom Text Selection ─── */
-::selection {
-  background: rgba(0, 229, 255, 0.25);
-  color: #e2e8f0;
-  text-shadow: none;
-}
-
-::-moz-selection {
-  background: rgba(0, 229, 255, 0.25);
-  color: #e2e8f0;
-}
+/* ─── 2. Custom Text Selection: канонический стиль в base.css.
+   Дубликат с text-shadow: none удалён — глушил неоновое свечение канона. ─── */
 
 /* ─── 3. Enhanced Focus Rings ─── */
 *:focus-visible {

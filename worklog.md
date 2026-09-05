@@ -4403,3 +4403,36 @@ Stage Summary:
 - Риски/дальше: (1) проверить Vercel-деплой — если автодеплой всё ещё стоит,
   руками редеплоить main; у игрока F8 покажет точную причину; (2) kenney_city_guitar
   'radio'-интерим и cafe-столы 0.62 м (см. v4.14.0) — в бэклоге.
+
+---
+Task ID: V4.14.2 (main) — разбор CSS-фрагмента из чата (::-selection)
+Agent: main (orchestrator)
+Task: пользователь прислал фрагмент CSS (linear-gradient 135deg cyan/matrix + #e0f7fa +
+text-shadow 6px/0.4) — «Перечитай чат»: фрагмент остался необработанным в прошлых сессиях.
+
+Work Log:
+- Идентификация: фрагмент — стиль выделения текста ::selection из src/styles/base.css
+  («Cyberpunk selection colors with glow»); переменные --cyber-cyan-rgb/--cyber-matrix-rgb
+  из tokens.css используются в 129 файлах.
+- НАЙДЕН РЕАЛЬНЫЙ ДЕФЕКТ: по спецификации ::selection применяет только color,
+  background-color, text-shadow, text-decoration; background-image (градиенты)
+  браузеры отбрасывают, а шорткат background: сбрасывает background-color в
+  transparent → выделение текста в игре фактически НЕВИДИМО (менялся только цвет букв).
+- Каскадный хаос: 4 конфликтующих правила — (1) base.css @layer base (градиент, битое);
+  (2) cyberpunk-theme [data-cyberpunk] ::selection вне слоёв (0,1,1) — тот же градиент,
+  перебивал всех по специфичности; (3) aaa-luxury «warm paper» золото rgba(255,220,160,.22);
+  (4) game-polish cyan rgba(0,229,255,.25) + text-shadow:none. Итог зависел от
+  data-cyberpunk и порядка импорта — nondeterminism.
+- Фикс: base.css — канонический рабочий стиль: background-color cyan 0.3 (поддержан
+  всеми браузерами) + градиент первой строкой как progressive enhancement + свечение
+  6px/0.4; комментарий с объяснением спецификации. Дубликаты удалены с указателями
+  на канон: cyberpunk-theme (снята специфичная тень 4px/0.3), aaa-luxury (золото),
+  game-polish (text-shadow:none глушил свечение).
+- Верификация: rg — единственное правило ::selection в src = base.css; переменные в
+  tokens.css:62,65 подтверждены; vite build 41 c (только известные chunk-warnings).
+  TS не тронут — tsc/eslint/vitest не требуются.
+
+Stage Summary:
+- Выделение текста работает во всех браузерах: неоновый cyan + свечение, как задумано.
+- Урок: шорткат background: на ::selection = прозрачный фон; background-image
+  игнорируется — только background-color. Один источник истины для ::selection — base.css.

@@ -398,12 +398,9 @@
   box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.2);
 }
 
-/* ─── Selection glow improvement ─── */
-[data-cyberpunk] ::selection {
-  background: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgb(var(--cyber-matrix-rgb) / 0.15));
-  color: #e0f7fa;
-  text-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3);
-}
+/* ─── Selection glow: канонический стиль в base.css (@layer base).
+   Дубликат здесь удалён: [data-cyberpunk] ::selection перебивал канон
+   битым градиентом (background-image на ::selection отбрасывается). ─── */
 
 /* ══════════════════════════════════════════════════════════════
    SESSION 7: Round 7 — Cyberpunk Theme Utility Classes
