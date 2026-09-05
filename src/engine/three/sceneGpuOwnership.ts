@@ -113,7 +113,7 @@ export function unloadSceneGpuOwnership(
 }
 
 /** Test / engine dispose — clear ownership maps without disposing GPU objects. */
-export function resetSceneGpuOwnershipForTests(): void {
+export function resetSceneGpuOwnership(): void {
   sceneGeometryClaims.clear();
   sceneMaterialClaims.clear();
   geometrySceneRefCount.clear();

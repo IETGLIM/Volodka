@@ -249,6 +249,21 @@ const ActiveTTLFlagsSchema = z
   });
 
 /** Unlocked achievement entry with timestamp */
+/**
+ * Принятая ежедневная/недельная миссия (аудит 3.2/5.3/I3.1/I5.5):
+ * раньше массив валидировался как z.array(z.unknown()) — битые записи
+ * молча проходили валидацию сейва. Форма зеркалит AcceptedDailyMission
+ * (src/shared/types/state/daily.ts); отсутствующие поля tolerated
+ * дефолтами для сейвов старых версий.
+ */
+const AcceptedDailyMissionSchema = z.object({
+  missionId: z.string().min(1),
+  acceptedAt: z.number(),
+  progress: z.record(z.string(), z.number()).optional().default({}),
+  completed: z.boolean().optional().default(false),
+  claimed: z.boolean().optional().default(false),
+});
+
 const UnlockedAchievementSchema = z.object({
   id: z.string().min(1),
   unlockedAt: z.number(),
@@ -335,7 +350,7 @@ export const SavePayloadSchema = z.object({
   /** NPC affinity scores (gift system) */
   npcAffinity: z.record(z.string(), z.number()).optional().default({}),
   /** Accepted daily/weekly missions (P5-FIX: was missing from save payload) */
-  acceptedDailyMissions: z.array(z.unknown()).optional().default([]),
+  acceptedDailyMissions: z.array(AcceptedDailyMissionSchema).optional().default([]),
   /** Timestamp of last daily mission reset */
   lastDailyReset: z.number().optional().default(0),
   /** Persisted achievement tracking data (survives page refresh) */

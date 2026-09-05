@@ -16,7 +16,7 @@ import {
 } from '@/engine/three/moduleMaterialRegistry';
 import {
   getSceneClaimedGeometryCount,
-  resetSceneGpuOwnershipForTests,
+  resetSceneGpuOwnership,
 } from '@/engine/three/sceneGpuOwnership';
 import { importWithSceneGpuRegistration } from '@/engine/three/importWithSceneGpuRegistration';
 import { resetSceneModuleGpuPoolsForTests } from '@/engine/three/sceneModuleGpu';
@@ -27,7 +27,7 @@ describe('scene GPU unload lifecycle', () => {
     unbindSceneChunkGpuLifecycle();
     disposeAllModuleMaterials();
     disposeAllModuleGeometries();
-    resetSceneGpuOwnershipForTests();
+    resetSceneGpuOwnership();
     resetSceneModuleGpuPoolsForTests();
   });
 

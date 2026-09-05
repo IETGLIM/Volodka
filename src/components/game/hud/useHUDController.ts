@@ -13,6 +13,10 @@ import {
   shouldPulseQuestBadge,
 } from '@/hooks/questHudPresentation';
 import type { HUDProps } from './hudTypes';
+import {
+  HUD_ENERGY_LOW_THRESHOLD,
+  HUD_STRESS_HIGH_THRESHOLD,
+} from './hudThresholds';
 
 function useQuestNotificationCount(): { count: number; pulse: boolean; activeCount: number } {
   const activeQuests = useActiveQuests();
@@ -332,8 +336,8 @@ export function useHUDController(props: HUDProps) {
     xpPulse,
     lastXpDelta,
     skillAchievement,
-    isLowEnergy: energy < 25,
-    isHighStress: stress > 70,
+    isLowEnergy: energy < HUD_ENERGY_LOW_THRESHOLD,
+    isHighStress: stress > HUD_STRESS_HIGH_THRESHOLD,
     moreMenuOpen,
     setMoreMenuOpen,
     moreMenuRef,

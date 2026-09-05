@@ -34,6 +34,10 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { usePlayerKarma } from '@/store/selectors/playerSelectors';
 import { usePlayerEnergy, usePlayerStress } from '@/store/selectors/playerSelectors';
 import { useHUDControllerState } from '@/store/selectors';
+import {
+  HUD_ENERGY_WARN_THRESHOLD,
+  HUD_STRESS_HIGH_THRESHOLD,
+} from '@/components/game/hud/hudThresholds';
 
 export const SceneTopBarHud = memo(function SceneTopBarHud() {
   const quietStyle = useHudQuietStyle();
@@ -41,8 +45,9 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
   const karma = usePlayerKarma();
   const energy = usePlayerEnergy();
   const stress = usePlayerStress();
-  const isLowEnergy = energy <= 30;
-  const isHighStress = stress >= 70;
+  // Порог из hudThresholds: WARN (иконка) — раннее предупреждение, LOW (25) — эффекты.
+  const isLowEnergy = energy <= HUD_ENERGY_WARN_THRESHOLD;
+  const isHighStress = stress >= HUD_STRESS_HIGH_THRESHOLD;
   // Compact-widget data: level + XP + perk count from the shared HUD controller state.
   // (justLeveled is left false here — the LevelBadge internally animates the XP bar
   //  width on every prop change, so the pulse is purely a bonus, not a correctness gap.)

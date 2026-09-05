@@ -9,8 +9,12 @@ function detectDeviceTier(prefersReducedMotion: boolean): DeviceTier {
   }
 
   const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean } };
-  const memoryGb = nav.deviceMemory ?? 4;
-  const cores = navigator.hardwareConcurrency ?? 4;
+  // Аудит 9.3/I9.4: `?? 4` не ловит ноль (некоторые окружения отдают 0) —
+  // нулевое значение трактуем как «неизвестно» и берём дефолт.
+  const rawMemory = nav.deviceMemory;
+  const memoryGb = rawMemory && rawMemory > 0 ? rawMemory : 4;
+  const rawCores = navigator.hardwareConcurrency;
+  const cores = rawCores && rawCores > 0 ? rawCores : 4;
   const coarsePointer = window.matchMedia('(pointer: coarse)').matches;
   const saveData = nav.connection?.saveData === true;
 

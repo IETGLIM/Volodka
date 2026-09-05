@@ -14,8 +14,12 @@ export function areQuestDependenciesMet(
 
   const missing: string[] = [];
 
+  // Аудит 3.1/I3.2: был quests.find() на каждую зависимость — O(n·m).
+  // Индексируем один раз: O(n + m).
+  const questById = new Map(quests.map((q) => [q.questId, q]));
+
   for (const reqId of definition.requiresQuests) {
-    const reqQuest = quests.find((q) => q.questId === reqId);
+    const reqQuest = questById.get(reqId);
     // A failed prerequisite is treated as "bypassed" (met) so a failed
     // canRetry:false critical-path quest does not permanently lock downstream
     // quests. The failure is still recorded in flags for narrative consequences.

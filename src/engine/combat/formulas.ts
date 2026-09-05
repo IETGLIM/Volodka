@@ -7,6 +7,7 @@ import { resolveThoughtCombatEffects, type ThoughtCombatEffect } from './thought
 import { THOUGHT_CABINET_MAP } from '@/data/thoughtCabinet';
 import { applyEquipmentBonusToSkill } from './EquipmentBonusCalculator';
 import type { EquipmentSlot } from '@/shared/types/game';
+import { devWarn } from '@/shared/utils/devLog';
 
 /* ═══════════════════════════════════════════════════════════════
    Damage formulas — centralized combat math
@@ -164,7 +165,14 @@ function snap() {
 function getEquippedItemsSafe(): Partial<Record<EquipmentSlot, { id: string } | null>> {
   try {
     return snap().equippedItems ?? {};
-  } catch {
+  } catch (err) {
+    // Тихий путь — только незарегистрированный мост («No bridge registered»):
+    // это документированное поведение чистых unit-тестов (без экипировки).
+    // Любой ИНОЙ сбой бриджа раньше глотался молча и исчезал весь бонус
+    // экипировки без единого лога (аудит C1) — теперь он виден.
+    if (!(err instanceof Error) || !err.message.includes('No bridge registered')) {
+      devWarn('[formulas] getGameSnapshot упал в getEquippedItemsSafe:', err);
+    }
     return {};
   }
 }

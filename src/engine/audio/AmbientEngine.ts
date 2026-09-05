@@ -757,14 +757,29 @@ export type { AmbientSoundType };
 /**
  * HMR-safe facade — always forwards to the current singleton instance.
  * (A bare `const x = getAmbientPlayer()` would pin a disposed instance after hot reload.)
+ *
+ * Аудит AU1: раньше каждый доступ к методу создавал новый bound-функции —
+ * аллокации в hot-path амбиента. Кэшируем бинды; при смене инстанса (HMR)
+ * кэш сбрасывается. Значения-не-функции читаются свежими (без кэша) —
+ * иначе закэшированное число могло бы протухнуть.
  */
+const facadeMethodCache = new Map<string | symbol, unknown>();
+let facadeInstance: object | null = null;
+
 export const ambientEngine: AmbientSoundPlayer = new Proxy({} as AmbientSoundPlayer, {
   get(_target, prop) {
     const instance = getAmbientPlayer();
-    const value = (instance as unknown as Record<string | symbol, unknown>)[prop];
-    if (typeof value === 'function') {
-      return (value as (...args: unknown[]) => unknown).bind(instance);
+    if (facadeInstance !== instance) {
+      facadeInstance = instance;
+      facadeMethodCache.clear();
     }
-    return value;
+    const value = (instance as unknown as Record<string | symbol, unknown>)[prop];
+    if (typeof value !== 'function') return value;
+    let bound = facadeMethodCache.get(prop);
+    if (!bound) {
+      bound = (value as (...args: unknown[]) => unknown).bind(instance);
+      facadeMethodCache.set(prop, bound);
+    }
+    return bound;
   },
 });

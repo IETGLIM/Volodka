@@ -20,6 +20,22 @@ const WARN_THRESHOLD = 0.8;
 let quotaWarningShown = false;
 
 /**
+ * Классификатор ошибки переполнения localStorage (QuotaExceeded и аналоги).
+ * Экспортирован для saveStorage: отличать «хранилище полно» от иных сбоев записи.
+ */
+export function isQuotaExceededError(err: unknown): boolean {
+  return (
+    err instanceof DOMException &&
+    (err.name === 'QuotaExceededError' ||
+      // Firefox
+      err.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
+      // Some browsers
+      (err as DOMException).code === 22 ||
+      (err as DOMException).code === 1014)
+  );
+}
+
+/**
  * Try to write a test value. Returns `true` when storage appears healthy,
  * `false` when a QuotaExceeded / NS_ERROR_DOM_QUOTA_REACHED error is caught.
  */
@@ -31,15 +47,7 @@ export function checkStorageQuota(): boolean {
     localStorage.removeItem(testKey);
     return true;
   } catch (err: unknown) {
-    const isQuotaError =
-      err instanceof DOMException &&
-      (err.name === 'QuotaExceededError' ||
-        // Firefox
-        err.name === 'NS_ERROR_DOM_QUOTA_REACHED' ||
-        // Some browsers
-        (err as DOMException).code === 22 ||
-        (err as DOMException).code === 1014);
-    return !isQuotaError;
+    return !isQuotaExceededError(err);
   }
 }
 

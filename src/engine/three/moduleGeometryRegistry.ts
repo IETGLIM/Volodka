@@ -11,7 +11,7 @@ import { trackModuleGeometry, untrackModuleGeometry } from '@/engine/performance
 import {
   claimGeometryForActiveScene,
   claimGeometryForScene,
-  resetSceneGpuOwnershipForTests,
+  resetSceneGpuOwnership,
 } from '@/engine/three/sceneGpuOwnership';
 import type { SceneId } from '@/shared/types/game';
 
@@ -163,7 +163,7 @@ export function disposeAllModuleGeometries(): void {
   }
   moduleGeometries.clear();
   sharedGeometryCache.clear();
-  resetSceneGpuOwnershipForTests();
+  resetSceneGpuOwnership();
 }
 
 /** Test / diagnostics — count of module-level geometries tracked for disposal. */

@@ -18,6 +18,10 @@ import {
   type PersistedStorage,
 } from '@/shared/persistence/persistedStorageOps';
 import { migrateSaveData } from './saveMigrations';
+import {
+  isQuotaExceededError,
+  warnIfStorageNearLimit,
+} from '@/shared/persistence/quotaCheck';
 
 export {
   SAVE_KEY,
@@ -69,16 +73,44 @@ export function subscribeSavePresence(onStoreChange: () => void): () => void {
   };
 }
 
-/** Two-phase save: backup current → write → validate → rollback on failure. */
+/** Two-phase save: backup current → write → validate → rollback on failure.
+ *
+ *  Аудит 5.1/I5.1: модуль quotaCheck долго лежал мёртвым грузом. Теперь
+ *  перед записью проверяется заполненность (русский toast при ≥80 %), а
+ *  QuotaExceeded при записи классифицируется и логируется по-русски вместо
+ *  тихого/неясного отказа. */
 export function writeSaveToLocalStorage(json: string): boolean {
+  warnIfStorageNearLimit();
+
   const current = localStorage.getItem(SAVE_KEY);
   // Only promote the current save to backup when it is itself valid —
   // otherwise a corrupt primary would destroy the last good backup.
   if (current && validateSaveData(current).success) {
-    localStorage.setItem(SAVE_BACKUP_KEY, current);
+    try {
+      localStorage.setItem(SAVE_BACKUP_KEY, current);
+    } catch (err) {
+      // Переполнение на бэкапе не должно ронять основную запись —
+      // продолжаем без свежего бэкапа (старый остаётся на месте).
+      if (!isQuotaExceededError(err)) throw err;
+      console.error(
+        '[saveGame] Хранилище переполнено — резервная копия не обновлена.',
+        err,
+      );
+    }
   }
 
-  localStorage.setItem(SAVE_KEY, json);
+  try {
+    localStorage.setItem(SAVE_KEY, json);
+  } catch (err) {
+    if (isQuotaExceededError(err)) {
+      console.error(
+        '[saveGame] Запись сохранения не удалась: хранилище браузера переполнено (QuotaExceeded). Удалите старые сохранения или очистите хранилище.',
+        err,
+      );
+      return false;
+    }
+    throw err;
+  }
 
   const verification = validateSaveData(localStorage.getItem(SAVE_KEY) ?? '');
   if (!verification.success) {

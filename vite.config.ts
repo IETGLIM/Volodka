@@ -99,6 +99,8 @@ export default defineConfig({
       "@react-three/rapier",
       "zustand",
       "framer-motion",
+      "postprocessing",
+      "@react-three/postprocessing",
     ],
   },
 });

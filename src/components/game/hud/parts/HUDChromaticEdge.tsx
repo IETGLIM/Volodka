@@ -8,12 +8,17 @@
 import { motion } from 'framer-motion';
 import { useHUDControllerState } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  HUD_ENERGY_LOW_THRESHOLD,
+  HUD_STRESS_HIGH_THRESHOLD,
+} from '@/components/game/hud/hudThresholds';
 
 export function HUDChromaticEdge() {
   const reducedMotion = useEffectiveReducedMotion();
   const { energy, stress } = useHUDControllerState();
 
-  const intensity = energy < 25 || stress > 70 ? 0.8 : 0.25;
+  const intensity =
+    energy < HUD_ENERGY_LOW_THRESHOLD || stress > HUD_STRESS_HIGH_THRESHOLD ? 0.8 : 0.25;
 
   if (reducedMotion) return null;
 

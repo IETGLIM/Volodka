@@ -26,7 +26,7 @@ import { registerHmrBeforeUpdate, registerHmrDispose } from '@/shared/dev/hmrDis
 import { trackModuleMaterial, untrackModuleMaterial } from '@/engine/performance/GpuResourceBudgetTracker';
 import {
   claimMaterialForActiveScene,
-  resetSceneGpuOwnershipForTests,
+  resetSceneGpuOwnership,
 } from '@/engine/three/sceneGpuOwnership';
 
 const moduleMaterials = new Set<MeshStandardMaterial>();
@@ -153,7 +153,7 @@ export function disposeAllModuleMaterials(): void {
   }
   moduleMaterials.clear();
   sharedStandardMaterialCache.clear();
-  resetSceneGpuOwnershipForTests();
+  resetSceneGpuOwnership();
 }
 
 /** Test / diagnostics — count of module-level materials tracked for disposal. */

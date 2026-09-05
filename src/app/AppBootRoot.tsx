@@ -7,6 +7,13 @@ import { loadingPipeline } from '@/engine/loading/LoadingPipeline';
 import { eventBus } from '@/engine/EventBus';
 import { BOOT_FIRST_FRAME_FALLBACK_MS } from '@/shared/constants/transitionTimings';
 
+/**
+ * Порог прогресса загрузки (%), после которого меню-бут считается зависшим:
+ * синтезируем canvas:first-frame и продолжаем (эмпирика — 68 % hang-профиль).
+ * Аудит B-2: был магический литерал.
+ */
+const MENU_BOOT_HANG_PROGRESS_PCT = 68;
+
 const LazyGamePage = lazy(() =>
   import('@/components/game/GamePage').then((m) => ({ default: m.GamePage })),
 );
@@ -116,7 +123,7 @@ export function AppBootRoot() {
 
       if (menuBootSynthesizedRef.current) return true;
 
-      if (snap.pct >= 68) {
+      if (snap.pct >= MENU_BOOT_HANG_PROGRESS_PCT) {
         menuBootSynthesizedRef.current = true;
         synthesizeCanvasFirstFrame();
         return true;
