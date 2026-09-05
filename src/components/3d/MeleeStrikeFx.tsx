@@ -1,17 +1,22 @@
 /* ─── Volodka RPG – искры опережающего удара (реал-тайм FX) ───
- *                                                              (v4.8.7)
+ *                                                              (v4.11.0)
  *
  * Единственный потребитель пула combatHitSparkPool в рантайме (до сих пор
  * пул разминался только тестом): подписка на combat:melee_strike → acquire
  * искры → императивное добавление в группу (без React-состояния на удар) →
  * анимация «вспышка + подъём + растворение» в useFrameTick → release.
  *
+ * v4.11.0: удар в спину — фиолетовая (#c084fc) искра КРУПНЕЕ обычной.
+ * Цвет задаётся при КАЖДОМ acquire (resetHitSpark цвет не трогает):
+ * иначе стелс-цвет «протекал» бы в обычные удары при переиспользовании
+ * мешей пула.
+ *
  * Экономика: удары редки (кулдаун 0.9 с), пул 8/16 — бюджет draw calls
  * (battle ≤ 420) не чувствует одну transient-сферу 0.5 с.
  */
 
 import { useEffect, useRef } from 'react';
-import { Group, Vector3 } from 'three';
+import { Color, Group, Vector3 } from 'three';
 import { eventBus } from '@/engine/EventBus';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
@@ -23,6 +28,11 @@ import {
 const SPARK_LIFETIME_S = 0.45;
 /** Одновременно анимируемых искр (кулдаун удара 0.9 с > 2 × lifetime). */
 const MAX_LIVE_SPARKS = 3;
+
+/** Базовый цвет искры (пул создаёт мешы с #ff6644). */
+const BASE_SPARK_COLOR = new Color('#ff6644');
+/** v4.11.0: стелс-фиолетовый удара в спину (рифма с чипом «Мир Снов»). */
+const BACKSTAB_SPARK_COLOR = new Color('#c084fc');
 
 interface LiveSpark {
   mesh: import('three').Mesh;
@@ -37,7 +47,9 @@ export function MeleeStrikeFx() {
 
   useEffect(() => {
     // v4.8.8: добивание читается крупнее — искра ярче и размашистее.
-    const unsub = eventBus.on('combat:melee_strike', ({ x, y, z, finished }) => {
+    // v4.11.0: удар в спину — фиолетовая и крупнее обычной; цвет
+    // переустанавливается на каждом acquire (пул не сбрасывает его сам).
+    const unsub = eventBus.on('combat:melee_strike', ({ x, y, z, finished, backstab }) => {
       const group = groupRef.current;
       if (!group) return;
       const mesh = acquireCombatHitSpark();
@@ -45,8 +57,9 @@ export function MeleeStrikeFx() {
 
       _impact.set(x, y + 0.6, z);
       mesh.position.copy(_impact);
-      mesh.scale.setScalar(finished ? 1.0 : 0.6);
+      mesh.scale.setScalar(finished ? 1.0 : backstab ? 0.85 : 0.6);
       const material = mesh.material as import('three').MeshBasicMaterial;
+      material.color.copy(backstab && !finished ? BACKSTAB_SPARK_COLOR : BASE_SPARK_COLOR);
       material.opacity = finished ? 1 : 0.9;
 
       group.add(mesh);

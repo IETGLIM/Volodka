@@ -1531,6 +1531,59 @@
   color: #e8798a;
 }
 
+/* v4.11.0: «в спину — ЛКМ» — фиолетовая стелс-капсула (#c084fc, в рифму
+   с чипом «Мир Снов»): цель не осведомлена и стоит спиной. data-backstab
+   ставится только при backstab && !finishable — конфликтов состояний CSS
+   не разрешает (приоритет решён в компоненте). */
+.melee-strike-hint[data-backstab='true'] {
+  border-color: rgba(192, 132, 252, 0.45);
+  background: linear-gradient(
+    180deg,
+    rgba(36, 16, 58, 0.6) 0%,
+    rgba(22, 10, 38, 0.5) 100%
+  );
+  box-shadow:
+    0 0 18px rgba(192, 132, 252, 0.22),
+    inset 0 0 10px rgba(192, 132, 252, 0.12);
+  /* Стелс не мигает — медленное дыхание ореола 3.2s (быстрее всего
+     только вход капсулы). */
+  animation:
+    melee-strike-hint-in 240ms ease-out,
+    melee-strike-hint-aura 3.2s ease-in-out 240ms infinite;
+}
+
+.melee-strike-hint[data-backstab='true'] .melee-strike-hint__icon {
+  color: #c084fc;
+  filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.65));
+}
+
+.melee-strike-hint[data-backstab='true'] .melee-strike-hint__enemy {
+  color: #ecd5ff;
+  text-shadow: 0 0 8px rgba(192, 132, 252, 0.5);
+}
+
+.melee-strike-hint[data-backstab='true'] .melee-strike-hint__action {
+  color: rgba(216, 180, 254, 0.9);
+}
+
+/* Стелс + усталость: как у добивания — tired лишь слегка тускнит подпись. */
+.melee-strike-hint[data-backstab='true'][data-tired='true'] .melee-strike-hint__action {
+  color: rgba(203, 165, 244, 0.75);
+}
+
+@keyframes melee-strike-hint-aura {
+  0%, 100% {
+    box-shadow:
+      0 0 18px rgba(192, 132, 252, 0.22),
+      inset 0 0 10px rgba(192, 132, 252, 0.12);
+  }
+  50% {
+    box-shadow:
+      0 0 28px rgba(192, 132, 252, 0.4),
+      inset 0 0 13px rgba(192, 132, 252, 0.2);
+  }
+}
+
 @keyframes melee-strike-hint-in {
   from {
     opacity: 0;
@@ -1564,7 +1617,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .melee-strike-hint,
-  .melee-strike-hint:not([data-tired='true']) {
+  .melee-strike-hint:not([data-tired='true']),
+  .melee-strike-hint[data-backstab='true'] {
     animation: none;
   }
 }
