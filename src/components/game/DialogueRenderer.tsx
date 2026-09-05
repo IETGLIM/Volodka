@@ -16,6 +16,9 @@ import {
   resolveNpcIdFromSpeaker,
   isNarrativeGameDataLoaded,
   ensureDialogueNode,
+  ensureStoryNode,
+  hasDialogueNode,
+  hasStoryNode,
   prefetchDialogueFrontier,
 } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -362,6 +365,16 @@ export function DialogueRenderer() {
     let cancelled = false;
     errorRef.current = null;
 
+    // Cross-registry fix (kind recovery): хуки-выборы в приветствиях ведут
+    // прямо в story-узлы (next: 'sl_courier_start', 'aaa_*_start'), а
+    // visitStoryNode-эффекты меняют currentNodeId без смены kind оверлея.
+    // Если узел однозначно лежит в story-реестре — переоткрываем оверлей
+    // с kind='story', чтобы его подхватил StoryRenderer.
+    if (!hasDialogueNode(currentNodeId) && hasStoryNode(currentNodeId)) {
+      openNarrativeOverlay(currentNodeId, 'story');
+      return;
+    }
+
     // If the node isn't already cached, show a loading indicator
     const alreadyCached = Boolean(getDialogueNodes()[currentNodeId]);
     if (!alreadyCached) setIsLoadingNode(true);
@@ -380,12 +393,24 @@ export function DialogueRenderer() {
           }
         }
       })
-      .catch((error) => {
-        if (!cancelled) {
-          setIsLoadingNode(false);
-          errorRef.current = error instanceof Error ? error.message : String(error);
-          devWarn('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
+      .catch(async (error) => {
+        if (cancelled) return;
+        // Cross-registry fallback: узел может быть story-узлом из ещё не
+        // загруженного пака (синхронная догадка выше видит только загруженные
+        // кэши). Дозагружаем паки и переоткрываем оверлей с kind='story'
+        // прежде, чем показывать игроку ошибку.
+        const found = await ensureStoryNode(currentNodeId).then(
+          () => true,
+          () => false,
+        );
+        if (cancelled) return;
+        if (found) {
+          openNarrativeOverlay(currentNodeId, 'story');
+          return;
         }
+        setIsLoadingNode(false);
+        errorRef.current = error instanceof Error ? error.message : String(error);
+        devWarn('[DialogueRenderer] Failed to load dialogue node:', currentNodeId, error);
       });
 
     return () => {

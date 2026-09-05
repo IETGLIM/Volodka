@@ -14,6 +14,7 @@ import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
 import { isAct1DiegeticStoryNode } from '@/engine/narrative/narrativePresentationPolicy';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
+import { guessNarrativeKind } from '@/engine/narrative/narrativeKindResolution';
 import type { DialogueChoice, StoryChoice, StoryEffect } from '@/shared/types/game';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import type { SceneId } from '@/shared/types/game';
@@ -29,6 +30,16 @@ let choiceExecutionInFlight = false;
 
 /** Guard against rapid double-click on dialogue choices. */
 let dialogueChoiceExecutionInFlight = false;
+
+/** Первый visitStoryNode-эффект в списке эффектов (для хуков с next:null). */
+function extractVisitedStoryNodeId(
+  effects?: readonly StoryEffect[],
+): string | undefined {
+  const visit = effects?.find(
+    (fx) => fx.type === 'visitStoryNode' && typeof fx.nodeId === 'string' && fx.nodeId,
+  );
+  return visit?.nodeId as string | undefined;
+}
 
 /** Execute a story node choice — shared by StoryRenderer and DiegeticDialogueHud. */
 export function executeStoryChoice(
@@ -82,6 +93,15 @@ export function executeStoryChoice(
   }
 
   if (choice.next === null) {
+    // Cross-registry fix (visitStoryNode): хуки с next:null + visitStoryNode
+    // (albert_greeting: уроки Альберта, friday-мост, ночной обход) должны
+    // продолжаться story-узлом, а не закрывать оверлей — иначе вступление
+    // не показывается, а флаги старта из его выборов не выставляются.
+    const visitedNodeId = extractVisitedStoryNodeId(choice.effects);
+    if (visitedNodeId) {
+      presentNarrativeBeat(visitedNodeId, guessNarrativeKind(visitedNodeId) ?? 'story');
+      return;
+    }
     closeNarrativeOverlay();
     closeDiegeticNarrative();
   } else if (choice.next && EXPLORE_HUB_NODE_IDS.has(choice.next)) {
@@ -114,7 +134,12 @@ export function executeStoryChoice(
       presentNarrativeBeat(choice.next, 'story');
     } else {
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
-      openNarrativeOverlay(choice.next, 'story');
+      // Cross-registry fix: выбор story-узла может вести в диалоговый узел
+      // (хуки приветствий живут в диалогах и наоборот). Если однозначно
+      // известно, в каком реестре лежит цель — открываем оверлей с её kind,
+      // иначе рендер не найдёт узел и покажет ошибку загрузки.
+      const kind = guessNarrativeKind(choice.next) ?? 'story';
+      openNarrativeOverlay(choice.next, kind);
     }
   }
 }
@@ -159,6 +184,13 @@ export function executeDialogueChoice(choice: DialogueChoice): void {
   }
 
   if (choice.next === null) {
+    // Cross-registry fix (visitStoryNode): зеркально story-пути — хук с
+    // next:null + visitStoryNode продолжает повествование story-узлом.
+    const visitedNodeId = extractVisitedStoryNodeId(choice.effects);
+    if (visitedNodeId) {
+      presentNarrativeBeat(visitedNodeId, guessNarrativeKind(visitedNodeId) ?? 'story');
+      return;
+    }
     closeNarrativeOverlay();
     closeDiegeticNarrative();
   } else if (choice.next && !transitionsScene) {
@@ -166,7 +198,12 @@ export function executeDialogueChoice(choice: DialogueChoice): void {
       presentNarrativeBeat(choice.next, 'dialogue');
     } else {
       dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
-      openNarrativeOverlay(choice.next, 'dialogue');
+      // Cross-registry fix: хуки в приветствиях NPC ведут прямо в story-узлы
+      // (next: 'aaa_*_start'). Открываем оверлей с kind цели — иначе
+      // DialogueRenderer будет искать story-узел в диалоговых паках и
+      // покажет игроку ошибку загрузки вместо вступления квеста.
+      const kind = guessNarrativeKind(choice.next) ?? 'dialogue';
+      openNarrativeOverlay(choice.next, kind);
     }
   }
 }

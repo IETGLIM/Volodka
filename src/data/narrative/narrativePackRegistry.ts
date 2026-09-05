@@ -266,6 +266,14 @@ export function mergeStoryNodesIntoCacheForTests(
   mergeNodesIntoCache(storyNodes, nodes, packLabel, 'story');
 }
 
+/** Test hook — merge without going through dynamic import. */
+export function mergeDialogueNodesIntoCacheForTests(
+  nodes: Record<string, DialogueNode>,
+  packLabel: string,
+): void {
+  mergeNodesIntoCache(dialogueNodes, nodes, packLabel, 'dialogue');
+}
+
 export function onNarrativePacksChanged(listener: PackChangeListener): () => void {
   packChangeListeners.add(listener);
   return () => packChangeListeners.delete(listener);

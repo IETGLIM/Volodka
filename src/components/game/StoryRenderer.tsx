@@ -9,12 +9,12 @@ import {
   useStoryContext,
   useVisitNode,
 } from '@/store/selectors';
-import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, prefetchStoryNodes } from '@/data/gameDataLoader';
+import { getStoryNodes, isNarrativeGameDataLoaded, ensureStoryNode, ensureDialogueNode, hasStoryNode, hasDialogueNode, prefetchStoryNodes } from '@/data/gameDataLoader';
 import { audioEngine } from '@/engine/AudioEngine';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore } from '@/store/gameStore';
 import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
-import { closeNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
 import type { StoryChoice, StoryEffect } from '@/shared/types/game';
 import { checkStoryCondition, buildStoryConditionContext } from '@/shared/storyConditions';
 import {
@@ -138,6 +138,15 @@ export function StoryRenderer() {
     let cancelled = false;
     errorRef.current = null;
 
+    // Cross-registry fix (kind recovery): выбор story-узла может вести в
+    // диалоговый узел (мосты-гейты вроде trofim_fourth_voice_gate), а рендер
+    // ищет узел только в story-реестре. Если узел однозначно лежит в
+    // диалоговом реестре — переоткрываем оверлей с kind='dialogue'.
+    if (!hasStoryNode(currentNodeId) && hasDialogueNode(currentNodeId)) {
+      openNarrativeOverlay(currentNodeId, 'dialogue');
+      return;
+    }
+
     // If the node isn't already cached, show a loading indicator
     const alreadyCached = Boolean(getStoryNodes()[currentNodeId]);
     if (!alreadyCached) setIsLoadingNode(true);
@@ -152,8 +161,20 @@ export function StoryRenderer() {
           prefetchStoryNodes(loaded.choices.map((c) => c.next));
         }
       })
-      .catch((error) => {
+      .catch(async (error) => {
         if (cancelled) return;
+        // Cross-registry fallback: узел может быть диалоговым из ещё не
+        // загруженного пака. Дозагружаем паки и переоткрываем оверлей
+        // с kind='dialogue' прежде, чем показывать игроку ошибку.
+        const found = await ensureDialogueNode(currentNodeId).then(
+          () => true,
+          () => false,
+        );
+        if (cancelled) return;
+        if (found) {
+          openNarrativeOverlay(currentNodeId, 'dialogue');
+          return;
+        }
         setIsLoadingNode(false);
         errorRef.current = error instanceof Error ? error.message : String(error);
         devWarn('[StoryRenderer] Failed to load story node:', currentNodeId, error);
