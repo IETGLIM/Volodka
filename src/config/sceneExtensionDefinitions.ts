@@ -61,7 +61,8 @@ export const EXTENSION_SCENE_DEFINITIONS = {
         id: 'pier_evening_to_park',
         targetScene: 'park_day',
         position: [0, 1, 9],
-        spawnPosition: [11, 0.01, 7],
+        // FIX (placement-audit): был [11,0.01,7] — внутри дерева obstacle[10,6].
+        spawnPosition: [9, 0.01, 8],
         spawnRotation: Math.PI,
         label: '→ Парк',
         doorwayId: 'pier_evening_to_park',
@@ -277,7 +278,9 @@ export const EXTENSION_SCENE_DEFINITIONS = {
         id: 'mainframe_to_office',
         targetScene: 'office_day',
         position: [0, 1, 7],
-        spawnPosition: [0, 0.01, 0],
+        // FIX (placement-audit): был [0,0.01,0] — внутри центрального острова
+        // офиса obstacle[0,0] (верх 1.6 м); спавн перед островом.
+        spawnPosition: [0, 0.01, 2.4],
         spawnRotation: 0,
         label: '→ Офис',
         doorwayId: 'mainframe_to_office',

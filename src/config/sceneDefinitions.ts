@@ -196,7 +196,9 @@ export const street_night_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [0.44, 0.9, 0.44], position: [-2.5, 0.45, -8], footstepMaterial: 'concrete' },
     { type: 'cuboidObstacle', size: [0.8, 1.8, 0.6], position: [2.5, 0.9, -2], footstepMaterial: 'concrete' },
     { type: 'cuboidObstacle', size: [1.0, 2.4, 0.15], position: [-4, 1.2, 3], footstepMaterial: 'concrete' },
-    { type: 'cuboidObstacle', size: [1.6, 0.5, 0.7], position: [0, 0.25, 0], footstepMaterial: 'wood' },
+    // FIX (placement-audit): коллайдер [1.6,0.5,0.7] @ [0,0.25,0] удалён —
+    // «прилавок» без визуала, в него попадали defaultSpawn и 4 spawn-точки
+    // выходов (игрок спавнился ВНУТРИ коллайдера) и 8 NPC-маршрутов.
   ],
   ceilings: [],
   visualComponent: 'StreetVisual',
@@ -252,10 +254,13 @@ export const cafe_evening_def: SceneDefinition = {
   ],
   obstacles: [
     { type: 'cuboidObstacle', size: [2.5, 0.55, 0.4], position: [0, 0.55, -4.0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [-3.0, 0.35, -2.0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [3.0, 0.35, 0], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [0, 0.35, 2.5], footstepMaterial: 'wood' },
-    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [-3.0, 0.35, 1.5], footstepMaterial: 'wood' },
+    // FIX (placement-audit): столы-коллайдеры не совпадали с визуальными GLB-столами
+    // (dressing: [-3.5,-2], [-2,1.5], [1.2,2]; polyhaven_painted_wooden_table 1.55×0.95).
+    // Теперь коллайдер стоит ПОД визуальным столом, NPC-места у столов сходятся.
+    { type: 'cuboidObstacle', size: [0.48, 0.35, 0.78], position: [-3.5, 0.35, -2.0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.89, 0.35, 0.71], position: [1.2, 0.35, 2.0], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.77, 0.35, 0.49], position: [-2.0, 0.35, 1.5], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.5, 0.3, 0.4], position: [-2.0, 0.3, 2.3], footstepMaterial: 'wood' },
   ],
   ceilings: [
     { type: 'cuboid', size: [5, 0.1, 5], position: [0, 3.1, 0] },
@@ -433,7 +438,13 @@ export const home_evening_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [7, 1.5, 0.1], position: [7, 1.5, 0], rotation: Math.PI / 2, footstepMaterial: 'wood' },
   ],
   obstacles: [
-    { type: 'cuboidObstacle', size: [1.2, 0.45, 0.5], position: [0, 0.45, -5], footstepMaterial: 'wood' },
+    // FIX (placement-audit): кухонная стойка визуально в [4,0,-5.5] (4.0×0.9×0.7),
+    // коллайдер стоял в [0,0.45,-5] — на 4 м в стороне; + добавлены холодильник,
+    // диван и журнальный столик (визуал без коллизий).
+    { type: 'cuboidObstacle', size: [2.0, 0.45, 0.35], position: [4, 0.45, -5.5], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.45, 0.9, 0.4], position: [6.5, 0.9, -5], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [1.15, 0.45, 0.4], position: [-2, 0.45, -1], footstepMaterial: 'wood' },
+    { type: 'cuboidObstacle', size: [0.6, 0.3, 0.35], position: [-2, 0.3, 0.5], footstepMaterial: 'wood' },
     { type: 'cuboidObstacle', size: [0.5, 0.8, 0.5], position: [-5, 0.8, -5], footstepMaterial: 'wood' },
     { type: 'cuboidObstacle', size: [1.0, 0.35, 0.5], position: [4, 0.35, 2], footstepMaterial: 'wood' },
     { type: 'cuboidObstacle', size: [0.4, 0.3, 0.4], position: [-3, 0.3, 4], footstepMaterial: 'wood' },
@@ -636,8 +647,11 @@ export const park_day_def: SceneDefinition = {
     { type: 'cuboidObstacle', size: [0.8, 3.0, 0.8], position: [4, 3.0, -8], footstepMaterial: 'grass' },
     { type: 'cuboidObstacle', size: [1.2, 2.0, 1.2], position: [10, 2.0, 6], footstepMaterial: 'grass' },
     { type: 'cuboidObstacle', size: [0.9, 2.8, 0.9], position: [-10, 2.8, 8], footstepMaterial: 'grass' },
-    { type: 'cuboidObstacle', size: [1.5, 0.4, 1.5], position: [0, 0.4, 5], footstepMaterial: 'stone' },
-    { type: 'cuboidObstacle', size: [3.0, 0.35, 1.0], position: [-3, 0.35, 0], footstepMaterial: 'stone' },
+    // FIX (placement-audit): «фонтан» [0,0.4,5] и «клумба» [-3,0.35,0] не имели
+    // визуала (невидимые коллайдеры, спавн/NPC внутри них) — удалены; вместо
+    // них добавлен коллайдер ПОД СУЩЕСТВУЮЩИЙ визуал обелиска [0,0,-2]
+    // (основание 1.5×1.5 в ParkDayVisual раньше было проходимо насквозь).
+    { type: 'cuboidObstacle', size: [0.75, 0.35, 0.75], position: [0, 0.35, -2], footstepMaterial: 'stone' },
   ],
   ceilings: [],
   visualComponent: 'ParkVisual',
@@ -1122,7 +1136,9 @@ export const factory_basement_def: SceneDefinition = {
       id: 'basement_to_factory',
       targetScene: 'abandoned_factory',
       position: [0, 1, 7],
-      spawnPosition: [-8.5, 0, -5],
+      // FIX (placement-audit): был [-8.5,0,-5] — внутри силоса obstacle[-6,-5]
+      // (верх 3 м); спавн в свободную зону у стены.
+      spawnPosition: [-8.5, 0, -2],
       spawnRotation: Math.PI,
       label: '→ Цех завода',
       doorwayId: 'basement_to_factory',
@@ -1182,7 +1198,9 @@ export const river_pier_def: SceneDefinition = {
       id: 'pier_to_park',
       targetScene: 'park_day',
       position: [0, 1, 9],
-      spawnPosition: [11, 0, 7],
+      // FIX (placement-audit): был [11,0,7] — внутри дерева obstacle[10,6]
+      // (ствол 2.4×2.4); спавн южнее ствола.
+      spawnPosition: [9, 0, 8],
       spawnRotation: Math.PI,
       label: '→ Парк',
       doorwayId: 'pier_to_park',

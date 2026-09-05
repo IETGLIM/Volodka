@@ -52,7 +52,7 @@ const CHK_ELIS_DAY: NPCSchedule = {
   npcId: 'chk_elis',
   entries: [
     { startHour: 0, endHour: 8, sceneId: 'street_night', position: [-2.0, 0, 1.0], activity: 'sleep' },
-    { startHour: 8, endHour: 18, sceneId: 'office_day', position: [1.0, 0, 0.5], activity: 'work' },
+    { startHour: 8, endHour: 18, sceneId: 'office_day', position: [0.4, 0, 1.0], activity: 'work' },
     { startHour: 18, endHour: 24, sceneId: 'chk_forest_zorge', position: [-1.4, 0, -1.0], activity: 'talk' },
   ],
 };
@@ -65,7 +65,7 @@ const CHK_GUEST_DEVOPS: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 7, sceneId: 'street_night', position: [-1.5, 0, 1.5], activity: 'sleep' },
     { startHour: 7, endHour: 8, sceneId: 'cafe_evening', position: [1.0, 0, 1.0], activity: 'rest' },
-    { startHour: 8, endHour: 18, sceneId: 'office_day', position: [1.5, 0, -0.5], activity: 'work' },
+    { startHour: 8, endHour: 18, sceneId: 'office_day', position: [1.5, 0, -1.1], activity: 'work' },
     { startHour: 18, endHour: 20, sceneId: 'cafe_evening', position: [-0.5, 0, 1.5], activity: 'talk' },
     { startHour: 20, endHour: 23, sceneId: 'chk_forest_zorge', position: [2.0, 0, 0.5], activity: 'talk' },
     { startHour: 23, endHour: 24, sceneId: 'street_night', position: [0.5, 0, -1.0], activity: 'walk' },
@@ -93,7 +93,7 @@ const CHK_RITKA_DAY: NPCSchedule = {
   entries: [
     { startHour: 0, endHour: 2, sceneId: 'river_pier', position: [-1.8, 0, -2.9], activity: 'talk' },
     { startHour: 2, endHour: 10, sceneId: 'street_night', position: [-1.0, 0, 2.0], activity: 'sleep' },
-    { startHour: 10, endHour: 18, sceneId: 'office_day', position: [1.0, 0, -0.5], activity: 'work' },
+    { startHour: 10, endHour: 18, sceneId: 'office_day', position: [1.0, 0, -1.15], activity: 'work' },
     { startHour: 18, endHour: 24, sceneId: 'river_pier', position: [-1.8, 0, -2.9], activity: 'talk' },
   ],
 };

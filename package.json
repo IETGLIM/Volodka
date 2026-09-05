@@ -13,7 +13,7 @@
     "assets:optimize-polyhaven": "node scripts/optimize-polyhaven.mjs",
     "assets:optimize-textures": "node scripts/optimize-polyhaven-textures.mjs",
     "build:analyze": "npm run validate && tsc --noEmit && vite build --mode analyze && npm run budgets",
-    "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts",
+    "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts && npx tsx --tsconfig tsconfig.json scripts/analyze-model-placement.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:act1-extended": "npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts",
     "assets:bootstrap": "node scripts/bootstrap-production-assets.mjs",

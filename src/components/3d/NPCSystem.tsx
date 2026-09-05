@@ -14,6 +14,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { InteractionState } from '@/engine/interaction/interactionMachine';
 import { separateNpcPositions } from '@/engine/npc/separateNpcPositions';
 import { resolveNpcRenderTier } from '@/engine/npc/npcRenderTier';
+import { resolveNpcPlacementForScene } from '@/engine/scene/placementAudit';
 
 interface NPCSystemProps {
   livePlayerPositionRef: React.MutableRefObject<Vector3>;
@@ -62,11 +63,13 @@ const CORRIDOR_PATROL_WAYPOINTS: [number, number, number][] = [
   [0, 0, 4.0],
 ];
 
-/** Sidewalk loop on the 6 m strip — keeps walkers off lamp posts & curbs. */
+/** Sidewalk loop on the 6 m strip — keeps walkers off lamp posts & curbs.
+ *  FIX (placement-audit): [1.8,0,-2] проходил сквозь киоск obstacle[2.5,-2],
+ *  [2.2,0,3] — сквозь ящик obstacle[2,3]; обведены с запасом капсулы. */
 const STREET_PATROL_WAYPOINTS: [number, number, number][] = [
   [-2.2, 0, -6],
-  [1.8, 0, -2],
-  [2.2, 0, 3],
+  [1.2, 0, -2.2],
+  [2.2, 0, 4.2],
   [-1.5, 0, 7],
   [-2.4, 0, 1],
 ];
@@ -102,7 +105,14 @@ export function NPCSystem({
 
         return {
           definition: def,
-          position: entry?.position ?? def.defaultPosition,
+          // FIX (placement-audit): расписание авторизовано для сцены-родителя —
+          // в варианте (SCENE_SCHEDULE_PARENT) геометрия другая; оверрайды
+          // переводят NPC в валидную точку варианта (на пол, вне мебели).
+          position: resolveNpcPlacementForScene(
+            sceneId,
+            def.id,
+            entry?.position ?? def.defaultPosition,
+          ),
           rotation: def.defaultRotation,
           activity,
           patrolWaypoints,

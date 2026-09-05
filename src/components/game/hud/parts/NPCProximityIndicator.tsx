@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNpcStates, usePlayerPosition, useCurrentSceneId } from '@/store/selectors';
 import { selectNpcRelations } from '@/store/selectors';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
+import { sceneMatchesScheduleEntry } from '@/config/sceneInheritance';
+import { resolveNpcPlacementForScene } from '@/engine/scene/placementAudit';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
@@ -63,10 +65,13 @@ export function NPCProximityIndicator() {
 
       for (const def of ALL_NPC_DEFINITIONS) {
         const state = npcStates[def.id];
-        if (!state || state.sceneId !== sceneId) continue;
+        // FIX (placement-audit): вариант-сцены наследуют NPC родителя + оверрайды
+        // позиции — иначе близость считается к точке, где модели нет.
+        if (!state || !sceneMatchesScheduleEntry(sceneId, state.sceneId)) continue;
 
-        const dx = px - state.position[0];
-        const dz = pz - state.position[2];
+        const [nx, , nz] = resolveNpcPlacementForScene(sceneId, def.id, state.position);
+        const dx = px - nx;
+        const dz = pz - nz;
         const dist = Math.sqrt(dx * dx + dz * dz);
 
         if (dist < PROXIMITY_THRESHOLD && dist < closestDist) {

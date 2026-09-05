@@ -27,6 +27,7 @@ import {
   type ExitQueryTarget,
 } from '@/engine/interaction/interactionTargetQuery';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
+import { resolveNpcPlacementForScene } from '@/engine/scene/placementAudit';
 import { sharedCameraYawRef } from '@/engine/PlayerRotationState';
 import { resetEKeyConsumption } from '@/engine/input/eKeyConsumption';
 import { triggerInteractionFeedback } from '@/engine/input/interactionFeedback';
@@ -125,7 +126,13 @@ export function InteractiveTriggers({
         return {
           id: `npc_${npcId}`,
           npcId,
-          position: (entry?.position ?? npc.defaultPosition) as [number, number, number],
+          // FIX (placement-audit): та же трансформация, что в NPCSystem —
+          // вариант-оверрайды, иначе интеракция на месте, где NPC не стоит.
+          position: resolveNpcPlacementForScene(
+            sceneId,
+            npcId,
+            (entry?.position ?? npc.defaultPosition) as [number, number, number],
+          ) as [number, number, number],
           label: `Поговорить с ${npc.name}`,
           activity: entry?.activity,
         };

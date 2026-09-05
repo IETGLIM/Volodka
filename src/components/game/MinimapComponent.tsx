@@ -47,6 +47,8 @@ import {
   EXPLORATION_HUD_LAYOUT,
 } from '@/shared/constants/hudLayout';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
+import { sceneMatchesScheduleEntry } from '@/config/sceneInheritance';
+import { resolveNpcPlacementForScene } from '@/engine/scene/placementAudit';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
@@ -257,7 +259,11 @@ export function MinimapComponent() {
     const result: MinimapNPC[] = [];
     for (const npcDef of ALL_NPC_DEFINITIONS) {
       const state = npcStates[npcDef.id];
-      if (state && state.sceneId === currentSceneId) {
+      // FIX (placement-audit): variant scenes inherit NPC родителя (3D-мир их
+      // рендерит) — матчим через SCENE_SCHEDULE_PARENT и применяем
+      // вариант-оверрайды позиции, иначе маркер не совпадает с моделью.
+      if (state && sceneMatchesScheduleEntry(currentSceneId, state.sceneId)) {
+        const [wx, , wz] = resolveNpcPlacementForScene(currentSceneId, npcDef.id, state.position);
         const rel = npcRelations.find((r) => r.npcId === npcDef.id);
         const value = rel?.value ?? 50;
         const disposition: NPCDisposition =
@@ -269,8 +275,8 @@ export function MinimapComponent() {
         result.push({
           id: npcDef.id,
           name: npcDef.name,
-          worldX: state.position[0],
-          worldZ: state.position[2],
+          worldX: wx,
+          worldZ: wz,
           disposition,
           color: getDispositionColor(value),
         });
