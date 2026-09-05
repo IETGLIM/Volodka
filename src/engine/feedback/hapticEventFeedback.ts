@@ -33,6 +33,7 @@ import {
   hapticLevelUp,
   hapticMedium,
   hapticQuestComplete,
+  hapticStealthStrike,
 } from '@/shared/utils/hapticFeedback';
 
 /** Минимальный интервал между combat-вибрациями (защита от серий). */
@@ -84,12 +85,15 @@ function bindHapticEventListeners(): void {
 
     // v4.8.7 «Опережающий удар» — тактильный отклик попадания до боя
     // (см. engine/combat/realtime/meleeStrike.ts). v4.8.8: добивание
-    // ощущается тяжелее — враг повержен без боя.
-    eventBus.on('combat:melee_strike', ({ finished }) => {
+    // ощущается тяжелее — враг повержен без боя. v4.11.0: удар в спину —
+    // «два шага подкрадывания и глухой удар» (стелс громче наград).
+    eventBus.on('combat:melee_strike', ({ finished, backstab }) => {
       const now = performance.now();
       if (now - lastCombatHapticAt < COMBAT_HAPTIC_THROTTLE_MS) return;
       lastCombatHapticAt = now;
-      if (finished) {
+      if (backstab) {
+        hapticStealthStrike();
+      } else if (finished) {
         hapticHeavy();
       } else {
         hapticCombatHit();

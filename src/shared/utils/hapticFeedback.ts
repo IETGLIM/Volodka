@@ -136,3 +136,8 @@ export function hapticError(): void {
 export function hapticPoemPower(): void {
   hapticPattern([8, 30, 12, 30, 8, 30, 20]);
 }
+
+/** Удар в спину (v4.11.0) — «два шага подкрадывания и глухой удар». */
+export function hapticStealthStrike(): void {
+  hapticPattern([10, 60, 10, 60, 25]);
+}

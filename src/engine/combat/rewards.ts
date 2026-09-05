@@ -196,12 +196,19 @@ export const CREEP_FINISHER_XP_SCALE = 0.6;
 /** Фиксированная карма за добивание (без боевых бонусов комбо). */
 export const CREEP_FINISHER_KARMA = 2;
 
+/** v4.11.0: надбавка XP за ТИХОЕ добивание из стелса (удар в спину
+ *  неосведомлённого крипа): +25% к уже урезанному XP. */
+export const CREEP_FINISHER_BACKSTAB_XP_BONUS = 0.25;
+
 /** Вход `computeCreepFinisherRewards`. */
 export interface ComputeCreepFinisherRewardsInput {
   /** xpReward шаблона врага (ENEMY_TEMPLATES[type].xpReward). */
   xpReward: number;
   /** Множитель кредитов сложности (difficultySettings.creditsMultiplier). */
   creditsMultiplier: number;
+  /** v4.11.0: добивание из стелса (удар в спину) — +25% XP, карма
+   *  неизменна, кредиты считаются от бонусного XP той же формулой. */
+  backstab?: boolean;
 }
 
 /** Результат: урезанные награды добивания (без лута — трофеи выпадают
@@ -215,16 +222,18 @@ export interface ComputedCreepFinisherRewards {
 /**
  * Награды за добивание ослабленного крипа ударом до боя (creepVitality +
  * meleeStrike). Детерминировано — боевой RNG-сеанс не существует вне боя.
- * XP = 60% от шаблона (минимум 1), карма фиксированная, кредиты — по той
- * же формуле боевых кредитов от урезанного XP. Честно дешевле полной
- * победы: игрок экономит ходы, но теряет лут и комбо-бонусы.
+ * XP = 60% от шаблона (минимум 1) × (1 + 0.25 при тихом добивании из
+ * стелса, v4.11.0), карма фиксированная, кредиты — по той же формуле
+ * боевых кредитов от итогового XP. Честно дешевле полной победы: игрок
+ * экономит ходы, но теряет лут и комбо-бонусы.
  */
 export function computeCreepFinisherRewards(
   input: ComputeCreepFinisherRewardsInput,
 ): ComputedCreepFinisherRewards {
+  const xpScale = CREEP_FINISHER_XP_SCALE * (input.backstab ? 1 + CREEP_FINISHER_BACKSTAB_XP_BONUS : 1);
   const xpGained = Math.max(
     1,
-    Math.floor(Math.max(0, input.xpReward) * CREEP_FINISHER_XP_SCALE),
+    Math.floor(Math.max(0, input.xpReward) * xpScale),
   );
   const multiplier = Number.isFinite(input.creditsMultiplier)
     ? Math.max(0, input.creditsMultiplier)

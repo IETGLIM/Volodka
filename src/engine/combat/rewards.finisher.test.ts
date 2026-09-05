@@ -5,6 +5,7 @@
 
 import { describe, expect, it } from 'vitest';
 import {
+  CREEP_FINISHER_BACKSTAB_XP_BONUS,
   CREEP_FINISHER_KARMA,
   CREEP_FINISHER_XP_SCALE,
   computeCreepFinisherRewards,
@@ -46,5 +47,23 @@ describe('computeCreepFinisherRewards (v4.8.8)', () => {
     });
     expect(Number.isFinite(r.creditsGained)).toBe(true);
     expect(r.creditsGained).toBeGreaterThanOrEqual(1);
+  });
+
+  it('backstab finisher pays +25% xp and keeps karma fixed (v4.11.0)', () => {
+    expect(CREEP_FINISHER_BACKSTAB_XP_BONUS).toBe(0.25);
+    const plain = computeCreepFinisherRewards({ xpReward: 25, creditsMultiplier: 1 });
+    const stealth = computeCreepFinisherRewards({
+      xpReward: 25,
+      creditsMultiplier: 1,
+      backstab: true,
+    });
+    // floor(25 × 0.6) = 15 → floor(25 × 0.6 × 1.25) = 18.
+    expect(plain.xpGained).toBe(15);
+    expect(stealth.xpGained).toBe(18);
+    // Карма неизменна (фиксированная), кредиты считаются от бонусного XP
+    // той же формулой — не меньше базового добивания.
+    expect(stealth.karmaGained).toBe(CREEP_FINISHER_KARMA);
+    expect(stealth.creditsGained).toBeGreaterThanOrEqual(plain.creditsGained);
+    expect(stealth.creditsGained).toBeGreaterThanOrEqual(1);
   });
 });

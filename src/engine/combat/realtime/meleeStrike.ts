@@ -1,5 +1,5 @@
 /* ─── Volodka RPG – «Опережающий удар»: реал-тайм слой до пошагового боя ───
- *                                                              (v4.8.8)
+ *                                                              (v4.11.0)
  *
  * Инкременты бэклога «реал-тайм 3D-комбат» (приоритет C):
  *   • v4.8.7 — удар первым: ЛКМ / кнопка «Удар» → секторный замах
@@ -8,7 +8,14 @@
  *   • v4.8.8 — память HP крипов (creepVitality.ts): после побега игрока
  *     крип не «забывает» урон и вступает в новую встречу ослабленным, а
  *     сильно ослабленный (≤ 35%) ДОБИВАЕТСЯ ударом до боя — урезанные
- *     награды, без пошаговой фазы (computeCreepFinisherRewards).
+ *     награды, без пошаговой фазы (computeCreepFinisherRewards);
+ *   • v4.11.0 — «Удар в спину» (стелс): неосведомлённый крип (патруль/
+ *     возврат, isAware() === false), ударенный в заднюю дугу его взгляда
+ *     (isBehindCreep), вступает в бой с 50% HP, а тихое добивание из
+ *     стелса платит +25% XP. Решение о силе ослабления собирается ЗДЕСЬ
+ *     (attemptMeleeStrike) и передаётся крипу одним контрактом
+ *     applyStrike({ introHpPct, backstab }); приоритет: память HP
+ *     (creepVitality) > стелс 0.5 > база 0.75.
  *
  * Архитектура (как PlayerRigidBodyState / interactionSession — модульные
  * одиночки движка, без стора и React):
@@ -54,6 +61,13 @@ import {
 /** Доля HP, с которой враг вступает в бой после опережающего удара. */
 export const MELEE_STRIKE_INTRO_ENEMY_HP_PCT = 0.75;
 
+/** v4.11.0: доля HP врага после УДАРА В СПИНУ (стелс-ослабление). */
+export const MELEE_STRIKE_BACKSTAB_INTRO_HP_PCT = 0.5;
+
+/** v4.11.0: порог задней дуги — dot(взгляд крипа, направление на игрока)
+ *  ≤ −0.17 ≈ игрок в дуге ≥ ~100° за спиной крипа. */
+export const MELEE_STRIKE_BACKSTAB_DOT_THRESHOLD = -0.17;
+
 /** Цена замаха в единицах выносливости (шкала — STAMINA_MAX у playerConstants). */
 export const MELEE_STRIKE_STAMINA_COST = 22;
 
@@ -78,12 +92,31 @@ export interface MeleeStrikeTarget {
   hasLineOfSight(): boolean;
   /** XP-награда шаблона врага — для наград добивания (v4.8.8). */
   getFinisherXpReward?(): number;
-  /** Выполнить удар: вовлечь крипа и стартовать встречу с introHpPct. */
-  applyStrike(): void;
+  /** v4.11.0: yaw взгляда крипа (headingRef, forward = (sin, cos) —
+ *  конвенция meleeSweep). Отсутствует → цель считается бодрствующей
+ *  (стелс недоступен, обычный путь). */
+  getFacingYaw?(): number;
+  /** v4.11.0: осведомлён ли крип об игроке (погоня). Отсутствует →
+   *  бодрствующий (обычный путь). Патруль/возврат — false; убегающий
+   *  «в курсе»; cooldown после побега — false (крип вернулся к посту). */
+  isAware?(): boolean;
+  /** Выполнить удар: вовлечь крипа и стартовать встречу. v4.11.0: сила
+   *  ослабления собирается в attemptMeleeStrike и приходит одним
+   *  контрактом — крип только применяет introHpPct в startEncounter. */
+  applyStrike(options?: MeleeStrikeEngageOptions): void;
   /** Добивание (v4.8.8): крип повержен без пошаговой фазы. Провайдер
    *  ставит крипа в неагрессивное состояние — родитель снимает его с
    * цены по событию combat:creep_finished. Отсутствует → обычный путь. */
   applyFinisher?(): void;
+}
+
+/** v4.11.0: контракт вовлечения крипа — движок собирает решение о силе
+ *  ослабления в ОДНОЙ точке (attemptMeleeStrike) и передаёт его крипу. */
+export interface MeleeStrikeEngageOptions {
+  /** Доля HP, с которой враг вступает в бой (память HP > стелс > база). */
+  introHpPct: number;
+  /** Удар пришёлся в спину неосведомлённого крипа (стелс-ветка). */
+  backstab: boolean;
 }
 
 /** Итог попытки удара — вызывающий ввод решает, «съедать» ли клик. */
@@ -92,6 +125,31 @@ export type MeleeStrikeOutcome =
   | { status: 'tired' }
   | { status: 'cooldown' }
   | { status: 'none' };
+
+/* ── Стелс-геометрия «удар в спину» (v4.11.0) ──
+ *
+ * Чистая функция (без импортов Three/стора — как resolveMeleeSweep):
+ * крип «спиной к игроку», если скалярное произведение его взгляда и
+ * направления на игрока ≤ MELEE_STRIKE_BACKSTAB_DOT_THRESHOLD (−0.17),
+ * т.е. игрок в задней дуге ≥ ~100°. Конвенция forward = (sin(yaw),
+ * cos(yaw)) — та же, что в meleeSweep.ts и headingRef крипа
+ * (PatrollingCreeps: Math.atan2(dirX, dirZ)).
+ */
+
+/** Игрок в задней дуге взгляда крипа? (dx/dz — вектор КРИП → ИГРОК.) */
+export function isBehindCreep(
+  creepFacingYaw: number,
+  dx: number,
+  dz: number,
+): boolean {
+  const dist = Math.hypot(dx, dz);
+  if (dist < 1e-6) return false; // вплотную направление не определено
+  const forwardX = Math.sin(creepFacingYaw);
+  const forwardZ = Math.cos(creepFacingYaw);
+  return (
+    (forwardX * dx + forwardZ * dz) / dist <= MELEE_STRIKE_BACKSTAB_DOT_THRESHOLD
+  );
+}
 
 /* ── Реестр целей (живые крипы текущей сцены) ── */
 const strikeTargets = new Map<string, MeleeStrikeTarget>();
@@ -116,6 +174,8 @@ export interface MeleeStrikeHintEntry {
   tired: boolean;
   /** Цель ослаблена до порога добивания (v4.8.8). */
   finishable: boolean;
+  /** Цель не осведомлена и стоит спиной — удар в спину (v4.11.0). */
+  backstab: boolean;
 }
 
 export interface MeleeStrikeHint {
@@ -124,6 +184,7 @@ export interface MeleeStrikeHint {
   distM: number;
   tired: boolean;
   finishable: boolean;
+  backstab: boolean;
 }
 
 const hintEntries = new Map<string, MeleeStrikeHintEntry>();
@@ -137,13 +198,14 @@ export function reportMeleeStrikeCandidate(
   distM: number,
   eligible: boolean,
   finishable = false,
+  backstab = false,
 ): void {
   if (!eligible) {
     hintEntries.delete(id);
     return;
   }
   const tired = getPlayerStamina().current < MELEE_STRIKE_STAMINA_COST;
-  hintEntries.set(id, { id, name, distM, atMs: Date.now(), tired, finishable });
+  hintEntries.set(id, { id, name, distM, atMs: Date.now(), tired, finishable, backstab });
 }
 
 /** Ближайшая живая подсказка для HUD (null — показывать нечего). */
@@ -161,6 +223,7 @@ export function getMeleeStrikeHint(): MeleeStrikeHint | null {
     distM: best.distM,
     tired: best.tired,
     finishable: best.finishable,
+    backstab: best.backstab,
   };
 }
 
@@ -240,19 +303,42 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   const target = hit.target;
   const pos = target.getPosition();
 
+  // ── v4.11.0: стелс-гейт «удар в спину» — двойное условие ──
+  // (а) крип не в погоне: isAware() === false (патруль/возврат; убегающий
+  //     «в курсе»; cooldown после побега — «не в курсе», крип у поста);
+  // (б) удар в задней дуге взгляда крипа (isBehindCreep).
+  // Отсутствие провайдеров → цель считается бодрствующей (обычный путь).
+  const unaware = target.isAware !== undefined && !target.isAware();
+  const facingYaw = target.getFacingYaw?.();
+  const backstab =
+    unaware
+    && facingYaw !== undefined
+    && isBehindCreep(facingYaw, player.x - pos.x, player.z - pos.z);
+
+  // Приоритет силы ослабления (единая точка решения): память HP после
+  // побега (creepVitality) > стелс 0.5 > база 0.75 — стелс НЕ наслаивается
+  // на запомненный урон.
+  const weakenedPct = getCreepWeakenedHpPct(target.id);
+  const introHpPct =
+    weakenedPct
+    ?? (backstab
+      ? MELEE_STRIKE_BACKSTAB_INTRO_HP_PCT
+      : MELEE_STRIKE_INTRO_ENEMY_HP_PCT);
+
   // ── v4.8.8: добивание ослабленного крипа до пошагового боя ──
   // Крип с остатком HP ≤ MELEE_STRIKE_FINISHER_HP_PCT (после побега игрока
   // из прошлой встречи — creepVitality.ts) повержается одним ударом:
   // урезанные награды без боевого RNG-сеанса, лут не выпадает.
-  const weakenedPct = getCreepWeakenedHpPct(target.id);
   if (
     weakenedPct !== null
     && isCreepFinishable(weakenedPct)
     && target.applyFinisher
   ) {
+    // v4.11.0: тихое добивание из стелса — +25% XP к урезанной награде.
     const rewards = computeCreepFinisherRewards({
       xpReward: target.getFinisherXpReward?.() ?? 0,
       creditsMultiplier: snapshot?.difficultySettings?.creditsMultiplier ?? 1,
+      backstab,
     });
 
     dispatchGameAction({ type: 'player/addKarma', amount: rewards.karmaGained });
@@ -264,6 +350,7 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
       source,
       hit: true,
       finished: true,
+      backstab,
       creepId: target.id,
       enemyName: target.name,
       x: pos.x,
@@ -282,7 +369,9 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
       creditsGained: rewards.creditsGained,
     });
     eventBus.emit('ui:exploration_message', {
-      text: `☠ Добивание — ${target.name} повержен без боя!`,
+      text: backstab
+        ? `🗡 Тихое добивание — ${target.name} повержен без боя!`
+        : `☠ Добивание — ${target.name} повержен без боя!`,
     });
 
     // Крип снимается с цены (родитель уберёт его по combat:creep_finished).
@@ -295,6 +384,7 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
     source,
     hit: true,
     finished: false,
+    backstab,
     creepId: target.id,
     enemyName: target.name,
     x: pos.x,
@@ -303,12 +393,15 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   });
 
   eventBus.emit('ui:exploration_message', {
-    text: `⚡ Опережающий удар — ${target.name} ослаблен!`,
+    text: backstab
+      ? `🗡 Удар в спину — ${target.name} ослаблен!`
+      : `⚡ Опережающий удар — ${target.name} ослаблен!`,
   });
 
   // Вовлечение крипа + старт встречи с ослабленным врагом (encounterTypes):
-  // после побега из прошлой встречи крип вступает с ЗАПОМНЕННЫМ HP.
-  target.applyStrike();
+  // сила ослабления собрана выше (память HP > стелс > база) и передана
+  // одним контрактом — PatrollingCreeps только применяет её (v4.11.0).
+  target.applyStrike({ introHpPct, backstab });
 
   return { status: 'hit', creepId: target.id, enemyName: target.name, finished: false };
 }

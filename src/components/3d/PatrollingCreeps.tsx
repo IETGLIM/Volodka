@@ -36,9 +36,11 @@ import { getCombatState } from '@/engine/CombatSystem';
 import { ENEMY_TEMPLATES } from '@/engine/combat/enemies';
 import { getEnemyAiConfig } from '@/engine/combat/enemyAiBehaviors';
 import {
+  isBehindCreep,
   MELEE_STRIKE_INTRO_ENEMY_HP_PCT,
   registerMeleeStrikeTarget,
   reportMeleeStrikeCandidate,
+  type MeleeStrikeEngageOptions,
 } from '@/engine/combat/realtime/meleeStrike';
 import {
   clearAllCreepVitality,
@@ -379,6 +381,11 @@ function Creep({
   // и добивание до боя (крип в памяти HP ≤ 35%). Вовлечение — точная
   // копия контактной ветки CHASE (см. useFrameTick), чтобы
   // презентация/победа/побег работали как раньше.
+  // v4.11.0 (стелс): крип отдаёт движку только ФАКТЫ (взгляд headingRef,
+  // осведомлённость — только погоня «в курсе»; убегающий тоже, а
+  // cooldown после побега — нет: крип вернулся к посту и расслабился),
+  // а решение о силе ослабления принимает attemptMeleeStrike и возвращает
+  // готовый introHpPct контрактом applyStrike — крип только применяет.
   useEffect(() => {
     const unregister = registerMeleeStrikeTarget({
       id: def.id,
@@ -398,7 +405,9 @@ function Creep({
         return hasCreepLineOfSight(pos.x, pos.z, player.x, player.z, visionBlockers);
       },
       getFinisherXpReward: () => ENEMY_TEMPLATES[def.enemyType]?.xpReward ?? 0,
-      applyStrike: () => {
+      getFacingYaw: () => headingRef.current,
+      isAware: () => stateRef.current === 'chase',
+      applyStrike: (options?: MeleeStrikeEngageOptions) => {
         if (engageQueuedRef.current) return;
         engageQueuedRef.current = true;
         stateRef.current = 'engaged';
@@ -413,15 +422,16 @@ function Creep({
         pos.z = player.z + Math.cos(faceYaw) * 2.4;
         headingRef.current = faceYaw + Math.PI;
 
-        // v4.8.8: после побега из прошлой встречи крип вступает с
-        // ЗАПОМНЕННЫМ остатком HP (свежий удар первым — 75% как раньше).
+        // v4.11.0: introHpPct приходит ГОТОВЫМ от attemptMeleeStrike
+        // (память HP > стелс 0.5 > база 0.75) — крип больше не решает сам;
+        // fallback на базу — только для прямых вызовов вне движка.
         startEncounter({
           source: 'creep',
           enemyType: def.enemyType,
           encounterName: def.name,
           creepId: def.id,
           introHpPct:
-            getCreepWeakenedHpPct(def.id) ?? MELEE_STRIKE_INTRO_ENEMY_HP_PCT,
+            options?.introHpPct ?? MELEE_STRIKE_INTRO_ENEMY_HP_PCT,
         });
       },
       applyFinisher: () => {
@@ -509,7 +519,12 @@ function Creep({
     const finishable = weakenedPct !== null && isCreepFinishable(weakenedPct);
     if (strikeEligible && playerDist <= MELEE_STRIKE_REACH_M) {
       const clear = hasCreepLineOfSight(pos.x, pos.z, player.x, player.z, visionBlockers);
-      reportMeleeStrikeCandidate(def.id, def.name, playerDist, clear, finishable);
+      // v4.11.0: зеркало стелс-состояния для HUD-капсулы — та же двойная
+      // логика, что у гейта замаха (не в погоне + задняя дуга взгляда).
+      const backstab =
+        stateRef.current !== 'chase'
+        && isBehindCreep(headingRef.current, dx, dz);
+      reportMeleeStrikeCandidate(def.id, def.name, playerDist, clear, finishable, backstab);
     } else {
       reportMeleeStrikeCandidate(def.id, def.name, playerDist, false, false);
     }
