@@ -48,6 +48,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: '«Володька, налей себе кофе. Солныш волнуется — ты для неё как якорь с гимназии. Если могу чем-то помочь — скажи.»',
     choices: [
       {
+        text: 'Нужен курьер — посылка, которую лучше не вскрывать.',
+        next: 'sl_courier_start',
+        condition: {
+          requiredAct: 3,
+          flag: 'sl_window_light_done',
+          missingFlag: 'sl_courier_accepted',
+        },
+      },
+      {
         text: 'Где вино, которое ты прятал?',
         next: 'lyonya_wine_hint',
       },
@@ -577,6 +586,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Тамара',
     text: 'Володька. Я знала, что ты придёшь. Библиотека чувствует таких, как ты. Ты пахнешь старыми книгами и новым кодом — редкое сочетание. Что ищешь?',
     choices: [
+      {
+        text: 'Тихий час в читальном зале — ты ещё ведёшь его?',
+        next: 'sl_quiet_hour_start',
+        condition: {
+          requiredAct: 4,
+          flag: 'library_lost_archive_done',
+          missingFlag: 'sl_quiet_hour_accepted',
+        },
+      },
       { text: 'Запрещённые тексты. Те, что не в Сети.', next: 'tamara_forbidden' },
       { text: 'Информацию о Великом Сбое.', next: 'tamara_crash' },
       { text: 'Просто тишины. И книг.', next: 'tamara_peace' },
@@ -625,6 +643,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speaker: 'Гриша',
     text: 'Поднимайся. Выше. Ещё выше. Вот. Теперь смотри. Видишь город? Весь. От башни «Ирендык» до излучины Белой. Отсюда он кажется мирным. Но мы-то знаем правду.',
     choices: [
+      {
+        text: 'Свет в окне на Косой, 12 — ты его тоже видишь?',
+        next: 'sl_window_light_start',
+        condition: { requiredAct: 3, missingFlag: 'sl_window_light_accepted' },
+      },
       { text: 'Что ты видишь с крыши?', next: 'grisha_vision' },
       { text: 'Ты живёшь здесь, на крыше?', next: 'grisha_home' },
       { text: 'Красиво. Но холодно.', next: 'grisha_cold' },
@@ -1274,6 +1297,24 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'visitStoryNode', nodeId: 'act2_pier_cafe_frequency_start' },
         ],
       },
+      {
+        text: 'Река сегодня о чём-то другом гудит. Не про завод?',
+        next: 'pv_three_voices_start',
+        condition: {
+          requiredAct: 2,
+          flag: 'pv_zina_box_delivered',
+          missingFlag: 'pv_three_voices_accepted',
+        },
+      },
+      {
+        text: 'Трофим, ленты — это про четвёртый голос?',
+        next: 'trofim_fourth_voice_gate',
+        condition: {
+          requiredAct: 4,
+          flag: 'pv_server_block_raised',
+          missingFlag: 'pv_fourth_voice_accepted',
+        },
+      },
       { text: 'Пойду я.', next: null },
     ],
   },
@@ -1408,6 +1449,24 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     ],
   },
 
+  trofim_fourth_voice_gate: {
+    id: 'trofim_fourth_voice_gate',
+    speaker: 'Трофим',
+    text: '«Лента — четвёртая. Голос на ней — не речной. Чужое признание, старое, тяжёлое. Я всем дал послушать по кругу — и теперь по кругу все ждут, чья она будет. Но сперва скажи: с речными делами ты закрылся? Марина своё дождалась? Сервер со дна поднял?»',
+    choices: [
+      {
+        text: 'Да — и Марина, и сервер. Все свои истории дописаны. Давай ленту.',
+        next: 'pv_fourth_voice_start',
+        condition: { flag: 'pv_found_ferry_ticket' },
+      },
+      {
+        text: 'Ещё не со всеми. Вернусь, когда закрою.',
+        next: null,
+        effects: [{ type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 1 } }],
+      },
+    ],
+  },
+
   baba_zina_greeting: {
     id: 'baba_zina_greeting',
     speaker: 'Баба Зина',
@@ -1519,6 +1578,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           missingFlag: 'factory_baba_zina_tea_done',
         },
       },
+      {
+        text: 'Бабушка, у тебя вид человека, которому нужно поручение.',
+        next: 'pv_zina_box_start',
+        condition: { requiredAct: 2, missingFlag: 'pv_zina_box_accepted' },
+      },
       { text: 'Потом.', next: null },
     ],
   },
@@ -1529,6 +1593,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     speakerId: 'street_poet',
     text: 'Слова тяжелеют к утру, поэт. Неси их осторожно — дроны любят лёгкие фразы.',
     choices: [
+      {
+        text: 'Голос из водостока — что он тебе нашёптывает?',
+        next: 'sl_drainpipe_start',
+        condition: {
+          requiredAct: 5,
+          flag: 'sl_rat_race_done',
+          missingFlag: 'sl_drainpipe_accepted',
+        },
+      },
       { text: 'Поблагодарить и уйти', next: null },
       {
         text: 'Прочитать ответное четверостишие',
@@ -1649,6 +1722,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: '[терминал мигает] Если читаешь это — я ещё в проводах. Не верь гильдии. Верь рифме.',
     choices: [
       {
+        text: 'Эхо в отражениях — ты звал? Про реку?',
+        next: 'pv_drowned_server_start',
+        condition: {
+          requiredAct: 3,
+          flag: 'pv_three_voices_done',
+          missingFlag: 'pv_drowned_server_accepted',
+        },
+      },
+      {
         text: 'Ответить строкой из тетради',
         next: null,
         effects: [{ type: 'visitStoryNode', nodeId: 'library_marat_echo' }],
@@ -1662,6 +1744,48 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: 'Серверную я помню наизусть. Себя — почти нет. Спасибо, что вытащил.',
     choices: [
       { text: 'Держись', next: null, effects: [{ type: 'addKarma', value: 1 }] },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     МАРИНА — дом за мостом (пак «Голоса Пирса»)
+     ═══════════════════════════════════════════════════════════ */
+
+  marina_greeting: {
+    id: 'marina_greeting',
+    speaker: 'Марина',
+    text: 'Она стоит у перил и смотрит на тот берег так, будто там кто-то должен вот-вот показаться. «Володька?.. От Зины? Нет? Тогда просто постой рядом. Тише — лучше. Вода любит тишину.»',
+    choices: [
+      {
+        text: 'Постоять рядом, молчать',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'marina', npcChange: { relation: 2 } },
+          { type: 'addStat', stat: 'stress', value: -2 },
+        ],
+      },
+      {
+        text: 'Спросить, кого она ждёт',
+        next: 'marina_waiting_asked',
+        condition: { missingFlag: 'marina_waiting_told' },
+      },
+      { text: 'Пойду. Держись.', next: null },
+    ],
+  },
+
+  marina_waiting_asked: {
+    id: 'marina_waiting_asked',
+    speaker: 'Марина',
+    text: '«Жду?.. С чего ты взял. Я просто смотрю на воду. Она как жизнь: не обманешь — не перейдёшь.» *пауза* «Ладно. Жду. Раз в месяц приходит буксир с того берега. Может, однажды он будет на нём. Не спрашивай кто. Я сама не знаю, как его назвать. Зина — знает. Но Зина молчит уже тридцать лет.»',
+    choices: [
+      {
+        text: 'Вода — честная. Пусть приносит только хорошее.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'marina_waiting_told', flagValue: true },
+          { type: 'npcChange', npcId: 'marina', npcChange: { relation: 2 } },
+        ],
+      },
     ],
   },
 

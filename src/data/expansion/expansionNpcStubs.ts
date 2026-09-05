@@ -257,6 +257,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [0, 0, 1.0],
     defaultRotation: -Math.PI / 6,
     patrolRadius: 0.5,
+    dialogueNodeId: 'marina_greeting',
     npcSplashProfile: 'npc_marina',
     description:
       'Женщина тридцати лет, живёт в доме у реки, за мостом. Дочь, которой отец не показывался десять лет. Хранит окна открытыми — на случай, если он всё же вернётся.',
@@ -330,6 +331,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [0, 0, 0],
     defaultRotation: 0,
     patrolRadius: 0,
+    dialogueNodeId: 'park_old_man_greeting',
     npcSplashProfile: 'npc_park_old_man',
     description:
       'Каждый день — одна скамья в парке. Не бродяга: в его глазах ещё живёт что-то древнее этой промзоны. Хранит ключи от подземного убежища, куда уходили его предки. Ключ расколот на три.',
@@ -367,6 +369,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [-1.0, 0, -2.5],
     defaultRotation: Math.PI / 2,
     patrolRadius: 0,
+    dialogueNodeId: 'dying_poet_greeting',
     npcSplashProfile: 'npc_dying_poet',
     description:
       'В читальном зале библиотеки, за последним стеллажом. Последний из тех, кто помнит, как стихи были оружием. Написал последнее произведение не для Сети — для одного человека. Преданного им тридцать лет назад.',
@@ -439,6 +442,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [-1.5, 0, -1.0],
     defaultRotation: Math.PI / 4,
     patrolRadius: 0.8,
+    dialogueNodeId: 'factory_foreman_greeting',
     npcSplashProfile: 'npc_factory_foreman',
     description:
       'Мастер завода «Прогресс-7». Видит, как ночами подвал оживает фантомами corrupted-данных. Не верит в мистику — но платит зачистить подвал. Хоть кто-то должен.',

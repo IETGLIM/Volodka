@@ -443,6 +443,73 @@ const GUILD_DEFECTOR_SCHEDULE: NPCSchedule = {
   ],
 };
 
+/**
+ * Марина — женщина из дома за мостом (пак «Голоса Пирса»).
+ * Практически живёт на пирсе: у воды утром и вечером, в доме — ночью.
+ * FIX (reachability): без расписания NPC не появлялся в сценах и цель
+ * npc_talked квеста pv_zina_tin_box была невыполнима.
+ */
+const MARINA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_marina',
+  npcId: 'marina',
+  entries: [
+    { startHour: 0, endHour: 8, sceneId: 'river_pier', position: [0, 0, 1.0], activity: 'rest' },
+    { startHour: 8, endHour: 14, sceneId: 'river_pier', position: [0, 0, 1.0], activity: 'talk' },
+    { startHour: 14, endHour: 22, sceneId: 'river_pier', position: [-1.0, 0, -1.5], activity: 'rest' },
+    { startHour: 22, endHour: 24, sceneId: 'river_pier', position: [0, 0, 1.0], activity: 'rest' },
+  ],
+};
+
+/**
+ * Мастер завода «Прогресс-7» (пак «Уличные легенды» + ночной сдвиг).
+ * FIX (reachability): без расписания и dialogueNodeId NPC не появлялся
+ * в сценах — квесты night_shift и sl_rat_race были недостижимы.
+ */
+const FACTORY_FOREMAN_SCHEDULE: NPCSchedule = {
+  id: 'schedule_factory_foreman',
+  npcId: 'factory_foreman',
+  entries: [
+    { startHour: 0, endHour: 7, sceneId: 'abandoned_factory', position: [-2.5, 0, -2.0], activity: 'sleep' },
+    { startHour: 7, endHour: 9, sceneId: 'abandoned_factory', position: [-1.5, 0, -1.0], activity: 'rest' },
+    { startHour: 9, endHour: 18, sceneId: 'abandoned_factory', position: [-1.5, 0, -1.0], activity: 'work' },
+    { startHour: 18, endHour: 21, sceneId: 'abandoned_factory', position: [-1.5, 0, -1.0], activity: 'talk' },
+    { startHour: 21, endHour: 24, sceneId: 'abandoned_factory', position: [-2.5, 0, -2.0], activity: 'rest' },
+  ],
+};
+
+/**
+ * Марат-эхо — цифровой след в отражениях воды (пак «Голоса Пирса» + библиотека).
+ * FIX (reachability): без расписания NPC не появлялся в сценах — цель
+ * npc_talked квеста pv_drowned_server была невыполнима.
+ */
+const MARAT_ECHO_SCHEDULE: NPCSchedule = {
+  id: 'schedule_marat_echo',
+  npcId: 'marat_echo',
+  entries: [
+    { startHour: 0, endHour: 10, sceneId: 'river_pier', position: [2.5, 0, -5.0], activity: 'rest' },
+    { startHour: 10, endHour: 16, sceneId: 'library_day', position: [1.0, 0, 2.0], activity: 'read' },
+    { startHour: 16, endHour: 24, sceneId: 'river_pier', position: [2.5, 0, -5.0], activity: 'rest' },
+  ],
+};
+
+/** Старик на скамье в парке (расширенный акт 3 — «Ржавые Ключи»). */
+const PARK_OLD_MAN_SCHEDULE: NPCSchedule = {
+  id: 'schedule_park_old_man',
+  npcId: 'park_old_man',
+  entries: [
+    { startHour: 8, endHour: 22, sceneId: 'park_day', position: [0, 0, 0], activity: 'rest' },
+  ],
+};
+
+/** Умирающий поэт — читальный зал библиотеки, за последним стеллажом. */
+const DYING_POET_SCHEDULE: NPCSchedule = {
+  id: 'schedule_dying_poet',
+  npcId: 'dying_poet',
+  entries: [
+    { startHour: 9, endHour: 21, sceneId: 'library_day', position: [-1.0, 0, -2.5], activity: 'read' },
+  ],
+};
+
 /* ─── All schedules (core 7 + expanded 5 + new 5) ─── */
 
 export const NPC_SCHEDULES: NPCSchedule[] = [
@@ -471,6 +538,11 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   BABA_ZINA_SCHEDULE,
   STREET_POET_SCHEDULE,
   GUILD_DEFECTOR_SCHEDULE,
+  MARINA_SCHEDULE,
+  FACTORY_FOREMAN_SCHEDULE,
+  MARAT_ECHO_SCHEDULE,
+  PARK_OLD_MAN_SCHEDULE,
+  DYING_POET_SCHEDULE,
   ...CHK_NPC_SCHEDULES,
 ];
 

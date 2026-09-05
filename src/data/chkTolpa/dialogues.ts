@@ -651,6 +651,15 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: '*перебирает струны, не поднимая головы* Если ты от Ру — передай, что я не потерялась. Я тут. Огни на воде лучше, чем огни на мониторе. *поднимает глаза* Ритка. ЧК, младший состав. Гитара, как видишь, при мне. Почти живая.',
     choices: [
       {
+        text: 'Ритка, Марина с того берега — ты её знаешь?',
+        next: 'pv_waiting_start',
+        condition: {
+          requiredAct: 4,
+          flag: 'pv_zina_box_delivered',
+          missingFlag: 'pv_waiting_accepted',
+        },
+      },
+      {
         text: 'Про струны — могу помочь',
         next: 'pier_ritka_strings_start',
         condition: { missingFlag: 'pier_ritka_strings_active' },
