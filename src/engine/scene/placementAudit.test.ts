@@ -19,8 +19,21 @@ describe('placementAudit — модели стоят на местах', () => {
   it('нет HIGH-нарушений (вне пола/габаритов/встроены в геометрию)', () => {
     const { checked, problems } = runPlacementAudit();
     const high = problems.filter((p) => p.severity === 'HIGH');
-    expect(checked).toBeGreaterThan(500);
+    expect(checked).toBeGreaterThan(700); // v4.14.0: 635 NPC/spawn/trigger + dressing/manifest
     expect(high).toEqual([]);
+  });
+
+  it('dressing/manifest-слой входит в аудит (v4.14.0 — слой был слепой зоной)', async () => {
+    const { collectPlacements } = await import('./placementAudit');
+    const placements = collectPlacements();
+    expect(placements.some((p) => p.kind === 'dressing' && p.label.startsWith('dressing '))).toBe(true);
+    expect(placements.some((p) => p.kind === 'dressing' && p.label.startsWith('manifest '))).toBe(true);
+    // Терминалы больше не парят: каждый сидит на мебели (y > 0) с валидной точкой.
+    const terminals = placements.filter((p) => p.label.includes('kenney_terminal'));
+    expect(terminals.length).toBeGreaterThan(0);
+    for (const t of terminals) {
+      expect(t.position[1], `${t.label} должен стоять на поверхности`).toBeGreaterThan(0.1);
+    }
   });
 
   it('вариант-оверрайды ссылаются только на существующие сцены и NPC', () => {

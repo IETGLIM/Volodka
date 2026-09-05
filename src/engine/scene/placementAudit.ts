@@ -16,6 +16,8 @@ import { SCENE_SCHEDULE_PARENT } from '@/config/sceneInheritance';
 import { resolveNpcPlacementForScene } from '@/config/npcVariantPlacementOverrides';
 import { NPC_SCHEDULES, ACT_SCHEDULE_OVERRIDES } from '@/data/npcSchedules';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
+import { getScenePropDressing } from '@/config/scenePropDressing';
+import { getSceneManifestAssets } from '@/config/sceneManifestAssets';
 import type { SceneDefinition, ColliderDef } from '@/shared/types/sceneDefinition';
 import type { SceneId } from '@/config/sceneIds';
 
@@ -30,6 +32,12 @@ export const BODY_TOP = 1.7;
 export const Y_TOL = 0.08;
 /** How far outside bounds still counts as «inside» (wall thickness tolerance). */
 export const BOUNDS_TOL = 0.05;
+/**
+ * Допуск габаритов для dressing/manifest-пропсов: настенные предметы
+ * (камеры/кондиционеры/окна) сидят на фасадах чуть за линией габаритов
+ * (глубина фасада ~2–3 м). Всё что дальше — реально потерянная модель.
+ */
+export const DRESSING_BOUNDS_TOL = 3.0;
 /** Beds/sofas/benches (top ≤ 1.35 м) разрешают sleep/rest-размещение поверх. */
 export const SLEEP_FURNITURE_TOP_M = 1.35;
 
@@ -101,7 +109,7 @@ export interface Placement {
   label: string;
   sceneId: SceneId;
   position: readonly [number, number, number];
-  kind: 'npc' | 'spawn' | 'prop';
+  kind: 'npc' | 'spawn' | 'prop' | 'dressing';
   /** Schedule activity — sleep/rest разрешены на низкой мебели (кровать/диван). */
   activity?: string;
   /** Trigger-zone footprint (W,H,D full extents) when the placement is a prop. */
@@ -118,7 +126,7 @@ export interface PlacementProblem {
  * чтобы UI-потребители не тянули весь аудит); здесь — реэкспорт для CLI. */
 export { resolveNpcPlacementForScene } from '@/config/npcVariantPlacementOverrides';
 
-function collectPlacements(): Placement[] {
+export function collectPlacements(): Placement[] {
   const placements: Placement[] = [];
 
   /* 1. NPC schedule entries (base + act overrides), expanded to variant scenes
@@ -199,6 +207,32 @@ function collectPlacements(): Placement[] {
     });
   }
 
+  /* 4. FIX v4.14.0: static GLB dressing (scenePropDressing) — слой, который
+   *    раньше не проверялся вовсе (в v4.13 проверялись только NPC-якоря);
+   *    именно здесь жили «полузарытые» лампы/шини и парящие терминалы. */
+  for (const sid of Object.keys(SCENE_DEFINITIONS) as SceneId[]) {
+    for (const placement of getScenePropDressing(sid)) {
+      placements.push({
+        label: `dressing ${placement.propModelId}`,
+        sceneId: sid,
+        position: placement.position,
+        kind: 'dressing',
+      });
+    }
+  }
+
+  /* 5. Manifest GLB bundles (sceneManifestAssets: env_cafe_props и пр.). */
+  for (const sid of Object.keys(SCENE_DEFINITIONS) as SceneId[]) {
+    for (const placement of getSceneManifestAssets(sid)) {
+      placements.push({
+        label: `manifest ${placement.assetId}`,
+        sceneId: sid,
+        position: placement.position,
+        kind: 'dressing',
+      });
+    }
+  }
+
   return placements;
 }
 
@@ -226,14 +260,21 @@ export function runPlacementAudit(): { checked: number; problems: PlacementProbl
     const [x, y, z] = p.position;
     const where = `${p.label} @ [${x}, ${y}, ${z}]`;
 
-    /* bounds */
-    if (Math.abs(x) > geo.halfW + BOUNDS_TOL || Math.abs(z) > geo.halfD + BOUNDS_TOL) {
+    /* bounds. Для dressing — расширенный допуск (настенные пропсы на фасадах). */
+    const boundsTol = p.kind === 'dressing' ? DRESSING_BOUNDS_TOL : BOUNDS_TOL;
+    if (Math.abs(x) > geo.halfW + boundsTol || Math.abs(z) > geo.halfD + boundsTol) {
       pushProblem('HIGH', p.sceneId, `${where}: вне габаритов сцены (площадь ${def.dimensions[0]}×${def.dimensions[2]})`);
     }
 
-    /* floor coverage + Y match (skip for wall/ceiling-mounted props). */
-    const isPropAboveFloor = p.kind === 'prop' && y > Y_TOL;
-    if (!isPropAboveFloor) {
+    /* floor coverage + Y match.
+     * - prop/dressing выше Y_TOL — настольные/настенные/подвесные, пол не ждём;
+     * - dressing в outdoor/underground/dream сценах: def.floors — только ядро
+     *   (лес ±9 из ±18), но структурный пол (SceneConfig.size) накрывает все
+     *   габариты — отсутствие деф-пола вне ядра не нарушение. */
+    const isPropAboveFloor = (p.kind === 'prop' || p.kind === 'dressing') && y > Y_TOL;
+    const outdoorDressingOffCore =
+      p.kind === 'dressing' && def.type !== 'indoor' && floorTopAt(geo.floors, x, z) === null;
+    if (!isPropAboveFloor && !outdoorDressingOffCore) {
       const top = floorTopAt(geo.floors, x, z);
       if (top === null) {
         pushProblem('HIGH', p.sceneId, `${where}: под точкой нет пола — модель висит в пустоте / провалится`);
@@ -242,11 +283,14 @@ export function runPlacementAudit(): { checked: number; problems: PlacementProbl
       }
     }
 
-    /* embedment in walls/obstacles (npc + spawn; props skipped — authored).
+    /* embedment in walls/obstacles (npc + spawn; prop/dressing skipped).
+     * prop/dressing СОЗНАТЕЛЬНО сидят в своих коллайдерах (v4.13 выравнивал
+     * коллайдеры ПОД визуальные столы/стулья) и не имеют капсулы — проверка
+     * «встроенности» для них шум. Капсула проверяется только у npc/spawn.
      * CENTER: origin модели внутри коллайдера — гарантированный клип меша.
      * RADIUS: только капсула (0.32 м) задевает — «вплотную к мебели», ок.
      * sleep/rest на низкой мебели (≤1.35 м) — кровать/диван/скамейка, норма. */
-    if (p.kind !== 'prop') {
+    if (p.kind === 'npc' || p.kind === 'spawn') {
       const isResting = p.activity === 'sleep' || p.activity === 'rest';
       for (const s of geo.solids) {
         const topY = s.cy + s.hy;
