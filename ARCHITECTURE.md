@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.10.0** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.11.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1138,6 +1138,49 @@ flash-эффектом при падении кармы. Смонтирован 
   3D по-прежнему требует hitbox-систем, реал-тайм HP ВО ВРЕМЯ боя и
   ребаланса всех врагов — архитектура (realtime/, события, presentation
   beat, hazards) готова к следующим инкрементам.
+
+## v4.11.0 — «Удар в спину»: стелс в реал-тайм слое, тихое добивание с бонусом XP
+
+### Стелс-гейт и геометрия (`meleeStrike.ts`, `PatrollingCreeps.tsx`)
+- Чистая геометрия `isBehindCreep(creepFacingYaw, dx, dz)`: dot(взгляд
+  крипа, направление на игрока) ≤ −0.17 (`MELEE_STRIKE_BACKSTAB_DOT_THRESHOLD`)
+  — игрок в задней дуге ≥ ~100°. Конвенция forward = (sin(yaw), cos(yaw))
+  — та же, что в meleeSweep и headingRef крипа (`Math.atan2(dirX, dirZ)`).
+- Гейт двойной: (1) крип не в погоне — провайдер `isAware()` === false
+  («в курсе» только chase: убегающий тоже; cooldown после побега — нет —
+  крип вернулся к посту и расслабился); (2) удар в задней дуге.
+  Провайдеры `getFacingYaw`/`isAware` на `MeleeStrikeTarget` ОПЦИОНАЛЬНЫ
+  — цели без них считаются бодрствующими (обычный путь, обратная
+  совместимость).
+
+### Контракт `applyStrike({ introHpPct, backstab })` — единая точка решения
+- Сила ослабления собирается ТОЛЬКО в `attemptMeleeStrike` и уходит крипу
+  одним контрактом; PatrollingCreeps отдаёт движку только факты
+  (headingRef, осведомлённость) и применяет готовый introHpPct в
+  `startEncounter` — крип больше не вычисляет HP сам.
+- Инвариант приоритета: память HP после побега (creepVitality) > стелс
+  0.5 (`MELEE_STRIKE_BACKSTAB_INTRO_HP_PCT`) > база 0.75. Стелс НЕ
+  наслаивается на запомненный урон: 0.6 остаётся 0.6 (тест).
+- Событие `combat:melee_strike` расширено `backstab: boolean` —
+  потребители (FX/хаптика/HUD) ветвятся без повторных вычислений
+  геометрии.
+
+### Тихое добивание (`rewards.ts §9.3`)
+- `computeCreepFinisherRewards({ backstab })`: +25% XP
+  (`CREEP_FINISHER_BACKSTAB_XP_BONUS`, floor(25×0.6×1.25)=18 против 15),
+  карма неизменна (фиксированная 2), кредиты считаются от бонусного XP
+  той же формулой.
+
+### Презентация стелса
+- MeleeStrikeHint: третий стейт `data-backstab` («в спину — ЛКМ», EyeOff,
+  #c084fc, дыхание ореола 3.2s, reduced-motion глушит); приоритет стейтов
+  finishable > backstab > обычный решается в КОМПОНЕНТЕ
+  (backstab && !finishable) — CSS конфликтов состояний не разрешает.
+- MeleeStrikeFx: фиолетовая искра крупнее обычной; цвет переустанавливается
+  при КАЖДОМ acquire из пула (resetHitSpark цвет не трогает — иначе
+  стелс-цвет «протекал» бы в обычные удары).
+- Хаптика: `hapticStealthStrike([10,60,10,60,25])` — троттлинг общий
+  с боевыми (hapticEventFeedback).
 
 ## v4.10.0 — «Мир Снов»: 147/147 квестов, инвариант гейтов, единый источник наград
 
