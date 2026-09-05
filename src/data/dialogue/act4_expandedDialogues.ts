@@ -13,6 +13,7 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
       {
         text: 'Принимаю. Готовься проиграть.',
         next: 'rival_poet_max_reaction',
+        condition: { missingFlag: 'poetry_duel_finished' },
         effects: [
           { type: 'triggerQuest', questId: 'poetry_duelist' },
           { type: 'addKarma', value: 1 },
@@ -22,6 +23,7 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
       {
         text: 'Может, лучше поговорим о стихах без толпы?',
         next: 'rival_poet_max_reaction',
+        condition: { missingFlag: 'poetry_duel_finished' },
         effects: [
           { type: 'triggerQuest', questId: 'poetry_duelist' },
           { type: 'addSkill', skill: 'empathy', value: 1 },
@@ -103,6 +105,7 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
       {
         text: 'Тридцать семь запрещённых книг? Покажи мне.',
         next: 'old_librarian_fyodor_puzzle_hint',
+        condition: { missingFlag: 'forgotten_archive_opened' },
         effects: [
           { type: 'triggerQuest', questId: 'forgotten_archive' },
           { type: 'addKarma', value: 2 },
@@ -111,6 +114,7 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
       {
         text: 'Это опасно. Если гильдия узнает...',
         next: 'old_librarian_fyodor_puzzle_hint',
+        condition: { missingFlag: 'forgotten_archive_opened' },
         effects: [
           { type: 'triggerQuest', questId: 'forgotten_archive' },
           { type: 'addSkill', skill: 'intuition', value: 1 },
@@ -134,7 +138,17 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'setFlag', flag: 'archive_puzzle_hint_received', flagValue: true },
+          { type: 'setFlag', flag: 'archive_puzzle_solved', flagValue: true },
           { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+      {
+        text: 'Бункер на минус втором — записи довоенных. Где вход?',
+        next: null,
+        condition: { requiredAct: 3, missingFlag: 'bunker_explored' },
+        effects: [
+          { type: 'triggerQuest', questId: 'whisper_of_walls' },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
         ],
       },
     ],
@@ -237,6 +251,8 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 12 },
           { type: 'addXp', value: 220 },
           { type: 'setFlag', flag: 'bunker_signal_resolved', flagValue: true },
+          { type: 'setFlag', flag: 'bunker_message_decoded', flagValue: true },
+          { type: 'setFlag', flag: 'bunker_sender_found', flagValue: true },
           { type: 'addStat', stat: 'stress', value: 5 },
         ],
       },
@@ -247,6 +263,8 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 6 },
           { type: 'addXp', value: 220 },
           { type: 'setFlag', flag: 'bunker_signal_resolved', flagValue: true },
+          { type: 'setFlag', flag: 'bunker_message_decoded', flagValue: true },
+          { type: 'setFlag', flag: 'bunker_sender_found', flagValue: true },
         ],
       },
     ],
@@ -264,6 +282,7 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
       {
         text: 'Сколько платишь и какой маршрут?',
         next: 'smuggler_grisha_route_planning',
+        condition: { missingFlag: 'trade_route_established' },
         effects: [
           { type: 'triggerQuest', questId: 'trade_route' },
         ],
@@ -271,6 +290,7 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
       {
         text: 'А почему именно я? Наверняка есть другие кандидаты.',
         next: 'smuggler_grisha_route_planning',
+        condition: { missingFlag: 'trade_route_established' },
         effects: [
           { type: 'triggerQuest', questId: 'trade_route' },
           { type: 'addSkill', skill: 'empathy', value: 1 },
@@ -297,6 +317,8 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addKarma', value: 2 },
           { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'setFlag', flag: 'goods_transport_started', flagValue: true },
+          { type: 'setFlag', flag: 'patrol_avoided', flagValue: true },
         ],
       },
     ],
@@ -328,6 +350,62 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'trade_route_established', flagValue: true },
           { type: 'setFlag', flag: 'smuggler_network_member', flagValue: true },
           { type: 'addKarma', value: -2 },
+        ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════
+     СНАБЖЕНЕЦ ОБЩИНЫ И ПОСТАВЩИК СОЮЗА — приём курьера trade_route
+     ═══════════════════════════════════════════════════════════ */
+
+  community_buyer_handoff: {
+    id: 'community_buyer_handoff',
+    speaker: 'Снабженец Общины',
+    speakerId: 'community_buyer',
+    text: '*перевязывает ящик брезентом, не поднимая глаз* Гриша прислал? Значит, времени мало. Медикаменты здесь, список — сверху. Что возьмёшь взамен — запчасти, инструменты — отметь в графе. И запомни: Община платит справедливостью, а не благодарностью.',
+    contextNote: 'Снабженец принимает медикаменты и выдаёт запчасти — оба лагеря держатся на обмене.',
+    choices: [
+      {
+        text: 'Груз принял, список сверил. Передай Грише — чисто.',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'community_buyer', npcChange: { relation: 3 } },
+          { type: 'addXp', value: 60 },
+        ],
+      },
+      {
+        text: 'Зачем Общине посредник? Договорились бы напрямую.',
+        next: null,
+        effects: [
+          { type: 'addKarma', value: 1 },
+          { type: 'addSkill', skill: 'empathy', value: 1 },
+        ],
+      },
+    ],
+  },
+
+  union_supplier_handoff: {
+    id: 'union_supplier_handoff',
+    speaker: 'Поставщик Союза',
+    speakerId: 'union_supplier',
+    text: '*протирает деталь, глядя исподлобья* Курьер от Гриши. Ну что ж. Запчасти — по описи, медикаменты — приму без вопросов. Союз держит слово: груз дошёл — оплата в срок. Только не задерживайся — у меня через час приёмка.',
+    contextNote: 'Поставщик Союза принимает партию — гордость гордостью, а торговля — превыше.',
+    choices: [
+      {
+        text: 'Опись сошлась в графе. Сделка закрыта.',
+        next: null,
+        effects: [
+          { type: 'npcChange', npcId: 'union_supplier', npcChange: { relation: 3 } },
+          { type: 'addXp', value: 60 },
+        ],
+      },
+      {
+        text: 'А если Община однажды найдёт прямой канал?',
+        next: null,
+        effects: [
+          { type: 'addKarma', value: 1 },
+          { type: 'addSkill', skill: 'persuasion', value: 1 },
         ],
       },
     ],

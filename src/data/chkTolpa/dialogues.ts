@@ -285,6 +285,16 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'chk_based_samizdat_handoff',
         condition: { flag: 'street_samizdat_received', missingFlag: 'street_samizdat_delivered' },
       },
+      {
+        text: 'Дрова на исходе — костру нужен хворост и третий огонь.',
+        next: 'aaa_chk_campfire_legends_start',
+        condition: { requiredAct: 6, flag: 'resistance_joined', missingFlag: 'aaa_campfire_accepted' },
+      },
+      {
+        text: 'Город должен прочитать самиздат — где твои типографы?',
+        next: 'quest_act4_street_samizdat_start',
+        condition: { requiredAct: 4, missingFlag: 'quest_act4_street_samizdat_active' },
+      },
     ],
   },
   chk_based_gift_wine: {

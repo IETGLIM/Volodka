@@ -510,7 +510,156 @@ const DYING_POET_SCHEDULE: NPCSchedule = {
   ],
 };
 
-/* ─── All schedules (core 7 + expanded 5 + new 5) ─── */
+/* ──────────────────────────────────────────────────────────────────────────
+   EXPANSION STUB SCHEDULES — гиверы одиночных квестов (акт 3–4).
+   FIX (reachability): NPC-заглушки существовали в реестре, но без расписаний
+   не появлялись в сценах — их квесты (lost_shipment, blacksmith_special,
+   guard_bribe_evidence, last_wish, watchers_shadow, poetry_duelist,
+   forgotten_archive, bunker_signal, trade_route) были недостижимы.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/** Торговец Борис — бродячий торговец: днём у парка, вечером в кафе. */
+const MERCHANT_BORIS_SCHEDULE: NPCSchedule = {
+  id: 'schedule_merchant_boris',
+  npcId: 'merchant_boris',
+  entries: [
+    { startHour: 0, endHour: 8, sceneId: 'street_night', position: [2.0, 0, 1.5], activity: 'sleep' },
+    { startHour: 8, endHour: 14, sceneId: 'park_day', position: [2.5, 0, -1.0], activity: 'talk' },
+    { startHour: 14, endHour: 19, sceneId: 'street_night', position: [2.0, 0, 1.5], activity: 'work' },
+    { startHour: 19, endHour: 24, sceneId: 'cafe_evening', position: [2.0, 0, -1.0], activity: 'rest' },
+  ],
+};
+
+/** Информант Серёжа — осведомитель: тени рынка и ночной улицы. */
+const INFORMANT_SERYOZHA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_informant_seryozha',
+  npcId: 'informant_seryozha',
+  entries: [
+    { startHour: 0, endHour: 9, sceneId: 'street_night', position: [1.0, 0, -1.5], activity: 'rest' },
+    { startHour: 9, endHour: 14, sceneId: 'cafe_evening', position: [1.5, 0, 1.0], activity: 'talk' },
+    { startHour: 14, endHour: 18, sceneId: 'park_day', position: [-2.5, 0, 0.5], activity: 'walk' },
+    { startHour: 18, endHour: 24, sceneId: 'street_night', position: [1.0, 0, -1.5], activity: 'talk' },
+  ],
+};
+
+/** Капитан Гарольд — ночные обходы города, дневная служба при казарме. */
+const CAPTAIN_GAROLD_SCHEDULE: NPCSchedule = {
+  id: 'schedule_captain_garold',
+  npcId: 'captain_garold',
+  entries: [
+    { startHour: 0, endHour: 7, sceneId: 'street_night', position: [-1.0, 0, 2.5], activity: 'walk' },
+    { startHour: 7, endHour: 12, sceneId: 'office_day', position: [2.0, 0, -1.0], activity: 'work' },
+    { startHour: 12, endHour: 16, sceneId: 'street_night', position: [0.0, 0, -2.0], activity: 'walk' },
+    { startHour: 16, endHour: 22, sceneId: 'office_day', position: [2.0, 0, -1.0], activity: 'work' },
+    { startHour: 22, endHour: 24, sceneId: 'street_night', position: [-1.0, 0, 2.5], activity: 'walk' },
+  ],
+};
+
+/** Кузнец Игнат — горн у заброшенного завода, вечерами — улица. */
+const BLACKSMITH_IGNAT_SCHEDULE: NPCSchedule = {
+  id: 'schedule_blacksmith_ignat',
+  npcId: 'blacksmith_ignat',
+  entries: [
+    { startHour: 0, endHour: 8, sceneId: 'abandoned_factory', position: [-1.0, 0, 1.0], activity: 'sleep' },
+    { startHour: 8, endHour: 18, sceneId: 'abandoned_factory', position: [-1.0, 0, 1.0], activity: 'work' },
+    { startHour: 18, endHour: 22, sceneId: 'street_night', position: [1.5, 0, -0.5], activity: 'rest' },
+    { startHour: 22, endHour: 24, sceneId: 'abandoned_factory', position: [-1.0, 0, 1.0], activity: 'rest' },
+  ],
+};
+
+/** Умирающий старик — перекрёсток на окраине; сил ходить нет. */
+const DYING_OLD_MAN_SCHEDULE: NPCSchedule = {
+  id: 'schedule_dying_old_man',
+  npcId: 'dying_old_man',
+  entries: [
+    { startHour: 0, endHour: 10, sceneId: 'street_night', position: [-2.0, 0, -3.0], activity: 'sleep' },
+    { startHour: 10, endHour: 20, sceneId: 'street_night', position: [-2.0, 0, -3.0], activity: 'rest' },
+    { startHour: 20, endHour: 24, sceneId: 'street_night', position: [-2.0, 0, -3.0], activity: 'sleep' },
+  ],
+};
+
+/** Контакт из Сети — не показывается днём; шёпот в ночном переулке. */
+const SURVEILLANCE_CONTACT_SCHEDULE: NPCSchedule = {
+  id: 'schedule_surveillance_contact',
+  npcId: 'surveillance_contact',
+  entries: [
+    { startHour: 0, endHour: 5, sceneId: 'street_night', position: [1.5, 0, -2.5], activity: 'talk' },
+    { startHour: 5, endHour: 20, sceneId: 'street_night', position: [3.0, 0, -3.5], activity: 'sleep' },
+    { startHour: 20, endHour: 24, sceneId: 'street_night', position: [1.5, 0, -2.5], activity: 'talk' },
+  ],
+};
+
+/** Поэт Макс — площадь его сцена: толпа днём в парке, вечером на улице. */
+const RIVAL_POET_MAX_SCHEDULE: NPCSchedule = {
+  id: 'schedule_rival_poet_max',
+  npcId: 'rival_poet_max',
+  entries: [
+    { startHour: 0, endHour: 9, sceneId: 'cafe_evening', position: [-2.5, 0, -1.5], activity: 'rest' },
+    { startHour: 9, endHour: 15, sceneId: 'park_day', position: [0.0, 0, -2.0], activity: 'talk' },
+    { startHour: 15, endHour: 20, sceneId: 'street_night', position: [0.0, 0, 2.0], activity: 'talk' },
+    { startHour: 20, endHour: 24, sceneId: 'cafe_evening', position: [-2.5, 0, -1.5], activity: 'rest' },
+  ],
+};
+
+/** Библиотекарь Фёдор — хранитель запрета: смена в библиотеке, ужин в кафе. */
+const OLD_LIBRARIAN_FYODOR_SCHEDULE: NPCSchedule = {
+  id: 'schedule_old_librarian_fyodor',
+  npcId: 'old_librarian_fyodor',
+  entries: [
+    { startHour: 0, endHour: 9, sceneId: 'cafe_evening', position: [1.5, 0, 1.5], activity: 'sleep' },
+    { startHour: 9, endHour: 19, sceneId: 'library_day', position: [1.5, 0, 1.0], activity: 'work' },
+    { startHour: 19, endHour: 24, sceneId: 'cafe_evening', position: [1.5, 0, 1.5], activity: 'rest' },
+  ],
+};
+
+/** Радист Катя — приёмник не выключается: вахта у кафе, прогулки у пирса. */
+const RADIO_OPERATOR_KATYA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_radio_operator_katya',
+  npcId: 'radio_operator_katya',
+  entries: [
+    { startHour: 0, endHour: 7, sceneId: 'river_pier', position: [-1.5, 0, -2.0], activity: 'rest' },
+    { startHour: 7, endHour: 13, sceneId: 'cafe_evening', position: [-1.5, 0, 2.0], activity: 'talk' },
+    { startHour: 13, endHour: 18, sceneId: 'river_pier', position: [-1.5, 0, -2.0], activity: 'work' },
+    { startHour: 18, endHour: 24, sceneId: 'cafe_evening', position: [-1.5, 0, 2.0], activity: 'talk' },
+  ],
+};
+
+/** Контрабандист Гриша — тропы живут ночью: улица после заката, завод днём. */
+const SMUGGLER_GRISHA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_smuggler_grisha',
+  npcId: 'smuggler_grisha',
+  entries: [
+    { startHour: 0, endHour: 6, sceneId: 'street_night', position: [2.0, 0, -1.0], activity: 'walk' },
+    { startHour: 6, endHour: 12, sceneId: 'abandoned_factory', position: [2.5, 0, 1.0], activity: 'sleep' },
+    { startHour: 12, endHour: 18, sceneId: 'abandoned_factory', position: [2.5, 0, 1.0], activity: 'work' },
+    { startHour: 18, endHour: 22, sceneId: 'street_night', position: [2.0, 0, -1.0], activity: 'talk' },
+    { startHour: 22, endHour: 24, sceneId: 'street_night', position: [3.0, 0, 1.0], activity: 'walk' },
+  ],
+};
+
+/** Снабженец Общины — обмен у завода: медикаменты, запчасти, недоверие. */
+const COMMUNITY_BUYER_SCHEDULE: NPCSchedule = {
+  id: 'schedule_community_buyer',
+  npcId: 'community_buyer',
+  entries: [
+    { startHour: 0, endHour: 9, sceneId: 'abandoned_factory', position: [-2.0, 0, 1.0], activity: 'sleep' },
+    { startHour: 9, endHour: 17, sceneId: 'abandoned_factory', position: [-2.0, 0, 1.0], activity: 'talk' },
+    { startHour: 17, endHour: 24, sceneId: 'cafe_evening', position: [2.5, 0, 1.0], activity: 'rest' },
+  ],
+};
+
+/** Поставщик Союза — грузы на офисной стороне: контракты и гордость. */
+const UNION_SUPPLIER_SCHEDULE: NPCSchedule = {
+  id: 'schedule_union_supplier',
+  npcId: 'union_supplier',
+  entries: [
+    { startHour: 0, endHour: 8, sceneId: 'office_day', position: [-1.5, 0, -1.0], activity: 'sleep' },
+    { startHour: 8, endHour: 18, sceneId: 'office_day', position: [-1.5, 0, -1.0], activity: 'work' },
+    { startHour: 18, endHour: 24, sceneId: 'street_night', position: [0.5, 0, 1.5], activity: 'rest' },
+  ],
+};
+
+/* ─── All schedules (core 7 + expanded 5 + new 5 + stub givers 12) ─── */
 
 export const NPC_SCHEDULES: NPCSchedule[] = [
   ALBERT_SCHEDULE,
@@ -543,6 +692,18 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   MARAT_ECHO_SCHEDULE,
   PARK_OLD_MAN_SCHEDULE,
   DYING_POET_SCHEDULE,
+  MERCHANT_BORIS_SCHEDULE,
+  INFORMANT_SERYOZHA_SCHEDULE,
+  CAPTAIN_GAROLD_SCHEDULE,
+  BLACKSMITH_IGNAT_SCHEDULE,
+  DYING_OLD_MAN_SCHEDULE,
+  SURVEILLANCE_CONTACT_SCHEDULE,
+  RIVAL_POET_MAX_SCHEDULE,
+  OLD_LIBRARIAN_FYODOR_SCHEDULE,
+  RADIO_OPERATOR_KATYA_SCHEDULE,
+  SMUGGLER_GRISHA_SCHEDULE,
+  COMMUNITY_BUYER_SCHEDULE,
+  UNION_SUPPLIER_SCHEDULE,
   ...CHK_NPC_SCHEDULES,
 ];
 

@@ -76,6 +76,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [1.0, 0, -1.5],
     defaultRotation: -Math.PI / 4,
     patrolRadius: 0.6,
+    dialogueNodeId: 'informant_seryozha_corruption',
     npcSplashProfile: 'npc_informant_seryozha',
     description:
       'Бывший архивист гильдии, теперь — осведомитель Сети. Знает, где лежат документы, которые никто не должен найти. Торгует тайнами осторожно: каждое слово — риск.',
@@ -112,6 +113,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [2.0, 0, 1.5],
     defaultRotation: -Math.PI / 3,
     patrolRadius: 1.0,
+    dialogueNodeId: 'merchant_boris_greeting',
     npcSplashProfile: 'npc_merchant_boris',
     description:
       'Бродячий торговец с печатью гильдии купцов. Возит товар между городами по лесным дорогам. Теряет груз чаще, чем хотелось бы — но платит щедро за возврат.',
@@ -148,6 +150,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [0, 0, 2.0],
     defaultRotation: Math.PI,
     patrolRadius: 0.5,
+    dialogueNodeId: 'captain_garold_confrontation',
     npcSplashProfile: 'npc_captain_garold',
     description:
       'Капитан городской стражы. Берёт мзду с торговцев и закрывает глаза на контрабанду. Внешне — каменная стена; внутри — бухгалтерия компромата.',
@@ -184,6 +187,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [-1.0, 0, 1.0],
     defaultRotation: Math.PI / 2,
     patrolRadius: 0.4,
+    dialogueNodeId: 'blacksmith_ignat_greeting',
     npcSplashProfile: 'npc_blacksmith_ignat',
     description:
       'Старый кузнец с мечтой выковать клинок, о котором будут слагать легенды. Руду, кристалл и чешую ищет по всему свету — но кует не мечи, а судьбы.',
@@ -221,6 +225,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [-2.0, 0, -3.0],
     defaultRotation: 0,
     patrolRadius: 0,
+    dialogueNodeId: 'dying_old_man_request',
     npcSplashProfile: 'npc_dying_old_man',
     description:
       'Старик на окраине города. Дышит на исходе. В руке — запечатанное письмо для дочери, которую не видел десять лет. Просит об одном: доставить нетронутым.',
@@ -294,6 +299,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [1.5, 0, -2.5],
     defaultRotation: Math.PI * 0.6,
     patrolRadius: 0.5,
+    dialogueNodeId: 'surveillance_contact_meeting',
     npcSplashProfile: 'npc_surveillance_contact',
     description:
       'Безымянный голос из Сети. Координирует съём данных с узлов гильдейской слежки. Никогда не показывает лица — только капюшон и шёпот в коммуникаторе.',
@@ -479,6 +485,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [0, 0, -2.0],
     defaultRotation: Math.PI,
     patrolRadius: 1.5,
+    dialogueNodeId: 'rival_poet_max_challenge',
     npcSplashProfile: 'npc_rival_poet_max',
     description:
       'Ривальный поэт на городской площади. Бросает вызов прохожим: три раунда, три стиха. Любит резкие метафоры и социальную сатиру. Проигрывает — смеётся. Выигрывает — насмехается. Главное — не победа, а слова между строк.',
@@ -515,6 +522,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [1.5, 0, 1.0],
     defaultRotation: -Math.PI / 4,
     patrolRadius: 0.5,
+    dialogueNodeId: 'old_librarian_fyodor_secret',
     npcSplashProfile: 'npc_old_librarian_fyodor',
     description:
       'Старый библиотекарь Фёдор. Хранит тайну: в подвалах библиотеки спрятан архив доцензурной литературы — книги, которые гильдия пыталась уничтожить десятилетия назад. Дверь откроет только тому, кто заслужил доверие. Три запрещённых книги ждут своего часа.',
@@ -551,6 +559,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [-1.0, 0, 1.5],
     defaultRotation: Math.PI / 4,
     patrolRadius: 0.5,
+    dialogueNodeId: 'radio_operator_katya_signal_discovery',
     npcSplashProfile: 'npc_radio_operator_katya',
     description:
       'Радист Сети. Перехватила циклический радиосигнал на военной частоте — довоенный шифр, передающийся из-за городской черты годы спустя после Катастрофы. Даёт декодер тому, кто готов идти на восток, к старым бункерам.',
@@ -587,6 +596,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [2.0, 0, -1.0],
     defaultRotation: -Math.PI / 4,
     patrolRadius: 1.0,
+    dialogueNodeId: 'smuggler_grisha_deal_proposal',
     npcSplashProfile: 'npc_smuggler_grisha',
     description:
       'Контрабандист, знающий безопасные тропы между Общиной и Торговым Союзом. Тропы меняются каждый день. Больше всего на свете не любит патрули — и проигранные ставки.',
@@ -623,6 +633,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [-2.0, 0, 1.0],
     defaultRotation: Math.PI / 4,
     patrolRadius: 0.5,
+    dialogueNodeId: 'community_buyer_handoff',
     npcSplashProfile: 'npc_community_buyer',
     description:
       'Снабженец Общины — неформального объединения жителей окраин. Принимает медикаменты в обмен на запчасти. Не доверяет гильдии. Не доверяет почти никому. Но — нужна помощь.',
@@ -659,6 +670,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [2.5, 0, 1.5],
     defaultRotation: -Math.PI / 4,
     patrolRadius: 0.5,
+    dialogueNodeId: 'union_supplier_handoff',
     npcSplashProfile: 'npc_union_supplier',
     description:
       'Поставщик Торгового Союза. Запчасти на медикаменты — его специализация. Гордый, не любит Общину, но торговля — превыше всего. Платит щедро, если груз доходит.',

@@ -241,7 +241,8 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
     act: 3,
     questType: 'side',
     difficulty: 'medium',
-    hint: 'Вход за заваленным проёмом на уровне минус два. Возьми с собой фонарь и не стой на месте — потолок ненадёжен.',
+    hint: 'Библиотекарь Фёдор → вход на минус два → плёнки → вернуть архивисту.',
+    questGiverNpcId: 'old_librarian_fyodor',
     objectives: [
       {
         id: 'find_bunker_entrance',
@@ -285,6 +286,5 @@ export const QUESTS_ACT3_EXPANDED: QuestDefinition[] = [
       { type: 'addSkill', skill: 'intuition', value: 3 },
       { type: 'setFlag', flag: 'bunker_explored', flagValue: true },
     ],
-    questGiverNpcId: undefined,
   },
 ];

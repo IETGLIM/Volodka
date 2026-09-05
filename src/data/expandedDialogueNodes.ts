@@ -234,6 +234,15 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'digital_ghost_approach',
         condition: { flag: 'found_server_room', missingFlag: 'ai_fragment_recovered' },
       },
+      {
+        text: 'Под городом нашли вход в дата-центр — Сеть в курсе?',
+        next: null,
+        condition: { requiredAct: 4, missingFlag: 'catastrophe_echo_resolved' },
+        effects: [
+          { type: 'triggerQuest', questId: 'catastrophe_echo' },
+          { type: 'npcChange', npcId: 'lena', npcChange: { relation: 3 } },
+        ],
+      },
     ],
   },
 
@@ -546,6 +555,21 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'boris_act3_factory',
         condition: { requiredAct: 2, flag: 'wants_visit_factory' },
       },
+      {
+        text: 'Слух по цеху: завтра у гильдии зачистка. Это из-за твоей тетради?',
+        next: 'aaa_boris_smuggling_start',
+        condition: { requiredAct: 3, flag: 'chip_cafe_clearance_done', missingFlag: 'aaa_smuggling_accepted' },
+      },
+      {
+        text: 'Борис, где Григорий? Инженер, что ушёл на завод и не вернулся.',
+        next: null,
+        condition: { requiredAct: 3, flag: 'chip_cafe_clearance_done', missingFlag: 'factory_search_accepted' },
+        effects: [
+          { type: 'triggerQuest', questId: 'factory_lost_engineer' },
+          { type: 'setFlag', flag: 'factory_search_accepted', flagValue: true },
+          { type: 'npcChange', npcId: 'boris', npcChange: { relation: 2 } },
+        ],
+      },
     ],
   },
 
@@ -594,6 +618,24 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           flag: 'library_lost_archive_done',
           missingFlag: 'sl_quiet_hour_accepted',
         },
+      },
+      {
+        text: 'Про фотографию в Запретном Фонде — пять поэтов без имён. Ты знаешь?',
+        next: 'aaa_library_old_photo_start',
+        condition: {
+          requiredAct: 4,
+          flag: 'library_lost_archive_done',
+          missingFlag: 'aaa_old_photo_accepted',
+        },
+      },
+      {
+        text: 'Про закрытое хранилище с запрещённой книгой — это правда?',
+        next: null,
+        condition: { requiredAct: 3, flag: 'office_lobby_watch_done', missingFlag: 'tamara_trust' },
+        effects: [
+          { type: 'triggerQuest', questId: 'library_banned_book' },
+          { type: 'setFlag', flag: 'banned_book_rumor_heard', flagValue: true },
+        ],
       },
       { text: 'Запрещённые тексты. Те, что не в Сети.', next: 'tamara_forbidden' },
       { text: 'Информацию о Великом Сбое.', next: 'tamara_crash' },
@@ -1315,6 +1357,24 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           missingFlag: 'pv_fourth_voice_accepted',
         },
       },
+      {
+        text: 'Под заводом кто-то читает стихи. Ты это слышишь?',
+        next: 'aaa_sewer_echo_start',
+        condition: {
+          requiredAct: 3,
+          flag: 'trofim_basement_hint',
+          missingFlag: 'aaa_sewer_echo_accepted',
+        },
+      },
+      {
+        text: 'Пирс номер три, ночью, когда дроны на подзарядке. Ты звал?',
+        next: 'aaa_trofim_night_philosophy_start',
+        condition: {
+          requiredAct: 5,
+          flag: 'trofim_basement_hint',
+          missingFlag: 'aaa_night_philosophy_accepted',
+        },
+      },
       { text: 'Пойду я.', next: null },
     ],
   },
@@ -1583,6 +1643,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'pv_zina_box_start',
         condition: { requiredAct: 2, missingFlag: 'pv_zina_box_accepted' },
       },
+      {
+        text: 'Релейный блок в дальней стене — «Заря-М» молчит из-за него?',
+        next: 'aaa_factory_broken_mechanism_start',
+        condition: { requiredAct: 5, missingFlag: 'aaa_mechanism_accepted' },
+      },
       { text: 'Потом.', next: null },
     ],
   },
@@ -1768,6 +1833,11 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Спросить, кого она ждёт',
         next: 'marina_waiting_asked',
         condition: { missingFlag: 'marina_waiting_told' },
+      },
+      {
+        text: 'Марина… у меня письмо. С сургучом. Твой отец...',
+        next: 'marina_receive_letter',
+        condition: { hasItem: 'sealed_letter', missingFlag: 'last_wish_completed' },
       },
       { text: 'Пойду. Держись.', next: null },
     ],

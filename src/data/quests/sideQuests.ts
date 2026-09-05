@@ -862,7 +862,8 @@ export const QUESTS_SIDE: QuestDefinition[] = [
     questType: 'side',
     difficulty: 'hard',
     requiresQuests: ['factory_lost_engineer'],
-    hint: 'Завод → дальний цех → тайник за станком → чертёж → уничтожить или сохранить?',
+    hint: 'Мастер завода → дальний цех → тайник за станком → чертёж → уничтожить или сохранить?',
+    questGiverNpcId: 'factory_foreman',
     objectives: [
       {
         id: 'find_blueprint_cache',

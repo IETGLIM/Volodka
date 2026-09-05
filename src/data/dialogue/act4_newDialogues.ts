@@ -13,16 +13,28 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'Конечно, помогу. Какой маршрут ты держал?',
         next: 'merchant_boris_route_details',
+        condition: { missingFlag: 'lost_shipment_started' },
         effects: [
           { type: 'triggerQuest', questId: 'lost_shipment' },
+          { type: 'setFlag', flag: 'lost_shipment_started', flagValue: true },
           { type: 'addKarma', value: 1 },
         ],
       },
       {
         text: 'А сколько заплатишь?',
         next: 'merchant_boris_payment',
+        condition: { missingFlag: 'lost_shipment_started' },
         effects: [
           { type: 'triggerQuest', questId: 'lost_shipment' },
+          { type: 'setFlag', flag: 'lost_shipment_started', flagValue: true },
+        ],
+      },
+      {
+        text: 'Ящик с синей печатью — вот он, целый. Держи.',
+        next: 'merchant_boris_thankyou',
+        condition: { hasItem: 'boris_shipment_crate' },
+        effects: [
+          { type: 'removeItem', itemId: 'boris_shipment_crate', value: 1 },
         ],
       },
       {
@@ -122,6 +134,23 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
         next: 'informant_seryozha_why_care',
         effects: [
           { type: 'triggerQuest', questId: 'guard_bribe_evidence' },
+        ],
+      },
+      {
+        text: 'Про катакомбы под старой мельницей — что там, во тьме?',
+        next: null,
+        condition: { requiredAct: 4, missingFlag: 'catacombs_cleared' },
+        effects: [
+          { type: 'triggerQuest', questId: 'catacombs_shadows' },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+        ],
+      },
+      {
+        text: 'Документы у меня. Гарольд — где он?',
+        next: null,
+        condition: { hasItem: 'corruption_document_1' },
+        effects: [
+          { type: 'visitStoryNode', nodeId: 'captain_garold_confrontation' },
         ],
       },
       {
@@ -251,6 +280,7 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'Что за материалы? Рассказывай.',
         next: 'blacksmith_ignat_materials',
+        condition: { missingFlag: 'blacksmith_special_done' },
         effects: [
           { type: 'triggerQuest', questId: 'blacksmith_special' },
         ],
@@ -258,9 +288,19 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'И что мне за это будет?',
         next: 'blacksmith_ignat_reward',
+        condition: { missingFlag: 'blacksmith_special_done' },
         effects: [
           { type: 'triggerQuest', questId: 'blacksmith_special' },
         ],
+      },
+      {
+        text: 'Материалы собраны. Руда, кристалл, чешуя — прими, мастер.',
+        next: 'blacksmith_ignat_complete',
+        condition: {
+          hasItem: 'rare_iron_ore',
+          missingFlag: 'blacksmith_special_done',
+        },
+        effects: [{ type: 'npcChange', npcId: 'blacksmith_ignat', npcChange: { relation: 5 } }],
       },
     ],
   },
@@ -317,6 +357,7 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
         text: 'Это... потрясающе. Спасибо, Игнат.',
         next: null,
         effects: [
+          { type: 'setFlag', flag: 'blacksmith_special_done', flagValue: true },
           { type: 'addItem', itemId: 'crystal_blade', value: 1 },
           { type: 'addXp', value: 120 },
           { type: 'addSkill', skill: 'coding', value: 3 },
@@ -337,6 +378,7 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'Конечно. Я передам письмо. Обещаю.',
         next: 'dying_old_man_gratitude',
+        condition: { missingFlag: 'last_wish_completed' },
         effects: [
           { type: 'triggerQuest', questId: 'last_wish' },
           { type: 'addItem', itemId: 'sealed_letter', value: 1 },
@@ -346,6 +388,7 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'Расскажи о ней. Где именно дом?',
         next: 'dying_old_man_details',
+        condition: { missingFlag: 'last_wish_completed' },
         effects: [
           { type: 'triggerQuest', questId: 'last_wish' },
           { type: 'addItem', itemId: 'sealed_letter', value: 1 },

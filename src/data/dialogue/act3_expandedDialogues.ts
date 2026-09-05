@@ -352,6 +352,15 @@ export const DIALOGUE_ACT3_EXPANDED: Record<string, DialogueNode> = {
         ],
       },
       {
+        text: 'Слух по цеху: где-то за станками спрятан чертёж «Ока». Это к тебе?',
+        next: null,
+        condition: { requiredAct: 3, flag: 'factory_search_accepted', missingFlag: 'blueprint_quest_done' },
+        effects: [
+          { type: 'triggerQuest', questId: 'factory_secret_blueprint' },
+          { type: 'addSkill', skill: 'logic', value: 1 },
+        ],
+      },
+      {
         text: 'И сколько за работу?',
         next: 'factory_foreman_payment',
         effects: [

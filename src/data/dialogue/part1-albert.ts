@@ -119,6 +119,11 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         next: 'dialogue_truth_revealed',
         condition: { activeTTLFlag: 'truth_voice_active', collectedPoem: 'poem_1' },
       },
+      {
+        text: 'Гильдия отстроена. У тебя для меня что-то есть — я вижу.',
+        next: 'aaa_epilogue_last_letter_start',
+        condition: { requiredAct: 7, flag: 'guild_rebuilt', missingFlag: 'aaa_last_letter_received' },
+      },
     ],
   },
 
@@ -845,6 +850,11 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Творчество — это приём. Ты говорила об «антеннах»?',
         next: 'maria_about_creativity',
         condition: { requiredAct: 2, minNpcRelation: 55 },
+      },
+      {
+        text: 'В офисе гильдии пропал поэт — а его тетрадь осталась в ящике.',
+        next: 'aaa_maria_lost_diary_start',
+        condition: { requiredAct: 2, flag: 'network_member', missingFlag: 'aaa_lost_diary_accepted' },
       },
       {
         text: 'В архивах есть строки, которые не стареют.',
@@ -1741,6 +1751,11 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Зачем ты строишь систему контроля?',
         next: 'alexander_about_system',
         condition: { requiredAct: 2, minNpcRelation: 50, minTimeOfDay: 8, maxTimeOfDay: 20 },
+      },
+      {
+        text: 'Крыша главного корпуса — оттуда видно ретранслятор. Нужна настройка?',
+        next: 'quest_act4_rooftop_broadcast_setup_start',
+        condition: { requiredAct: 4, missingFlag: 'quest_act4_rooftop_broadcast_setup_active' },
       },
     ],
   },

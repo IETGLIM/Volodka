@@ -55,9 +55,44 @@ describe('questReachability — квесты должны быть запуск�
     for (const id of ['night_shift', 'rusty_keys', 'dying_poet_last_letter']) {
       expect(unreachable, `${id} не должен быть недостижим`).not.toContain(id);
     }
-    // surveillance_contact не имеет greeting-узла — watchers_shadow остаётся
-    // в бэклоге (см. worklog, раунд 8).
-    expect(unreachable).toContain('watchers_shadow');
+    // FIX (v4.9.0): surveillance_contact получил greeting-узел + расписание —
+    // watchers_shadow больше не в бэклоге.
+    expect(unreachable).not.toContain('watchers_shadow');
+  });
+
+  it('AAA-пак (aaa_*) достижим целиком (v4.9.0)', () => {
+    const unreachable = computeUnreachable();
+    const aaa = QUEST_DEFINITIONS.filter((q) => q.id.startsWith('aaa_')).map((q) => q.id);
+    expect(aaa.length).toBeGreaterThanOrEqual(8);
+    const dead = aaa.filter((id) => unreachable.includes(id));
+    expect(dead, 'недостижимые квесты AAA-пака').toEqual([]);
+  });
+
+  it('одиночные квесты актов 3–4 достижимы через гиверов-заглушек (v4.9.0)', () => {
+    const unreachable = computeUnreachable();
+    for (const id of [
+      'lost_shipment',
+      'blacksmith_special',
+      'guard_bribe_evidence',
+      'last_wish',
+      'poetry_duelist',
+      'forgotten_archive',
+      'bunker_signal',
+      'trade_route',
+      'catacombs_shadows',
+      'whisper_of_walls',
+      'factory_secret_blueprint',
+      'catastrophe_echo',
+      'factory_lost_engineer',
+      'library_banned_book',
+      'poetry_broadcast',
+      'solnysh_roof_wine',
+      'solnysh_relocation',
+      'quest_act4_rooftop_broadcast_setup',
+      'quest_act4_street_samizdat',
+    ]) {
+      expect(unreachable, `${id} не должен быть недостижим`).not.toContain(id);
+    }
   });
 
   it('гиверы пак-ов присутствуют в сценах (есть расписание)', () => {
@@ -73,11 +108,13 @@ describe('questReachability — квесты должны быть запуск�
     }
   });
 
-  it('общее число недостижимых квестов не растёт (бейзлайн 30)', () => {
+  it('общее число недостижимых квестов не растёт (бейзлайн 2, v4.9.0)', () => {
     const unreachable = computeUnreachable();
+    // Остаток — dreamworld_lost_child и void_echo_poem: их цели ссылаются на
+    // несуществующие сцены («Мир Снов») — контент-пак целиком в бэклоге.
     expect(
       unreachable.length,
       `недостижимые квесты (${unreachable.length}) > бейзлайна — новый квест без пути активации: ${unreachable.join(', ')}`,
-    ).toBeLessThanOrEqual(32);
+    ).toBeLessThanOrEqual(2);
   });
 });

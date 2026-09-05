@@ -23,12 +23,16 @@ export interface ReachabilityChoiceLike {
 
 export interface ReachabilityNodeLike {
   choices?: readonly ReachabilityChoiceLike[];
+  /** Node-mount effects are applied by the renderer on visit — triggerQuest/visitStoryNode here are live edges. */
+  effects?: ReadonlyArray<{ type?: string; questId?: unknown; nodeId?: unknown }>;
 }
 
 export interface ReachabilityZoneLike {
   linkedDialogueNodeId?: string;
   linkedStoryNodeId?: string;
   linkedQuestId?: string;
+  /** Runtime TriggerZones apply effects on interaction — triggerQuest here IS an activation path. */
+  effects?: ReadonlyArray<{ type?: string; questId?: unknown }>;
 }
 
 export interface ReachabilityNpcLike {
@@ -67,6 +71,19 @@ function collectEdges(
   for (const [id, node] of Object.entries(registry)) {
     const nexts: string[] = [];
     const triggersQuests: string[] = [];
+    // Node-mount effects: StoryRenderer/DialogueRenderer apply node.effects on
+    // visit, so triggerQuest + visitStoryNode there are live activation paths
+    // (e.g. poetry_broadcast fires from act4_broadcast_execute node effects).
+    if (node.effects) {
+      for (const fx of node.effects) {
+        if (fx.type === 'triggerQuest' && typeof fx.questId === 'string') {
+          triggersQuests.push(fx.questId);
+        }
+        if (fx.type === 'visitStoryNode' && typeof fx.nodeId === 'string') {
+          nexts.push(fx.nodeId);
+        }
+      }
+    }
     for (const choice of node.choices ?? []) {
       if (choice.next) nexts.push(choice.next);
       for (const fx of choice.effects ?? []) {
@@ -125,6 +142,14 @@ export function computeQuestReachability(deps: QuestReachabilityDeps): QuestReac
       roots.push(zone.linkedStoryNodeId);
     }
     if (zone.linkedQuestId) zoneQuests.add(zone.linkedQuestId);
+    // Runtime: TriggerZone interactions apply effects (applyEffects) —
+    // triggerQuest in a zone's effects activates the quest on interaction
+    // (e.g. solnysh_wine_closet → solnysh_roof_wine).
+    for (const fx of zone.effects ?? []) {
+      if (fx.type === 'triggerQuest' && typeof fx.questId === 'string') {
+        zoneQuests.add(fx.questId);
+      }
+    }
   }
 
   for (const hubId of hubIds) {
