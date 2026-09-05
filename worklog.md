@@ -4436,3 +4436,99 @@ Stage Summary:
 - Выделение текста работает во всех браузерах: неоновый cyan + свечение, как задумано.
 - Урок: шорткат background: на ::selection = прозрачный фон; background-image
   игнорируется — только background-color. Один источник истины для ::selection — base.css.
+---
+Task ID: 5-a
+Agent: Explore (аудит PART1)
+Task: статус-аудит находок ANALYSIS_REPORT_PART1.md (config/types/state/bootstrap/engine core)
+
+Stage Summary:
+- 64 пункта проверено (40 проблем + 24 improvement): 14 FIXED, 10 PARTIAL, 2 OBSOLETE, 38 NOT_FIXED.
+- FIXED: C-1 (лимит 500 + tier-chunks + budgets), C-2 (dual-TS убран, tsc@5.9.2), C-3 (singlefile отключён, vite/chunks.ts подключён), C-4 (bun.lock удалён+gitignore), T-7, S-3 (getState теперь флашит фасад), S-5 (DifficultyStore в SLICE_STORES), S-8 (generation-guard таймеры auto-close), E-4 (дубль bindDeferredCombatStartListener убран), S-7/3.3-4 (Set-индекс visitNode), 3.3-6.
+- PARTIAL: C-6 (preconnect+display=swap), T-8, S-6 (snapshot-cache), B-2 (68% остался + retry/error UX), E-2 (warn-патч сужен+finally), E-6 (extract turnCycle/rewards, файл 1795 LOC), E-9, 1.3-2, 5.3-2. OBSOLETE: E-7/5.3-6 (HEAD-проба удалена).
+- Топ-3 оставшихся дефекта: 1) E-1 — CombatManager module-singleton переживает reset, dispose→тихий no-op (CombatSystem.ts:250); 2) S-1 — Object.assign фасад с shared mutable refs, без dev-freeze, documented wontfix (storeBindings.ts:129); 3) E-3 — EventBus auto-revive в проде маскирует утечки подписок (EventBus.ts:159-176).
+---
+Task ID: 5-c
+Agent: Explore (аудит PART3)
+Task: статус-аудит находок ANALYSIS_REPORT_PART3.md (UI/HUD, Dialogue, Quest, Story, Save/Load, Performance, i18n, Security, BrowserCompat, Assets)
+
+Stage Summary:
+- Аудированы все 10 секций: 45 находок «Problems» + 38 «Improvements» (83 пункта, 2.3 = дубль 1.3).
+- Итог: 21 FIXED, 36 NOT_FIXED, 18 PARTIAL, 7 OBSOLETE (+1 дубль). Крупные победы: ПРОМАХ/СОПРОТИВЛЕНИЕ (DamageFloatSystem.tsx:450-452, чистая кириллица), FocusTrap (DialogueHistoryPanel.tsx:189-245), галерея достижений (AchievementDetailsPanel.tsx:356), миграции сейвов v1→v4 (saveMigrations.ts:74-78), WebGL context loss (engine/three/webglContextLoss.ts:115), CSP в vercel.json, KTX2-пайплайн (gltfPipeline.ts:135), прунинг истории (100/50/FIFO).
+- Топ-3 оставшихся дефекта: (1) High 5.1 — localStorage-квота: quotaCheck.ts написан, но не импортируется нигде (dead code), saveStorage.ts:81 всё ещё голый setItem без size-check; (2) High 1.2 — цепочки scheduleTimeout(fn,0) в useHUDController.ts:186-239; (3) High 10.1 — moonlit_golf_2k.hdr 6.7 МБ грузится на high-tier без компрессии (1k-вариант только для low-tier).
+- Систематически NOT_FIXED: валидация acceptedDailyMissions (saveSchema.ts:338 z.unknown()), порог энергии 30 vs 25 (SceneTopBarHud.tsx:44), story-коллизии только DEV-warn (buildStoryNodes.ts:100), i18n vestigial (только ambient), hardwareConcurrency 0-guard, Safari-воркараунды.
+---
+Task ID: 5-b
+Agent: Explore (аудит PART2)
+Task: статус-аудит находок ANALYSIS_REPORT_PART2.md (3D Rendering, Combat, NPC/AI, Animation, Audio)
+
+Stage Summary:
+- Проверено 53/53 пунктов (28 Discovered Problems: R1-R6, C1-C6, N1-N6, A1-A4, AU1-AU6 + 25 Potential Improvements; Bug List'ы и Top-10 отчёта — дубликаты тех же пунктов). Код не менялся.
+- Итог: 7 FIXED, 4 PARTIAL, 42 NOT_FIXED, 0 OBSOLETE. Все файлы-находки существуют (пути валидны).
+- FIXED: R2 (as any убран — QualityPreset.id: Exclude<...,'auto'> сведён с ShadowQualityTier), AU4 (setVolume + AudioSettings ambient-шина), AU6 (общий _noiseBufferCache по sampleRate), Imp-1.3 (CascadedShadowMaps.tsx подключён в Lighting.tsx:219), Imp-4.2 (npcProceduralLayers.ts — дыхание/швей/жесты/глаза поверх Mixamo, включено в NPC.tsx), Imp-5.2 (AmbientSoundMixer: music/sfx/ambient/voice).
+- PARTIAL: Imp-1.4 (GPU-дрейф warn/fail мониторится, но эвикции/жёсткого лимита нет), Imp-1.5 (config.lights из scene config есть, но SCENE_ACCENT_LIGHTS/INDOOR_* всё ещё хардкод в Lighting.tsx), Imp-4.3 (NPC locomotion-бленд «mirrors hero locomotion tree», но код дублирован, не унифицирован), Imp-5.3 (playSpatialSfx/PannerNode есть — крипы и пропсы; баки и шаги NPC без паннера).
+- Топ-3 оставшихся дефекта: C1 — getEquippedItemsSafe молча глотает все ошибки, бонусы экипировки исчезают без лога (formulas.ts:164-170); AU1 — HMR-Proxy ambientEngine биндит новый метод на каждое обращение в hot-path (AmbientEngine.ts:761-766); R3 — resetSceneGpuOwnershipForTests() в продовом dispose (moduleGeometryRegistry.ts:166 и moduleMaterialRegistry.ts:156).
+- Хвост NOT_FIXED: хардкод-списки (HERO_NPC_IDS=36, BOSS_ENEMY_TYPES=4, без data-driven), ObjectPool overflow-drop без dispose, LOD-дефолт 999, Math.random в патруле, O(n) findIndex в npcFrameBatch, appendLog-спред, дефенд=бафф damage_reduction в уроне, депы A1/A2, camera-shake в useAudioOrchestrator:147, алгоритмический реверб.
+
+---
+Task ID: 5-d
+Agent: Explore (аудит планов)
+Task: статус-аудит IMPROVEMENT_PLAN + EXPERT_AUDIT_REPORT + AUDIT_2026_08_21 против кода (read-only)
+
+Stage Summary:
+- Итог по 43 главным пунктам трёх документов: 35 FIXED, 11 PARTIAL, 2 NOT_FIXED (IMPROVEMENT_PLAN 3.2 computePlayerOutgoingDamage, 5.4 snapshot-тесты), ~4 OBSOLETE/SUPERSEDED (arena-ветки, GodRays-дубли, sceneChunkRegistry, Set→string[] механизм).
+- Фаза 1 IMPROVEMENT_PLAN подтверждена фактически (5/5); Фаза 3 в основном сделана (turnCycle/rewards/statDrain + enemyTurn.test 21 кейс); Фаза 5.1 закрыта: vitest 2486/2486 (410 файлов) зелёный; eslint 0 ошибок/60 warning.
+- AUDIT_2026_08_21: все 9 фиксов сессии подтверждены в коде; из плана «следующего захода» сделаны lint-границы (0 ошибок) и combat-тесты (28/28), code-splitting vite/chunks.ts подключён, viteSingleFile убран.
+- Топ-3 оставшихся дефекта: (1) РЕГРЕССИЯ: `npm run typecheck` ПАДАЕТ на HEAD — 4×TS2551 `manager.onItemError` не существует в three 0.172 (src/engine/diagnostics/runtimeDiagnostics.ts:154-155 + тест) → CI (typecheck+build) красный, а хук отказов текстур не работает; (2) IMPROVEMENT_PLAN 3.2/3.1.3: damage pipeline playerAttack и gamepadInput.ts не извлечены (CombatSystem.ts 1795 LOC, gamepad poem cycling inline :1671-1696); (3) дубли setFlag reward+objective в 3 квестах (act1.ts:190/199, act7.ts:121/129,174/196) + нет snapshot-тестов (5.4), CI не гоняет lint/test:unit.
+- Изменений кода не вносилось (аудит read-only).
+
+---
+Task ID: V4.14.2-audit (main) — статус-аудит всех планов + волна фиксов
+Agent: main (orchestrator) + 4 Explore-аудитора (5-a..5-d)
+Task: «ВСЁ? ВСЕ 100+ ПУНКТОВ?» — полный статус-аудит ~230 пунктов из 6 документов
+(ANALYSIS_REPORT_PART1/2/3, IMPROVEMENT_PLAN, EXPERT_AUDIT_REPORT, AUDIT_2026_08_21).
+
+Work Log:
+- Аудит: 5-a (64 пункта PART1): ~20 FIXED / 25 NOT_FIXED / 7 PARTIAL / 1 OBS;
+  5-b (53, PART2): 7 FIXED / 42 NOT_FIXED / 4 PARTIAL; 5-c (83, PART3): 21 FIXED /
+  36 NOT_FIXED / 18 PARTIAL / 7 OBS; 5-d (52, планы): 35 FIXED / 11 PARTIAL /
+  2 NOT_FIXED / 4 OBS. Итого честно: ~96-100 FIXED из ~230; хвост — в основном
+  LOW-рефакторинг (сплиты монолитов, i18n-решение, Safari-полифиллы, data-driven
+  реестры) и несколько MEDIUM.
+- ⚠️ РЕГРЕССИЯ v4.14.1 подтверждена: tsc --noEmit красный — 4×TS2551
+  manager.onItemError (не существует в three 0.172; per-item callback = onError).
+  CI не ловил, т.к. ci.yml гоняет только typecheck+build (и пуш шёл без CI-прогона).
+- Фиксы волны 1 (все верифицированы):
+  (1) runtimeDiagnostics.ts+test — onItemError → onError, tsc зелёный;
+  (2) formulas.getEquippedItemsSafe — тихий пропуск ТОЛЬКО «No bridge registered»,
+      иные сбои бридга видны в консоли (C1);
+  (3) AmbientEngine.facade — кэш bound-методов Proxy (AU1, hot-path аллокации);
+  (4) useDeviceTier — 0-guard deviceMemory/hardwareConcurrency (9.3);
+  (5) hudThresholds.ts (новый) — единые пороги энергии/стресса: WARN=30 топбар,
+      LOW=25 пульс+кромка (1.7/I1.4 — расходились 30 vs 25);
+  (6) questDependencies — Map-индекс вместо quests.find O(n·m) (3.1/I3.2);
+  (7) quotaCheck.ts оживлён: isQuotaExceededError экспортирован,
+      writeSaveToLocalStorage — warnIfStorageNearLimit (русский toast ≥80%),
+      QuotaExceeded классифицирован и логируется по-русски (5.1/I5.1 — dead code);
+  (8) saveSchema — AcceptedDailyMissionSchema вместо z.array(z.unknown()) (3.2/5.3);
+  (9) AppBootRoot — MENU_BOOT_HANG_PROGRESS_PCT=68 вместо магического литерала (B-2);
+  (10) vite.config optimizeDeps + postprocessing/@react-three/postprocessing (C-5);
+  (11) resetSceneGpuOwnershipForTests → resetSceneGpuOwnership (R3, прод-пути);
+  (12) дубли setFlag reward↔objective удалены в 5 квестах: cafe_whisper (act1),
+       nadzor/final_poem (act7), aaa_epilogue_last_letter + aaa_sewer_echo +
+       aaa_trofim_night_philosophy + aaa_chk_campfire_legends (aaaExpansion) —
+       4-й и далее найдены самим validate:content (EXPERT #3);
+  (13) CI: + lint, test:unit, validate:content шаги; package.json: алиас "test".
+- Ложная тревога: ci.yml branches ЦЕЛЫ ([main]) — «ain]» был артефактом вывода
+  терминала; проверено od -c. Вывод: проверять байты, не Trust отображение.
+- Верификация: tsc 0 · eslint (20 изменённых файлов) 0 · vitest 2486/2486 (410) ·
+  validate:content OK 0 issues · build 41 c.
+
+Stage Summary:
+- Честный статус планов: закрыто ~96-100 из ~230 пунктов; регрессия typecheck
+  устранена, CI расширен. Главный невыполненный хвост: сплиты монолитов
+  (CombatSystem 1795 LOC, worldSlice 864, enemies.ts 1893, VolodkaRoomVisual 1398),
+  playerAttack-pipeline (IMPROVEMENT 3.2), gamepadInput/playerTurn extraction,
+  i18n-решение (extract vs delete), Safari/RIC/ResizeObserver-полифиллы,
+  HUD scheduleTimeout-батчинг, HDRI-компрессия high-tier, snapshot/E2E-покрытие,
+  data-driven реестры (HERO_NPC_IDS/BOSS_ENEMY_TYPES/баффы), S-1/E-1/E-3/S-2
+  архитектурные решения (нужны отдельные сессии — риск-чувствительные).

@@ -40,6 +40,7 @@
     "preview": "vite preview",
     "lint": "eslint src",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "test:unit": "vitest run",
     "test:coverage": "vitest run --coverage",
     "events:check": "node scripts/check-event-map.mjs",
