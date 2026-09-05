@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.9.0** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.10.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1138,6 +1138,41 @@ flash-эффектом при падении кармы. Смонтирован 
   3D по-прежнему требует hitbox-систем, реал-тайм HP ВО ВРЕМЯ боя и
   ребаланса всех врагов — архитектура (realtime/, события, presentation
   beat, hazards) готова к следующим инкрементам.
+
+## v4.10.0 — «Мир Снов»: 147/147 квестов, инвариант гейтов, единый источник наград
+
+### Пак «Мир Снов» (`data/story/act5DreamWorld.ts` + сателлит акта 5)
+- 11 story-узлов сна: шлюз-тетрадь (`act5_dream_descent`), дитя у фонаря
+  (`dreamworld_lost_child`), поэт на краю сна (`void_echo_poem`, стих
+  `poem_32`). Регистрация двойная, как у всех сателлитов: статический merge
+  в `buildStoryNodes()` + lazy-лоадер в `narrativePackRegistry`
+  (`ACT_STORY_SATELLITES.act5` + `STANDALONE_STORY_SATELLITE_ORDER`) —
+  иначе `ensureStoryNode` бросает «not found» в рантайме (урок v4.8.9).
+
+### Инвариант «гейты после активации»
+- Хук активации квеста выставляет `triggerQuest` И флаг-гейт в одном выборе
+  (`dream_world_opened` / `void_echo_quest_started` — узел
+  `vladimir_secret_room_read`). Каждая зона-сеттер целей гейтится
+  `requiredFlag` этим флагом — цель никогда не требует зоны, недоступной
+  до активации квеста.
+- Обратная сторона — ретроактивный добор: цель, выполненная до активации
+  (`poem_32` собран в акте 1), закрывается `QuestTracker.retroactiveCheck`,
+  подписанным на `quest:accepted`. Кумулятивные гейты, не являющиеся целями
+  (`void_echo_all_heard`), выставляет `checkNewFlags` — по образцу
+  quest-специфичных mid-resume флагов.
+- Контрпример остался в истории: `final_poem_read` в единственном выборе
+  прятал зону тетради за флагом, который ставился этим же выбором
+  (soft-lock повторного входа в «Мир Снов») — флаг перенесён в
+  visit-эффекты узла.
+
+### Контракт «награды квеста — единый источник грантов»
+- Цели `npc_talked` срабатывают при открытии диалога → автокомплит квеста
+  выдаёт награды до финального узла. Поэтому диалоговые узлы НЕ должны
+  дублировать гранты `rewards` квеста (XP/кредиты/предметы/флаги
+  завершения) — дубли вычищены в v4.10.0 (`merchant_boris_thankyou`,
+  `blacksmith_ignat_blade_done`, `marina_receive_letter`,
+  `captain_garold_cornered`); исключение — уникальные ветко-специфичные
+  флаги/карма, которых нет в `rewards`.
 
 ## v4.9.0 — «Почтальон оживлённых глав»: сквозные реестры, AAA-пак и гиверы-заглушки
 
