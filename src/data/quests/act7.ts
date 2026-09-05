@@ -126,7 +126,8 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'addSkill', skill: 'coding', value: 8 },
       { type: 'addSkill', skill: 'logic', value: 6 },
       { type: 'addKarma', value: 25 },
-      { type: 'setFlag', flag: 'nadzor_destroyed', flagValue: true },
+      // setFlag «nadzor_destroyed» удалён: дублирует objective
+      // witness_system_death (аудит EXPERT #3).
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'act7_guild_restored',
@@ -193,7 +194,8 @@ export const QUESTS_ACT7: QuestDefinition[] = [
       { type: 'addSkill', skill: 'writing', value: 12 },
       { type: 'addSkill', skill: 'rhythm', value: 10 },
       { type: 'addKarma', value: 30 },
-      { type: 'setFlag', flag: 'final_poem_written', flagValue: true },
+      // setFlag «final_poem_written» удалён: дублирует objective
+      // compose_masterpiece (аудит EXPERT #3).
       { type: 'addXp', value: 500 },
     ],
     linkedStoryNodeId: 'act7_final_poem_creation',

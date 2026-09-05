@@ -133,7 +133,8 @@ export const AAA_EXPANSION_QUESTS: QuestDefinition[] = [
       { type: 'addXp', value: 110 },
       { type: 'addSkill', skill: 'intuition', value: 2 },
       { type: 'setFlag', flag: 'marat_trace_found', flagValue: true },
-      { type: 'setFlag', flag: 'aaa_sewer_echo_done', flagValue: true },
+      // setFlag «aaa_sewer_echo_done» удалён: дублирует objective
+      // record_echo_phrase (validate:content).
     ],
     rewardItems: [{ itemId: 'marat_code_copy', quantity: 1 }],
     questGiverNpcId: 'fisherman_trofim',
@@ -410,7 +411,8 @@ export const AAA_EXPANSION_QUESTS: QuestDefinition[] = [
       { type: 'addKarma', value: 3 },
       { type: 'addStat', stat: 'stress', value: -10 },
       { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 15 } },
-      { type: 'setFlag', flag: 'aaa_night_philosophy_done', flagValue: true },
+      // setFlag «aaa_night_philosophy_done» удалён: дублирует objective
+      // wait_for_dawn (validate:content).
     ],
     questGiverNpcId: 'fisherman_trofim',
     linkedStoryNodeId: 'aaa_trofim_night_philosophy_start',
@@ -482,7 +484,8 @@ export const AAA_EXPANSION_QUESTS: QuestDefinition[] = [
       { type: 'npcChange', npcId: 'chk_ru', npcChange: { relation: 8 } },
       { type: 'discoverLore', loreId: 'lore_chk_network_role' },
       { type: 'discoverLore', loreId: 'lore_banned_poetry_tapes' },
-      { type: 'setFlag', flag: 'aaa_campfire_legends_done', flagValue: true },
+      // setFlag «aaa_campfire_legends_done» удалён: дублирует objective
+      // hear_three_legends (validate:content).
     ],
     questGiverNpcId: 'chk_based',
     linkedStoryNodeId: 'aaa_chk_campfire_legends_start',
@@ -554,7 +557,8 @@ export const AAA_EXPANSION_QUESTS: QuestDefinition[] = [
       { type: 'npcChange', npcId: 'albert', npcChange: { relation: 15 } },
       { type: 'npcChange', npcId: 'kate', npcChange: { relation: 10 } },
       { type: 'collectPoem', poemId: 'poem_34' },
-      { type: 'setFlag', flag: 'aaa_last_letter_done', flagValue: true },
+      // setFlag «aaa_last_letter_done» удалён: дублирует objective
+      // hold_silence (validate:content WARN / аудит EXPERT #3).
     ],
     rewardItems: [{ itemId: 'anonymous_letter', quantity: 1 }],
     questGiverNpcId: 'albert',

@@ -196,7 +196,8 @@ export const QUESTS_ACT1: QuestDefinition[] = [
       { type: 'addKarma', value: 3 },
       { type: 'addXp', value: 40 },
       { type: 'npcChange', npcId: 'cafe_barista', npcChange: { relation: 5 } },
-      { type: 'setFlag', flag: 'cafe_street_whisper_done', flagValue: true },
+      // setFlag «cafe_street_whisper_done» удалён: флаг уже ставится objective
+      // connect_whisper_to_city (дубль триггерил story-ноды дважды — аудит #3).
     ],
     linkedStoryNodeId: 'cafe_barista',
     linkedStoryNodeIds: ['cafe_barista', 'cafe_barista_victoria_whisper', 'street_bench_view'],
