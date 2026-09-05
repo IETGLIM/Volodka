@@ -138,8 +138,10 @@ const attachedManagers = new WeakSet<LoadingManager>();
 /**
  * Навесить сбор отказов на THREE LoadingManager (идемпотентно).
  * Повторный вызов на том же менеджере — no-op, иначе обёртки сцепились бы
- * и каждый отказ считался бы дважды. Существующие onError/onItemError
- * сохраняются и вызываются после наших.
+ * и каждый отказ считался бы дважды. Существующий onError сохраняется
+ * и вызывается после нашего. Примечание: в three.js onError — это и есть
+ * per-item callback (его вызывает manager.itemError()); отдельного
+ * «onItemError»-свойства у LoadingManager нет.
  */
 export function attachAssetLoadingManager(manager: LoadingManager): void {
   if (attachedManagers.has(manager)) return;
@@ -149,12 +151,6 @@ export function attachAssetLoadingManager(manager: LoadingManager): void {
   manager.onError = (url: string) => {
     recordAssetFailure(classify(url), url);
     prevOnError?.(url);
-  };
-
-  const prevOnItemError = manager.onItemError;
-  manager.onItemError = (url: string) => {
-    recordAssetFailure(classify(url), url);
-    prevOnItemError?.(url);
   };
 
   managerHooked = true;

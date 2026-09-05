@@ -102,14 +102,12 @@ describe('runtimeDiagnostics', () => {
   it('attachAssetLoadingManager классифицирует отказы по расширению и зовёт прежние хендлеры', () => {
     const manager = new LoadingManager();
     const prevOnError = vi.fn();
-    const prevOnItemError = vi.fn();
     manager.onError = prevOnError;
-    manager.onItemError = prevOnItemError;
 
     attachAssetLoadingManager(manager);
 
     manager.onError('/models/environments/cafe/props_lod0.glb');
-    manager.onItemError('/textures/polyhaven/wood_floor/wood_floor_diff_1k.webp');
+    manager.onError('/textures/polyhaven/wood_floor/wood_floor_diff_1k.webp');
     manager.onError('/audio/ambient/rain.mp3');
     manager.onError('/api/mystery');
 
@@ -118,8 +116,7 @@ describe('runtimeDiagnostics', () => {
     const kinds = snap.failures.map((f) => f.kind).sort();
     expect(kinds).toEqual(['audio', 'gltf', 'other', 'texture']);
 
-    expect(prevOnError).toHaveBeenCalledTimes(3);
-    expect(prevOnItemError).toHaveBeenCalledTimes(1);
+    expect(prevOnError).toHaveBeenCalledTimes(4);
   });
 
   it('повторный attach не двойно-считает отказы (идемпотентность)', () => {
