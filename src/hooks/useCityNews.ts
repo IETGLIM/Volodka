@@ -110,6 +110,12 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const pollTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
   const latestReqIdRef = useRef(0);
+  // FIX (v4.12.1, прод-лог): бэкофф поллера при устойчивых СБОЯХ (ключ не
+  // настроен / сеть лежит / upstream висит) — без него вкладка с живым тикером
+  // тратит ~410 серверлесс-вызовов в сутки впустую (503 без фолбэк-новости).
+  // Фолбэк-новость из тела 503 НЕ считается сбоем — контент доставлен.
+  const consecutiveHardFailuresRef = useRef(0);
+  const nextPollAllowedAtRef = useRef(0);
 
   const doFetch = useCallback(
     async (force: boolean): Promise<void> => {
@@ -198,6 +204,10 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
 
         if (!res.ok && !data.news) {
           // 503 (key not configured) or other error → null → static ticker.
+          // Экспоненциальный бэкофф: 3.5 → 7 → 14 → 28 мин (кап ×4).
+          consecutiveHardFailuresRef.current += 1;
+          const backoffMultiplier = Math.min(4, 2 ** (consecutiveHardFailuresRef.current - 1));
+          nextPollAllowedAtRef.current = Date.now() + POLL_INTERVAL_MS * backoffMultiplier;
           setState({
             news: null,
             model: null,
@@ -210,6 +220,8 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
           });
           return;
         }
+        consecutiveHardFailuresRef.current = 0;
+        nextPollAllowedAtRef.current = 0;
 
         const news = data.news ?? null;
         const model = data.model ?? null;
@@ -232,6 +244,10 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
       } catch (err) {
         if (reqId !== latestReqIdRef.current) return;
         const aborted = err instanceof DOMException && err.name === 'AbortError';
+        // Таймаут/сеть — тоже жёсткий сбой (вызов уже потрачен): бэкофф.
+        consecutiveHardFailuresRef.current += 1;
+        const backoffMultiplier = Math.min(4, 2 ** (consecutiveHardFailuresRef.current - 1));
+        nextPollAllowedAtRef.current = Date.now() + POLL_INTERVAL_MS * backoffMultiplier;
         setState((prev) => ({
           ...prev,
           loading: false,
@@ -264,8 +280,11 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
 
   // Polling: not more often than once per POLL_INTERVAL_MS (forced, so the
   // localStorage cache can't pin the same line forever while mounted).
+  // FIX (v4.12.1): тики поллера пропускаются до истечения бэкоффа —
+  // интервал остаётся фиксированным, частота запросов деградирует плавно.
   useEffect(() => {
     pollTimerRef.current = setInterval(() => {
+      if (Date.now() < nextPollAllowedAtRef.current) return; // failure backoff
       void doFetch(true);
     }, POLL_INTERVAL_MS);
     return () => {
