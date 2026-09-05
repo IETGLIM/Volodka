@@ -38,12 +38,21 @@ export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
   | 'part2'
+  | 'part2Expanded'
   | 'part3'
+  | 'part3Expanded'
   | 'part4'
+  | 'part4Expanded'
   | 'part5'
+  | 'part5Expanded'
   | 'expanded'
   | 'exploration'
-  | 'chk';
+  | 'chk'
+  | 'returns'
+  | 'milestones'
+  | 'act4New'
+  | 'act3ExpandedDialogues'
+  | 'act4ExpandedDialogues';
 
 export const STORY_PACK_ORDER: readonly StoryPackId[] = [
   'act1',
@@ -57,20 +66,43 @@ export const STORY_PACK_ORDER: readonly StoryPackId[] = [
 ] as const;
 
 export const DIALOGUE_PACK_ORDER: readonly DialoguePackId[] = [
+  // FIX (parity): 'returns' первым — сгенерированные return-узлы должны быть
+  // FALLBACK'ом: пак-файлы, грузясь позже, переопределяют их тем же порядком,
+  // что и в статическом слиянии dialogue/index.ts (позний пак выигрывает).
+  'returns',
   'part1',
   'part1AlbertExpanded',
   'part2',
+  'part2Expanded',
   'part3',
+  'part3Expanded',
   'part4',
+  'part4Expanded',
   'part5',
+  'part5Expanded',
   'expanded',
   'exploration',
   'chk',
+  // FIX (parity): паки ниже сливались только в статический DIALOGUE_NODES
+  // (validate-content, тесты), но не были в runtime-лоадерах — 220 узлов
+  // не попадали в кэш сессии. Видимый баг: milestone-диалоги Альберта /
+  // Заремы / Марии / Солныш (relationMilestones @50/@80) не резолвились
+  // через ensureDialogueNode.
+  'milestones',
+  'act4New',
+  'act3ExpandedDialogues',
+  'act4ExpandedDialogues',
 ] as const;
 
 /** Minimal packs for a new game (Act 1 + early NPC / exploration dialogue). */
 export const BOOTSTRAP_STORY_PACKS: readonly StoryPackId[] = ['act1'];
-export const BOOTSTRAP_DIALOGUE_PACKS: readonly DialoguePackId[] = ['part1', 'part1AlbertExpanded', 'exploration'];
+/** Акт-1 milestone-диалоги нужны сразу (порог отношения 50 достижим в акте 1). */
+export const BOOTSTRAP_DIALOGUE_PACKS: readonly DialoguePackId[] = [
+  'part1',
+  'part1AlbertExpanded',
+  'exploration',
+  'milestones',
+];
 
 type PackChangeListener = () => void;
 
@@ -164,12 +196,23 @@ const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, Dialo
   part1: () => import('../dialogue/part1-albert').then((m) => m.DIALOGUE_PART1),
   part1AlbertExpanded: () => import('../dialogue/part1-albert-expanded').then((m) => m.ALBERT_EXPANDED_DIALOGUE),
   part2: () => import('../dialogue/part2-npcs').then((m) => m.DIALOGUE_PART2),
+  part2Expanded: () => import('../dialogue/part2-npcs-expanded').then((m) => m.DIALOGUE_PART2_EXPANDED),
   part3: () => import('../dialogue/part3-mid').then((m) => m.DIALOGUE_PART3),
+  part3Expanded: () => import('../dialogue/part3-mid-expanded').then((m) => m.DIALOGUE_PART3_EXPANDED),
   part4: () => import('../dialogue/part4-late').then((m) => m.DIALOGUE_PART4),
+  part4Expanded: () => import('../dialogue/part4-late-expanded').then((m) => m.DIALOGUE_PART4_EXPANDED),
   part5: () => import('../dialogue/part5-final').then((m) => m.DIALOGUE_PART5),
+  part5Expanded: () => import('../dialogue/part5-final-expanded').then((m) => m.DIALOGUE_PART5_EXPANDED),
   expanded: () => import('../expandedDialogueNodes').then((m) => m.EXPANDED_DIALOGUE_NODES),
   exploration: () => import('../explorationDialogueNodes').then((m) => m.EXPLORATION_DIALOGUE_NODES),
   chk: () => import('../chkTolpa/dialogues').then((m) => m.CHK_DIALOGUE_NODES),
+  returns: () => import('../dialogue/returnDialogues').then((m) => m.RETURN_DIALOGUE_NODES),
+  milestones: () => import('../dialogue/milestoneDialogues').then((m) => m.MILESTONE_DIALOGUE_NODES),
+  act4New: () => import('../dialogue/act4_newDialogues').then((m) => m.DIALOGUE_ACT4_NEW),
+  act3ExpandedDialogues: () =>
+    import('../dialogue/act3_expandedDialogues').then((m) => m.DIALOGUE_ACT3_EXPANDED),
+  act4ExpandedDialogues: () =>
+    import('../dialogue/act4_expandedDialogues').then((m) => m.DIALOGUE_ACT4_EXPANDED),
 };
 
 const storyNodes: Record<string, StoryNode> = {};

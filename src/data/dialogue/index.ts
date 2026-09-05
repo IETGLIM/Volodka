@@ -19,6 +19,12 @@ import { DIALOGUE_ACT3_EXPANDED } from './act3_expandedDialogues';
 import { DIALOGUE_ACT4_EXPANDED } from './act4_expandedDialogues';
 
 export const DIALOGUE_NODES: Record<string, DialogueNode> = {
+  // Сгенерированные return-узлы идут ПЕРВЫМИ как FALLBACK: авторские версии
+  // из пак-файлов (part*/expanded/chk) переопределяют их при слиянии.
+  // Раньше returnDialogues стоял после пак-файлов и ЗАТИРАЛ 27 авторских
+  // return-узлов (в т.ч. albert_return с веткой серьёзного разговора и
+  // solnysh_return с хуками act-4 цепочек) двух-выборочными заглушками.
+  ...RETURN_DIALOGUE_NODES,
   ...DIALOGUE_PART1,
   ...DIALOGUE_PART2,
   ...DIALOGUE_PART2_EXPANDED,
@@ -32,7 +38,6 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   ...EXPANDED_DIALOGUE_NODES,
   ...CHK_DIALOGUE_NODES,
   ...EXPLORATION_DIALOGUE_NODES,
-  ...RETURN_DIALOGUE_NODES,
   ...MILESTONE_DIALOGUE_NODES,
   ...DIALOGUE_ACT4_NEW,
   ...DIALOGUE_ACT3_EXPANDED,
