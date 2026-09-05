@@ -24,11 +24,31 @@
 import type { WebGLRenderer } from 'three';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import { MeshoptDecoder } from 'three/examples/jsm/libs/meshopt_decoder.module.js';
+import { useGLTF } from '@react-three/drei';
 
 import { devLog, devWarn } from '@/shared/utils/devLog';
 /** Copy from node_modules/three/examples/jsm/libs/basis/ → public/basis/ */
 const DRACO_DECODER_PATH = '/draco/gltf/';
 const BASIS_TRANSCODER_PATH = '/basis/';
+
+/**
+ * FIX (v4.12.1, прод-баг): self-hosting Draco-декодера.
+ *
+ * Drei's useGLTF extensions() ВЫЗЫВАЕТ extendLoader ПЕРВЫМ, а ЗАТЕМ
+ * перезатирает loader.setDRACOLoader(...) своим МОДУЛЬНЫМ синглтоном
+ * с дефолтным decoderPath 'https://www.gstatic.com/draco/versioned/decoders/1.5.5/'.
+ * Итог: наш sharedDraco из configureGltfPipeline() никогда не использовался
+ * для useGLTF-моделей, а CSP на проде (`connect-src 'self' blob:`) резала
+ * gstatic → «Failed to fetch … Content Security Policy» на КАЖДУЮ
+ * draco-сжатую модель (17+ ошибок в консоли прод-деплоя, draco-LOD не грузились).
+ *
+ * useGLTF.setDecoderPath() — поддерживаемый drei способ задать путь ДО
+ * первого вызова extensions(): чтение decoderPath происходит в момент
+ * setup-колбэка, поэтому модульная инициализация этого файла (он импортируется
+ * каждым useGLTF call-site'ом раньше своих preload-ов по семантике ESM)
+ * гарантированно отрабатывает первой. Same-origin '/draco/gltf/' разрешён CSP.
+ */
+useGLTF.setDecoderPath(DRACO_DECODER_PATH);
 
 type GltfLoaderLike = {
   setDRACOLoader: (loader: DRACOLoader) => void;
