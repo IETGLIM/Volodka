@@ -21,7 +21,7 @@ Single singleton (`eventBus`) with a flat runtime API. Types live in domain modu
 | Camera | `camera:` | 8 | CombatSystem, GameOrchestrator | FollowCamera |
 | Cinematic | `cinematic:` | 6 | CinematicTimelineRunner, playInteractionSplash | CinematicTimelineRunner, InteractionSystemBridge |
 | Intro | `intro:` | 4 | IntroWakeOverlay, useMenuScreen | CinematicTimelineRunner, IntroWakeOverlay |
-| Combat | `combat:` | 25 | CombatSystem, meleeStrike (v4.8.7, добивание v4.8.8) | ScreenEffects, useCombatOrchestrator, MeleeStrikeFx |
+| Combat | `combat:` | 28 | CombatSystem, meleeStrike (v4.8.7, добивание v4.8.8, промах v4.12.0) | ScreenEffects, useCombatOrchestrator, MeleeStrikeFx |
 | Weather | `weather:` | 3 | useWeatherEffects | RainSystem, SnowSystem, HUD |
 | Lore | `lore:` | 1 | uiSlice | EventNotificationPopup |
 | Cutscene | `cutscene:` | 2 | GameOrchestrator | CutsceneOverlay |

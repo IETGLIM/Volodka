@@ -154,9 +154,10 @@ export function useEKeyInteraction({
       if (dx * dx + dy * dy > LMB_CLICK_DRAG_THRESHOLD_PX * LMB_CLICK_DRAG_THRESHOLD_PX) return;
 
       // v4.8.7 «Опережающий удар»: ЛКМ сначала пробует реал-тайм замах.
-      // «hit»/«tired»/«cooldown» означают, что игрок целился во врага —
-      // клик consumed, взаимодействие не запускается. «none» — врагов в
-      // зоне нет, ЛКМ ведёт себя как прежде (взаимодействие).
+      // «hit»/«tired»/«cooldown»/«miss» (v4.12.0 — честный промах) означают,
+      // что игрок целился во врага — клик consumed, взаимодействие не
+      // запускается. «none» — врагов в зоне нет, ЛКМ ведёт себя как прежде
+      // (взаимодействие).
       const strike = attemptMeleeStrike('mouse');
       if (strike.status !== 'none') {
         e.preventDefault();

@@ -89,7 +89,8 @@ export interface CombatEvents {
    *  combatTransientPool) и хаптика реагируют на попадание. */
   'combat:melee_strike': {
     source: 'mouse' | 'mobile_hud' | 'gamepad';
-    /** Всегда true в текущей версии (промахи не эмитятся). */
+    /** Всегда true — промахи уходят в отдельное combat:melee_miss
+     *  (v4.12.0 «Честный промах»). */
     hit: boolean;
     /** v4.8.8: удар стал ДОБИВАНИЕМ — крип повержен до пошаговой фазы. */
     finished: boolean;
@@ -119,5 +120,22 @@ export interface CombatEvents {
     xpGained: number;
     karmaGained: number;
     creditsGained: number;
+  };
+  /** v4.12.0 «Честный промах» — замах сорвался: RNG скоупа (meleeMiss.ts)
+   *  бросил хуже шанса, растущего от дистанции и угла. Стамина уже
+   *  потрачена, applyStrike НЕ вызван и combat:melee_strike НЕ эмитится;
+   *  кулдаун до следующей попытки короче (0.45 с — second-chance).
+   *  Стелс-удар в спину и добивание детерминированы — это событие им
+   *  недоступно. */
+  'combat:melee_miss': {
+    source: 'mouse' | 'mobile_hud' | 'gamepad';
+    creepId: string;
+    enemyName: string;
+    /** Точка сорванного замаха (мировые координаты) — спавн серой искры. */
+    x: number;
+    y: number;
+    z: number;
+    /** Эффективный шанс промаха этого удара (0..1) — баланс/телеметрия. */
+    missChance: number;
   };
 }

@@ -85,6 +85,11 @@ export function MobileActionButtons() {
       hapticError();
       return;
     }
+    if (outcome.status === 'miss') {
+      // v4.12.0: тактильность промаха приходит по событию combat:melee_miss
+      // (hapticMiss, общий с боевыми троттлинг) — без дублей на кнопке.
+      return;
+    }
     // «none» — врагов в зоне нет: короткий отклик без спама тостами.
     hapticLight();
   }, []);

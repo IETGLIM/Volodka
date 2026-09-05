@@ -141,3 +141,8 @@ export function hapticPoemPower(): void {
 export function hapticStealthStrike(): void {
   hapticPattern([10, 60, 10, 60, 25]);
 }
+
+/** Melee miss — лёгкий одиночный тик: замах прошёл мимо (v4.12.0). */
+export function hapticMiss(): void {
+  hapticPattern([8]);
+}

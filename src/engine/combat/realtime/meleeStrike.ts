@@ -1,5 +1,5 @@
 /* ─── Volodka RPG – «Опережающий удар»: реал-тайм слой до пошагового боя ───
- *                                                              (v4.11.0)
+ *                                                              (v4.12.0)
  *
  * Инкременты бэклога «реал-тайм 3D-комбат» (приоритет C):
  *   • v4.8.7 — удар первым: ЛКМ / кнопка «Удар» → секторный замах
@@ -15,7 +15,13 @@
  *     стелса платит +25% XP. Решение о силе ослабления собирается ЗДЕСЬ
  *     (attemptMeleeStrike) и передаётся крипу одним контрактом
  *     applyStrike({ introHpPct, backstab }); приоритет: память HP
- *     (creepVitality) > стелс 0.5 > база 0.75.
+ *     (creepVitality) > стелс 0.5 > база 0.75;
+ *   • v4.12.0 — «Честный промах» (meleeMiss.ts): замах решается броском
+ *     RNG скоупа — шанс растёт от дистанции и угла (base 0.06, до +0.14
+ *     на кромке reach/конуса, потолок 0.35); стелс и добивание
+ *     детерминированы. Промах тратит стамину, держит кулдаун 0.45 с и
+ *     эмитит combat:melee_miss — applyStrike/combat:melee_strike НЕ
+ *     вызываются.
  *
  * Архитектура (как PlayerRigidBodyState / interactionSession — модульные
  * одиночки движка, без стора и React):
@@ -57,6 +63,10 @@ import {
   MELEE_STRIKE_REACH_M,
   resolveMeleeSweep,
 } from './meleeSweep';
+import {
+  computeMeleeMissChance,
+  MELEE_MISS_COOLDOWN_SEC,
+} from './meleeMiss';
 
 /** Доля HP, с которой враг вступает в бой после опережающего удара. */
 export const MELEE_STRIKE_INTRO_ENEMY_HP_PCT = 0.75;
@@ -73,6 +83,10 @@ export const MELEE_STRIKE_STAMINA_COST = 22;
 
 /** Пауза между замахами (мс) — защита от спама кликов. */
 export const MELEE_STRIKE_COOLDOWN_MS = 900;
+
+/** v4.12.0: пауза после ПРОМАХА (мс) — вдвое короче: честный second-chance
+ *  (стамина за сорванный замах уже потрачена). */
+const MELEE_MISS_COOLDOWN_MS = MELEE_MISS_COOLDOWN_SEC * 1000;
 
 /** Источник замаха — для событий и отладки. */
 export type MeleeStrikeSource = 'mouse' | 'mobile_hud' | 'gamepad';
@@ -119,9 +133,12 @@ export interface MeleeStrikeEngageOptions {
   backstab: boolean;
 }
 
-/** Итог попытки удара — вызывающий ввод решает, «съедать» ли клик. */
+/** Итог попытки удара — вызывающий ввод решает, «съедать» ли клик.
+ *  v4.12.0: «miss» — замах сорвался (честный RNG скоупа): клик consumed,
+ *  встреча не стартует, кулдаун короче (second-chance). */
 export type MeleeStrikeOutcome =
   | { status: 'hit'; creepId: string; enemyName: string; finished: boolean }
+  | { status: 'miss'; creepId: string; enemyName: string }
   | { status: 'tired' }
   | { status: 'cooldown' }
   | { status: 'none' };
@@ -230,10 +247,14 @@ export function getMeleeStrikeHint(): MeleeStrikeHint | null {
 /* ── Замах ── */
 
 let lastStrikeAtMs = 0;
+/** v4.12.0: последний замах был промахом — кулдаун до следующей попытки
+ *  короче (MELEE_MISS_COOLDOWN_MS вместо MELEE_STRIKE_COOLDOWN_MS). */
+let lastStrikeMissed = false;
 
 /** Сброс кулдауна/реестра для юнит-тестов. */
 export function resetMeleeStrikeForTests(): void {
   lastStrikeAtMs = 0;
+  lastStrikeMissed = false;
   strikeTargets.clear();
   hintEntries.clear();
 }
@@ -244,7 +265,9 @@ export function resetMeleeStrikeForTests(): void {
  * Кулдаун/выносливость проверяются ПОСЛЕ замаха: без цели в секторе «none» —
  * взаимодействие работает даже в паузу между ударами (не блокируем ЛКМ).
  * «tired»/«cooldown» — только когда игрок реально целился во врага: ввод
- * consumed, взаимодействие за ним не последует.
+ * consumed, взаимодействие за ним не последует. v4.12.0: «miss» — замах
+ * сорвался (честный RNG скоупа, meleeMiss.ts): клик consumed, встреча
+ * НЕ стартует, кулдаун до следующей попытки 0.45 с.
  */
 export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcome {
   if (strikeTargets.size === 0) return { status: 'none' };
@@ -294,7 +317,12 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   if (!hit) return { status: 'none' };
 
   // Кулдаун — после замаха: цель есть, но замах ещё «на восстановлении».
-  if (now - lastStrikeAtMs < MELEE_STRIKE_COOLDOWN_MS) return { status: 'cooldown' };
+  // v4.12.0: после ПРОМАХА восстановление вдвое короче (450 против 900)
+  // — честный second-chance.
+  const cooldownMs = lastStrikeMissed
+    ? MELEE_MISS_COOLDOWN_MS
+    : MELEE_STRIKE_COOLDOWN_MS;
+  if (now - lastStrikeAtMs < cooldownMs) return { status: 'cooldown' };
 
   // Выносливость: списываем ДО вовлечения; не хватило — замах сорван.
   if (!consumePlayerStamina(MELEE_STRIKE_STAMINA_COST)) return { status: 'tired' };
@@ -317,8 +345,42 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
 
   // Приоритет силы ослабления (единая точка решения): память HP после
   // побега (creepVitality) > стелс 0.5 > база 0.75 — стелс НЕ наслаивается
-  // на запомненный урон.
+  // на запомненный урон. Готовность добивания нужна ДО броска промаха:
+  // добывание детерминировано и RNG не оспаривается.
   const weakenedPct = getCreepWeakenedHpPct(target.id);
+  const finisherReady =
+    weakenedPct !== null
+    && isCreepFinishable(weakenedPct)
+    && Boolean(target.applyFinisher);
+
+  // ── v4.12.0: «честный промах» — бросок RNG скоупа. Решение ПОСЛЕ
+  // гейтов замаха/LOS и расхода выносливости: промах «стоит сил».
+  // Стелс (задняя дуга неосведомлённого крипа) и добивание (≤ 35% HP)
+  // детерминированы — computeMeleeMissChance вернёт 0 без броска. ──
+  const missChance = computeMeleeMissChance({
+    distanceMeters: hit.distM,
+    angleDeg: targetAngleDeg(player, yaw, pos),
+    isBackstab: backstab,
+    isFinishable: finisherReady,
+    rng: Math.random,
+  });
+  lastStrikeMissed = missChance > 0;
+  if (missChance > 0) {
+    // Промах: applyStrike НЕ вызывается и combat:melee_strike НЕ эмитится
+    // — крип не знает о сорванном замахе, встреча не стартует.
+    eventBus.emit('combat:melee_miss', {
+      source,
+      creepId: target.id,
+      enemyName: target.name,
+      x: pos.x,
+      y: pos.y,
+      z: pos.z,
+      missChance,
+    });
+    eventBus.emit('ui:exploration_message', { text: '💨 Промах!' });
+    return { status: 'miss', creepId: target.id, enemyName: target.name };
+  }
+
   const introHpPct =
     weakenedPct
     ?? (backstab
@@ -329,11 +391,8 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   // Крип с остатком HP ≤ MELEE_STRIKE_FINISHER_HP_PCT (после побега игрока
   // из прошлой встречи — creepVitality.ts) повержается одним ударом:
   // урезанные награды без боевого RNG-сеанса, лут не выпадает.
-  if (
-    weakenedPct !== null
-    && isCreepFinishable(weakenedPct)
-    && target.applyFinisher
-  ) {
+  // v4.12.0: готовность проверена выше (finisherReady) — до броска промаха.
+  if (finisherReady) {
     // v4.11.0: тихое добивание из стелса — +25% XP к урезанной награде.
     const rewards = computeCreepFinisherRewards({
       xpReward: target.getFinisherXpReward?.() ?? 0,
@@ -375,7 +434,9 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
     });
 
     // Крип снимается с цены (родитель уберёт его по combat:creep_finished).
-    target.applyFinisher();
+    // Optional call: finisherReady уже гарантирует провайдер, но TS не
+    // сужает опциональный метод через булев флаг (v4.12.0).
+    target.applyFinisher?.();
 
     return { status: 'hit', creepId: target.id, enemyName: target.name, finished: true };
   }
@@ -404,4 +465,20 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   target.applyStrike({ introHpPct, backstab });
 
   return { status: 'hit', creepId: target.id, enemyName: target.name, finished: false };
+}
+
+/** Угол между взглядом игрока и направлением на цель (градусы, 0..180).
+ *  Конвенция forward = (sin(yaw), cos(yaw)) — как в meleeSweep.ts.
+ *  Нужен шансу промаха: «краше» угол — вероятнее сорвать замах. */
+function targetAngleDeg(
+  player: { x: number; z: number },
+  yaw: number,
+  target: { x: number; z: number },
+): number {
+  const dx = target.x - player.x;
+  const dz = target.z - player.z;
+  const len = Math.hypot(dx, dz);
+  if (len < 1e-6) return 0; // вплотную направление не определено
+  const dot = (Math.sin(yaw) * dx + Math.cos(yaw) * dz) / len;
+  return (Math.acos(Math.min(1, Math.max(-1, dot))) * 180) / Math.PI;
 }

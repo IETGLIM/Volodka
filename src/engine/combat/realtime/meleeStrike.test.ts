@@ -1,11 +1,17 @@
-/* ─── v4.8.7/v4.8.8/v4.11.0: тесты реал-тайм слоя «Опережающий удар» ───
+/* ─── v4.8.7/v4.8.8/v4.11.0/v4.12.0: тесты реал-тайм слоя «Опережающий удар» ───
  * Гейты фазы мокаются по образцу CombatSystem.test.ts; геометрия — через
  * настоящую resolveMeleeSweep. Проверяются: замах/попадание, LOS-фильтр,
  * кулдаун, выносливость, реестр целей, HUD-зеркало подсказки, добивание
  * ослабленного крипа до боя (creepVitality, v4.8.8): награды, события и
- * запрет повторной встречи, а также стелс «Удар в спину» (v4.11.0):
+ * запрет повторной встречи, стелс «Удар в спину» (v4.11.0):
  * чистая геометрия isBehindCreep, двойной гейт осведомлённости/дуги,
- * контракт applyStrike({ introHpPct, backstab }) и тихое добивание +25% XP.
+ * контракт applyStrike({ introHpPct, backstab }) и тихое добивание +25% XP,
+ * а также «Честный промах» (v4.12.0): RNG скоупа — событие
+ * combat:melee_miss без applyStrike/melee_strike, стамина тратится,
+ * кулдаун промаха 0.45 с, стелс/добивание детерминированы.
+ *
+ * v4.12.0: бросок промаха детерминирован в тестах — Math.random
+ * под шпионом в beforeEach (0 → попадание; 0.999 → промах в miss-тестах).
  */
 
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -56,6 +62,11 @@ import {
   type MeleeStrikeTarget,
 } from '@/engine/combat/realtime/meleeStrike';
 import {
+  MELEE_MISS_BASE,
+  MELEE_MISS_COOLDOWN_SEC,
+  MELEE_MISS_EDGE_BONUS,
+} from '@/engine/combat/realtime/meleeMiss';
+import {
   noteCreepWeakened,
   resetCreepVitalityForTests,
 } from '@/engine/combat/realtime/creepVitality';
@@ -99,6 +110,8 @@ describe('meleeStrike (v4.8.7 «Опережающий удар»)', () => {
     dispatchAction.mockClear();
     consumeStamina.mockImplementation(() => true);
     sharedCameraYawRef.current = 0; // взгляд вдоль +Z
+    // v4.12.0: бросок промаха детерминирован — удачный (попадание).
+    vi.spyOn(Math, 'random').mockReturnValue(0);
   });
 
   afterEach(() => {
@@ -207,6 +220,8 @@ describe('meleeStrike: добивание ослабленного крипа (v
     dispatchAction.mockClear();
     consumeStamina.mockImplementation(() => true);
     sharedCameraYawRef.current = 0;
+    // v4.12.0: бросок промаха детерминирован — удачный (попадание).
+    vi.spyOn(Math, 'random').mockReturnValue(0);
   });
 
   afterEach(() => {
@@ -310,6 +325,8 @@ describe('meleeStrike: удар в спину (v4.11.0 «стелс»)', () => {
     dispatchAction.mockClear();
     consumeStamina.mockImplementation(() => true);
     sharedCameraYawRef.current = 0; // взгляд игрока вдоль +Z, крип в (0, 2)
+    // v4.12.0: бросок промаха детерминирован — удачный (попадание).
+    vi.spyOn(Math, 'random').mockReturnValue(0);
   });
 
   afterEach(() => {
@@ -468,5 +485,123 @@ describe('meleeStrike: удар в спину (v4.11.0 «стелс»)', () => {
     // Дефолт без стелс-аргумента — обычная цель.
     reportMeleeStrikeCandidate('creep_st', 'Скрытный', 1.5, true);
     expect(getMeleeStrikeHint()).toMatchObject({ id: 'creep_st', backstab: false });
+  });
+});
+
+describe('meleeStrike: честный промах (v4.12.0)', () => {
+  beforeEach(() => {
+    resetMeleeStrikeForTests();
+    resetCreepVitalityForTests();
+    consumeStamina.mockClear();
+    dispatchAction.mockClear();
+    consumeStamina.mockImplementation(() => true);
+    sharedCameraYawRef.current = 0; // взгляд вдоль +Z, крип в (0, 2)
+    // По умолчанию бросок удачный (0 → всегда попадание); в miss-тестах
+    // шпион переустанавливается на 0.999 (всегда промах).
+    vi.spyOn(Math, 'random').mockReturnValue(0);
+  });
+
+  afterEach(() => {
+    resetMeleeStrikeForTests();
+    resetCreepVitalityForTests();
+    vi.restoreAllMocks();
+  });
+
+  it('промах: combat:melee_miss с шансом, applyStrike/hit-событий нет, стамина потрачена, кулдаун 0.45 с', () => {
+    const target = makeTarget(); // (0, 2.0) → дистанция 2.0 м, угол 0°
+    registerMeleeStrikeTarget(target);
+    vi.spyOn(Math, 'random').mockReturnValue(0.999); // худший бросок
+
+    const strikes: unknown[] = [];
+    const misses: Array<{ creepId: string; enemyName: string; source: string; missChance: number; x: number; z: number }> = [];
+    const messages: Array<{ text: string }> = [];
+    const unsubStrike = eventBus.on('combat:melee_strike', (p) => strikes.push(p));
+    const unsubMiss = eventBus.on('combat:melee_miss', (p) => misses.push(p));
+    const unsubMsg = eventBus.on('ui:exploration_message', (p) => messages.push(p as { text: string }));
+
+    const outcome = attemptMeleeStrike('mouse');
+
+    expect(outcome.status).toBe('miss');
+    if (outcome.status === 'miss') {
+      expect(outcome.creepId).toBe('creep_test');
+      expect(outcome.enemyName).toBe('Тестовый демон');
+    }
+    // Встреча НЕ стартует: applyStrike не вызван, hit-событие не эмитится.
+    expect(target.strikes).toBe(0);
+    expect(target.finished).toBe(0);
+    expect(strikes).toHaveLength(0);
+    // Стамина потрачена: промах «стоит сил».
+    expect(consumeStamina).toHaveBeenCalledWith(MELEE_STRIKE_STAMINA_COST);
+
+    // Событие промаха: поля сессии + эффективный шанс (d = 2.0, угол 0°:
+    // 0.06 + 0.14 × (2.0 − 1.4) / (2.7 − 1.4)).
+    expect(misses).toHaveLength(1);
+    expect(misses[0]).toMatchObject({
+      source: 'mouse',
+      creepId: 'creep_test',
+      enemyName: 'Тестовый демон',
+      x: 0,
+      z: 2,
+    });
+    expect(misses[0]!.missChance).toBeCloseTo(
+      MELEE_MISS_BASE + MELEE_MISS_EDGE_BONUS * ((2.0 - 1.4) / (2.7 - 1.4)),
+      9,
+    );
+    // Сообщение — через тот же ui:exploration_message, что и «Удар в спину».
+    expect(messages.some((m) => m.text.includes('Промах'))).toBe(true);
+
+    // Кулдаун промаха КОРОЧЕ (0.45 с): сразу — cooldown...
+    expect(attemptMeleeStrike('mouse').status).toBe('cooldown');
+    // ...а через 0.45 с + 1 мс замах снова доступен (и снова промах).
+    const realNow = Date.now();
+    const nowSpy = vi
+      .spyOn(Date, 'now')
+      .mockReturnValue(realNow + MELEE_MISS_COOLDOWN_SEC * 1000 + 1);
+    expect(attemptMeleeStrike('mouse').status).toBe('miss');
+    expect(misses).toHaveLength(2);
+    nowSpy.mockRestore();
+
+    unsubStrike();
+    unsubMiss();
+    unsubMsg();
+  });
+
+  it('стелс-удар в спину не промахивается даже при худшем броске', () => {
+    // Крип в (0, 2) смотрит от игрока (yaw = 0) и не в погоне — стелс.
+    const target = makeTarget({ getFacingYaw: () => 0, isAware: () => false });
+    registerMeleeStrikeTarget(target);
+    vi.spyOn(Math, 'random').mockReturnValue(0.999);
+
+    const misses: unknown[] = [];
+    const unsubMiss = eventBus.on('combat:melee_miss', (p) => misses.push(p));
+
+    const outcome = attemptMeleeStrike('mouse');
+
+    expect(outcome.status).toBe('hit');
+    expect(target.lastStrikeOptions).toEqual({
+      introHpPct: MELEE_STRIKE_BACKSTAB_INTRO_HP_PCT,
+      backstab: true,
+    });
+    expect(misses).toHaveLength(0);
+
+    unsubMiss();
+  });
+
+  it('добивание не промахивается: детерминированное поражение до боя', () => {
+    const target = makeTarget({ getFinisherXpReward: () => 25 });
+    registerMeleeStrikeTarget(target);
+    noteCreepWeakened('creep_test', 0.3); // ≤ 35% → добивание
+    vi.spyOn(Math, 'random').mockReturnValue(0.999);
+
+    const misses: unknown[] = [];
+    const unsubMiss = eventBus.on('combat:melee_miss', (p) => misses.push(p));
+
+    const outcome = attemptMeleeStrike('mouse');
+
+    expect(outcome.status === 'hit' && outcome.finished).toBe(true);
+    expect(target.finished).toBe(1);
+    expect(misses).toHaveLength(0);
+
+    unsubMiss();
   });
 });

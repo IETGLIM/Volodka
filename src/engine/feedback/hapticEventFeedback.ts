@@ -8,6 +8,9 @@
  * События → отклик:
  *   • combat:damage      — combat-hit «удар» (троттлинг 350 мс: пошаговый
  *                          бой может emit'ить несколько ударов в один тик)
+ *   • combat:melee_strike — замах/добивание/удар в спину (тот же троттлинг)
+ *   • combat:melee_miss  — лёгкий одиночный тик промаха (v4.12.0,
+ *                          троттлинг общий с боевыми)
  *   • player:levelup     — триумфальный тройной пульс
  *   • skill:level_up     — средний тап
  *   • quest:completed    — восходящий «завершённый квест»
@@ -32,6 +35,7 @@ import {
   hapticHeavy,
   hapticLevelUp,
   hapticMedium,
+  hapticMiss,
   hapticQuestComplete,
   hapticStealthStrike,
 } from '@/shared/utils/hapticFeedback';
@@ -98,6 +102,15 @@ function bindHapticEventListeners(): void {
       } else {
         hapticCombatHit();
       }
+    }),
+
+    // v4.12.0 «Честный промах» — лёгкий одиночный тик: замах прошёл мимо.
+    // Троттлинг общий с боевыми (одна вибро-сессия на такт боя).
+    eventBus.on('combat:melee_miss', () => {
+      const now = performance.now();
+      if (now - lastCombatHapticAt < COMBAT_HAPTIC_THROTTLE_MS) return;
+      lastCombatHapticAt = now;
+      hapticMiss();
     }),
   );
 }
