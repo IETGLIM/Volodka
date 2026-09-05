@@ -13,17 +13,21 @@ import {
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 import { disposeClonedScene, createSourceSkipSet } from '@/engine/three/disposeThreeResources';
+import { useGltfPropPlacement } from '@/hooks/useGltfPropPlacement';
 import { UniqueStreetFacades } from './UniqueStreetFacades';
 import { InstancedProp, type InstancedPropTransform } from '@/engine/graphics/InstancedProp';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
+// FIX v4.14.0: нативный modular_fire_escape — 6.66×9.76×1.42 м (после выпечки
+// нод). Прежние масштабы 0.95–1.25 давали 6–12-метровые лестницы над фасадами
+// (~5–7 м). Новые 0.5–0.62 → лестницы 4.9–6.0 м — в габаритах фасадов.
 const FIRE_ESCAPES: Array<{ position: [number, number, number]; rotationY: number; scale: number }> = [
-  { position: [-10.0, 0, -15.2], rotationY: 0.12, scale: 1.2 },
-  { position: [10.8, 0, -18.5], rotationY: Math.PI - 0.08, scale: 1.25 },
-  { position: [-11.2, 0, -5.8], rotationY: 0.2, scale: 1.05 },
-  { position: [13.8, 0, 6.2], rotationY: -Math.PI / 2 - 0.04, scale: 0.95 },
-  { position: [-0.8, 0, -24.2], rotationY: 0.03, scale: 1.15 },
+  { position: [-10.0, 0, -15.2], rotationY: 0.12, scale: 0.6 },
+  { position: [10.8, 0, -18.5], rotationY: Math.PI - 0.08, scale: 0.62 },
+  { position: [-11.2, 0, -5.8], rotationY: 0.2, scale: 0.55 },
+  { position: [13.8, 0, 6.2], rotationY: -Math.PI / 2 - 0.04, scale: 0.5 },
+  { position: [-0.8, 0, -24.2], rotationY: 0.03, scale: 0.58 },
 ];
 
 type GltfMaterialVariant = {
@@ -95,6 +99,7 @@ function GltfProp({
   scale = 1,
   castShadow = true,
   variant,
+  groundAnchor = false,
 }: {
   url: string;
   position: [number, number, number];
@@ -102,10 +107,19 @@ function GltfProp({
   scale?: number;
   castShadow?: boolean;
   variant?: GltfMaterialVariant;
+  /**
+   * FIX v4.14.0: поднять модель так, чтобы её низ стоял на authored Y.
+   * Часть Poly Haven-пропсов имеет minY<0 (street_lamp_02 −0.395, old_tyre −0.30,
+   * power_box −0.252 — раньше наполовину уходили под асфальт).
+   * НЕ включать для настенных/подвесных пропсов (aircon, камеры, окна,
+   * industrialLamp — их origin = точка крепления) и для люка (заподлицо).
+   */
+  groundAnchor?: boolean;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
   const [scene, setScene] = useState<Object3D | null>(null);
   const cloneRef = useRef<Object3D | null>(null);
+  const emptyFallback = useMemo(() => new Object3D(), []);
 
   useEffect(() => {
     const next = clonePreparedScene(gltf.scene, castShadow, variant);
@@ -122,10 +136,18 @@ function GltfProp({
     };
   }, [gltf.scene, castShadow, variant]);
 
+  // Ground anchoring reuses the dressing-path measurement (manualScale only —
+  // без targetSize: у уличных пропсов авторские масштабы сохранены).
+  const { footY } = useGltfPropPlacement(scene ?? emptyFallback, { manualScale: scale });
+
   if (!scene) return null;
 
   return (
-    <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
+    <group
+      position={[position[0], position[1] + (groundAnchor ? footY : 0), position[2]]}
+      rotation={[0, rotationY, 0]}
+      scale={scale}
+    >
       <primitive object={scene} />
     </group>
   );
@@ -154,10 +176,12 @@ function StreetPropDressing() {
     [],
   );
   // Metal trash cans: 2 × ~2 parts ≈ 4 → 2
+  // FIX v4.14.0: GLB — пара контейнеров (AABB 1.84×1.35); прежние масштабы 1.2/1.1
+  // давали 2.2-метровых монстров. 0.67/0.62 → баки ~0.9 м высотой.
   const trashCanInstances = useMemo<InstancedPropTransform[]>(
     () => [
-      { position: [2.15, 0, 3.1], scale: 1.2 },
-      { position: [-2.55, 0, -8.1], rotation: [0, 0.4, 0], scale: 1.1 },
+      { position: [2.15, 0, 3.1], scale: 0.67 },
+      { position: [-2.55, 0, -8.1], rotation: [0, 0.4, 0], scale: 0.62 },
     ],
     [],
   );
@@ -188,43 +212,46 @@ function StreetPropDressing() {
 
   return (
     <group>
-      {/* ── Instanced props (batched draw calls) ── */}
-      <InstancedProp url={POLYHAVEN_MODELS.fireEscape} instances={fireEscapeInstances} castShadow={castShadow} />
-      <InstancedProp url={POLYHAVEN_MODELS.bench} instances={benchInstances} />
-      <InstancedProp url={POLYHAVEN_MODELS.metalTrashCan} instances={trashCanInstances} />
-      <InstancedProp url={POLYHAVEN_MODELS.trashbag} instances={trashbagInstances} />
-      <InstancedProp url={POLYHAVEN_MODELS.barrel} instances={barrelInstances} />
-      <InstancedProp url={POLYHAVEN_MODELS.cardboardBox} instances={cardboardBoxInstances} />
+      {/* ── Instanced props (batched draw calls; normalizeFootY — v4.14.0) ── */}
+      <InstancedProp url={POLYHAVEN_MODELS.fireEscape} instances={fireEscapeInstances} castShadow={castShadow} normalizeFootY />
+      <InstancedProp url={POLYHAVEN_MODELS.bench} instances={benchInstances} normalizeFootY />
+      <InstancedProp url={POLYHAVEN_MODELS.metalTrashCan} instances={trashCanInstances} normalizeFootY />
+      <InstancedProp url={POLYHAVEN_MODELS.trashbag} instances={trashbagInstances} normalizeFootY />
+      <InstancedProp url={POLYHAVEN_MODELS.barrel} instances={barrelInstances} normalizeFootY />
+      <InstancedProp url={POLYHAVEN_MODELS.cardboardBox} instances={cardboardBoxInstances} normalizeFootY />
 
       {/* ── Unique props (single instance — no instancing benefit) ── */}
+      {/* Наземные пропсы — groundAnchor (min.y → authored Y); настенные/подвесные — нет. */}
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[11.6, 0, -17.8]} rotationY={Math.PI} scale={STREET_SHUTTER_DOOR_SCALE} />
+        <GltfProp url={POLYHAVEN_MODELS.shutterDoor} position={[11.6, 0, -17.8]} rotationY={Math.PI} scale={STREET_SHUTTER_DOOR_SCALE} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.roadBarrierAlt} position={[-5.9, 0, 8.7]} rotationY={-0.18} scale={1.15} />
+        <GltfProp url={POLYHAVEN_MODELS.roadBarrierAlt} position={[-5.9, 0, 8.7]} rotationY={-0.18} scale={1.15} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.roadBarrier} position={[0.3, 0, 9.2]} rotationY={0.08} scale={1.25} />
+        <GltfProp url={POLYHAVEN_MODELS.roadBarrier} position={[0.3, 0, 9.2]} rotationY={0.08} scale={1.25} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.wetFloorSign} position={[1.6, 0, 1.2]} rotationY={-0.5} scale={1.3} />
+        <GltfProp url={POLYHAVEN_MODELS.wetFloorSign} position={[1.6, 0, 1.2]} rotationY={-0.5} scale={1.3} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.woodenCrate} position={[4.7, 0, -6.9]} rotationY={0.25} scale={1.3} />
+        <GltfProp url={POLYHAVEN_MODELS.woodenCrate} position={[4.7, 0, -6.9]} rotationY={0.25} scale={1.3} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.oldTyre} position={[4.2, 0, -7.45]} rotationY={0.8} scale={1.2} />
+        <GltfProp url={POLYHAVEN_MODELS.oldTyre} position={[4.2, 0, -7.45]} rotationY={0.8} scale={1.2} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
+        {/* Люк — заподлицо с дорогой (min.y < 0 намеренно) — БЕЗ groundAnchor. */}
         <GltfProp url={POLYHAVEN_MODELS.manholeCover} position={[-0.8, 0.018, -1.8]} rotationY={0.4} scale={1.25} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.streetLamp} position={[-6.2, 0, -1.2]} scale={1.0} castShadow={castShadow} />
+        <GltfProp url={POLYHAVEN_MODELS.streetLamp} position={[-6.2, 0, -1.2]} scale={1.0} castShadow={castShadow} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.streetLampAlt} position={[5.8, 0, 2.8]} rotationY={Math.PI / 5} scale={1.0} castShadow={castShadow} />
+        <GltfProp url={POLYHAVEN_MODELS.streetLampAlt} position={[5.8, 0, 2.8]} rotationY={Math.PI / 5} scale={1.0} castShadow={castShadow} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
+        {/* Подвесной светильник — origin = точка крепления — БЕЗ groundAnchor. */}
         <GltfProp url={POLYHAVEN_MODELS.industrialLamp} position={[-5.5, 3.8, -2]} scale={1.25} />
       </Suspense>
       <Suspense fallback={null}>
@@ -237,10 +264,10 @@ function StreetPropDressing() {
         <GltfProp url={POLYHAVEN_MODELS.securityCamera} position={[12.3, 4.8, -13.2]} rotationY={Math.PI} scale={0.85} />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.powerBox} position={[-10.7, 0, 2.4]} rotationY={0.08} scale={1.0} />
+        <GltfProp url={POLYHAVEN_MODELS.powerBox} position={[-10.7, 0, 2.4]} rotationY={0.08} scale={1.0} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.utilityBox} position={[9.8, 0, -3.2]} rotationY={Math.PI} scale={1.05} />
+        <GltfProp url={POLYHAVEN_MODELS.utilityBox} position={[9.8, 0, -3.2]} rotationY={Math.PI} scale={1.05} groundAnchor />
       </Suspense>
     </group>
   );

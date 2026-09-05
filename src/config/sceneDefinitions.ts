@@ -53,7 +53,10 @@ export const volodka_room_def: SceneDefinition = {
     // FIX AUDIT-R1..R4: obstacles were authored with FULL dimensions but Rapier
     // treats `size` as HALF-EXTENTS (documented in shared/types/sceneDefinition.ts:73-89).
     // Desk: visual CraftedDeskShell / PH table ~1.85×0.75×0.82 → half [0.925, 0.375, 0.41]
-    { type: 'cuboidObstacle', size: [0.925, 0.375, 0.41], position: [0, 0.375, -2.5], footstepMaterial: 'wood' },
+    // FIX v4.14.0: PH paintedWoodenTable (scale 1.02) = 2.46×0.98×1.16 → коллайдер
+    // 1.85×0.82 позволял проваливаться в столешницу на ~0.3 м с каждой стороны.
+    // Новые полуразмеры [1.23, 0.49, 0.58] — точная посадка под GLB-стол в [0,0,-2.5].
+    { type: 'cuboidObstacle', size: [1.23, 0.49, 0.58], position: [0, 0.49, -2.5], footstepMaterial: 'wood' },
     // Bookshelf — matches visual geo_box_36 (0.8×2×0.35) at [1.65, 1.0, -2.55].
     // Was [0.28, 1.0, 0.45] — X too narrow (12cm gap each side), Z too deep.
     { type: 'cuboidObstacle', size: [0.4, 1.0, 0.2], position: [1.65, 1.0, -2.55], footstepMaterial: 'wood' },

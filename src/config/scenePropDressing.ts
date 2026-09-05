@@ -40,11 +40,18 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_cardboard_box', position: [1.25, 0, 5.9], rotationY: 0.2, loadTier: 'deferred' },
     { propModelId: 'polyhaven_trashbag', position: [1.75, 0, 5.55], rotationY: -0.45, loadTier: 'deferred' },
   ],
+  park_day: [
+    // FIX v4.14.0: вместо заглушки veg_tree_pine («авокадо» 6 см) — Kenney tree 4.3 м.
+    // Координаты бывших манифест-точек (в пределах пола ±15 м).
+    { propModelId: 'kenney_forest_tree', position: [-8, 0, -8], rotationY: 0.3, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [9, 0, -6], rotationY: 0.9, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [-10, 0, 5], rotationY: -0.5, loadTier: 'deferred' },
+  ],
   office_day: [
     // Desk grid owns tables/terminals (Kenney office shell blocked → full 12-desk procedural).
     // Do not stack painted table + kenney_terminal near [-1.5,-1.0] — doubles emissive desks.
     { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [3.5, 0, -2.0], rotationY: -Math.PI / 2 },
-    { propModelId: 'ai3dgen_server_fragment', position: [-4.0, 0.15, -4.5] },
+    { propModelId: 'ai3dgen_server_fragment', position: [-4.0, 0.02, -4.5] },
     { propModelId: 'kenney_city_chair', position: [5.4, 0, 3.4], rotationY: Math.PI * 0.75 },
     { propModelId: 'polyhaven_shutter_window', position: [-3.8, 1.25, -4.85], rotationY: Math.PI, loadTier: 'deferred' },
     { propModelId: 'polyhaven_industrial_lamp', position: [0.2, 2.55, 4.2], rotationY: -0.2, loadTier: 'deferred' },
@@ -121,6 +128,20 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'kenney_city_guitar', position: [-2.0, 0.05, -1.0], rotationY: 0.3 },
     { propModelId: 'kenney_city_bottle', position: [1.65, 0.48, 1.55] },
     { propModelId: 'polyhaven_trashbag', position: [2.8, 0, 1.2], rotationY: 0.2, loadTier: 'deferred' },
+    // FIX v4.14.0: Kenney trees вместо заглушки-авокадо (манифест veg_tree_pine).
+    // Все точки в пределах пола ±18 м, центр костра не перекрывают.
+    { propModelId: 'kenney_forest_tree', position: [-12, 0, -10], rotationY: 0.35, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [11, 0, -9], rotationY: -0.5, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [-13, 0, 5], rotationY: 0.8, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [10, 0, 8], rotationY: -0.25, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [-14, 0, -2], rotationY: 0.15, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [13, 0, 1], rotationY: -0.7, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [-9, 0, 11], rotationY: 0.55, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [8, 0, -13], rotationY: -0.35, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [-11, 0, -14], rotationY: 0.62, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [12, 0, 12], rotationY: -0.48, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [-15, 0, 9], rotationY: 0.28, loadTier: 'deferred' },
+    { propModelId: 'kenney_forest_tree', position: [6, 0, 13], rotationY: -0.18, loadTier: 'deferred' },
   ],
   zarema_albert_room: [
     { propModelId: 'kenney_bed', position: [-1.5, 0, 1.5] },
@@ -134,7 +155,7 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_metal_trash_can', position: [-2.15, 0, -1.85], rotationY: -0.3, loadTier: 'deferred' },
   ],
   abandoned_factory: [
-    { propModelId: 'ai3dgen_server_fragment', position: [-6.0, 0.25, -5.0], rotationY: 0.4 },
+    { propModelId: 'ai3dgen_server_fragment', position: [-6.0, 0.02, -5.0], rotationY: 0.4 },
     { propModelId: 'polyhaven_bench', position: [2.0, 0, -3.5], rotationY: Math.PI / 3 },
     { propModelId: 'polyhaven_road_barrier', position: [-1.8, 0, -5.8], rotationY: 0.15 },
     { propModelId: 'polyhaven_industrial_lamp', position: [0, 4.2, -6.2], rotationY: 0.1 },
@@ -143,12 +164,15 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_industrial_lamp', position: [-7.2, 4.8, -4.8], rotationY: -0.15, loadTier: 'deferred' },
     { propModelId: 'polyhaven_old_tyre', position: [5.8, 0, 2.4], rotationY: 0.7, loadTier: 'deferred' },
     { propModelId: 'polyhaven_wooden_crate', position: [-4.2, 0, 3.1], rotationY: -0.2, loadTier: 'deferred' },
-    { propModelId: 'polyhaven_utility_box', position: [-2.1, 0.55, -3.4], rotationY: 0.35, loadTier: 'deferred' },
+    { propModelId: 'polyhaven_utility_box', position: [-2.1, 0, -3.4], rotationY: 0.35, loadTier: 'deferred' },
     { propModelId: 'polyhaven_power_box', position: [3.2, 0, -2.8], rotationY: -0.2, loadTier: 'deferred' },
   ],
   factory_basement: [
-    { propModelId: 'ai3dgen_server_fragment', position: [-3.6, 0.55, -1.0], rotationY: -Math.PI / 2 },
-    { propModelId: 'kenney_terminal', position: [1.5, 0.78, -2.0], offset: [0, -0.28, 0] },
+    { propModelId: 'ai3dgen_server_fragment', position: [-3.6, 0.02, -1.0], rotationY: -Math.PI / 2 },
+    // FIX v4.14.0: терминал стоял на [1.5, 0.5, -2.0] в воздухе (stale offset −0.28 при
+    // minY=0 натива). Пересажен на процедурный стол [4.5,0,5.5] (поверхность 0.41),
+    // свободный конец — машина-коллайдер [4.5,3.5] занимает z ≤ 5.3, терминал на z 5.6.
+    { propModelId: 'kenney_terminal', position: [4.35, 0.41, 5.6], rotationY: -0.5 },
     { propModelId: 'polyhaven_industrial_lamp', position: [-1.2, 2.8, -4.5], rotationY: 0.15 },
     { propModelId: 'polyhaven_barrel', position: [-2.4, 0, 1.75], rotationY: 0.2 },
     { propModelId: 'polyhaven_utility_box', position: [3.4, 0, -1.2], rotationY: Math.PI / 2 },
@@ -159,10 +183,12 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_wooden_crate', position: [-2.8, 0, -3.2], rotationY: 0.35, loadTier: 'deferred' },
   ],
   guild_mainframe: [
-    { propModelId: 'ai3dgen_server_fragment', position: [-4.8, 0.35, -3.2], rotationY: 0.2 },
-    { propModelId: 'ai3dgen_server_fragment', position: [4.2, 0.35, -2.8], rotationY: -0.35 },
-    { propModelId: 'kenney_terminal', position: [-1.4, 0.78, 3.15], offset: [0, -0.28, 0] },
-    { propModelId: 'kenney_terminal', position: [2.2, 0.78, -4.2], offset: [0, -0.28, 0], rotationY: Math.PI },
+    { propModelId: 'ai3dgen_server_fragment', position: [-4.8, 0.02, -3.2], rotationY: 0.2 },
+    { propModelId: 'ai3dgen_server_fragment', position: [4.2, 0.02, -2.8], rotationY: -0.35 },
+    // FIX v4.14.0: терминал тонул в консоли (stale offset −0.28). Пересажен на
+    // верх процедурной консоли [−1.4, 0.55, 3.2] (верх 1.1). Второй терминал
+    // [2.2, −4.2] стоял в воздухе без мебели — убран.
+    { propModelId: 'kenney_terminal', position: [-1.4, 1.1, 3.1] },
     { propModelId: 'polyhaven_industrial_lamp', position: [0, 3.0, -5.0], rotationY: 0.1 },
     { propModelId: 'polyhaven_industrial_lamp', position: [-5.0, 2.8, 1.2], rotationY: -0.15, loadTier: 'deferred' },
     { propModelId: 'polyhaven_industrial_lamp', position: [5.0, 2.8, 1.2], rotationY: 0.15, loadTier: 'deferred' },
@@ -173,18 +199,22 @@ export const SCENE_PROP_DRESSING: Partial<Record<SceneId, readonly ScenePropPlac
     { propModelId: 'polyhaven_wooden_crate', position: [3.6, 0, 2.8], rotationY: -0.4, loadTier: 'deferred' },
   ],
   underground_bunker: [
-    { propModelId: 'kenney_terminal', position: [0, 0.78, -4.2], offset: [0, -0.28, 0] },
+    // FIX v4.14.0: терминал тонул ниже крышки радио-стола (stale offset −0.28).
+    // Стол [0, 0.55, −4.5] (плита 2.4×1.0, верх 0.61) → терминал на [0, 0.61, −4.2].
+    { propModelId: 'kenney_terminal', position: [0, 0.61, -4.2] },
     { propModelId: 'polyhaven_industrial_lamp', position: [0, 2.6, -4.0], rotationY: 0.1 },
     { propModelId: 'polyhaven_utility_box', position: [-4.8, 0, 2.2], rotationY: 0.35 },
     { propModelId: 'polyhaven_power_box', position: [4.5, 0, 1.8], rotationY: -0.2 },
     { propModelId: 'polyhaven_cardboard_box', position: [-3.0, 0, 3.2], rotationY: 0.25, loadTier: 'deferred' },
     { propModelId: 'polyhaven_wooden_crate', position: [3.2, 0, 3.5], rotationY: -0.35, loadTier: 'deferred' },
-    { propModelId: 'ai3dgen_server_fragment', position: [-5.2, 0.35, -1.5], rotationY: 0.15, loadTier: 'deferred' },
+    { propModelId: 'ai3dgen_server_fragment', position: [-5.2, 0.02, -1.5], rotationY: 0.15, loadTier: 'deferred' },
   ],
   library_basement: [
     { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [-3.0, 0, -1.0] },
     { propModelId: 'polyhaven_wooden_bookshelf_worn', position: [3.0, 0, -1.0], rotationY: Math.PI },
-    { propModelId: 'kenney_terminal', position: [0, 0.78, -2.8], offset: [0, -0.28, 0] },
+    // FIX v4.14.0: терминал висел в воздухе [0, 0.5, −2.8] (stale offset −0.28,
+    // мебели в точке нет). Пересажен на картонную коробку [−1.6, 0, −3.2] (верх 0.47).
+    { propModelId: 'kenney_terminal', position: [-1.6, 0.47, -3.2], rotationY: 0.4 },
     { propModelId: 'polyhaven_cardboard_box', position: [-1.6, 0, -3.2], rotationY: 0.4, loadTier: 'deferred' },
     { propModelId: 'polyhaven_cardboard_box', position: [1.4, 0, 3.0], rotationY: -0.25, loadTier: 'deferred' },
     { propModelId: 'polyhaven_metal_trash_can', position: [2.8, 0, 2.5], rotationY: 0.15, loadTier: 'deferred' },

@@ -2,10 +2,6 @@
 
 import type { SceneId } from '@/shared/types/game';
 import { isSceneAssetSystemAllowed } from '@/config/assetOwnership';
-import { getInteriorShellUniformScale } from '@/config/interiorShellScale';
-
-const CORRIDOR_TARGET_BOUNDS_M: [number, number, number] = [6, 3, 16];
-const CORRIDOR_SHELL_UNIFORM_SCALE = getInteriorShellUniformScale('corridor', CORRIDOR_TARGET_BOUNDS_M);
 
 export interface SceneInteriorPlacement {
   assetId: string;
@@ -15,24 +11,23 @@ export interface SceneInteriorPlacement {
   scale?: number;
 }
 
-/** Kenney building shells (Poly Pizza TODO) — backdrop dressing via GltfAsset manifest. */
+/**
+ * Kenney building shells — backdrop dressing via GltfAsset manifest.
+ *
+ * FIX v4.14.0: маунты volodka_corridor и rooftop_edge удалены:
+ * - interior_corridor (corridor.glb) — 'driveway-long', плитка-дорожка
+ *   0.36×0.01×0.40 м; при uniform scale 2.0 рендерил «коврик» 0.72×0.02×0.80
+ *   в коридоре с полностью процедурной геометрией.
+ * - interior_rooftop (rooftop.glb) — 'low-detail-building-a' 0.5×2×0.5 при
+ *   scale 1.8 стоял на [4,0,−6] — вне плиты крыши (±2.5, ±4), парил в пустоте;
+ *   у RooftopEdgeVisual есть собственная процедурная линия горизонта.
+ * cafe_evening / office_day / library_day / albert_backroom / guild_mainframe /
+ * library_basement используют процедурные оболочки (Kenney exteriors blocked).
+ * abandoned_factory / factory_basement / underground_bunker / river_pier /
+ * chk_forest_zorge — фоновые оболочки через SceneBackdropShell.
+ */
 export const SCENE_INTERIOR_ASSETS: Partial<Record<SceneId, readonly SceneInteriorPlacement[]>> = {
   // volodka_room: AuthoredInteriorShell mounts apartment_envelope.glb (metre-scale walkable).
-  volodka_corridor: [
-    {
-      assetId: 'interior_corridor',
-      position: [0, 0, 4],
-      scale: CORRIDOR_SHELL_UNIFORM_SCALE,
-      rotation: [0, Math.PI / 2, 0],
-    },
-  ],
-  // cafe_evening, office_day, library_day, albert_backroom, guild_mainframe,
-  // library_basement use procedural envelopes (Kenney exteriors blocked).
-  // abandoned_factory / factory_basement / underground_bunker / river_pier /
-  // chk_forest_zorge backdrop shells are owned via SceneBackdropShell.
-  rooftop_edge: [
-    { assetId: 'interior_rooftop', position: [4, 0, -6], scale: 1.8, rotation: [0, Math.PI / 3, 0] },
-  ],
 };
 
 export function getSceneInteriorAssets(sceneId: SceneId): readonly SceneInteriorPlacement[] {

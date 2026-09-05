@@ -109,6 +109,8 @@ function ScenePropMeshInner({ placement, def }: ScenePropMeshInnerProps) {
     manualScale: scale,
     targetSizeM: def.targetSizeM,
     fitAxis: def.fitAxis,
+    // v4.14.0: 'max' для подвесных светильников — верх модели в authored Y.
+    anchorY: def.anchorY,
   });
   const baseRotation = def.rotation ?? [0, 0, 0];
   const offset = def.offset ?? [0, 0, 0];

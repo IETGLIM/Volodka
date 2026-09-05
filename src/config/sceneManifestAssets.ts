@@ -7,32 +7,22 @@ export interface SceneManifestPlacement {
   position: [number, number, number];
   rotation?: [number, number, number];
   scale?: number;
+  /**
+   * FIX v4.14.0: поднять модель так, чтобы её низ стоял на placement.y.
+   * env_cafe_props имеет minY −0.247 — без якоря куча проседала на 0.37 м под пол.
+   */
+  groundAnchor?: boolean;
 }
 
 /** GltfAsset manifest entries rendered as scene dressing (LOD handled by GltfAsset). */
 export const SCENE_MANIFEST_ASSETS: Partial<Record<SceneId, readonly SceneManifestPlacement[]>> = {
   cafe_evening: [
-    { assetId: 'env_cafe_props', position: [2.5, 0, -3.5], scale: 1.5, rotation: [0, Math.PI / 4, 0] },
+    { assetId: 'env_cafe_props', position: [2.5, 0, -3.5], scale: 1.5, rotation: [0, Math.PI / 4, 0], groundAnchor: true },
   ],
-  park_day: [
-    { assetId: 'veg_tree_pine', position: [-8, 0, -8], scale: 2.0 },
-    { assetId: 'veg_tree_pine', position: [9, 0, -6], scale: 1.8, rotation: [0, 0.6, 0] },
-    { assetId: 'veg_tree_pine', position: [-10, 0, 5], scale: 2.2, rotation: [0, -0.4, 0] },
-  ],
-  chk_forest_zorge: [
-    { assetId: 'veg_tree_pine', position: [-12, 0, -10], scale: 2.4, rotation: [0, 0.35, 0] },
-    { assetId: 'veg_tree_pine', position: [11, 0, -9], scale: 2.1, rotation: [0, -0.5, 0] },
-    { assetId: 'veg_tree_pine', position: [-13, 0, 5], scale: 2.0, rotation: [0, 0.8, 0] },
-    { assetId: 'veg_tree_pine', position: [10, 0, 8], scale: 1.9, rotation: [0, -0.25, 0] },
-    { assetId: 'veg_tree_pine', position: [-14, 0, -2], scale: 2.15, rotation: [0, 0.15, 0] },
-    { assetId: 'veg_tree_pine', position: [13, 0, 1], scale: 2.05, rotation: [0, -0.7, 0] },
-    { assetId: 'veg_tree_pine', position: [-9, 0, 11], scale: 1.85, rotation: [0, 0.55, 0] },
-    { assetId: 'veg_tree_pine', position: [8, 0, -13], scale: 2.25, rotation: [0, -0.35, 0] },
-    { assetId: 'veg_tree_pine', position: [-11, 0, -14], scale: 2.0, rotation: [0, 0.62, 0] },
-    { assetId: 'veg_tree_pine', position: [12, 0, 12], scale: 1.95, rotation: [0, -0.48, 0] },
-    { assetId: 'veg_tree_pine', position: [-15, 0, 9], scale: 2.1, rotation: [0, 0.28, 0] },
-    { assetId: 'veg_tree_pine', position: [6, 0, 13], scale: 2.05, rotation: [0, -0.18, 0] },
-  ],
+  // FIX v4.14.0: манифест-деревья veg_tree_pine удалены из park_day и
+  // chk_forest_zorge — на диске это заглушка Khronos «Avocado» 4×6×3 см
+  // (lods-комментарий в assetManifest подтверждает фейковую LOD-цепочку).
+  // Деревья переехали в SCENE_PROP_DRESSING (kenney_forest_tree, 4.3 м).
 };
 
 export function getSceneManifestAssets(sceneId: SceneId): readonly SceneManifestPlacement[] {

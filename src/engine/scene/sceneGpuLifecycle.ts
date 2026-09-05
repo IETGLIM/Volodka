@@ -53,16 +53,16 @@ export function releaseSceneGpuOnUnload(sceneId: SceneId, nextSceneId: SceneId):
 /** GLB assets warmed per scene — extend as interior props migrate off procedural meshes. */
 const SCENE_GLTF_ASSETS: Partial<Record<SceneId, readonly string[]>> = {
   cafe_evening: ['env_cafe_props', 'interior_cafe'],
-  park_day: ['veg_tree_pine'],
+  // FIX v4.14.0: veg_tree_pine («авокадо-заглушка») снят с маунтов — деревья
+  // теперь kenney_forest_tree через ScenePropDressing (прогрев списка пропсов ниже).
+  park_day: [],
   volodka_room: ['player_volodka'], // apartment_envelope.glb + ThinMonitors own the wake room
-  volodka_corridor: ['interior_corridor'],
   office_day: ['interior_office'],
   library_day: ['interior_library'],
   abandoned_factory: ['interior_factory'],
   factory_basement: ['interior_basement'],
-  rooftop_edge: ['interior_rooftop'],
   river_pier: ['interior_pier'],
-  chk_forest_zorge: ['interior_forest_clearing', 'veg_tree_pine'],
+  chk_forest_zorge: ['interior_forest_clearing'],
   street_night: [],
 };
 

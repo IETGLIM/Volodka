@@ -18,6 +18,12 @@ export interface PropModelDefinition {
   scale?: number;
   /** Which bound axis drives uniform scale when targetSizeM is set. */
   fitAxis?: 'height' | 'width' | 'depth' | 'maxHorizontal' | 'maxExtent';
+  /**
+   * Y-anchor (v4.14.0): 'min' — низ модели встаёт на authored Y (стоит на полу,
+   * по умолчанию); 'max' — ВЕРХ модели встаёт в authored Y (подвесные
+   * светильники: точка крепления, корпус свисает вниз).
+   */
+  anchorY?: 'min' | 'max';
   rotation?: [number, number, number];
   /** Local offset from trigger zone origin (metres) */
   offset?: [number, number, number];
@@ -198,6 +204,10 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
     url: `${CITYKIT}/bottle.glb`,
     targetSizeM: [0.08, 0.23, 0.08],
     fitAxis: 'height',
+    // FIX v4.14.0: одиночный merged-меш «tableCoffeeGlass» — AABB 0.66×0.23×0.40
+    // (чашка+блюдце+столовые предметы в одном меше). По высоте scale=1 рендерил
+    // 66-см кластер на столах. Множитель 0.45 → ~30×10×18 см — читаемый столаш-клаттер.
+    scale: 0.45,
     license: 'CC0',
     source: 'Kenney Furniture Kit — tableCoffeeGlass',
     sourceUrl: KENNEY_FURNITURE_URL,
@@ -210,6 +220,18 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
     license: 'CC0',
     source: 'OpenGameArt Low Poly Camping — camp_fire (CC0)',
     sourceUrl: 'https://opengameart.org/content/low-poly-camping-assets',
+  },
+  kenney_forest_tree: {
+    id: 'kenney_forest_tree',
+    url: '/models/interiors/forest_clearing.glb',
+    // FIX v4.14.0: замена заглушки veg_tree_pine («авокадо» 6 см из Khronos-пака).
+    // Kenney Suburban tree 'tree-large' 0.21×0.77×0.24 → подгонка по высоте 4.3 м
+    // даёт полноценное дерево 1.2×4.3×1.3 м. Низ модели на y=0 (minY 0).
+    targetSizeM: [1.4, 4.3, 1.4],
+    fitAxis: 'height',
+    license: 'CC0',
+    source: 'Kenney suburban tree — см. public/models/ATTRIBUTION.md',
+    sourceUrl: 'https://poly.pizza',
   },
   // ── Poly Haven CC0 authored set dressing — higher fidelity than procedural fallbacks ──
   polyhaven_road_barrier: {
@@ -278,7 +300,10 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   polyhaven_metal_trash_can: {
     id: 'polyhaven_metal_trash_can',
     url: POLYHAVEN_MODELS.metalTrashCan,
-    targetSizeM: [0.48, 0.82, 0.48],
+    // FIX v4.14.0: GLB — ПАРА контейнеров (can 0.77×0.91×0.55 + второй бен 1.04×0.78×0.56,
+    // суммарный AABB 1.84×1.35×0.56). Старая цель [0.48,0.82,0.48] по высоте давала
+    // масштаб 0.6 и широкую «колбасу». Новая цель — по габаритам пары.
+    targetSizeM: [1.15, 0.9, 0.45],
     fitAxis: 'height',
     license: 'CC0',
     source: 'Poly Haven — metal trash can',
@@ -323,8 +348,14 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   polyhaven_industrial_lamp: {
     id: 'polyhaven_industrial_lamp',
     url: POLYHAVEN_MODELS.industrialLamp,
-    targetSizeM: [0.75, 0.58, 0.75],
-    fitAxis: 'maxHorizontal',
+    // FIX v4.14.0: подвесной светильник — origin в точке крепления (minY −1.34).
+    // Было fitAxis 'maxHorizontal' с целью по H 0.58 → лампа раздувалась до 1.85 м
+    // (×3 к цели), а min-якорь ставил плашку в authored Y и протыкал потолок хвостом.
+    // Теперь подгонка по высоте (0.95 м) + max-якорь: верх подвеса = authored Y,
+    // корпус свисает вниз. Authored Y (2.45–4.8) снова высоты креплений.
+    targetSizeM: [0.62, 0.95, 0.62],
+    fitAxis: 'height',
+    anchorY: 'max',
     license: 'CC0',
     source: 'Poly Haven — hanging industrial lamp',
     sourceUrl: POLYHAVEN_URL,

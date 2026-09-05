@@ -36,13 +36,22 @@ export const INTERIOR_SHELL_SOURCE_BOUNDS_M: Record<
   cafe: [0.8836, 0.8931, 1.09],
   office: [1.36, 2.88, 1.36],
   library: [0.9701, 1.293, 0.94],
-  /** corridor.glb — calibrated to 6×16×3 m procedural shell at uniform scale 2.0 */
-  corridor: [3.0, 1.5, 8.0],
-  /** Approximate native bounds — backdrop shells use uniform SceneBackdropShell scale. */
-  factory: [2.0, 1.5, 2.0],
-  basement: [2.0, 1.2, 2.0],
-  pier: [1.5, 0.6, 3.0],
-  forestClearing: [2.0, 1.0, 2.0],
+  /**
+   * FIX v4.14.0: строки ниже переписаны по фактическим замерам GLB на диске
+   * (GLB-парсер accessors×node-TRS — правило деавантизации как в three.js).
+   * Прежние «документированные» габариты были выдуманы (corridor в 20 раз,
+   * pier в 10 раз) — масштабы оболочек считались от лжи и модели уезжали.
+   * corridor.glb — 'driveway-long' 0.36×0.01×0.40 (плитка-дорожка, НЕ коридор).
+   */
+  corridor: [0.36, 0.01, 0.4],
+  /** factory.glb — Kenney 'building-a' 2.08×1.47×1.24. */
+  factory: [2.08, 1.47, 1.24],
+  /** basement.glb — Kenney 'detail-tank' 0.85×0.42×0.52. */
+  basement: [0.85, 0.42, 0.52],
+  /** pier.glb — Kenney 'path-stones-long' 0.14×0.01×0.40 (манифест-маунт удалён). */
+  pier: [0.14, 0.01, 0.4],
+  /** forest_clearing.glb — Kenney 'tree-large' 0.21×0.77×0.24 (тоже дерево!). */
+  forestClearing: [0.21, 0.77, 0.24],
 };
 
 /**
@@ -64,8 +73,9 @@ export const INTERIOR_SHELL_MOUNT_KIND: Record<InteriorShellModelId, InteriorShe
   office: 'exterior_building',
   // Kenney building-b — exterior impostor.
   library: 'exterior_building',
-  // Corridor uses a long driveway slab as a deferred fallback backdrop only.
-  corridor: 'walkable_envelope',
+  // FIX v4.14.0: corridor.glb — плитка-дорожка 0.4 м, НЕ коридор; маунт через
+  // SceneInteriorAssets удалён (визуал коридора полностью процедурный).
+  corridor: 'backdrop_dressing',
   // Outdoor / industrial dressing via SceneBackdropShell — not walkable rooms.
   factory: 'backdrop_dressing',
   basement: 'backdrop_dressing',

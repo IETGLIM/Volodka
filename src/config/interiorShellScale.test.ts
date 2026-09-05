@@ -30,13 +30,28 @@ describe('interiorShellScale', () => {
     expect(isExteriorBuildingShell('cafe')).toBe(true);
   });
 
-  it('classifies factory/pier/forest as backdrop dressing — not walkable envelopes', () => {
-    for (const id of ['factory', 'pier', 'forestClearing', 'basement'] as const) {
+  it('classifies factory/pier/forest/corridor as backdrop dressing — not walkable envelopes', () => {
+    for (const id of ['factory', 'pier', 'forestClearing', 'basement', 'corridor'] as const) {
       expect(isBackdropDressingShell(id), id).toBe(true);
       expect(isWalkableInteriorShellAllowed(id), id).toBe(false);
       expect(isExteriorBuildingShell(id), id).toBe(false);
       expect(INTERIOR_SHELL_MOUNT_KIND[id]).toBe('backdrop_dressing');
     }
+  });
+
+  it('corridor source bounds match the on-disk driveway slab (v4.14.0 re-measure)', () => {
+    // corridor.glb = Kenney 'driveway-long' 0.36×0.01×0.40 — прежние [3,1.5,8]
+    // были выдуманы и в 20 раз завышали масштаб оболочки.
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.corridor[0]).toBeCloseTo(0.36, 2);
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.corridor[1]).toBeCloseTo(0.01, 2);
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.corridor[2]).toBeCloseTo(0.4, 2);
+  });
+
+  it('backdrop source bounds match on-disk GLBs (v4.14.0 re-measure)', () => {
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.factory).toEqual([2.08, 1.47, 1.24]);
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.basement).toEqual([0.85, 0.42, 0.52]);
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.pier).toEqual([0.14, 0.01, 0.4]);
+    expect(INTERIOR_SHELL_SOURCE_BOUNDS_M.forestClearing).toEqual([0.21, 0.77, 0.24]);
   });
 
   it('documents bedroom native AABB as the metre-scale apartment envelope', () => {
@@ -53,7 +68,8 @@ describe('interiorShellScale', () => {
     expect(getInteriorShellScaleAnisotropy(scale)).toBeLessThan(1.1);
   });
 
-  it('keeps corridor policy as walkable envelope (SceneInteriorAssets path)', () => {
-    expect(isWalkableInteriorShellAllowed('corridor')).toBe(true);
+  it('keeps corridor OFF the walkable-envelope path (driveway slab, not a corridor)', () => {
+    // FIX v4.14.0: corridor.glb — плитка 0.4 м; SceneInteriorAssets-маунт удалён.
+    expect(isWalkableInteriorShellAllowed('corridor')).toBe(false);
   });
 });

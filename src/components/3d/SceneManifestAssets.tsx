@@ -26,6 +26,7 @@ export function SceneManifestAssets() {
             position={placement.position}
             rotation={placement.rotation}
             scale={placement.scale ?? 1}
+            groundAnchor={placement.groundAnchor}
           />
         </Suspense>
       ))}
