@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.12.1** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.13.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -615,6 +615,19 @@ Combat camera — отдельный `CombatCameraState` внутри cinematic 
 раньше (ESM-порядок: call-site импортирует gltfPipeline до своих preload-ов).
 
 ### Metric scale + interior shell mount policy
+
+**Placement audit — модели vs геометрия сцены (v4.13.0):** инвариант «каждое
+размещение (NPC-расписание, спавн, GLB-проп) лежит на полу, в габаритах и вне
+стен/мебели (капсула 0.32 м)» проверяется статически:
+`engine/scene/placementAudit.ts` → CLI `scripts/analyze-model-placement.ts`
+(exit 1 при HIGH) → vitest-гейт `placementAudit.test.ts` → включено в
+`npm run validate`. Оверрайды позиций для вариантов сцен
+(`SCENE_SCHEDULE_PARENT`) живут в `config/npcVariantPlacementOverrides.ts` и
+применяются тем же `resolveNpcPlacementForScene` в рантайме (NPCSystem,
+InteractiveTriggers, миникарта, NPCProximityIndicator) — статический аудит и
+рендер видят одни и те же координаты. Сон/отдых на низкой мебели (≤1.35 м)
+считается нормой; коллайдеры обязаны совпадать с визуальными моделями
+(stale-коллайдеры без визуала удаляются, как и визуалы без коллайдера).
 
 **Конвенция:** 1 Three.js unit = 1 metre. Канонические human/prop targets —
 `src/config/metricScaleCoherence.ts` (`PLAYER_METRIC`, street shutter/facade scales, `METRIC_SCALE_AUDIT`).
