@@ -103,11 +103,11 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'Рад помочь. Увидимся.',
         next: null,
-        effects: [
-          { type: 'addCredits', value: 50 },
-          { type: 'addItem', itemId: 'night_vision_potion', value: 2 },
-          { type: 'addXp', value: 100 },
-        ],
+        // FIX (v4.10.0): награды квеста (100 XP / 50 кредитов / 2 зелья) выдаёт
+        // автокомплит квеста lost_shipment — цель npc_talked срабатывает при
+        // ОТКРЫТИИ диалога. Дубликаты грантов в узле вычищены: награда —
+        // единый источник (дефиниция квеста).
+        effects: [],
       },
     ],
   },
@@ -233,10 +233,11 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'Тогда начни делать свою работу честно. Это твой единственный шанс.',
         next: null,
+        // FIX (v4.10.0): 200 XP и флаг corruption_exposed выдаёт автокомплит
+        // квеста guard_bribe_evidence (цель npc_talked срабатывает при открытии
+        // диалога). Здесь остаются только веточные различия кармы/навыка.
         effects: [
           { type: 'addKarma', value: 8 },
-          { type: 'setFlag', flag: 'corruption_exposed', flagValue: true },
-          { type: 'addXp', value: 200 },
         ],
       },
       {
@@ -244,8 +245,6 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
         next: null,
         effects: [
           { type: 'addKarma', value: 3 },
-          { type: 'setFlag', flag: 'corruption_exposed', flagValue: true },
-          { type: 'addXp', value: 200 },
           { type: 'addSkill', skill: 'persuasion', value: 1 },
         ],
       },
@@ -356,11 +355,12 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: 'Это... потрясающе. Спасибо, Игнат.',
         next: null,
+        // FIX (v4.10.0): клинок / 120 XP / навык coding выдаёт автокомплит
+        // квеста blacksmith_special (npc_talked срабатывает при открытии
+        // диалога). Флаг blacksmith_special_done оставлен здесь намеренно —
+        // он уникален: гейтит выборы приветствия Игната.
         effects: [
           { type: 'setFlag', flag: 'blacksmith_special_done', flagValue: true },
-          { type: 'addItem', itemId: 'crystal_blade', value: 1 },
-          { type: 'addXp', value: 120 },
-          { type: 'addSkill', skill: 'coding', value: 3 },
         ],
       },
     ],
@@ -456,17 +456,15 @@ export const DIALOGUE_ACT4_NEW: Record<string, DialogueNode> = {
       {
         text: '*протягиваешь письмо молча*',
         next: 'marina_reads_letter',
-        effects: [
-          { type: 'addXp', value: 80 },
-          { type: 'setFlag', flag: 'last_wish_completed', flagValue: true },
-        ],
+        // FIX (v4.10.0): 80 XP и флаг last_wish_completed выдаёт автокомплит
+        // квеста last_wish (npc_talked срабатывает при открытии диалога).
+        effects: [],
       },
       {
         text: 'Человек, который дал мне это письмо, ещё жив. Но едва.',
         next: 'marina_father_alive',
+        // Карма +5 — веточное различие («отец жив»), не дубликат квестовой награды.
         effects: [
-          { type: 'addXp', value: 80 },
-          { type: 'setFlag', flag: 'last_wish_completed', flagValue: true },
           { type: 'addKarma', value: 5 },
         ],
       },
