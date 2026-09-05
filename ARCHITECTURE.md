@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.12.0** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.12.1** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -604,6 +604,15 @@ Combat camera — отдельный `CombatCameraState` внутри cinematic 
 (`resolveSceneRenderingPipeline`).
 
 Пресеты: low = postFX off + Draco + procedural NPC; ultra = meshopt + full GLB.
+
+**Draco-декодер — единая точка истины (v4.12.1):** путь декодера задаётся
+ТОЛЬКО через `useGLTF.setDecoderPath('/draco/gltf/')` на модульном уровне
+`engine/assets/gltfPipeline.ts`. Причина: drei `useGLTF.extensions()`
+перезатирает `loader.setDRACOLoader(...)` своим синглтоном с gstatic-дефолтом
+ПОСЛЕ вызова extendLoader — в проде с CSP (`connect-src 'self'`) это резало
+каждый fetch декодера. `setDecoderPath` читается внутри extensions()-колбэка,
+поэтому модульная инициализация gltfPipeline гарантированно отрабатывает
+раньше (ESM-порядок: call-site импортирует gltfPipeline до своих preload-ов).
 
 ### Metric scale + interior shell mount policy
 

@@ -300,6 +300,17 @@ GET /api/matrix-quote?scene=…&karma=…&act=…&mode=whisper
 
 ---
 
+## Changelog (v4.12.1)
+
+**Прод-фиксы из консольного лога volodka.vercel.app**:
+
+- **Draco-декодер самохостится корректно**: CSP-лог прод-деплоя показал,
+  что drei перезатирал наш DRACOLoader дефолтным gstatic-путём — теперь
+  `useGLTF.setDecoderPath('/draco/gltf/')` применяется до любого
+  extensions()-колбэка, draco-LOD модели грузятся с same-origin.
+- **Тикер новостей с бэкоффом**: при устойчивых сбоях `/api/city-news`
+  частота опроса деградает ×2→×4 (3.5 → 28 мин) с сбросом при успехе.
+
 ## Changelog (v4.12.0)
 
 **«Честный промах»: замах решает RNG скоупа, событие combat:melee_miss**:

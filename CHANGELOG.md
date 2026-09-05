@@ -1,3 +1,44 @@
+## v4.12.1 (2026-09-05) — прод-фиксы из консольного лога volodka.vercel.app: Draco-декодер и бэкофф тикера
+
+### fix: самохостинг Draco-декодера — useGLTF.setDecoderPath вместо перезатираемого extendLoader
+- **Прод-баг (CSP × gstatic)**: консольный лог с volodka.vercel.app показал
+  17+ ошибок «Failed to fetch … violates Content-Security-Policy
+  "connect-src 'self' blob:"» на `www.gstatic.com/draco/versioned/decoders/1.5.5/`
+  — каждый fetch Draco-декодера резался CSP, draco-сжатые GLB не парсились.
+- **Корень**: drei `useGLTF.extensions()` вызывает `extendLoader` ПЕРВЫМ,
+  но ЗАТЕМ перезатирает `loader.setDRACOLoader(...)` своим модульным
+  синглтоном с дефолтным decoderPath gstatic — наш `sharedDraco` из
+  `configureGltfPipeline()` для useGLTF-моделей никогда не применялся.
+  В dev CSP нет → gstatic загрузка удавалась → баг не проявлялся.
+- **Фикс**: `useGLTF.setDecoderPath('/draco/gltf/')` на модульном уровне
+  `gltfPipeline.ts` — поддерживаемый drei механизм, отрабатывает до первого
+  extensions()-колбэка (ESM-семантика: каждый call-site импортирует
+  gltfPipeline раньше своих preload-ов). Same-origin '/draco/gltf/'
+  разрешён `connect-src 'self'`; файлы `draco_wasm_wrapper.js` +
+  `draco_decoder.wasm` существуют в `public/draco/gltf/` и переживают
+  prune-deploy-assets (PRESERVED_PREFIXES). WASM-eval разрешён
+  `script-src 'wasm-unsafe-eval'`.
+- Побочно: attachment `sharedDraco` в `extendGltfLoader` оставлен (Meshopt,
+  KTX2, specGloss-stub работают как раньше), но путь декодера больше
+  зависит от него не в коем случае.
+
+### fix: бэкофф городского тикера при устойчивых сбоях /api/city-news
+- **Прод-лог**: повторяющиеся `GET /api/city-news 503 (Service Unavailable)`
+  — при незаданном `FREEROUTER_KEY` в Vercel env каждый тик поллера тратил
+  серверлесс-вызов впустую (~410/сутки на активную вкладку).
+- Клиент при 503 уже показывал фолбэк-новость из тела (контент доставлен),
+  но поллер продолжал фиксированный цикл 3.5 мин. Добавлен экспоненциальный
+  бэкофф на ЖЁСТКИЕ сбои (ответ без фолбэк-новости, таймаут, сеть):
+  интервал ×2 за каждый подряд-сбой, кап ×4 (3.5 → 7 → 14 → 28 мин),
+  сброс при любом успешном контенте. Фолбэк-новость из 503-тела сбоем
+  НЕ считается. Тики поллера пропускаются до истечения бэкоффа —
+  интервал остаётся фиксированным, частота деградирует плавно.
+
+### Верификация
+- tsc 0; eslint (изменённые) 0; gpuResourceLifecycle-тесты 3/3 (drei-импорт
+  в gltfPipeline совместим с vitest); vite build 41с; dist/draco/gltf/
+  переживает prune; validate:content 0 ошибок.
+
 ## v4.12.0 (2026-09-05) — «Честный промах»: замах решает RNG скоупа, событие combat:melee_miss
 
 ### feat: честный промах замаха — шанс по дистанции и углу, событие combat:melee_miss
