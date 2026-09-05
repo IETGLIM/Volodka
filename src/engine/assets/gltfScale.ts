@@ -194,13 +194,22 @@ export interface PropGltfFit {
   footY: number;
 }
 
-/** Resolve final prop scale: optional target box in metres × manual multiplier. */
+/**
+ * Resolve final prop scale: optional target box in metres × manual multiplier.
+ *
+ * anchorY (v4.14.0):
+ * - 'min' (по умолчанию) — низ модели встаёт на y=0 (модель «стоит на полу»);
+ * - 'max' — ВЕРХ модели встаёт в origin (подвесные светильники: точка крепления
+ *   на authored Y, корпус свисает вниз). До этого исправления min-якорь ставил
+ *   плашку подвеса в authored Y, а хвост подвеса протыкал потолок.
+ */
 export function fitPropGltf(
   bounds: GltfBounds,
   options: {
     targetSizeM?: readonly [number, number, number];
     fitAxis?: PropFitAxis;
     manualScale?: number;
+    anchorY?: 'min' | 'max';
   } = {},
 ): PropGltfFit {
   const manualScale = options.manualScale ?? 1;
@@ -208,7 +217,10 @@ export function fitPropGltf(
     ? computePropUniformScale(bounds, options.targetSizeM, options.fitAxis ?? 'height')
     : 1;
   const scale = autoScale * manualScale;
-  return { scale, footY: computeFootPivotY(bounds, scale) };
+  const anchor = options.anchorY ?? 'min';
+  const rawY = anchor === 'max' ? bounds.max.y : bounds.min.y;
+  const footY = Number.isFinite(rawY) ? -rawY * scale : 0;
+  return { scale, footY: Number.isFinite(footY) ? footY : 0 };
 }
 
 /** Uniform scale so the mesh footprint spans a scene width×depth (metres). */

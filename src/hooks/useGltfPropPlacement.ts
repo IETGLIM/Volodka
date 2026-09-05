@@ -10,6 +10,8 @@ export interface GltfPropPlacementOptions {
   manualScale?: number;
   targetSizeM?: readonly [number, number, number];
   fitAxis?: PropFitAxis;
+  /** Y-якорь: 'min' — стоит на полу, 'max' — подвес (верх в origin). См. fitPropGltf. */
+  anchorY?: 'min' | 'max';
 }
 
 export interface GltfPropPlacement {
@@ -22,7 +24,7 @@ export function useGltfPropPlacement(
   scene: Object3D,
   options: GltfPropPlacementOptions,
 ): GltfPropPlacement {
-  const { manualScale = 1, targetSizeM, fitAxis } = options;
+  const { manualScale = 1, targetSizeM, fitAxis, anchorY } = options;
 
   // v4.8.1 FIX: measure synchronously on first render to avoid the
   // "floating props" flash — requestIdleCallback deferred the bounds
@@ -35,28 +37,25 @@ export function useGltfPropPlacement(
     try {
       const bounds = measureGltfBounds(scene);
       if (bounds.size.x > 0 || bounds.size.y > 0 || bounds.size.z > 0) {
-        return fitPropGltf(bounds, { manualScale, targetSizeM, fitAxis });
+        return fitPropGltf(bounds, { manualScale, targetSizeM, fitAxis, anchorY });
       }
     } catch {
       // scene may be a placeholder Object3D before GLB loads
     }
     return { scale: manualScale, footY: 0 };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene, manualScale, fitAxis, targetSizeM?.[0], targetSizeM?.[1], targetSizeM?.[2]]);
+  }, [scene, manualScale, fitAxis, anchorY, targetSizeM?.[0], targetSizeM?.[1], targetSizeM?.[2]]);
 
   const [placement, setPlacement] = useState<GltfPropPlacement>(initial);
 
   useEffect(() => {
     // If the synchronous measurement already gave a non-zero footY, skip
     // the deferred re-measure (saves an idle callback per prop on mount).
-    if (initial.footY !== 0 || initial.scale !== initial.scale) {
-      // Still re-measure if scene changes later (clone swap).
-    }
     let cancelled = false;
     const measure = () => {
       if (cancelled) return;
       const bounds = measureGltfBounds(scene);
-      const fit = fitPropGltf(bounds, { manualScale, targetSizeM, fitAxis });
+      const fit = fitPropGltf(bounds, { manualScale, targetSizeM, fitAxis, anchorY });
       setPlacement(fit);
     };
 
@@ -67,7 +66,7 @@ export function useGltfPropPlacement(
     const handle = setTimeout(measure, 0);
     return () => { cancelled = true; clearTimeout(handle); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [scene, manualScale, fitAxis, targetSizeM?.[0], targetSizeM?.[1], targetSizeM?.[2]]);
+  }, [scene, manualScale, fitAxis, anchorY, targetSizeM?.[0], targetSizeM?.[1], targetSizeM?.[2]]);
 
   return placement;
 }
