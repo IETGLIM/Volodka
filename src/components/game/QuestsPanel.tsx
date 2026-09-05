@@ -10,7 +10,7 @@ import {
   CheckCircle2, Circle, Trophy, BookOpen, EyeOff,
   Clock, AlertTriangle, RotateCcw, ChevronRight, Sparkles,
   Lightbulb, Shield, Swords, Zap, Star, Package, MapPin, MessageCircle, Gamepad2,
-  ListChecks, Users,
+  ListChecks, Users, User,
 } from 'lucide-react';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import type {
@@ -695,6 +695,8 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                           if (!def) return null;
 
                           const progress = getQuestProgress(qs.questId);
+                          const objectiveTotal = def.objectives?.length ?? 0;
+                          const objectiveDone = def.objectives?.filter((o) => qs.objectives[o.id] === true).length ?? 0;
                           const isExpanded = expandedQuests.has(qs.questId);
                           const deps = areDependenciesMet(qs.questId);
 
@@ -737,7 +739,14 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                     />
                                     <span className="text-sm text-slate-100 font-medium truncate">{def.title}</span>
                                   </button>
-                                  <div className="flex items-center gap-2 shrink-0 ml-2">
+                                  <div className="flex items-center gap-1.5 shrink-0 ml-2 flex-wrap justify-end">
+                                    <span
+                                      className="inline-flex items-center px-1.5 py-0.5 text-[10px] rounded-md border border-stone-700/40 bg-stone-800/30 text-stone-300/80 font-mono tabular-nums"
+                                      title={`Акт ${def.act}`}
+                                      data-testid="quest-act-chip"
+                                    >
+                                      Акт {def.act}
+                                    </span>
                                     {ACT1_SOLNYSH_QUEST_SPINE.includes(qs.questId) && (
                                       <Badge variant="outline" className="text-[10px] border-amber-500/40 text-amber-300/90">
                                         ☀️ Алина
@@ -763,8 +772,19 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                         {Math.ceil(remainingQuestHours(qs.hoursElapsed ?? 0, def.timeLimitHours))}ч
                                       </span>
                                     )}
-                                    <Badge variant="outline" className="text-[10px] border-stone-600/40 text-stone-300">
-                                      {progress}%
+                                    <Badge
+                                      variant="outline"
+                                      className={`text-[10px] font-mono tabular-nums ${
+                                        progress === 100
+                                          ? 'border-emerald-500/50 text-emerald-300'
+                                          : progress >= 50
+                                            ? 'border-stone-500/50 text-stone-200'
+                                            : 'border-stone-600/40 text-stone-300'
+                                      }`}
+                                      title={objectiveTotal > 0 ? `Выполнено целей: ${objectiveDone} из ${objectiveTotal}` : undefined}
+                                      data-testid="quest-progress-badge"
+                                    >
+                                      {objectiveTotal > 0 ? `${objectiveDone}/${objectiveTotal} · ` : ''}{progress}%
                                     </Badge>
                                   </div>
                                 </div>
@@ -774,6 +794,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                   const npc = findNpcById(def.questGiverNpcId);
                                   return npc ? (
                                     <div className="flex items-center gap-1 mt-1">
+                                      <User className="size-2.5 text-stone-400/40" aria-hidden="true" />
                                       <span className="text-[10px] text-stone-300/50">
                                         от {npc.name}
                                       </span>
@@ -1097,11 +1118,17 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                         return (
                           <div
                             key={qs.questId}
-                            className="px-3 py-2 rounded-xl bg-slate-900/20 border border-stone-800/10 text-sm text-slate-500 flex items-center gap-2"
+                            className="px-3 py-2 rounded-xl bg-slate-900/20 border border-stone-800/10 border-l-2 border-l-emerald-700/30 text-sm text-slate-500 flex items-center gap-2 hover:bg-slate-900/30 transition-colors"
                           >
-                            <CheckCircle2 className="size-4 text-emerald-600/50" />
-                            <span className="line-through">{def.title}</span>
-                            <span className="gp-badge gp-badge--emerald ml-auto text-[9px]">
+                            <CheckCircle2 className="size-4 text-emerald-600/50 shrink-0" />
+                            <span className="line-through truncate">{def.title}</span>
+                            <span
+                              className="shrink-0 text-[9px] font-mono text-stone-500/70"
+                              title={`Акт ${def.act}`}
+                            >
+                              Акт {def.act}
+                            </span>
+                            <span className="gp-badge gp-badge--emerald ml-auto text-[9px] shrink-0">
                               {QUEST_TYPE_LABELS[def.questType].label}
                             </span>
                           </div>

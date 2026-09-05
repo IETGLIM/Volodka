@@ -80,6 +80,76 @@ export const QUEST_OBJECTIVE_NPC_HINTS: Readonly<
     confront_void_poet: 'street_poet',
     claim_void_poem: 'street_poet',
   },
+  // ── FIX (v4.9.0): маркеры оживлённых квестов — AAA-пак и одиночные гиверы ──
+  /* ── AAA-пак ── */
+  aaa_maria_lost_diary: {
+    accept_lost_diary: 'maria',
+    return_diary_to_maria: 'maria',
+  },
+  aaa_sewer_echo: {
+    hear_trofim_whisper: 'fisherman_trofim',
+    meet_marat_echo: 'marat_echo',
+  },
+  aaa_boris_poem_smuggling: {
+    accept_smuggling_brief: 'boris',
+  },
+  aaa_library_old_photo: {
+    hear_photo_rumor: 'tamara',
+    return_photo_to_tamara: 'tamara',
+  },
+  aaa_factory_broken_mechanism: {
+    accept_mechanism_repair: 'baba_zina',
+  },
+  aaa_trofim_night_philosophy: {
+    meet_trofim_late_night: 'fisherman_trofim',
+  },
+  aaa_chk_campfire_legends: {
+    accept_campfire_duty: 'chk_based',
+  },
+  aaa_epilogue_last_letter: {
+    receive_letter_from_albert: 'albert',
+  },
+  /* ── Одиночные квесты (гиверы-заглушки, v4.9.0) ── */
+  lost_shipment: {
+    return_to_boris: 'merchant_boris',
+  },
+  blacksmith_special: {
+    return_to_smith: 'blacksmith_ignat',
+  },
+  guard_bribe_evidence: {
+    talk_to_informant: 'informant_seryozha',
+    confront_captain: 'captain_garold',
+  },
+  last_wish: {
+    deliver_letter: 'marina',
+  },
+  poetry_duelist: {
+    accept_challenge: 'rival_poet_max',
+  },
+  forgotten_archive: {
+    gain_librarian_trust: 'old_librarian_fyodor',
+    return_to_librarian: 'old_librarian_fyodor',
+  },
+  bunker_signal: {
+    report_findings: 'radio_operator_katya',
+  },
+  trade_route: {
+    talk_to_buyer: 'community_buyer',
+    talk_to_supplier: 'union_supplier',
+    collect_payment: 'smuggler_grisha',
+  },
+  watchers_shadow: {
+    report_to_surveillance_contact: 'surveillance_contact',
+  },
+  catacombs_shadows: {
+    // цели — зоны и предметы; гивер остаётся точкой отсчёта
+  },
+  whisper_of_walls: {
+    // цели — зоны и предметы; подсказка гивера — через сцену библиотеки
+  },
+  catastrophe_echo: {
+    // цели — зоны и флаги дата-центра; Лена — точка входа
+  },
 };
 
 /** Scene waypoints for StoryGuidanceHUD / minimap when objective has no location_visited target. */
@@ -171,6 +241,100 @@ export const QUEST_OBJECTIVE_SCENE_HINTS: Readonly<
     hear_third_echo: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
     confront_void_poet: { sceneId: 'sleep_dream', position: [0, 0, -5.0] },
     claim_void_poem: { sceneId: 'sleep_dream', position: [0, 0, -5.0] },
+  },
+  /* ── FIX (v4.9.0): сцены-подсказки для флаговых/предметных целей
+     оживлённых квестов — чтобы StoryGuidanceHUD и миникарта вели игрока ── */
+  /* ── AAA-пак ── */
+  aaa_maria_lost_diary: {
+    find_poet_diary: { sceneId: 'office_day', position: [-2.0, 0.5, -1.0] },
+  },
+  aaa_sewer_echo: {
+    follow_poem_sound: { sceneId: 'factory_basement', position: [-1.5, 0, -2.0] },
+    record_echo_phrase: { sceneId: 'factory_basement', position: [2.0, 0, -3.0] },
+  },
+  aaa_boris_poem_smuggling: {
+    collect_poem_tape: { sceneId: 'abandoned_factory', position: [-2.5, 0, 1.5] },
+    distract_patrol: { sceneId: 'street_night', position: [-2.0, 0.01, 2.0] },
+    hand_off_to_contact: { sceneId: 'street_night', position: [2.5, 0.01, -1.0] },
+  },
+  aaa_library_old_photo: {
+    find_old_photo: { sceneId: 'library_day', position: [2.0, 0, -1.5] },
+    study_poets_history: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
+  },
+  aaa_factory_broken_mechanism: {
+    repair_mechanism_minigame: { sceneId: 'abandoned_factory', position: [3.0, 0, -1.5] },
+    hear_zarya_secret_verse: { sceneId: 'abandoned_factory', position: [3.0, 0, -1.5] },
+  },
+  aaa_trofim_night_philosophy: {
+    sit_with_rod_in_silence: { sceneId: 'river_pier', position: [1.0, 0, -2.0] },
+    hear_trofim_legend: { sceneId: 'river_pier', position: [1.0, 0, -2.0] },
+    share_one_truth: { sceneId: 'river_pier', position: [1.0, 0, -2.0] },
+    wait_for_dawn: { sceneId: 'river_pier', position: [0, 0, -1.0] },
+  },
+  aaa_chk_campfire_legends: {
+    gather_kindling_perimeter: { sceneId: 'abandoned_factory', position: [1.5, 0, 2.5] },
+    light_third_fire: { sceneId: 'abandoned_factory', position: [-1.5, 0, 2.0] },
+    sit_in_circle: { sceneId: 'abandoned_factory', position: [-1.0, 0, 1.0] },
+    hear_three_legends: { sceneId: 'abandoned_factory', position: [-1.0, 0, 1.0] },
+  },
+  aaa_epilogue_last_letter: {
+    read_letter_aloud: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
+    hold_silence: { sceneId: 'library_day', position: [-1.2, 0, 0.8] },
+  },
+  /* ── Одиночные квесты ── */
+  lost_shipment: {
+    find_shipment_crate: { sceneId: 'forest_clearing', position: [3.0, 0, -2.0] },
+  },
+  blacksmith_special: {
+    collect_iron_ore: { sceneId: 'abandoned_factory', position: [4.0, 0, -3.0] },
+    collect_crystal_shard: { sceneId: 'park_day', position: [-4.5, 0, -3.5] },
+    collect_dragon_scale: { sceneId: 'river_pier', position: [3.5, 0, -4.0] },
+  },
+  guard_bribe_evidence: {
+    find_document_1: { sceneId: 'office_day', position: [-3.0, 0.5, -2.5] },
+    find_document_2: { sceneId: 'office_day', position: [3.5, 0.5, -3.0] },
+  },
+  last_wish: {
+    travel_to_marina: { sceneId: 'home_evening', position: [0, 0, 1.0] },
+  },
+  poetry_duelist: {
+    write_poem_1: { sceneId: 'street_night', position: [0, 0.01, 2.0] },
+    write_poem_2: { sceneId: 'street_night', position: [0, 0.01, 2.0] },
+    write_poem_3: { sceneId: 'street_night', position: [0, 0.01, 2.0] },
+    perform_at_square: { sceneId: 'street_night', position: [0, 0.01, 2.0] },
+  },
+  forgotten_archive: {
+    solve_archive_puzzle: { sceneId: 'library_day', position: [2.5, 0, -2.0] },
+    retrieve_banned_book_1: { sceneId: 'library_day', position: [2.5, 0, -2.0] },
+    retrieve_banned_book_2: { sceneId: 'library_day', position: [2.5, 0, -2.0] },
+    retrieve_banned_book_3: { sceneId: 'library_day', position: [2.5, 0, -2.0] },
+  },
+  bunker_signal: {
+    decode_message: { sceneId: 'cafe_evening', position: [-1.5, 0, 2.0] },
+    find_sender: { sceneId: 'cafe_evening', position: [-1.5, 0, 2.0] },
+  },
+  trade_route: {
+    transport_goods: { sceneId: 'street_night', position: [0, 0.01, 0] },
+    avoid_patrol: { sceneId: 'street_night', position: [0, 0.01, 0] },
+  },
+  watchers_shadow: {
+    hack_surveillance_node: { sceneId: 'street_night', position: [4.0, 0.01, -3.0] },
+    retrieve_surveillance_data: { sceneId: 'street_night', position: [4.0, 0.01, -3.0] },
+  },
+  catacombs_shadows: {
+    find_catacomb_notes_1: { sceneId: 'factory_basement', position: [0, 0, 2.0] },
+    find_catacomb_notes_2: { sceneId: 'factory_basement', position: [-2.0, 0, -1.5] },
+    find_catacomb_notes_3: { sceneId: 'factory_basement', position: [2.0, 0, -2.0] },
+    kill_dark_mage: { sceneId: 'factory_basement', position: [0, 0, -3.5] },
+  },
+  whisper_of_walls: {
+    find_recording_device: { sceneId: 'factory_basement', position: [1.0, 0, 1.0] },
+    listen_to_recordings: { sceneId: 'factory_basement', position: [1.0, 0, 1.0] },
+  },
+  catastrophe_echo: {
+    navigate_corridors: { sceneId: 'factory_basement', position: [-1.0, 0, -2.5] },
+    locate_core_terminal: { sceneId: 'factory_basement', position: [2.5, 0, -1.0] },
+    extract_memory_fragment: { sceneId: 'factory_basement', position: [2.5, 0, -1.0] },
   },
 };
 

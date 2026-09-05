@@ -8044,10 +8044,10 @@ export const TRIGGER_ZONES: TriggerZone[] = [
      ═══════════════════════════════════════════════════════════════ */
   {
     id: 'merchant_boris_crate',
-    sceneId: 'park_day',
-    position: [4.0, 0.3, -2.5],
+    sceneId: 'forest_clearing',
+    position: [3.0, 0.3, -2.0],
     size: [1.0, 1.0, 1.0],
-    enterToast: 'У опушки, в траве — синий отблеск сургучной печати.',
+    enterToast: 'У оврага, в траве — синий отблеск сургучной печати.',
     interactionType: 'take',
     isOneTime: true,
     examineData: {
