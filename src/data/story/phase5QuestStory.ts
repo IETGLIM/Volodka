@@ -1419,17 +1419,44 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     autoSave: true,
     speaker: 'narrator',
     sceneId: 'library_day',
-    contextNote: 'Последнее стихотворение Владимира прочитано.',
-    accessibilityAnnounce: 'Финальное стихотворение Владимира прочитано.',
-    guidanceHint: 'Эхо услышано — можно вернуться к стеллажам.',
-    guidanceObjectiveType: 'complete_quest',
+    contextNote: 'Последнее стихотворение Владимира прочитано. Тетрадь шепчет о Мире Снов.',
+    accessibilityAnnounce: 'Финальное стихотворение Владимира прочитано. За строками открываются ещё две двери.',
+    guidanceHint: 'За страницами ждут Мир Снов и Пустота — можно вернуться к тетради позже.',
+    guidanceObjectiveType: 'make_choice',
     guidanceSceneLabel: 'Библиотека',
+    // FIX (v4.10.0, soft-lock): флаг final_poem_read перенесён из единственного
+    // выбора в ЭФФЕКТЫ ВИЗИТА — visit-эффекты применяются рендером при входе в
+    // узел, поэтому сон больше не блокирует «Эхо Владимира», а два хука
+    // активации остаются доступны при повторном открытии тетради.
+    effects: [{ type: 'setFlag', flag: 'final_poem_read', flagValue: true }],
     choices: [
+      {
+        // Хук активации «Мира Снов» (dreamworld_lost_child): гейт-инвариант —
+        // флаг dream_world_opened выставляется ОДНОВРЕМЕННО с активацией, все
+        // зоны-сеттеры целей гейтятся именно им.
+        text: 'Перевернуть последнюю страницу — тетрадь дышит сном, где теряется дитя',
+        next: 'act5_dream_descent',
+        condition: { missingFlag: 'dream_world_opened' },
+        effects: [
+          { type: 'triggerQuest', questId: 'dreamworld_lost_child' },
+          { type: 'setFlag', flag: 'dream_world_opened', flagValue: true },
+        ],
+      },
+      {
+        // Хук активации «Эха из Пустоты» (void_echo_poem): флаг
+        // void_echo_quest_started гейтит все зоны эха и зону поэта.
+        text: 'Ответить на шёпот из пустоты, сочащийся между строк',
+        next: 'void_poet_gate',
+        condition: { missingFlag: 'void_echo_quest_started' },
+        effects: [
+          { type: 'triggerQuest', questId: 'void_echo_poem' },
+          { type: 'setFlag', flag: 'void_echo_quest_started', flagValue: true },
+        ],
+      },
       {
         text: 'Закрыть тетрадь и выйти',
         next: 'library_explore_mode',
         effects: [
-          { type: 'setFlag', flag: 'final_poem_read', flagValue: true },
           { type: 'addKarma', value: 10 },
           { type: 'addSkill', skill: 'writing', value: 3 },
         ],

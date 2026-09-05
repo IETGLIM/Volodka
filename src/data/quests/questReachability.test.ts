@@ -108,13 +108,23 @@ describe('questReachability — квесты должны быть запуск�
     }
   });
 
-  it('общее число недостижимых квестов не растёт (бейзлайн 2, v4.9.0)', () => {
+  it('общее число недостижимых квестов равно нулю — все 147 квестов достижимы (v4.10.0)', () => {
     const unreachable = computeUnreachable();
-    // Остаток — dreamworld_lost_child и void_echo_poem: их цели ссылаются на
-    // несуществующие сцены («Мир Снов») — контент-пак целиком в бэклоге.
+    // FIX (v4.10.0): бейзлайн 2 → 0. Последние два квеста (dreamworld_lost_child,
+    // void_echo_poem) получил контент-пак «Мир Снов» — хуки активации в
+    // vladimir_secret_room_read (triggerQuest + флаги-гейты dream_world_opened /
+    // void_echo_quest_started), зоны-сеттеры целей в triggerZones.ts.
     expect(
-      unreachable.length,
-      `недостижимые квесты (${unreachable.length}) > бейзлайна — новый квест без пути активации: ${unreachable.join(', ')}`,
-    ).toBeLessThanOrEqual(2);
+      unreachable,
+      `недостижимые квесты (${unreachable.length}) — новый квест без пути активации: ${unreachable.join(', ')}`,
+    ).toEqual([]);
+  });
+
+  it('каждый квест реестра активируем (полный перебор, v4.10.0)', () => {
+    const unreachable = new Set(computeUnreachable());
+    const total = QUEST_DEFINITIONS.length;
+    expect(total).toBeGreaterThanOrEqual(147);
+    const dead = QUEST_DEFINITIONS.filter((q) => unreachable.has(q.id)).map((q) => q.id);
+    expect(dead, `недостижимо ${dead.length} из ${total}`).toEqual([]);
   });
 });

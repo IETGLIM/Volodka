@@ -883,4 +883,68 @@ export const STORY_NODES_ACT4_SIDE_QUESTS: Record<string, StoryNode> = {
       { text: 'Позже', next: 'library_explore_mode' },
     ],
   },
+
+  // ─── Секретный Чертёж: судьба чертежа «Око» (factory_secret_blueprint) ───
+  // FIX (v4.10.0): цель decide_blueprint_fate (flag_set blueprint_fate_decided)
+  // раньше не имела ни одного сеттера — чертёж можно было достать из тайника,
+  // но решать его судьбу было негде. Зона-активатор — factory_blueprint_fate_zone
+  // (triggerZones.ts), гейт eye_blueprint_taken — флаг из зоны тайника.
+  blueprint_fate_choice: {
+    id: 'blueprint_fate_choice',
+    text: [
+      'Чертёж «Око» лежит на станке, аккуратно вычерченный до последнего винта: линзы, угол обзора, сетка слежения. Система, которую ты стёр однажды сам — по памяти, по бумажке, по всем правилам. Кто-то восстановил её отсюда, из тайника, — и чертёж теперь смотрит на тебя с ватмана, как старая фотография, на которой ты не узнаёшь себя.',
+      'Бумага терпелива. Она подождёт, пока ты решишь: огонь — и «Око» не поднимется второй раз; архив — и пусть лучший инженер города решает, что с ней делать дальше. Взрослые из яви называют это ответственностью. Ты называешь это выбором, который придётся потом объяснять самому себе.',
+    ].join('\n'),
+    speaker: 'narrator',
+    sceneId: 'abandoned_factory',
+    contextNote: 'Судьба чертежа «Око»: сжечь, сохранить или отложить решение.',
+    accessibilityAnnounce: 'Чертёж системы слежения на станке. Можно сжечь его, сохранить или отложить решение.',
+    guidanceHint: 'Сожжённый чертёж не поднимется; сохранённый — останется с тобой. Отложить можно ненадолго.',
+    guidanceObjectiveType: 'make_choice',
+    guidanceSceneLabel: 'Заброшенный завод',
+    choices: [
+      {
+        text: 'Сжечь чертёж — «Око» не поднимется второй раз',
+        next: 'factory_explore_mode',
+        goldenPath: true,
+        effects: [
+          { type: 'setFlag', flag: 'blueprint_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'blueprint_burned', flagValue: true },
+          { type: 'addKarma', value: 8 },
+          {
+            type: 'showThought',
+            thought: 'Бумага горит быстро — быстрее, чем я когда-то стирал систему по-настоящему. Может, потому что теперь я знаю, что стираю.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Сохранить чертёж — знание не должно пропасть',
+        next: 'factory_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'blueprint_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'blueprint_kept', flagValue: true },
+          { type: 'addKarma', value: -8 },
+          {
+            type: 'showThought',
+            thought: 'Я складываю «Око» обратно в свёрток. Говорю себе, что так надёжнее. Не уверен, что себе верю.',
+            thoughtDuration: 6500,
+          },
+        ],
+      },
+      {
+        text: 'Отложить решение — завернуть обратно в тряпицу',
+        next: 'factory_explore_mode',
+        effects: [
+          { type: 'setFlag', flag: 'blueprint_fate_decided', flagValue: true },
+          { type: 'setFlag', flag: 'blueprint_postponed', flagValue: true },
+          {
+            type: 'showThought',
+            thought: 'Тряпица, станок, тайник. Всё как было. Решение я отложил — но чертёж это запомнил, кажется.',
+            thoughtDuration: 6000,
+          },
+        ],
+      },
+    ],
+  },
 };

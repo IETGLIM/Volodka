@@ -37,6 +37,7 @@ import { STORY_NODES_ACT4_SIDE_QUESTS } from './act4SideQuestStory';
 import { AAA_EXPANSION_STORY_NODES } from './aaaExpansionStory';
 import { STREET_LEGENDS_STORY_NODES } from './streetLegendsStory';
 import { PIER_VOICES_STORY_NODES } from './pierVoicesStory';
+import { ACT5_DREAM_WORLD_STORY_NODES } from './act5DreamWorld';
 
 /** Known pack overrides — later sources intentionally replace earlier spine nodes. */
 const INTENTIONAL_STORY_NODE_OVERRIDES: Record<string, readonly string[]> = {
@@ -63,6 +64,7 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'act4QuietHour', nodes: STORY_NODES_ACT4_QUIET_HOUR },
     { name: 'act5', nodes: STORY_NODES_ACT5 },
     { name: 'act5Expanded', nodes: ACT5_STORY_EXPANDED_NODES },
+    { name: 'act5DreamWorld', nodes: ACT5_DREAM_WORLD_STORY_NODES },
     { name: 'act6', nodes: STORY_NODES_ACT6 },
     { name: 'act6Expanded', nodes: ACT6_STORY_EXPANDED_NODES },
     { name: 'act7', nodes: STORY_NODES_ACT7 },

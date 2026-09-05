@@ -240,6 +240,9 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: { requiredAct: 4, missingFlag: 'catastrophe_echo_resolved' },
         effects: [
           { type: 'triggerQuest', questId: 'catastrophe_echo' },
+          // FIX (v4.10.0): флаг-гейт выставляется при активации — все зоны
+          // дата-центра гейтятся им (инвариант «гейты после активации»).
+          { type: 'setFlag', flag: 'catastrophe_echo_started', flagValue: true },
           { type: 'npcChange', npcId: 'lena', npcChange: { relation: 3 } },
         ],
       },

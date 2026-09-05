@@ -501,6 +501,27 @@ export class QuestTracker {
         }
       }
     }
+
+    // «Эхо из Пустоты» (v4.10.0): кумулятивный гейт — когда услышаны все три
+    // эха (река / крыша / библиотека), пустота собирает голос целиком и
+    // открывает «Ответить на эхо» в void_poet_gate (см. act5DreamWorld.ts).
+    // По образцу quest-специфичных mid-resume флагов выше: это не цель квеста,
+    // поэтому отдельного флага не даёт ни одна зона-эхо.
+    if (
+      newFlags.includes('void_echo_river') ||
+      newFlags.includes('void_echo_roof') ||
+      newFlags.includes('void_echo_library')
+    ) {
+      const flags = currentFlags;
+      if (
+        !flags['void_echo_all_heard'] &&
+        flags['void_echo_river'] &&
+        flags['void_echo_roof'] &&
+        flags['void_echo_library']
+      ) {
+        dispatchGameAction({ type: 'player/setFlag', key: 'void_echo_all_heard', value: true });
+      }
+    }
   }
 
   /** Check for newly collected items — item_collected objectives */

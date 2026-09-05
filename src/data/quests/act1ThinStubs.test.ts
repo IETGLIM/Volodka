@@ -1708,8 +1708,11 @@ describe('Act 1–2 thin stub → multi-beat conversion', () => {
     expect(
       STORY_NODES.vladimir_secret_room.choices.some((c) => c.next === 'library_explore_mode'),
     ).toBe(true);
+    // FIX (v4.10.0): флаг final_poem_read перенесён из выбора «Закрыть тетрадь»
+    // в visit-эффекты узла — сон больше не блокирует «Эхо Владимира», а тетрадь
+    // остаётся доступной для повторного открытия (хуки активации «Мира Снов»).
     expect(
-      (STORY_NODES.vladimir_secret_room_read.choices[0]?.effects ?? []).some(
+      (STORY_NODES.vladimir_secret_room_read.effects ?? []).some(
         (e) => e.type === 'setFlag' && e.flag === 'final_poem_read',
       ),
     ).toBe(true);

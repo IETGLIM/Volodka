@@ -33,7 +33,8 @@ export type StorySatellitePackId =
   | 'expansionQuests'
   | 'aaaExpansion'
   | 'streetLegends'
-  | 'pierVoices';
+  | 'pierVoices'
+  | 'act5DreamWorld';
 export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
@@ -164,6 +165,10 @@ const storySatelliteLoaders: Record<
   // lazy loader here so ensureStoryNode() can resolve sl_* nodes at runtime.
   streetLegends: () => import('../story/streetLegendsStory').then((m) => m.STREET_LEGENDS_STORY_NODES),
   pierVoices: () => import('../story/pierVoicesStory').then((m) => m.PIER_VOICES_STORY_NODES),
+  // «Мир Снов» (v4.10.0) — 11 узлов сна/пустоты для dreamworld_lost_child и
+  // void_echo_poem. Same parity pattern: static merge + lazy loader, иначе
+  // ensureStoryNode бросит «not found» в рантайме (урок v4.8.9).
+  act5DreamWorld: () => import('../story/act5DreamWorld').then((m) => m.ACT5_DREAM_WORLD_STORY_NODES),
 };
 
 /** Satellites loaded automatically when their parent act pack loads. */
@@ -172,7 +177,7 @@ const ACT_STORY_SATELLITES: Partial<Record<StoryPackId, readonly StorySatelliteP
   act2: ['act2Expanded'],
   act3: ['act3Expanded'],
   act4: ['act4QuietHour', 'act4SideQuests', 'act4Expanded'],
-  act5: ['act5Expanded'],
+  act5: ['act5Expanded', 'act5DreamWorld'],
   act6: ['act6Expanded'],
   act7: ['act7Expanded'],
   chk: ['chkExtended'],
@@ -190,6 +195,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'aaaExpansion',
   'streetLegends',
   'pierVoices',
+  'act5DreamWorld',
 ] as const;
 
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {
