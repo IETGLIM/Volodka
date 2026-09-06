@@ -12,8 +12,8 @@
  * - Skips non-GET requests and cross-origin resources
  */
 
-const CACHE_NAME = 'volodka-shell-v2';
-const MEDIA_CACHE_NAME = 'volodka-media-v2';
+const CACHE_NAME = 'volodka-shell-v3';
+const MEDIA_CACHE_NAME = 'volodka-media-v3';
 
 /**
  * Assets to pre-cache on install.
@@ -39,10 +39,12 @@ const RAPIER_RE = /^\/rapier\/rapier_wasm3d_bg\.wasm$/;
 
 /**
  * Heavy immutable game media — cached on first successful fetch.
- * GLB models, PBR textures, HDRI panoramas, menu art. Cached in a separate
- * cache so it can be trimmed independently of the code shell.
+ * GLB models, PBR textures, HDRI panoramas, menu art, ambient audio loops.
+ * Cached in a separate cache so it can be trimmed independently of the code shell.
+ * v4.15: + /sounds/*.ogg — файловые ambient-лупы истории (раньше их не было в
+ * кэше И в vercel.json-rewrite, откуда /sounds/* отдавал index.html).
  */
-const MEDIA_RE = /^\/(?:models|textures|hdri|menu)\/.+\.(?:glb|gltf|bin|webp|png|jpg|ktx2|hdr|svg)(?:\?.*)?$/;
+const MEDIA_RE = /^\/(?:models|textures|hdri|menu|sounds)\/.+\.(?:glb|gltf|bin|webp|png|jpg|ktx2|hdr|svg|ogg|mp3|wav)(?:\?.*)?$/;
 
 /**
  * Soft cap on cached media entries. Each GLB is 0.3–2 MB, textures 0.2–2 MB,

@@ -7,7 +7,7 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     {
-      "source": "/((?!api|assets|rapier|models|draco|basis|hdri|textures|menu).*)",
+      "source": "/((?!api|assets|rapier|models|draco|basis|hdri|textures|menu|sounds).*)",
       "destination": "/index.html"
     }
   ],
@@ -35,7 +35,7 @@
       ]
     },
     {
-      "source": "/(models|textures|hdri|menu)/(.*)",
+      "source": "/(models|textures|hdri|menu|sounds)/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
