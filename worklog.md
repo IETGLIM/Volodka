@@ -4532,3 +4532,45 @@ Stage Summary:
   HUD scheduleTimeout-батчинг, HDRI-компрессия high-tier, snapshot/E2E-покрытие,
   data-driven реестры (HERO_NPC_IDS/BOSS_ENEMY_TYPES/баффы), S-1/E-1/E-3/S-2
   архитектурные решения (нужны отдельные сессии — риск-чувствительные).
+
+---
+Task ID: V4.15.0 (main) — разбор репорта игрока 3/10 (9 пунктов)
+Agent: main (orchestrator)
+Task: «оценка: 3/10» — 9 пунктов: быстрее (плюс), нет кровати, Володька висит,
+клавиатура/мониторы/книги висят, физика не работает, звук не работает (только
+клики), дубликаты логики интерфейса, тумба влезает в стол и мониторы.
+
+Work Log:
+- Реконструкция по коду + замеры GLB на диске (scripts/inspect-glb-bounds.mjs):
+  painted_wooden_table 2.41×0.96×1.14 (×1.02 → верх 0.98), painted_wooden_cabinet
+  1.19×1.18×0.62, GothicBed 1.49×1.53×2.04, wooden_bookshelf_worn 1.37×2.06×0.58,
+  ArmChair 0.85×1.07×0.77; apartment_envelope.glb — meshopt-квантование (×2^15)
+  → «гигантские» бонды артефакт парсера без деавантизации, в рантайме 5×3×7.35.
+- Найдены корни (детали в CHANGELOG v4.15.0): кровать/стол/полка — Suspense
+  fallback=null в GLB-пресете + рассинхрон surfaceY 0.98 vs fallback 0.78;
+  книги — координаты процедурной полки на GLB-полке другой геометрии; верхняя
+  тумба y=1.55 при крышке 1.121 (зазор 0.43); звук — 42 мёртвые ссылки на
+  несуществующие ogg + vercel.json rewrite резал /sounds/* на index.html + SW
+  без sounds; дубли UI — CraftingPanel → legacy toastManager (2-й стек тостов).
+- Физика: дефектов в HEAD НЕ найдено (спавн [0,0,2] вне коллайдеров, external
+  WASM chain цел, prune сохраняет wasm) — «физика не работает» = зрительный
+  вывод из парящих пропсов; F8-панель v4.14.1 даст Rapier-статус у игрока.
+- Фиксы: BoxBed Suspense-fallback; CraftedDeskShell.topY (fallback 0.98);
+  единая процедурная полка с книгами для всех пресетов; PAINTED_CABINET_TOP_Y
+  =1.12; scripts/generate-ambient-audio.mjs (ffmpeg-синтез, 42 лупа, 3.5 MB,
+  синхронизация со списком из src) + проводка ambientSound → storyAudioFile →
+  SceneAudioController (HTMLAudio-луп, громкость ambient-шины ×0.7); /sounds в
+  vercel.json (rewrite-exclusion + headers) и в sw.js MEDIA_RE; кэши v2→v3;
+  CraftingPanel → notify().
+- Верификация: tsc 0 · eslint 0 · vitest 2486/2486 (410) · validate:content OK ·
+  build:vercel 40 c → dist: 42 ogg, apartment_envelope, GothicBed, rapier_wasm
+  на месте после prune · ffprobe rain_distant.ogg = 14.000 s.
+
+Stage Summary:
+- v4.15.0. Все 9 пунктов репорта разобраны; 8 — с кодовыми фиксами, «быстрее»
+  подтверждено как плюс. Ограничения: лупы — шумовые текстуры (не музыка);
+  полная консолидация 4 toast-систем — бэклог; для окончательной проверки у
+  игрока нужен РЕДЕПЛОЙ main на Vercel (+ чистка кэша SW теперь автоматическая
+  через v3) и при остаточных проблемах — скрин F8-панели.
+- Урок: Suspense fallback=null для КРИТИЧНОЙ мебели = «пропавшие модели» при
+  медленной сети; каждый критичный GLB обязан иметь процедурного двойника.
