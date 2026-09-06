@@ -18,28 +18,41 @@ import {
 const MONITOR_EMISSIVE = new Color('#5a9a88');
 
 /** Extruded-feel desk fallback (Low): thick top + tapered cylinder legs — not four box posts.
- *  Medium+ wake room mounts Poly Haven paintedWoodenTable instead (VolodkaRoomVisual). */
+ *  Medium+ wake room mounts Poly Haven paintedWoodenTable instead (VolodkaRoomVisual).
+ *
+ *  topY — верх столешницы в метрах. Дефолт 0.78 (Low-комплект: мониторы сидят на
+ *  surfaceY=0.78). В GLB-пресете fallback рендерится как Suspense-fallback пока
+ *  paintedWoodenTable стримится — туда передаётся topY=deskSurfaceY (0.98),
+ *  иначе ThinMonitor/клавиатура на якорях 0.98 ПАРЯТ над fallback-столом 0.78
+ *  («мониторы висят в воздухе» — репорт игрока v4.15). */
 export function CraftedDeskShell({
   matFallback,
+  topY = 0.78,
 }: {
   matFallback: Material;
+  topY?: number;
 }) {
+  // topY=0.78 (дефолт) даёт ровно прежнюю геометрию: топ 0.72..0.78, фартук 0.64..0.72.
+  const topCenterY = topY - 0.03;
+  const apronCenterY = topY - 0.1;
+  const legHeight = topY - 0.14;
+  const legCenterY = legHeight / 2;
   return (
     <>
-      <mesh position={[0, 0.75, 0]} castShadow receiveShadow>
+      <mesh position={[0, topCenterY, 0]} castShadow receiveShadow>
         <boxGeometry args={[1.85, 0.06, 0.82]} />
         <Suspense fallback={<primitive object={matFallback} attach="material" />}>
           <PolyHavenStandardMaterial materialId="wood_floor" repeatScale={1.5} color="#b89870" metalness={0.04} roughness={0.78} />
         </Suspense>
       </mesh>
       {/* Soft underside apron */}
-      <mesh position={[0, 0.68, 0]} castShadow>
+      <mesh position={[0, apronCenterY, 0]} castShadow>
         <boxGeometry args={[1.78, 0.08, 0.76]} />
         <meshStandardMaterial color="#3a2e22" roughness={0.88} metalness={0.05} />
       </mesh>
-      {/* Tapered cylinder legs */}
+      {/* Tapered cylinder legs — от пола до низа фартука */}
       {([[-0.78, -0.32], [0.78, -0.32], [-0.78, 0.32], [0.78, 0.32]] as const).map(([x, z], i) => (
-        <mesh key={i} position={[x, 0.34, z]} castShadow geometry={getSharedCylinderGeometry(0.045, 0.06, 0.68, 8)}>
+        <mesh key={i} position={[x, legCenterY, z]} castShadow geometry={getSharedCylinderGeometry(0.045, 0.06, legHeight, 8)}>
           <meshStandardMaterial color="#2a241c" roughness={0.82} metalness={0.08} />
         </mesh>
       ))}

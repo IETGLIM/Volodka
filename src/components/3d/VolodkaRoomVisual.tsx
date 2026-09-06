@@ -327,10 +327,32 @@ function AuthoredHingedDoorLeaf({ castShadow }: { castShadow: boolean }) {
 const ROOM_DRESSING_D = 3.48;
 const ROOM_DRESSING_W = 5;
 
+/** Верх нижнего жёлтого кабинета: painted_wooden_cabinet GLB 1.18 м × scale 0.95
+ *  = 1.121 м (замер accessor'ов GLB, v4.15). Верхний кабинет (scale 0.55) ставится
+ *  ровно на крышку — раньше висел на y=1.55 с зазором 0.43 м («тумба ни к месту»). */
+const PAINTED_CABINET_TOP_Y = 1.12;
+
+/** Процедурная кровать (рама + матрас + подушка + одеяло) — Low-пресет и
+ *  Suspense-fallback для Poly Haven GothicBed в GLB-пресете.
+ *  FIX v4.15: раньше в GLB-пресете fallback был null — пока GothicBed стримился
+ *  (или при отказе загрузки) кровати НЕ БЫЛО ВООБЩЕ, а спавн-зона у кровати
+ *  читалась как «Володька висит в воздухе» (репорт игрока v4.15). Теперь кровать
+ *  видна всегда: box-заглушка заменяется GLB по мере готовности. */
+function BoxBed() {
+  return (
+    <group position={[1.8, 0, 2.0]}>
+      <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38} material={mat_29} />
+      <mesh position={[0, 0.6, -0.95]} castShadow geometry={geo_box_39} material={mat_30} />
+      <mesh position={[0, 0.55, -0.7]} geometry={geo_box_40} material={mat_31} />
+      <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
+    </group>
+  );
+}
+
 function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
   return (
     <group>
-      <Suspense fallback={null}>
+      <Suspense fallback={<BoxBed />}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.gothicBed}
           position={[1.78, 0, 2.05]}
@@ -732,7 +754,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         {/* PH table long axis along X (rotationY=0). Prior PI/2 + scale 0.78 made a narrow short top → floating side monitors. */}
         {/* deskSurfaceY (0.98 GLB / 0.78 fallback) is declared in the component body. */}
         {useGltfFurniture ? (
-          <Suspense fallback={<CraftedDeskShell matFallback={mat_11} />}>
+          <Suspense fallback={<CraftedDeskShell matFallback={mat_11} topY={deskSurfaceY} />}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.paintedWoodenTable}
               position={[0, 0, 0]}
@@ -803,56 +825,23 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {/* Curtain on the back wall behind the desk monitors */}
       <DeskWallCurtain position={[0, 0.15, -3.35]} width={2.6} height={2.15} />
 
-      {/* Bookshelf — right of right monitor — FIX S15-BOOKS: добавляем книги и для GLB пресета */}
-      {useGltfFurniture ? (
-        <>
-          <Suspense fallback={null}>
-            <AuthoredRoomProp
-              url={POLYHAVEN_MODELS.woodenBookshelfWorn}
-              position={[1.65, 0, -2.55]}
-              rotationY={-Math.PI / 2}
-              scale={0.88}
-              castShadow={preset.shadows}
-            />
-          </Suspense>
-          {/* Книги на полках — даже в GLB пресете полка была пустая, теперь с книгами */}
-          <group position={[1.65, 0, -2.55]}>
-            {/* Нижняя полка */}
-            {[
-              { x: -0.22, y: 0.27, w: 0.04, c: '#8b2020' },
-              { x: -0.15, y: 0.27, w: 0.05, c: '#204080' },
-              { x: -0.07, y: 0.27, w: 0.03, c: '#208020' },
-              { x: 0.02, y: 0.27, w: 0.06, c: '#806020' },
-              { x: 0.12, y: 0.27, w: 0.04, c: '#602080' },
-            ].map((b, i) => (
-              <mesh key={`glb-s1-${i}`} position={[b.x, b.y, 0.12]} rotation={[0, -Math.PI / 2, 0]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
-            ))}
-            {/* Средняя полка */}
-            {[
-              { x: -0.18, y: 0.77, w: 0.05, c: '#a03020' },
-              { x: -0.08, y: 0.77, w: 0.04, c: '#304090' },
-              { x: 0.02, y: 0.77, w: 0.06, c: '#307030' },
-              { x: 0.12, y: 0.77, w: 0.03, c: '#907030' },
-            ].map((b, i) => (
-              <mesh key={`glb-s2-${i}`} position={[b.x, b.y, 0.12]} rotation={[0, -Math.PI / 2, 0]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
-            ))}
-            {/* Верхняя полка */}
-            {[
-              { x: -0.15, y: 1.27, w: 0.04, c: '#b04030' },
-              { x: -0.05, y: 1.27, w: 0.06, c: '#2050a0' },
-              { x: 0.08, y: 1.27, w: 0.04, c: '#8040a0' },
-            ].map((b, i) => (
-              <mesh key={`glb-s3-${i}`} position={[b.x, b.y, 0.12]} rotation={[0, -Math.PI / 2, 0]} geometry={bookSpineGeo(b.w, 0.2)} material={bookSpineMaterial(b.c)} />
-            ))}
-          </group>
-        </>
-      ) : null}
+      {/* Bookshelf — right of right monitor.
+          FIX v4.15: в GLB-пресете стоял woodenBookshelfWorn (реально 1.21×1.81×0.51
+          на scale 0.88), а книги — по координатам ПРОЦЕДУРНОЙ полки (0.8×2×0.35,
+          полки 0.5/1.0/1.5) → корешки висели в воздухе мимо досок GLB-полки
+          («книги висят в воздухе» — репорт игрока v4.15). Замер GLB показал, что
+          внутренняя сетка досок worn-полки не совпадает с процедурной ни по одной
+          оси. Решение: в этой комнате ОДНА процедурная полка с книгами для всех
+          пресетов (доски и корешки согласованы по построению). worn-GLB остаётся
+          в office/library/cafe, где книги на нём не расставляются. */}
 
       {/* Yellow two-door wardrobe left of left monitor + small two-door cabinet on top.
           FIX S13-7: wardrobe was at [-1.7, 0, -2.45] scale 0.95 → X span [-2.27, -1.13].
           Desk table GLB spans X=[-1.22, 1.22] → 0.09m overlap (wardrobe edge -1.13
           vs desk edge -1.22). Shifted to [-1.9, 0, -2.45] → X span [-2.47, -1.33],
-          clear of the desk by 0.11m. Top cabinet moved to match. */}
+          clear of the desk by 0.11m. Top cabinet moved to match.
+          FIX v4.15: верхний кабинет посажен на крышку нижнего (PAINTED_CABINET_TOP_Y
+          = 1.121) — раньше висел на 1.55 с зазором 0.43 м. */}
       {useGltfFurniture ? (
         <>
           <Suspense fallback={null}>
@@ -868,7 +857,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <Suspense fallback={null}>
             <AuthoredRoomProp
               url={POLYHAVEN_MODELS.paintedWoodenCabinet}
-              position={[-1.9, 1.55, -2.45]}
+              position={[-1.9, PAINTED_CABINET_TOP_Y, -2.45]}
               rotationY={Math.PI / 2}
               scale={0.55}
               castShadow={preset.shadows}
@@ -892,8 +881,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       </group>
       ) : null}
 
-      {/* ── Bookshelf — Low kit at desk-right (matches Medium PH shelf) ── */}
-      {!useGltfFurniture ? (
+      {/* ── Bookshelf — единая процедурная полка для ВСЕХ пресетов (см. FIX v4.15 выше) ── */}
       <group position={[1.65, 0, -2.55]}>
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_36} material={mat_27} />
         {/* Shelf dividers */}
@@ -935,7 +923,6 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <mesh key={`s4-${b.c}`} position={[b.x, 1.77, 0.02]} rotation={[0, 0, b.lean]} geometry={bookSpineGeo(b.w, 0.18)} material={bookSpineMaterial(b.c)} />
         ))}
       </group>
-      ) : null}
 
       {/* Box poster/photo — Low only; Medium+ uses Poly Haven hanging frames. */}
       {!useGltfFurniture ? (
@@ -952,15 +939,9 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         </>
       ) : null}
 
-      {/* ── Bed — box fallback on Low; Medium+ uses Poly Haven GothicBed in dressing ── */}
-      {!useGltfFurniture ? (
-        <group position={[1.8, 0, 2.0]}>
-          <mesh position={[0, 0.35, 0]} castShadow geometry={geo_box_38} material={mat_29} />
-          <mesh position={[0, 0.6, -0.95]} castShadow geometry={geo_box_39} material={mat_30} />
-          <mesh position={[0, 0.55, -0.7]} geometry={geo_box_40} material={mat_31} />
-          <mesh position={[0, 0.52, 0.2]} geometry={geo_box_41} material={mat_32} />
-        </group>
-      ) : null}
+      {/* ── Bed — box kit on Low; Medium+ uses Poly Haven GothicBed (dressing,
+          Suspense-fallback = тот же box-комплект, кровать не исчезает) ── */}
+      {!useGltfFurniture ? <BoxBed /> : null}
 
       {/* ── Windows — always procedural (city glow + spill). Authored dressing has none;
           deferred kenney_window props left blank walls until staggered mount.
