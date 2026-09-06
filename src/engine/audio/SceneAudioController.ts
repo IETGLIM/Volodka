@@ -6,7 +6,7 @@
 import { musicEngine } from '../MusicEngine';
 import { ambientEngine } from './AmbientEngine';
 import { sfxEngine, type StingerId } from './SfxEngine';
-import { applyAudioSettings } from './AudioSettings';
+import { applyAudioSettings, readAudioSettings } from './AudioSettings';
 import {
   getSceneReverbPreset,
   getSceneMusicMood,
@@ -34,6 +34,11 @@ import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 
 export interface AmbientPlayContext {
   proceduralOverride?: AmbientSoundType | null;
+  /** Файловый ambient story-ноды (например 'sounds/ambient/rain_distant.ogg').
+   *  v4.15: раньше поле StoryNode.ambientSound было мёртвыми данными — файлов
+   *  не существовало и никто их не играл. Теперь контроллер гоняет зацикленный
+   *  HTMLAudio поверх процедурного бэда, громкость — от ambient-шины. */
+  storyAudioFile?: string | null;
 }
 
 export class SceneAudioController {
@@ -42,6 +47,8 @@ export class SceneAudioController {
   private enteredScenes = new Set<string>();
   private lastResolvedAmbient: AmbientSoundType | null = null;
   private ambientContext: AmbientPlayContext = {};
+  private storyAudio: HTMLAudioElement | null = null;
+  private storyAudioFile: string | null = null;
 
   init(): void {
     this.session.begin();
@@ -50,6 +57,7 @@ export class SceneAudioController {
 
   dispose(): void {
     this.enteredScenes.clear();
+    this.stopStoryAudio();
     this.session.dispose();
   }
 
@@ -250,6 +258,55 @@ export class SceneAudioController {
   setAmbientPlayContext(context: AmbientPlayContext): void {
     if (!this.guard()) return;
     this.ambientContext = context;
+    this.setStoryAudioFile(context.storyAudioFile ?? null);
+  }
+
+  /** Зацикленный файловый ambient текущей story-ноды (v4.15).
+   *  Безопасен в не-браузерной среде (тесты): Audio-гарды + молчаливые catch.
+   *  Отказ автоплея (нет жеста) не критичен — процедурный бэд продолжает играть,
+   *  файл стартует при следующей смене ноды/контекста. */
+  private setStoryAudioFile(file: string | null): void {
+    if (file === this.storyAudioFile) return;
+    this.storyAudioFile = file;
+    this.stopStoryAudioElement();
+    if (!file || typeof window === 'undefined' || typeof Audio !== 'function') return;
+    try {
+      const el = new Audio(file);
+      el.loop = true;
+      el.volume = this.computeStoryAudioVolume();
+      void el.play().catch(() => {});
+      this.storyAudio = el;
+    } catch {
+      /* среда без аудио — файловый слой просто неактивен */
+    }
+  }
+
+  private stopStoryAudioElement(): void {
+    if (!this.storyAudio) return;
+    try {
+      this.storyAudio.pause();
+      this.storyAudio.src = '';
+    } catch {
+      /* ignore */
+    }
+    this.storyAudio = null;
+  }
+
+  private stopStoryAudio(): void {
+    this.storyAudioFile = null;
+    this.stopStoryAudioElement();
+  }
+
+  /** Громкость файлового слоя = ambient-шина × 0.7 (лупы громче процедурных бэдов).
+   *  Пересчитывается при каждой смене story-контекста. */
+  private computeStoryAudioVolume(): number {
+    try {
+      const s = readAudioSettings();
+      const muteMul = s.muted ? 0 : 1;
+      return Math.max(0, Math.min(1, s.ambientVolume * 0.7 * muteMul));
+    } catch {
+      return 0.4;
+    }
   }
 
   refreshSceneAmbient(sceneId: SceneId, timeOfDay: number): void {

@@ -8,7 +8,7 @@ import { getSceneAudioController,
   type AmbientPlayContext,
 } from '@/engine/audio/SceneAudioController';
 import { resolvePoemWorldEffect } from '@/engine/poemWorld/poemWorldEffectResolver';
-import { getStoryProceduralAmbientOverride } from '@/engine/audio/ambientPlayContext';
+import { getStoryProceduralAmbientOverride, getStoryAmbientAudioFile } from '@/engine/audio/ambientPlayContext';
 import { getGamePhase } from '@/shared/gamePhase';
 import type { SceneId } from '@/config/sceneDefinitions';
 
@@ -28,7 +28,12 @@ function buildAmbientContext(
     state.showStoryOverlay,
     state.currentNodeId,
   );
-  return override ? { proceduralOverride: override } : {};
+  // v4.15: файловый луп story-ноды — поверх процедурного бэда.
+  const storyAudioFile = getStoryAmbientAudioFile(state.showStoryOverlay, state.currentNodeId);
+  return {
+    ...(override ? { proceduralOverride: override } : {}),
+    ...(storyAudioFile ? { storyAudioFile } : {}),
+  };
 }
 
 function syncAudioFromStore(ctrl: ReturnType<typeof getSceneAudioController>): void {

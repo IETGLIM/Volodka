@@ -24,6 +24,18 @@ export function getStoryProceduralAmbientOverride(
   return STORY_NODES[currentNodeId]?.proceduralAmbientOverride;
 }
 
+/** Файловый ambient story-ноды ('sounds/ambient/<name>.ogg') — v4.15.
+ *  Раньше поле было мёртвыми данными: файлов не существовало, консьюмера не было.
+ *  Теперь файлы сгенерированы (scripts/generate-ambient-audio.mjs), путь
+ *  доставляется до SceneAudioController через AmbientPlayContext.storyAudioFile. */
+export function getStoryAmbientAudioFile(
+  showStoryOverlay: boolean,
+  currentNodeId: string | null | undefined,
+): string | null {
+  if (!showStoryOverlay || !currentNodeId) return null;
+  return STORY_NODES[currentNodeId]?.ambientSound ?? null;
+}
+
 export function buildAmbienceResolveOptions(
   showStoryOverlay: boolean,
   currentNodeId: string | null | undefined,
