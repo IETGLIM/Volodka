@@ -10,7 +10,7 @@ import {
   Package,
   Search,
 } from 'lucide-react';
-import { toastManager } from '@/engine/ToastManager';
+import { notify } from '@/engine/UnifiedNotifications';
 import { ItemIcon } from './shared/ItemIcon';
 import { useCraftingPanelState } from '@/store/selectors';
 import {
@@ -196,7 +196,9 @@ export function CraftingPanel({ open, onClose }: CraftingPanelProps) {
     }
 
     if (craftedCount > 0) {
-      toastManager.addToast('crafting', `Создано ${craftedCount} предметов`);
+      // v4.15: единый канон уведомлений — legacy toastManager.addToast давал
+      // второй независимый стек тостов (дубли логики интерфейса, репорт игрока).
+      notify('crafting', `Создано ${craftedCount} предметов`);
     }
 
     craftingAllRef.current = false;
