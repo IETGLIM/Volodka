@@ -4811,3 +4811,20 @@ Stage Summary:
 - [ ] Открыты (9): процедурные act-mood таблицы; CC0-стемы (опционально); NPC LOD impostor-апгрейд; плотность диалогов актов 3–4 + Thought Cabinet арки; генератор hub-кейсов; баланс/экономика (Phase 14); accessibility-проход; visual judge на hero-сценах; честная переоценка плейтайма («dense hours»).
 
 Вывод для владельца: «ВСЕ 100+ ПУНКТОВ» — НЕТ: из 183 нумерованных строк закрыто начисто 53 (~34% actionable) + 20 частично + 4 иным путём; остальные ~79 — преимущественно LOW-хвост (сплиты монолитов, data-driven реестры, i18n, полифиллы, аудио-полировка) и осознанно отложенные риско-чувствительные архитектурные решения (S-1/S-3/E-1, StrictMode), при этом все CRITICAL/HIGH-риски эпохи v4.4.2 либо устранены (C-1, E-4, quota, CSP, context-loss), либо сняты переработкой подхода (singlefile, WASM-проба).
+
+---
+Task ID: 15-c
+Agent: Z.ai Code (main)
+Task: диагноз «коммиты есть на GitHub, но прод volodka.vercel.app не меняется после деплоя»
+
+Work Log:
+- Прод ДОСТУПЕН из песочницы (curl volodka.vercel.app — HTTP 200, сетевая изоляция не блокирует vercel.app)
+- Маркер-проба прода: /draco/gltf/draco_decoder.wasm → application/wasm 192420 B (фикс v4.12.1 ЕСТЬ); /sounds/ambient/cafe_backroom.ogg (реальный файл репо) и /sounds/rain_distant.ogg → text/html 2173 B = index.html (SPA-fallback — exclusion /sounds из c886b87 ОТСУТСТВУЕТ); sw.js прода → volodka-shell-v2 / volodka-media-v2 (v4.15.0 = v3, локально shell-v3)
+- ВЕРДИКТ: production собран из коммита диапазона v4.12.1…3d24785 (старше v4.15.0) — ВСЕ фиксы репорта 3/10 (кровать c5f5473, звук 2203869/52322a5/c886b87, тумба, CraftingPanel) на проде отсутствуют
+- Бандл прода /assets/index-L0mVztpK.js (72222 B, entry-чанк код-сплиттинга) — маркеров v4.15.0 не содержит; last-modified прода 02:11:55 UTC — деплой выполнен ПОСЛЕ наших пушей (00:04–01:04 UTC), но взял СТАРЫЙ коммит
+- Наши 3 пуша сегодня НЕ вызвали автодеплой production → Git-интеграция Vercel не подхватывает main (либо production branch ≠ main, либо Deploy on Push off, либо владелец деплоит CLI/Redeploy из старого чекаута — Redeploy пересобирает ТОТ ЖЕ старый SHA)
+- В репо ~70 посторонних веток (arena/*, split/*, Maincritical-*, feat/studio-quality-sprint-*) — проверять Settings→Git в Vercel
+
+Stage Summary:
+- Диагноз передан владельцу: прод пересобрать строго из main@1745f39 (CLI: git pull && npx vercel --prod; или Redeploy с выбором коммита; или чинить Settings→Git: repo=IETGLIM/Volodka, Production Branch=main, Deploy on Push=on)
+- После корректного деплоя контрольные маркеры: sw.js → shell-v3/media-v3; /sounds/ambient/cafe_backroom.ogg → audio/ogg; бандл вырастет и будет содержать cafe_backroom/storyAudioFile
