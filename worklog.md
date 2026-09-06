@@ -4574,3 +4574,240 @@ Stage Summary:
   через v3) и при остаточных проблемах — скрин F8-панели.
 - Урок: Suspense fallback=null для КРИТИЧНОЙ мебели = «пропавшие модели» при
   медленной сети; каждый критичный GLB обязан иметь процедурного двойника.
+
+---
+Task ID: 15-a
+Agent: Z.ai Code (main)
+Task: возобновление сессии; PUSH 6 непушенных коммитов v4.15.0 (прошлая сессия завершила все фиксы репорта 3/10, но не успела запушить)
+
+Work Log:
+- Контекст восстановлен: локальный main == 16efe9a (v4.15.0), origin/main == 3d24785 → 6 коммитов ждали push (c5f5473 кровать/стол/полка, 2203869+52322a5 звук, c886b87 deploy /sounds, 69d18d5 CraftingPanel notify, 16efe9a docs)
+- PUSH 3d24785..16efe9a main → main УСПЕШЕН; токен владельца только через export/unset, в файлы/конфиги/логи не писан; refs/remotes/origin/main == 16efe9a
+- Верификация перед push не повторялась: дерево чистое, верификация v4.15.0 задокументирована предыдущей сессией (tsc 0 · eslint 0 · vitest 2486/2486 · validate:content OK · build:vercel 40с)
+- Нюанс окружения: cwd Bash сбрасывается в /home/z/my-project между вызовами — команды к репо выполнять с явным cd
+- Cron webDevReview: job 362358 существует, конфигурация корректна, платформенно отключён («exec limits exceeded») — ожидает авторазблокировки
+- Запущен аудит чек-листа 100+ (Task 15-b, субагент): ANALYSIS_REPORT_PART1/2/3 (183 нумерованных рекомендации, аудит эпохи v4.4.2) + AA_QUALITY_ROADMAP vs CHANGELOG/worklog/код
+
+Stage Summary:
+- origin/main == HEAD == 16efe9a (v4.15.0) — весь репорт 3/10 доставлен на GitHub
+- Владельцу: РЕДЕПЛОЙ main на Vercel обязателен — прод отстаёт (нет CSP-фикса v4.12.1, кровати v4.15.0, звука и пр.); после редеплоя при остаточных проблемах — скрин F8-панели
+- Ответ пользователю на «3/10»: 1 — подтверждено как плюс; 2-5 — парящие пропсы (фиксы v4.15.0: Suspense-fallback кровати, topY стола, полка с книгами); 6 — дефектов физики в HEAD нет (вывод от парящих пропсов); 7 — 42 ogg-лупа + проводка + /sounds deploy-фикс; 8 — CraftingPanel → notify (полная консолидация 4 toast-систем — бэклог); 9 — тумба y=1.55 при крышке 1.121 (зазор 0.43)
+- 15-b: матрица готовности 100+ пунктов — в следующей записи
+---
+Task ID: 15-b / Agent: general-purpose (аудит чек-листа) / Task: аудит 183 пунктов ANALYSIS_REPORT_PART1/2/3 + 28 чекбоксов AA_QUALITY_ROADMAP
+Work Log:
+- Метод: (1) rg-карта задач worklog.md (74 Task ID); (2) полное чтение ANALYSIS_REPORT_PART1/2/3.md — выписаны ВСЕ нумерованные строки: PART1=41, PART2=54, PART3=88, итого 183 (нумерация в отчётах посекционная — здесь сквозная 1–183); (3) docs/AA_QUALITY_ROADMAP.md — 28 чекбоксов (19 [x] / 9 [ ]); (4) верификация: ~50 точечных grep/read по src/ (brands, items, sceneDefinition+scene, combinedState, patchState, applyGameAction, disposeGameEngine, EventBus, rapierCompat, SceneTransitionManager, GlobalCleanupService, quotaCheck, saveSchema, saveMigrations, worldCompute.worker, useHUDController, hudThresholds, DamageFloatSystem, DialogueHistoryPanel, AchievementDetailsPanel, contentPipelineValidator, questDependencies, useAccessibilitySettings, buildStoryNodes, webglContextLoss, vercel.json, gltfPipeline, HeroEnvironment, AmbientSoundMixer, AmbientEngine, useAudioOrchestrator, objectPool, buffSystem, combat/types, formulas, enemyTurn, CombatSystem, npcFrameBatch, navMeshPathfinder, npcPatrol, npcRenderTier, npc.ts, EnvironmentLodProvider, useMixamoAnimationClips, useSkinnedGltfClone, RuntimeBudgetMonitor, useDynamicDPR, useDeviceTier, Lighting+CSM, InstancedClutter, moduleMaterialRegistry, GpuResourceBudgetTracker, main.tsx, vite.config, index.html, i18n, ci.yml, check-bundle-budgets) + rg по CHANGELOG.md (StrictMode, реал-тайм слой v4.8.7, chunks, LazyCombatUI, vercel.json npm-фикс).
+- ⚠️ Методологическая честность: в PART1/2/3 нумерованными строками являются не только «Potential Improvements» (реальные рекомендации: 24+25+38=87), но и описания текущего состояния (9 механизмов стора, 5 шагов бутстрапа, 8 слоёв урона; 14+8=22 шт.), списки багов (18+45 шт. — считал исправляемыми пунктами), top-risks (6 шт.) и 5 сводных «most impactful» (дубли). Такие строки помечены N/A·DESC (описание, не рекомендация) — фиксируются отдельно, в счёт выполнения не идут. Двойной подсчёт внутри PART3 (finding = рекомендация) учтён: дубли помечены «дубль».
+- Предыдущий статус-аудит V4.14.2-audit (5-a..5-d) считал иначе (~230 пунктов: рекомендации + проблемные ID C/T/S/B/E/R/N/A/AU): тогда ~96-100 FIXED. Настоящий аудит — состояние HEAD 16efe9a (v4.15.0) по нумерованным строкам, с учётом добитых после того аудита фиксов (quotaCheck, hudThresholds, questDependencies Map, AcceptedDailyMissionSchema, useDeviceTier 0-guard, worker paren, изм. bun.lock и др.).
+
+Stage Summary:
+- ИТОГО по 183 нумерованным строкам: DONE 53 · PARTIAL 20 · NOT-DONE 79 · SUPERSEDED 4 · N/A·DESC 27 (описания состояния/самоопровержимые пункты отчёта; сверено с таблицей). Реальные рекомендации, доведённые до конца: 53 из ~156 actionable (~34%); ещё 20 частично; хвост — в основном LOW-рефакторинг/полируемость.
+- По частям: PART1 (1–41): DONE 5 / PARTIAL 3 / NOT-DONE 16 / SUPERSEDED 3 / N/A·DESC 14. PART2 (42–95): DONE 9 / PARTIAL 4 / NOT-DONE 33 / SUPERSEDED 0 / N/A·DESC 8. PART3 (96–183): DONE 39 / PARTIAL 13 / NOT-DONE 30 / SUPERSEDED 1 / N/A·DESC 5 (в PART3 много дублей finding↔рекомендация, поэтому DONE непропорционально высок).
+- ROADMAP (28 чекбоксов): [x] 19 / [ ] 9. Не закрыты: процедурные act-mood таблицы, CC0-стемы, NPC LOD impostor-апгрейд, плотность диалогов актов 3–4 + Thought Cabinet арки, генератор hub-кейсов, баланс/экономика (Phase 14), accessibility-проход, visual judge на hero-сценах, честная переоценка плейтайма.
+
+### Полная таблица 183 пунктов (PART1=1–41, PART2=42–95, PART3=96–183; нумерация внутри отчёта посекционная)
+
+| № | Пункт (кратко) | Статус | Доказательство |
+|---|----------------|--------|----------------|
+| 1 | P1 §1.3.1 Bundle splitting вместо singlefile | DONE | vite.config.ts: singlefile-плагин удалён, manualChunks (resolveManualChunk), chunkSizeWarningLimit 500 |
+| 2 | P1 §1.3.2 Font preload/self-host | PARTIAL | index.html:14 display=swap + preconnect; preload as=font/self-host нет |
+| 3 | P1 §1.3.3 Один lock-файл | DONE | bun.lock удалён, остался package-lock.json |
+| 4 | P1 §1.3.4 optimizeDeps.exclude для Rapier | SUPERSEDED | условие не наступило: WASM-инлайн переработан (rapierInitFix, external WASM); попутно закрыт C-5 (include postprocessing) |
+| 5 | P1 §2.3.1 Валидация branded ID (asNpcId) | NOT-DONE | brands.ts:17-38 — те же unsafe-касты |
+| 6 | P1 §2.3.2 Унификация item-категорий | NOT-DONE | InventoryItemCategory (types/definitions/items.ts:25) и ItemCategory (data/items.ts:6) сосуществуют |
+| 7 | P1 §2.3.3 MutableCombatEnemy | NOT-DONE | символ не найден в src/ |
+| 8 | P1 §2.3.4 transitionStyle union один раз | NOT-DONE | дублируется: sceneDefinition.ts:232 и definitions/scene.ts:53 |
+| 9 | P1 §3.1.1 Independent Slice Stores (описание) | N/A·DESC | соответствует коду (store/combinedState.ts:17) |
+| 10 | P1 §3.1.2 Facade Pattern (описание) | N/A·DESC | gameStore.ts актуален |
+| 11 | P1 §3.1.3 Cache Invalidation (описание) | N/A·DESC | sliceRefsEqual/invalidate на месте |
+| 12 | P1 §3.1.4 Microtask Batching (описание) | N/A·DESC | subscribeAllStores, queueMicrotask |
+| 13 | P1 §3.1.5 Frame-level Coalescing (описание) | N/A·DESC | scheduleAfterSliceStoresSettle |
+| 14 | P1 §3.1.6 Cross-Slice Reads (описание) | N/A·DESC | crossSliceReads.ts |
+| 15 | P1 §3.1.7 Action Dispatcher (описание) | N/A·DESC | applyGameAction.ts |
+| 16 | P1 §3.1.8 GameActionBridge (описание) | N/A·DESC | gameActionBridge.ts |
+| 17 | P1 §3.1.9 Lazy Data Loading (описание) | N/A·DESC | gameDataLoader two-phase (CHANGELOG v4.9.x) |
+| 18 | P1 §3.3.1 Транзакционный batchUpdate | NOT-DONE | batchGameActions (applyGameAction.ts:141) = обычный for-цикл |
+| 19 | P1 §3.3.2 Deep-freeze combined state (dev) | NOT-DONE | Object.freeze/deepFreeze не найдены |
+| 20 | P1 §3.3.3 Разделить WorldSlice | NOT-DONE | worldSlice.ts — 864 строки (без изменений) |
+| 21 | P1 §3.3.4 Visited nodes index (Set) | DONE | shared/visitedNodesIndex.ts используется в 10+ модулях |
+| 22 | P1 §3.3.5 Автогенерация patchState ключей | PARTIAL | Set<keyof Slice> типизация есть, но ключи всё ещё ручные литералы (patchState.ts:20-27) |
+| 23 | P1 §3.3.6 DifficultyStore в SLICE_STORES | DONE | combinedState.ts:17 включает useDifficultyStore (FIX P1) |
+| 24 | P1 §4.1.1 main.tsx бутстрап (описание) | N/A·DESC | соответствует коду |
+| 25 | P1 §4.1.2 AppBootRoot 68% (описание) | N/A·DESC | магический литерал заменён MENU_BOOT_HANG_PROGRESS_PCT=68 (аудит v4.14.2) |
+| 26 | P1 §4.1.3 preloadBootGameData 9 модулей (описание) | N/A·DESC | актуально |
+| 27 | P1 §4.1.4 GamePage lazy (описание) | N/A·DESC | актуально |
+| 28 | P1 §4.1.5 Нарратив позже (описание) | N/A·DESC | актуально |
+| 29 | P1 §4.3.1 StrictMode-совместимость с Rapier | NOT-DONE | main.tsx:50 — по-прежнему opt-in VITE_ENABLE_STRICT_MODE |
+| 30 | P1 §4.3.2 try/catch вокруг bindApplicationLayers | NOT-DONE | main.tsx:23 и bindApplicationLayers.ts — guard нет |
+| 31 | P1 §4.3.3 Динамический documentElement.lang | NOT-DONE | index.html:2 lang="ru" захардкожен (для ru-only — приемлемо) |
+| 32 | P1 §5.3.1 Убрать дубль bindDeferredCombatStartListener | DONE | disposeGameEngine.ts: один unbind (155) + один bind (190) |
+| 33 | P1 §5.3.2 Убрать monkey-patch console.warn | NOT-DONE | rapierCompat.ts:70-87 — патч остался |
+| 34 | P1 §5.3.3 Auto-revive только в dev | NOT-DONE | EventBus.assertSubscribable (159-176) ревайвит и в проде (warn dev-only) |
+| 35 | P1 §5.3.4 Отложить module-level слушатели SceneTransitionManager | NOT-DONE | SceneTransitionManager.ts:79-82 — 4 bind() на импорте |
+| 36 | P1 §5.3.5 Combat state machine (XState) | NOT-DONE | CombatSystem.ts 1795 строк, токен-паттерн; частично перекрыт реал-тайм слоем v4.8.7+ |
+| 37 | P1 §5.3.6 Retry для WASM-пробы | SUPERSEDED | HEAD-проба удалена целиком («No HEAD probe — saves 1 RTT»), fallback на inline при сбое fetch |
+| 38 | P1 §5.3.7 Отчёт о частичных сбоях cleanup | NOT-DONE | GlobalCleanupService.ts:55 — только devWarn, без success/fail-трекинга |
+| 39 | P1 Top-risk C-1 singlefile 15 МБ | SUPERSEDED | singlefile убран, бандл разбит (manualChunks, лимит 500KB, budgets) |
+| 40 | P1 Top-risk S-1/S-3 mutation safety | NOT-DONE | архитектурные решения отложены (подтверждено V4.14.2-audit) |
+| 41 | P1 Top-risk E-1/E-4/E-5 singleton lifecycle | PARTIAL | E-4 (дубль listener) исправлен; E-1 (CombatManager singleton), E-5 (module-level side effects) нет |
+| 42 | P2 §1.3.1 InstancedMesh для кластерных пропсов | DONE | InstancedClutter.tsx, useInstancedProps.ts, InstancedProp.tsx (15 файлов с InstancedMesh) |
+| 43 | P2 §1.3.2 Реестр материалов → ShaderMaterial | NOT-DONE | moduleMaterialRegistry без ShaderMaterial |
+| 44 | P2 §1.3.3 Cascaded Shadow Maps | DONE | CascadedShadowMaps.tsx, подключён в Lighting.tsx:219 (outdoor) |
+| 45 | P2 §1.3.4 Жёсткий GPU-бюджет/эвикция | PARTIAL | GpuResourceBudgetTracker: leak-drift warn/fail есть; жёсткого лимита/эвикции нет |
+| 46 | P2 §1.3.5 Data-driven освещение | PARTIAL | getSceneConfig импортируется, но SCENE_ACCENT_LIGHTS/INDOOR_AMBIENT таблицы остались в Lighting.tsx |
+| 47 | P2 §1.4.1 [LOW] GPU-лик ObjectPool overflow | PARTIAL | disposeOverflow вызывается (objectPool.ts:46), но без callback item по-прежнему дропается (громкий warn) |
+| 48 | P2 §1.4.2 [LOW] Тихий bypass LOD (999) | NOT-DONE | EnvironmentLodProvider.tsx:26 — дефолты 999 остались |
+| 49 | P2 §1.4.3 [INFO] Test-хелпер в прод-пути | DONE | resetSceneGpuOwnershipForTests → resetSceneGpuOwnership (аудит v4.14.2, фикс 11) |
+| 50 | P2 §2.1 слой 1: базовый урон (описание) | N/A·DESC | пайплайн enemyTurn актуален |
+| 51 | P2 §2.1 слой 2: сложность (описание) | N/A·DESC | combatDifficulty актуален |
+| 52 | P2 §2.1 слой 3: defended damage (описание) | N/A·DESC | + добавлен telegraph ×0.4 |
+| 53 | P2 §2.1 слой 4: defense boost (описание) | N/A·DESC | актуально |
+| 54 | P2 §2.1 слой 5: damage_reduction (описание) | N/A·DESC | актуально |
+| 55 | P2 §2.1 слой 6: vulnerability (описание) | N/A·DESC | актуально |
+| 56 | P2 §2.1 слой 7: духовные навыки (описание) | N/A·DESC | актуально |
+| 57 | P2 §2.1 слой 8: перк-редукция (описание) | N/A·DESC | актуально |
+| 58 | P2 §2.3.1 Defend как отдельный вход пайплайна | NOT-DONE | defend по-прежнему = damage_reduction бафф (CombatSystem.ts:778); смягчено telegraph-множителем |
+| 59 | P2 §2.3.2 Единый snapshot для attack/defense | NOT-DONE | getPlayerAttack/getPlayerDefense независимо зовут snap() (formulas.ts:192,213) |
+| 60 | P2 §2.3.3 Разбить enemies.ts | NOT-DONE | enemies.ts вырос до 1893 строк |
+| 61 | P2 §2.3.4 Data-driven бафф-система | NOT-DONE | геттеры рукописные, реестра нет |
+| 62 | P2 §2.3.5 Ring buffer боевого лога | NOT-DONE | appendLog — spread-копия массива (types.ts:74) |
+| 63 | P2 §2.4.1 [MEDIUM] Тихая потеря бонусов экипировки | DONE | getEquippedItemsSafe логирует через devWarn; тихо только «No bridge registered» (formulas.ts:174, фикс аудита) |
+| 64 | P2 §2.4.2 [LOW] Per-call MUTUALLY_EXCLUSIVE | NOT-DONE | объект всё ещё создаётся внутри addBuff (buffSystem.ts:80) |
+| 65 | P2 §2.4.3 [LOW] BOSS_ENEMY_TYPES не data-driven | NOT-DONE | хардкод-Set остался (combat/types.ts:60) |
+| 66 | P2 §2.4.4 [INFO] Множественные snap() (дубль 59) | NOT-DONE | см. №59 |
+| 67 | P2 §3.3.1 Автодетект hero-NPC | NOT-DONE | HERO_NPC_IDS хардкод-Set (npcRenderTier.ts:8) |
+| 68 | P2 §3.3.2 Динамический navmesh | NOT-DONE | статический на сцену |
+| 69 | P2 §3.3.3 renderTier обязательным полем | NOT-DONE | renderTier?: optional (definitions/npc.ts:96) |
+| 70 | P2 §3.3.4 Батчинг NPC-спрайтов | NOT-DONE | индивидуальные Sprite (npcSpritePool без atlas/instancing) |
+| 71 | P2 §3.3.5 Seeded RNG для патруля | NOT-DONE | Math.random() (npcPatrol.ts:91) |
+| 72 | P2 §3.4.1 [LOW] Hero-NPC не data-driven (дубль 67) | NOT-DONE | см. №67 |
+| 73 | P2 §3.4.2 [LOW] Unseeded patrol (дубль 71) | NOT-DONE | см. №71 |
+| 74 | P2 §3.4.3 [INFO] O(n²) unregister frame batch | NOT-DONE | findIndex (npcFrameBatch.ts:51) |
+| 75 | P2 §3.4.4 [INFO] Дубли в openSet A* | NOT-DONE | navMeshPathfinder.ts:186-231 без closed-set |
+| 76 | P2 §4.3.1 Система анимационных событий | NOT-DONE | AnimationEvent-системы нет |
+| 77 | P2 §4.3.2 Единый процедурный аддитив-слой | NOT-DONE | useProceduralNpcLimbAnimation изолирован |
+| 78 | P2 §4.3.3 FSM анимации игрока | NOT-DONE | engine/player/proceduralAnimations.ts без FSM |
+| 79 | P2 §4.3.4 Приоритеты загрузки клипов | PARTIAL | CRITICAL_CLIP_IDS + locomotion/cinematic/deferred тиры есть; риск pop-in при росте NPC остаётся |
+| 80 | P2 §4.4.1 [LOW] Нестабильный dep Mixamo-хука | NOT-DONE | JSON.stringify dep + eslint-disable (useMixamoAnimationClips.ts:236) |
+| 81 | P2 §4.4.2 [LOW] Хрупкий dep clone-хука | NOT-DONE | сигнатура/зависимости без структурного фикса (useSkinnedGltfClone.ts) |
+| 82 | P2 §4.4.3 [INFO] Хардкод crossfade 0.42 | NOT-DONE | без изменений |
+| 83 | P2 §5.3.1 Конволюционный реверб | NOT-DONE | алгоритмический реверб (AudioEngineCore) |
+| 84 | P2 §5.3.2 Per-bus регуляторы громкости | DONE | AmbientSoundMixer: music/ambient/sfx/voice + AudioSettings.ts |
+| 85 | P2 §5.3.3 Spatial audio для NPC (шаги/барки) | NOT-DONE | PannerNode только у ambient-источников |
+| 86 | P2 §5.3.4 Пул аудио-буферов | DONE | _noiseBufferCache: Map<sampleRate, AudioBuffer> (AmbientEngine.ts:85-97) |
+| 87 | P2 §5.3.5 Семплерная музыка | NOT-DONE | осцилляторная процедурная музыка |
+| 88 | P2 §5.3.6 Вынести camera shake из аудио | NOT-DONE | triggerCameraShake в useAudioOrchestrator.ts:152,171 |
+| 89 | P2 §5.4.1 [MEDIUM] HMR Proxy bound-функции | DONE | кэш bound-методов (аудит v4.14.2, фикс 3) |
+| 90 | P2 §5.4.2 [LOW] Shake в аудио (дубль 88) | NOT-DONE | см. №88 |
+| 91 | P2 §5.4.3 [LOW] Непуленные noise-буферы (дубль 86) | DONE | см. №86 |
+| 92 | P2 §5.4.4 [INFO] Базовый реверб (дубль 83) | NOT-DONE | см. №83 |
+| 93 | P2 Risk: хардкод-списки → data-driven | NOT-DONE | HERO_NPC_IDS/BOSS_ENEMY_TYPES/lighting-таблицы на месте |
+| 94 | P2 Risk: cross-concern coupling (shake/defend) | NOT-DONE | см. №88/58 |
+| 95 | P2 Risk: нет InstancedMesh-батчинга | DONE | риск снят — инстансинг внедрён (см. №42) |
+| 96 | P3 §1.2.1 PROMAX/СОПРОТИВЛЕНИЕ кириллица | DONE | DamageFloatSystem.tsx:450 'ПРОМАХ!', :452 'СОПРОТИВЛЕНИЕ' — чистая кириллица |
+| 97 | P3 §1.2.2 scheduleTimeout(fn,0) шторм | NOT-DONE | паттерн остался (useHUDController.ts:185-202) |
+| 98 | P3 §1.2.3 FocusTrap без кнопки «Закрыть» | DONE | кнопка внутри FocusTrap, aria-label=«Закрыть» (DialogueHistoryPanel.tsx:189-245) |
+| 99 | P3 §1.2.4 Нет панели достижений | DONE | AchievementDetailsPanel (галерея с фильтрами) + panelId="achievements" в OrchestratorPanelSlots.tsx:118 |
+| 100 | P3 §1.2.5 aria-label у квест-бейджа | PARTIAL | HUDButton aria-label есть; бейдж-кейс не подтверждён точечно |
+| 101 | P3 §1.2.6 as any в framer-motion вариантах | DONE | 0 вхождений «as any» в DamageFloatSystem.tsx |
+| 102 | P3 §1.2.7 Пороги энергии 30 vs 25 | DONE | hudThresholds.ts (v4.14.2): WARN=30 / LOW=25, единый источник |
+| 103 | P3 §1.4.1 Фикс кириллицы | DONE | дубль №96 |
+| 104 | P3 §1.4.2 FocusTrap close | DONE | дубль №98 |
+| 105 | P3 §1.4.3 Галерея достижений | DONE | дубль №99 |
+| 106 | P3 §1.4.4 Единый порог энергии | DONE | дубль №102 |
+| 107 | P3 §1.4.5 HUD element budget | NOT-DONE | бюджет одновременных HUD-частей не заведён |
+| 108 | P3 §1.4.6 Gamepad для новых панелей | DONE | useJournalListNavigation, useInventoryGridNavigation, minigame-hub nav, QuestsPanel, combatGamepadMap |
+| 109 | P3 §2.2.1 Валидация диалог-графа (dead-end) | DONE | validateDialogueGraph в contentPipelineValidator.ts:172,868 |
+| 110 | P3 §2.2.2 expanded-диалоги не в index | N/A·DESC | отчёт сам опроверг («No issue») |
+| 111 | P3 §2.2.3 FocusTrap scope | DONE | дубль №98 |
+| 112 | P3 §2.2.4 Визуализатор диалогового дерева | NOT-DONE | dev-инструмента нет |
+| 113 | P3 §2.3.1 Валидация диалог-графа | DONE | дубль №109 |
+| 114 | P3 §2.3.2 Диалоговый визуализатор | NOT-DONE | дубль №112 |
+| 115 | P3 §2.3.3 Настройки скорости текста | DONE | textSpeed в useAccessibilitySettings + useNarrativeTypewriter.ts |
+| 116 | P3 §3.2.1 quests.find() O(n·m) | DONE | Map-индекс в questDependencies.ts:19 (Аудит 3.1/I3.2) |
+| 117 | P3 §3.2.2 Daily missions без схемы | DONE | AcceptedDailyMissionSchema z.object (saveSchema.ts:259,353) |
+| 118 | P3 §3.2.3 Quest tracker silent fail | N/A·DESC | отчёт сам признал поведение корректным |
+| 119 | P3 §3.3.1 Zod-схема daily missions | DONE | дубль №117 |
+| 120 | P3 §3.3.2 Map для квест-лукапа | DONE | дубль №116 (+ storyGraphIndex questById) |
+| 121 | P3 §3.3.3 Визуализация квест-цепочек в журнале | PARTIAL | quest chain unlock interstitial/toast есть; визуализации цепочек в журнале нет |
+| 122 | P3 §4.2.1 Коллизии story-нод не блокируют | NOT-DONE | только DEV-варнинг (buildStoryNodes.ts:100) |
+| 123 | P3 §4.2.2 ensureNarrativeNodeIds последовательно | PARTIAL | последовательно (намеренно); смягчено idle-префетчем всех актов |
+| 124 | P3 §4.2.3 choice.next → dialogue-only бросает | PARTIAL | prefetchDialogueNodes глотает, ensureStoryNode кидает — поведение сохранено |
+| 125 | P3 §4.3.1 Коллизии бросают в проде | NOT-DONE | дубль №122 |
+| 126 | P3 §4.3.2 Визуализатор story-графа | NOT-DONE | инструмента нет |
+| 127 | P3 §4.3.3 Прелоад Act 2 во время Act 1 | DONE | prefetchRemainingStoryPacksInIdle — все акты в idle (шире запрошенного) |
+| 128 | P3 §5.2.1 localStorage quota без проверки | DONE | quotaCheck.ts: probe/usage/warnIfStorageNearLimit (русский toast ≥80%) + isQuotaExceededError в saveStorage |
+| 129 | P3 §5.2.2 Пустая таблица миграций | NOT-DONE | MIGRATIONS пуст (задокументированный контракт Zod-дефолтов v4.7.3) |
+| 130 | P3 §5.2.3 acceptedDailyMissions unknown | DONE | дубль №117 |
+| 131 | P3 §5.2.4 Нет компрессии сейва | NOT-DONE | компрессии/pruning больших массивов нет |
+| 132 | P3 §5.2.5 playTimeSeconds optional | NOT-DONE | saveSchema.ts:391 — по-прежнему optional |
+| 133 | P3 §5.3.1 Проверка места + русский error | DONE | дубль №128 |
+| 134 | P3 §5.3.2 Pruning conversationLog/thoughtHistory | PARTIAL | conversationLog ограничен 10/NPC; thoughtHistory не ограничен (pushThoughtEntry без cap) |
+| 135 | P3 §5.3.3 Переезд на IndexedDB | PARTIAL | IndexedDB используется для Photo Mode (photoCapturePersist.ts); сейвы — localStorage |
+| 136 | P3 §5.3.4 Реальные шаги миграций | NOT-DONE | дубль №129 |
+| 137 | P3 §5.3.5 Схема daily missions | DONE | дубль №117 |
+| 138 | P3 §6.2.1 Module-level fpsSamples | NOT-DONE | RuntimeBudgetMonitor.ts:41 без изменений |
+| 139 | P3 §6.2.2 Worker error: нет скобки | DONE | worldCompute.worker.ts:65 — `Unknown worker op: ${String(requestOp)}` корректен |
+| 140 | P3 §6.2.3 saveData deprecated | PARTIAL | читается через optional chaining с дефолтом; свойство всё ещё используется |
+| 141 | P3 §6.2.4 useDynamicDPR realloc буфера | NOT-DONE | new Array на эффекте (useDynamicDPR.ts:76) |
+| 142 | P3 §6.2.5 Нет WebGL context loss handling | DONE | webglContextLoss.ts + слушатели в ExplorationPostFX.tsx, RPGGameCanvas.tsx |
+| 143 | P3 §6.3.1 WebGL context loss | DONE | дубль №142 |
+| 144 | P3 §6.3.2 Фикс ошибки воркера | DONE | дубль №139 |
+| 145 | P3 §6.3.3 Прод-профилирование React-рендеров | NOT-DONE | RuntimeBudgetMonitor dev-only |
+| 146 | P3 §6.3.4 Memory pressure API | NOT-DONE | PressureObserver не найден |
+| 147 | P3 §7.2.1 i18n вестигиальный | NOT-DONE | RU_MESSAGES ~44 строки, решение extract-vs-delete не принято |
+| 148 | P3 §7.2.2 Контент не экстрагирован | NOT-DONE | тексты в TS-датафайлах |
+| 149 | P3 §7.2.3 Только setLocaleForTests | NOT-DONE | рантайм-свитча нет |
+| 150 | P3 §7.3.1 Экстракция 1000+ строк | NOT-DONE | дубль №147 |
+| 151 | P3 §7.3.2 Commit to i18n или удалить | NOT-DONE | дубль №147 |
+| 152 | P3 §7.3.3 Экстракция HUD/menu строк | NOT-DONE | дубль №147 |
+| 153 | P3 §8.2.1 eval/Function отсутствуют | N/A·DESC | соответствие подтверждено |
+| 154 | P3 §8.2.2 Нет CSP-заголовков | DONE | vercel.json:50 CSP + nosniff + Referrer-Policy + X-Frame-Options |
+| 155 | P3 §8.2.3 robots.txt есть | N/A·DESC | good practice подтверждена |
+| 156 | P3 §8.3.1 CSP в деплое | DONE | дубль №154 |
+| 157 | P3 §8.3.2 SRI integrity для WASM | NOT-DONE | integrity= не найден |
+| 158 | P3 §9.2.1 Нет RIC-полифилла | NOT-DONE | только setTimeout-fallback'и |
+| 159 | P3 §9.2.2 Нет Safari WebGL workarounds | NOT-DONE | Safari-специфики нет |
+| 160 | P3 §9.2.3 hardwareConcurrency без guard | DONE | 0-guard (useDeviceTier.ts:12-17, Аудит 9.3/I9.4) |
+| 161 | P3 §9.2.4 Нет ResizeObserver-полифилла | NOT-DONE | полифилла нет |
+| 162 | P3 §9.2.5 Не-passive слушатели | PARTIAL | touchstart passive (useHUDController.ts:273); остальное точечно не проверено |
+| 163 | P3 §9.3.1 passive: true везде | PARTIAL | дубль №162 — частично |
+| 164 | P3 §9.3.2 RIC-полифилл | NOT-DONE | дубль №158 |
+| 165 | P3 §9.3.3 Safari WebGL | NOT-DONE | дубль №159 |
+| 166 | P3 §9.3.4 hardwareConcurrency 0-guard | DONE | дубль №160 |
+| 167 | P3 §10.2.1 HDR 6.7 МБ без стратегии | PARTIAL | resolveHeroHdriPath: low-tier → 1k (3.1 МБ), high → 2k; компрессии нет |
+| 168 | P3 §10.2.2 Дубли интерьеров (glb/meshopt/draco) | N/A·DESC | намеренные quality-тиры + prune-deploy-assets в деплое |
+| 169 | P3 §10.2.3 Нет KTX2/Basis | DONE | gltfPipeline.ts: KTX2Loader/Basis, qualityPresets «KTX2 при high/ultra» |
+| 170 | P3 §10.2.4 Mixamo-риги 9.6 МБ | NOT-DONE | _rigs на диске (15 МБ); скрипты извлечения есть, риги не убраны |
+| 171 | P3 §10.2.5 Нет asset-бюджета | PARTIAL | check-bundle-budgets.mjs + performanceBudgets.json есть; в CI не включён, ассеты не покрывает |
+| 172 | P3 §10.2.6 placeholder.png | DONE | файл удалён из public/ |
+| 173 | P3 §10.2.7 Basis WASM мёртвый груз | SUPERSEDED | Basis/KTX2 теперь реально используется (gltfPipeline) |
+| 174 | P3 §10.3.1 HDRI сжать/лениво | PARTIAL | тир-зависимый выбор 1k/2k (HeroEnvironment.tsx:99-102); прогрессивной загрузки нет |
+| 175 | P3 §10.3.2 Аудит Mixamo-ригов | NOT-DONE | дубль №170 |
+| 176 | P3 §10.3.3 CI asset-бюджет | PARTIAL | дубль №171 — инструмент есть, CI-шага нет (ci.yml: lint/test/validate/typecheck/build) |
+| 177 | P3 §10.3.4 KTX2/Basis текстуры | DONE | дубль №169 |
+| 178 | P3 §10.3.5 Texture streaming | NOT-DONE | стриминга нет |
+| 179 | P3 Summary 1: кириллица в DamageFloatSystem | DONE | дубль №96 |
+| 180 | P3 Summary 2: localStorage quota | DONE | дубль №128 |
+| 181 | P3 Summary 3: FocusTrap | DONE | дубль №98 |
+| 182 | P3 Summary 4: Worker syntax error | DONE | дубль №139 |
+| 183 | P3 Summary 5: WebGL context loss | DONE | дубль №142 |
+
+### NOT-DONE / PARTIAL — причины (сводно)
+- Архитектурные сплиты (рискованные, «отложены осознанно»): worldSlice 864 LOC, enemies.ts 1893, CombatSystem 1795 + XState, транзакционный батчинг, deep-freeze, S-1/S-3 mutation safety, auto-revive в проде, module-level side effects (SceneTransitionManager), monkey-patch console.warn, GlobalCleanupService fail-трекинг, bootstrap try/catch (P1 §4.3.2/№30).
+- Data-driven реестры: branded-ID валидация, унификация item-категорий, transitionStyle-юнион, MutableCombatEnemy, HERO_NPC_IDS, BOSS_ENEMY_TYPES, бафф-реестр, renderTier required, data-driven освещение, ShaderMaterial-реестр.
+- Контент/UX-инфраструктура: i18n-решение (3×NOT-DONE), визуализаторы диалог/стори-графов, HUD element budget, achievements aria-бейдж (PARTIAL), quest chain в журнале (PARTIAL), playTimeSeconds, компрессия сейва, миграционные шаги, thoughtHistory pruning (PARTIAL), IndexedDB для сейвов (PARTIAL).
+- Периферия/полируемость: animation events, единый процедурный слой/FSM игрока, seeded patrol, батчинг спрайтов, динамический navmesh, ring buffer лога, конволюционный реверб, семплерная музыка, NPC spatial audio, camera shake из аудио, RIC/ResizeObserver/Safari-полифиллы, SRI, memory pressure API, прод-профилирование, texture streaming, CI asset-бюджет (PARTIAL), HDRI-компрессия (PARTIAL), Mixamo-риги.
+- StrictMode/Rapier (№29) остаётся opt-in — осознанный трейд-офф (задокументирован в main.tsx).
+
+### SUPERSEDED (реализовано иным путём)
+- №4 optimizeDeps.exclude Rapier — условие снято: WASM-инициализация переработана (rapierInitFix, external WASM без HEAD-пробы), issue не проявляется.
+- №37 retry WASM-пробы — HEAD-проба удалена целиком («No HEAD probe — saves 1 RTT»), fallback на inline через catch.
+- №39 риск «singlefile 15 МБ» — singlefile-сборка заменена код-сплиттингом (manualChunks, бюджет 500KB, LazyCombatUI).
+- №173 Basis «мёртвый груз» — Basis/KTX2 теперь реально используется в gltfPipeline (qualityPresets high/ultra).
+
+### ROADMAP AA_QUALITY_ROADMAP.md (28 чекбоксов: 19 [x] / 9 [ ])
+- [x] Закрыты (19): city_square hero-tier; plaza акценты+FogExp2; street dressing; dialogue DOF autofocus; wet glass/puddles; акт 1–2 квест-флеш; pier hub coherence; FogExp2 тонких хабов; contact-shadow falloff; multi-beat для 8 тонких квестов/стабов; 3 soft-lock фикса; Mixamo-clip coverage аудит.
+- [ ] Открыты (9): процедурные act-mood таблицы; CC0-стемы (опционально); NPC LOD impostor-апгрейд; плотность диалогов актов 3–4 + Thought Cabinet арки; генератор hub-кейсов; баланс/экономика (Phase 14); accessibility-проход; visual judge на hero-сценах; честная переоценка плейтайма («dense hours»).
+
+Вывод для владельца: «ВСЕ 100+ ПУНКТОВ» — НЕТ: из 183 нумерованных строк закрыто начисто 53 (~34% actionable) + 20 частично + 4 иным путём; остальные ~79 — преимущественно LOW-хвост (сплиты монолитов, data-driven реестры, i18n, полифиллы, аудио-полировка) и осознанно отложенные риско-чувствительные архитектурные решения (S-1/S-3/E-1, StrictMode), при этом все CRITICAL/HIGH-риски эпохи v4.4.2 либо устранены (C-1, E-4, quota, CSP, context-loss), либо сняты переработкой подхода (singlefile, WASM-проба).
