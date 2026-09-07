@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.16.0** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.17.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1928,3 +1928,44 @@ reset в engineRuntimeReset), **ноль React**:
 Новый диалоговый пак = файл в `data/dialogue/` + строка в `dialogue/index.ts`
 + id в `DialoguePackId` + позиция в `DIALOGUE_PACK_ORDER`, ЗЕРКАЛЬНО
 статическому порядку. Parity-тест упадёт при любом расхождении.
+
+## v4.17.0 — плотность Acts 3–4 (многобитовые кейсы + детектор мёртвых флагов)
+
+### Проблема
+- Четыре сюжетно значимых квеста Acts 3–4 были тонкими (3–5 объективов,
+  ноль квестовых диалогов) при godlen-path статусе: roof_of_the_world
+  (финал Александра, ~160 слов), vault_defense (283 слова), maria_truth
+  (345), thread_of_18_lines (вообще без собственного контента).
+- Whisper_of_walls был незавершаем: флаг `bunker_recordings_heard`
+  не ставился нигде — класс бага «мёртвый флаг», который не ловит ни
+  один существующий тест (questReachability проверяет только активацию).
+
+### Решение
+- **`src/data/story/act34CaseExpansions.ts`** — 19 story-узлов, четыре
+  многобитовых кейса (канон act1Extended «6–12 бит»). Цепочки: прямые
+  (roof, vault — same-scene) и хаб-опосредованные (maria, thread —
+  межсценовые, mid-resume по флагам). Входы: 11 выборов в хабах
+  sceneExploreHubs + 6 narrative-зон (5 vault-битов + сердце гула).
+- Квесты: roof 3→8, vault 4→9, maria 4→9, thread 3→8 объективов;
+  все новые флаг-объективы имеют сеттеры в эффектах пака/зон.
+- **Ракет-тест `flagSetObjectiveSetters.test.ts`**: каждый flag_set-
+  объектив обязан иметь сеттер в story/dialogue/зонах/наградах, либо
+  whitelist движка (MINIGAME_COMPLETION_FLAGS, терминалы), либо список
+  известного долга (12 позиций expansion-stubs/chkTolpa — только
+  сокращаться). Долг виден явно — очередные «незавершаемые квесты»
+  невозможны без осознанного решения.
+- Баг-фиксы мёртвых флагов: whisper_of_walls (плёнки бункера, 4 зоны),
+  watchers_shadow (узел Смотрящего + чип), night_shift (фантомы +
+  рубильник), catacombs_shadows (тёмный маг).
+
+### Правила
+- Новый story-пак = файл в `data/story/` + запись в `buildStoryNodes.ts`
+  (sources, последним) + `narrativePackRegistry.ts`: id в union
+  `StorySatellitePackId`, лоадер в storyLoaders, позиция в
+  `STANDALONE_STORY_SATELLITE_ORDER`. Parity-тест поймает пропуск.
+- Мульти-сценовые бит-цепочки: бит заканчивается уходом в хаб сцены,
+  следующий бит открывается выбором хаба с condition {flag: prev,
+  missingFlag: own} — это и есть mid-resume для сцен.
+- Объективы `flag_set` без сеттера запрещены ракет-тестом: контент-патч
+  обязан нести сеттер в тех же изменениях (или осознанно расширить
+  KNOWN_DEAD_FLAG_OBJECTIVES с обоснованием).

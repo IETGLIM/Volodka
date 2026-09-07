@@ -111,6 +111,22 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
   if (def.hubId === 'park_explore_mode') {
     choices.push(
       {
+        text: 'Затёртые строки обелиска — пересчитать восемнадцать',
+        next: 'thread_memorial_lines',
+        condition: {
+          flag: 'thread_fyodor_told',
+          missingFlag: 'thread_memorial_read',
+        },
+      },
+      {
+        text: 'Нить сшита — прочитать восемнадцать имён вслух',
+        next: 'thread_weave_night',
+        condition: {
+          flag: 'thread_hum_source_found',
+          missingFlag: 'thread_woven',
+        },
+      },
+      {
         text: 'Подойти к кибер-цветку α — голос раскрывает узел',
         next: 'quest_act3_park_cyber_bloom_start',
         condition: {
@@ -251,6 +267,14 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
 
   if (def.hubId === 'office_explore_mode') {
     choices.push(
+      {
+        text: 'Инцидент #4729 — дочитать протокол до акростиха',
+        next: 'thread_4729_code',
+        condition: {
+          flag: 'thread_memorial_read',
+          missingFlag: 'thread_code_decoded',
+        },
+      },
       {
         text: 'Охота на серверные стихи — логи ошибок',
         next: 'quest_act2_server_poem_hunt_start',
@@ -562,6 +586,30 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
   if (def.hubId === 'cafe_explore_mode') {
     choices.push(
       {
+        text: 'Бариста за сменой — какой была Виктория?',
+        next: 'maria_barista_shift',
+        condition: {
+          flag: 'maria_truth_started',
+          missingFlag: 'maria_barista_details',
+        },
+      },
+      {
+        text: 'Столик у окна — вспомнить полсекунды её ручки',
+        next: 'maria_memory_echo',
+        condition: {
+          flag: 'maria_records_crossed',
+          missingFlag: 'maria_memory_echo',
+        },
+      },
+      {
+        text: 'Стенгазета 2031 — ночная смена под кассой',
+        next: 'maria_barista_photo',
+        condition: {
+          flag: 'maria_memory_echo',
+          missingFlag: 'maria_evidence_prepared',
+        },
+      },
+      {
         text: 'Вывеска «Синяя яма» — биллиардный интерфейс',
         next: 'quest_act2_chk_neon_archive_hack',
         condition: {
@@ -836,6 +884,38 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
   if (def.hubId === 'rooftop_explore_mode') {
     choices.push(
       {
+        text: 'Служебная лестница — охрана, ветер, сорок этажей',
+        next: 'roof_stairwell_watch',
+        condition: {
+          flag: 'rooftop_unlocked',
+          missingFlag: 'roof_stairwell_observed',
+        },
+      },
+      {
+        text: 'Поле антенн — выбрать позицию для разговора',
+        next: 'roof_antenna_field',
+        condition: {
+          flag: 'roof_guard_waved_off',
+          missingFlag: 'roof_position_taken',
+        },
+      },
+      {
+        text: 'Первое слово — кто заговорит с Александром',
+        next: 'roof_alexander_silence',
+        condition: {
+          flag: 'roof_position_taken',
+          missingFlag: 'roof_first_words_exchanged',
+        },
+      },
+      {
+        text: 'Прошлое Александра — 2029, четырнадцать минут',
+        next: 'roof_alexander_past',
+        condition: {
+          flag: 'roof_first_words_exchanged',
+          missingFlag: 'roof_alexander_past_heard',
+        },
+      },
+      {
         text: 'Перепаять мачту — стих-модулятор',
         next: 'quest_act4_rooftop_broadcast_repair',
         condition: {
@@ -944,6 +1024,22 @@ function buildSceneExploreHubNode(def: (typeof SCENE_EXPLORE_HUB_DEFS)[number]):
 
   if (def.hubId === 'library_explore_mode') {
     choices.push(
+      {
+        text: 'Спросить Фёдора о Великом Сбое — он дежурил в ту ночь',
+        next: 'thread_fyodor_2029',
+        condition: {
+          flag: 'thread_lore_crash',
+          missingFlag: 'thread_fyodor_told',
+        },
+      },
+      {
+        text: 'Картотека «Внешний контур 2029» — сличить бейдж Виктории',
+        next: 'maria_records_crossref',
+        condition: {
+          flag: 'maria_barista_details',
+          missingFlag: 'maria_records_crossed',
+        },
+      },
       {
         text: 'Зарема у входа — пакет свидетельств',
         next: 'quest_act3_zarema_evidence_run_start',

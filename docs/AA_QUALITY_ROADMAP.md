@@ -4,7 +4,7 @@
 
 > Honest plan to push this browser RPG toward **AA-studio visual + systems density** with **$0 spend**.
 
-> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-09-07 (v4.16.0 — Thought Cabinet internalization arcs).
+> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-09-07 (v4.17.0 — Acts 3–4 case expansions: многобитовые кейсы + детектор мёртвых флагов).
 
 
 
@@ -316,7 +316,12 @@ From `config/performanceBudgets.json` + build gate:
 - [x] Thought Cabinet arcs — DONE (v4.16.0): internalization-механика (очки прозрения
       за события, частичные/гейт-эффекты, вехи 25/50/75%, сейв-прогресс) + 10 арок для
       знаковых мыслей; чистая логика в `src/shared/thoughts/`
-- [ ] Content: Acts 3–4 dialogue density (осталось от пункта выше)
+- [x] Content: Acts 3–4 dialogue density — DONE (v4.17.0): 4 тонких квеста
+      → многобитовые кейсы (roof_of_the_world 3→8 объективов, vault_defense
+      4→9, maria_truth 4→9, thread_of_18_lines 3→8), 19 story-узлов,
+      7 narrative/trigger-зон, баг-фикс мёртвых флагов (7 квестов
+      Acts 3–4 завершаемы) + ракет-тест детектор мёртвых флагов
+      (`flagSetObjectiveSetters.test.ts`)
 
 
 

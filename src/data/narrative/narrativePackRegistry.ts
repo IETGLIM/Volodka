@@ -34,7 +34,8 @@ export type StorySatellitePackId =
   | 'aaaExpansion'
   | 'streetLegends'
   | 'pierVoices'
-  | 'act5DreamWorld';
+  | 'act5DreamWorld'
+  | 'act34CaseExpansions';
 export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
@@ -183,6 +184,10 @@ const storySatelliteLoaders: Record<
   // void_echo_poem. Same parity pattern: static merge + lazy loader, иначе
   // ensureStoryNode бросит «not found» в рантайме (урок v4.8.9).
   act5DreamWorld: () => import('../story/act5DreamWorld').then((m) => m.ACT5_DREAM_WORLD_STORY_NODES),
+  // Acts 3–4 Case Expansions (v4.17.0) — 19 узлов многобитовых кейсов
+  // (roof/vault/maria/thread). Same parity pattern: static merge + lazy loader.
+  act34CaseExpansions: () =>
+    import('../story/act34CaseExpansions').then((m) => m.ACT34_CASE_EXPANSION_STORY_NODES),
 };
 
 /** Satellites loaded automatically when their parent act pack loads. */
@@ -210,6 +215,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'streetLegends',
   'pierVoices',
   'act5DreamWorld',
+  'act34CaseExpansions',
 ] as const;
 
 const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, DialogueNode>>> = {

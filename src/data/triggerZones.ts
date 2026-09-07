@@ -6111,6 +6111,289 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
 
+  /* ═══════════════════════════════════════════════════════════════════
+     UNDERGROUND BUNKER — плёнки «Шёпота Стен» (v4.17.0)
+     BUG-FIX: объектив listen_to_recordings (bunker_recordings_heard) не имел
+     сеттера — квест whisper_of_walls был незавершаем. Четыре новые зоны
+     выдают записывающее устройство и последовательное прослушивание 3 плёнок.
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'bunker_tape_deck',
+    sceneId: 'underground_bunker',
+    position: [-1.5, 0.9, 2.5],
+    size: [0.9, 0.7, 0.6],
+    enterToast: 'Довоенный катушечный проигрыватель — бобины целы, питание живое.',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Забрать записывающее устройство',
+    examineData: {
+      title: 'Катушечный проигрыватель',
+      description: 'Тяжёлый металлический корпус, три бобины с плёнкой, индикатор питания мигает.',
+      detailText:
+        'Диктофон довоенной сборки: питание от батарей, которых давно нет, но кто-то приспособил к нему бункерный контур. Три бобины подписаны от руки: «Столовая», «Совещание», «Последняя». Плёнки ещё можно проиграть. Голоса, которые жили, когда небо было чистым, ждут своей очереди.',
+      icon: '🎙️',
+    },
+    effects: [
+      { type: 'addItem', itemId: 'bunker_recording_device', value: 1 },
+      { type: 'setFlag', flag: 'bunker_recorder_found', flagValue: true },
+      { type: 'addKarma', value: 2 },
+    ],
+  },
+  {
+    id: 'bunker_tape_recording_1',
+    sceneId: 'underground_bunker',
+    position: [2.0, 0.7, -3.0],
+    size: [0.7, 0.6, 0.5],
+    enterToast: 'Бобина «Столовая» — шипение, а за ним — гул сотни голосов.',
+    requiredFlag: 'bunker_recorder_found',
+    hiddenWhenFlag: 'bunker_tape_1_heard',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Прослушать плёнку №1 — «Столовая»',
+    examineData: {
+      title: 'Плёнка №1 — «Столовая»',
+      description: 'Шипение плёнки, звон ложек, гул сотни голосов за бункерными стенами.',
+      detailText:
+        'Кто-то смеётся. Кто-то ругает кашу. Женский голос говорит: «Главное — не тишина. Главное — что её слышно». Дата на бобине: за девять дней до Катастрофы. За девять дней до Катастрофы в столовой бункера смеялись над кашей. Это не архив. Это — доказательство, что они были.',
+      icon: '📼',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'bunker_tape_1_heard', flagValue: true },
+      { type: 'addKarma', value: 3 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+      {
+        type: 'showThought',
+        thought:
+          'Сотня голосов за бетоном. Они не знали, что плёнка переживёт и их, и тишину. Женщина права: главное — что её слышно. Теперь её слышно снова. Через тебя.',
+        thoughtDuration: 6000,
+      },
+    ],
+  },
+  {
+    id: 'bunker_tape_recording_2',
+    sceneId: 'underground_bunker',
+    position: [-4.0, 0.6, 1.0],
+    size: [0.7, 0.6, 0.5],
+    enterToast: 'Бобина «Совещание» — голос с трибуны и стук карандаша по столу.',
+    requiredFlag: 'bunker_tape_1_heard',
+    hiddenWhenFlag: 'bunker_tape_2_heard',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Прослушать плёнку №2 — «Совещание»',
+    examineData: {
+      title: 'Плёнка №2 — «Совещание»',
+      description: 'Голос с трибуны, стук карандаша, лязг стульев — последние решения бункера.',
+      detailText:
+        '«...эвакуация по третьему сценарию. Данные — наверх, людей — вниз. Плёнки — с собой». Стук карандаша. Кто-то спрашивает: «А если не успеем обе?» Пауза. «Тогда — людей». Дата: за два дня до Катастрофы. Они выбирали между данными и людьми — и выбрали людей. Плёнки успели. Обе.',
+      icon: '📼',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'bunker_tape_2_heard', flagValue: true },
+      { type: 'addKarma', value: 4 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+    ],
+  },
+  {
+    id: 'bunker_tape_recording_3',
+    sceneId: 'underground_bunker',
+    position: [1.0, 1.1, -4.2],
+    size: [0.7, 0.6, 0.5],
+    enterToast: 'Бобина «Последняя» — один голос, тишина, и стих, прочитанный вполголоса.',
+    requiredFlag: 'bunker_tape_2_heard',
+    hiddenWhenFlag: 'bunker_tape_3_heard',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Прослушать плёнку №3 — «Последняя»',
+    examineData: {
+      title: 'Плёнка №3 — «Последняя»',
+      description: 'Один голос в пустой столовой читает стихотворение вполголоса — для плёнки.',
+      detailText:
+        'Шаги. Стул. Дыхание. И голос — не актёрский, не начальственный, просто усталый человеческий: «Это — последняя смена. Если ты это слышишь — мы успели. Не данные. Мы. Стихи — на обороте». Шипение. На обороте бобины карандашом: стих — восемнадцать строк, до сих пор не расшифрован. Голос на плёнке и почерк на бобине — один и тот же человек.',
+      icon: '📼',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'bunker_tape_3_heard', flagValue: true },
+      { type: 'setFlag', flag: 'bunker_recordings_heard', flagValue: true },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'intuition', value: 2 },
+      {
+        type: 'showThought',
+        thought:
+          '«Если ты это слышишь — мы успели. Не данные. Мы». Последняя смена записала себя, а не отчёт. Восемнадцать строк на обороте — не расшифрованы до сих пор. Может, расшифрует тот, кто услышал. Может — ты.',
+        thoughtDuration: 7500,
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════════
+     DEAD-FLAG REPAIR (v4.17.0) — объективы без сеттера, квесты были
+     незавершаемы: watchers_shadow (surveillance_node_hacked),
+     night_shift (phantom_1/2/3_destroyed, phantom_source_destroyed),
+     catacombs_shadows (dark_mage_killed).
+     ═══════════════════════════════════════════════════════════════════ */
+  {
+    id: 'guild_mainframe_surveillance_hack',
+    sceneId: 'guild_mainframe',
+    position: [-4.0, 1.4, -2.0],
+    size: [1.0, 1.6, 0.6],
+    enterToast: 'За вентиляционной решёткой — телекоммуникационный шкаф. Узел слежки.',
+    hiddenWhenFlag: 'surveillance_node_hacked',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Взломать узел перехвата',
+    examineData: {
+      title: 'Узел Смотрящего',
+      description: 'Старый телеком-шкаф: мигающий порт, пучок перехваченных линий, чужой считыватель.',
+      detailText:
+        'Пучок проводов уходит в стены — шкаф слушает весь этаж. Взлом требует не силы, а чистого кода: сигнатуры Смотрящего считывают страх, а стих-строки проходят как шум. Ты пишешь ключ с первой строки «город, который забыл собственное имя» — и порт открывается. Внутри — микросхема с данными. Забирай и уходи, пока узел думает, что это штатная диагностика.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'surveillance_node_hacked', flagValue: true },
+      { type: 'addItem', itemId: 'surveillance_data_chip', value: 1 },
+      { type: 'addSkill', skill: 'coding', value: 2 },
+      { type: 'addStat', stat: 'stress', value: 3 },
+      {
+        type: 'showThought',
+        thought:
+          'Узел даже не заметил взлома — для него ты был шумом. Смотрящий слушает три города, но не слышит того, кто говорит стихами. Микросхема тёплая: её читали часто. Теперь — прочитает Контакт.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'factory_basement_phantom_1',
+    sceneId: 'factory_basement',
+    position: [-6.0, 0.9, -3.5],
+    size: [1.8, 1.8, 1.8],
+    enterToast: 'Первый фантом: сгусток старых процессов, пульсирующий в темноте.',
+    hiddenWhenFlag: 'phantom_1_destroyed',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Уничтожить первого фантома',
+    examineData: {
+      title: 'Фантом №1 — «Смена»',
+      description: 'Сгусток коррумпированных процессов. Внутри — лица рабочих пропавшей смены.',
+      detailText:
+        'Фантом построен из логов: даты, табель, штампы. Он повторяет последнюю смену завода — бесконечно, с ошибкой в каждой строке. Стих-строка входит в его код, как отладчик: ошибка находится, цикл разрывается. Лица внутри прощаются — и распадаются на чистые нули.',
+      icon: '👻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'phantom_1_destroyed', flagValue: true },
+      { type: 'addXp', value: 40 },
+      { type: 'addSkill', skill: 'coding', value: 1 },
+      { type: 'addStat', stat: 'energy', value: -2 },
+    ],
+  },
+  {
+    id: 'factory_basement_phantom_2',
+    sceneId: 'factory_basement',
+    position: [6.0, 0.9, -4.0],
+    size: [1.8, 1.8, 1.8],
+    enterToast: 'Второй фантом: эхо серверных тревог, зацикленных на одну дату.',
+    hiddenWhenFlag: 'phantom_2_destroyed',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Уничтожить второго фантома',
+    examineData: {
+      title: 'Фантом №2 — «Тревога»',
+      description: 'Кокон из сигналов аварийной линии: одна дата, повторённая сорок тысяч раз.',
+      detailText:
+        '31.10.2029. Дата Великого Сбоя, застрявшая в аварийном цикле подвала. Фантом кричит её голосом сирены — с тех пор. Ты вписываешь в цикл строку-выдох, и дата наконец проходит дальше: не забывается — отпускается. Сирена выдыхает. Тишина подвала становится честной.',
+      icon: '👻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'phantom_2_destroyed', flagValue: true },
+      { type: 'addXp', value: 40 },
+      { type: 'addSkill', skill: 'logic', value: 1 },
+      { type: 'addStat', stat: 'stress', value: -2 },
+    ],
+  },
+  {
+    id: 'factory_basement_phantom_3',
+    sceneId: 'factory_basement',
+    position: [-5.5, 0.8, 2.0],
+    size: [1.8, 1.8, 1.8],
+    enterToast: 'Третий фантом: хор чужих незакрытых задач.',
+    hiddenWhenFlag: 'phantom_3_destroyed',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Уничтожить третьего фантома',
+    examineData: {
+      title: 'Фантом №3 — «Очередь»',
+      description: 'Лента незакрытых задач: заявки, недописанные письма, недоданные обещания.',
+      detailText:
+        'Фантом держит очередь длиной в двадцать лет: «перенести в завтра», «поговорить с дочерью», «дочитать». Ты закрываешь задачи по одной — строкой, строкой, строкой. Очередь тает, как иней под дыханием. Последняя заявка: «передай Мастеру — чайник под сменой». Ты передашь.',
+      icon: '👻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'phantom_3_destroyed', flagValue: true },
+      { type: 'addXp', value: 40 },
+      { type: 'addKarma', value: 2 },
+      { type: 'addSkill', skill: 'empathy', value: 1 },
+    ],
+  },
+  {
+    id: 'factory_basement_phantom_source',
+    sceneId: 'factory_basement',
+    position: [0.0, 0.7, -5.5],
+    size: [2.2, 2.0, 2.0],
+    enterToast: 'Источник фантомов: серверный кластер, который забыли отключить в тридцатом.',
+    hiddenWhenFlag: 'phantom_source_destroyed',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Вырубить источник фантомов',
+    examineData: {
+      title: 'Кластер-Источник',
+      description: 'Старый серверный кластер за фаерволом: штампует фантомов, как завод — детали.',
+      detailText:
+        'Кластер должен был быть отключён в тридцатом. Кто-то забыл — или не захотел. Фаервол агрессивен, но он писан против взломов, а не против выключения: главный рубильник — физический, довоенный, под пластиковой крышкой «АВАРИЙНЫЙ ОСТАНОВ». Ты опускаешь его двумя руками. Гул умирает не сразу — как выдох длиной в двадцать лет. Фантомы больше не родятся.',
+      icon: '⚡',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'phantom_source_destroyed', flagValue: true },
+      { type: 'addXp', value: 60 },
+      { type: 'addSkill', skill: 'coding', value: 2 },
+      { type: 'addKarma', value: 4 },
+      {
+        type: 'showThought',
+        thought:
+          '«Аварийный Останов» — два слова, которые спасают лучше любого кода. Кластер мёртв, фантомы рассеются к утру. Мастер получит чистый подвал и сообщение из последней заявки: чайник под сменой. Пусть чайник живёт — он тут единственный, кто ни разу не зависал.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+  {
+    id: 'bunker_catacombs_dark_mage',
+    sceneId: 'underground_bunker',
+    position: [4.5, 1.0, -4.0],
+    size: [2.0, 2.0, 2.0],
+    enterToast: 'В глубине катакомб — тёмный маг: тот, кто коллекционирует потерянные имена.',
+    hiddenWhenFlag: 'dark_mage_killed',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Противостоять тёмному магу',
+    examineData: {
+      title: 'Тёмный Маг Катакомб',
+      description: 'Фигура в плаще из чужих тегов: держит имена пропавших, как чётки.',
+      detailText:
+        'Он не колдует — он ведёт реестр. Каждое потерянное имя — строка в его книге, и строки эти он произносит как заклинания. Ты встречаешь его не мечом: ты произносишь имена из записок исследователя — правильно, с ударениями, вслух. Реестр требует точности, а маг — власти над именами. Когда имена звучат из твоих уст, его власть над ними кончается. Книга рассыпается на пустые строки.',
+      icon: '🧙',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'dark_mage_killed', flagValue: true },
+      { type: 'addXp', value: 70 },
+      { type: 'addKarma', value: 5 },
+      { type: 'addSkill', skill: 'persuasion', value: 2 },
+      {
+        type: 'showThought',
+        thought:
+          'Маг пал не от удара — от произнесённого вслух имени. Имена, которые он держал в книге, теперь держат записки в твоём кармане. И то, что было заклинанием, стало просто — списком. Списком людей, которых пора вернуть.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
   // library_basement — +3 new examine zones
   {
     id: 'library_dust_terminal',

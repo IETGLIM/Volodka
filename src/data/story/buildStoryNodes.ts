@@ -38,6 +38,7 @@ import { AAA_EXPANSION_STORY_NODES } from './aaaExpansionStory';
 import { STREET_LEGENDS_STORY_NODES } from './streetLegendsStory';
 import { PIER_VOICES_STORY_NODES } from './pierVoicesStory';
 import { ACT5_DREAM_WORLD_STORY_NODES } from './act5DreamWorld';
+import { ACT34_CASE_EXPANSION_STORY_NODES } from './act34CaseExpansions';
 
 /** Known pack overrides — later sources intentionally replace earlier spine nodes. */
 const INTENTIONAL_STORY_NODE_OVERRIDES: Record<string, readonly string[]> = {
@@ -82,6 +83,7 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'aaaExpansion', nodes: AAA_EXPANSION_STORY_NODES },
     { name: 'streetLegends', nodes: STREET_LEGENDS_STORY_NODES },
     { name: 'pierVoices', nodes: PIER_VOICES_STORY_NODES },
+    { name: 'act34CaseExpansions', nodes: ACT34_CASE_EXPANSION_STORY_NODES },
   ];
 
   const registry: Record<string, StoryNode> = {};
