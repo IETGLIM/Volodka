@@ -53,7 +53,8 @@ export type DialoguePackId =
   | 'milestones'
   | 'act4New'
   | 'act3ExpandedDialogues'
-  | 'act4ExpandedDialogues';
+  | 'act4ExpandedDialogues'
+  | 'victoria';
 
 export const STORY_PACK_ORDER: readonly StoryPackId[] = [
   'act1',
@@ -67,12 +68,15 @@ export const STORY_PACK_ORDER: readonly StoryPackId[] = [
 ] as const;
 
 export const DIALOGUE_PACK_ORDER: readonly DialoguePackId[] = [
-  // FIX (parity): 'returns' первым — сгенерированные return-узлы должны быть
-  // FALLBACK'ом: пак-файлы, грузясь позже, переопределяют их тем же порядком,
-  // что и в статическом слиянии dialogue/index.ts (позний пак выигрывает).
+  // FIX (parity, аудит этап 96): порядок повторяет СТАТИЧЕСКОЕ слияние
+  // src/data/dialogue/index.ts пакет-в-пакет (поздний пак выигрывает коллизии).
+  // Ранее рантайм-порядок расходился со статикой: part1AlbertExpanded стоял
+  // 3-м (после part1) вместо 11-го (после part5Expanded), а exploration/chk
+  // были поменяны местами. Коллизий ключей не было, но расхождение было
+  // не защищено тестом — narrativeDialogueRegistryParity.test.ts теперь
+  // фиксирует эквивалентность (идентичность множеств и deep-equal узлов).
   'returns',
   'part1',
-  'part1AlbertExpanded',
   'part2',
   'part2Expanded',
   'part3',
@@ -81,9 +85,10 @@ export const DIALOGUE_PACK_ORDER: readonly DialoguePackId[] = [
   'part4Expanded',
   'part5',
   'part5Expanded',
+  'part1AlbertExpanded',
   'expanded',
-  'exploration',
   'chk',
+  'exploration',
   // FIX (parity): паки ниже сливались только в статический DIALOGUE_NODES
   // (validate-content, тесты), но не были в runtime-лоадерах — 220 узлов
   // не попадали в кэш сессии. Видимый баг: milestone-диалоги Альберта /
@@ -93,6 +98,10 @@ export const DIALOGUE_PACK_ORDER: readonly DialoguePackId[] = [
   'act4New',
   'act3ExpandedDialogues',
   'act4ExpandedDialogues',
+  // FIX (аудит, этап 95): диалоговый пак Виктории — последним, зеркально
+  // статическому слиянию dialogue/index.ts. ensureDialogueNode подгрузит
+  // его по требованию при первом разговоре с хранительницей ключей.
+  'victoria',
 ] as const;
 
 /** Minimal packs for a new game (Act 1 + early NPC / exploration dialogue). */
@@ -219,6 +228,7 @@ const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, Dialo
     import('../dialogue/act3_expandedDialogues').then((m) => m.DIALOGUE_ACT3_EXPANDED),
   act4ExpandedDialogues: () =>
     import('../dialogue/act4_expandedDialogues').then((m) => m.DIALOGUE_ACT4_EXPANDED),
+  victoria: () => import('../dialogue/victoriaDialogues').then((m) => m.DIALOGUE_VICTORIA),
 };
 
 const storyNodes: Record<string, StoryNode> = {};

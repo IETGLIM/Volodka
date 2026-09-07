@@ -29,6 +29,14 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [-1.5, 0, -2.0],
     defaultRotation: Math.PI * 0.25,
     patrolRadius: 1.0,
+    /* FIX (аудит, этап 95): без dialogueNodeId Виктория была немой статикой —
+     * разговор с ней падал в bark-фолбэк. dialogueNodeId/returnDialogueNodeId
+     * подключают её диалоговый пак (src/data/dialogue/victoriaDialogues.ts):
+     * первая встреча → victoria_greeting, повторные визиты → victoria_return
+     * (маппинг entry→return собирается автоматически в
+     * resolveDialoguePresentation.ts / DIALOGUE_RETURN_ENTRY_NODES). */
+    dialogueNodeId: 'victoria_greeting',
+    returnDialogueNodeId: 'victoria_return',
     npcSplashProfile: 'npc_victoria',
     description:
       'Хранительница одноразовых ключей к Хранилищу гильдии. Знает, что между мёртвым и стёртым — пропасть. Молчит, пока не убедится, что ты не повторишь её ошибку.',

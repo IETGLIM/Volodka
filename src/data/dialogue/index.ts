@@ -17,6 +17,7 @@ import { DIALOGUE_PART5_EXPANDED } from './part5-final-expanded';
 import { DIALOGUE_ACT4_NEW } from './act4_newDialogues';
 import { DIALOGUE_ACT3_EXPANDED } from './act3_expandedDialogues';
 import { DIALOGUE_ACT4_EXPANDED } from './act4_expandedDialogues';
+import { DIALOGUE_VICTORIA } from './victoriaDialogues';
 
 export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   // Сгенерированные return-узлы идут ПЕРВЫМИ как FALLBACK: авторские версии
@@ -42,4 +43,8 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   ...DIALOGUE_ACT4_NEW,
   ...DIALOGUE_ACT3_EXPANDED,
   ...DIALOGUE_ACT4_EXPANDED,
+  // FIX (аудит, этап 95): диалоговый пак Виктории (guild_mainframe) —
+  // последним, зеркально рантайм-паку 'victoria' в DIALOGUE_PACK_ORDER
+  // (narrativePackRegistry.ts). Порядок важен: поздний пак выигрывает коллизии.
+  ...DIALOGUE_VICTORIA,
 };

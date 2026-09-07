@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.15.3** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.15.4** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1698,3 +1698,39 @@ reset в engineRuntimeReset), **ноль React**:
 из CombatDamageFx, CSS-кейфреймы `hud-filmic-damage-rise-fade`.
 `useCombatUiController` больше не хранит damageNumbers/richDamageEvents —
 только крит-шейк/вспышки (фидбэк экрана, не числа).
+
+## v4.15.4 — вайринг Виктории + dialogue-parity (этапы 95–96)
+
+### Проблема
+- NPC `victoria` (EXPANSION_NPC_STUBS) — хранительница ключей — была
+  зарегистрирована, но без dialogueNodeId и расписания не спавнилась;
+  спящая ветка ачивки `flags['met_victoria']` в AchievementEngine не
+  срабатывала никогда.
+- DIALOGUE_PACK_ORDER (рантайм) ≠ порядок слияния dialogue/index.ts
+  (статика): part1AlbertExpanded 3-й vs 11-й, exploration/chk поменяны
+  местами. Паритет-тест был только для story.
+
+### Решение
+- **`data/dialogue/victoriaDialogues.ts`** — пак из 7 узлов
+  (greeting → vault_lesson → keys_question; who_she_is → key_mistake;
+  archivist_story; return с полными textVariants). Узлы задают
+  `speakerId: 'victoria'` — обязательно: русские спикеры «Виктория»
+  резолвятся в `maria` (NPC_SPEAKER_ALIASES, легаси актов 1–5),
+  `victoria` — другая, физическая персона.
+- **Вайринг**: `dialogueNodeId`/`returnDialogueNodeId` в стабе →
+  entry→return-маппинг через DIALOGUE_RETURN_ENTRY_NODES (авто);
+  `VICTORIA_SCHEDULE` (guild_mainframe, пост [-1.5,-2.5] / обход [0,1.5]);
+  act-4 override `override_victoria_act4_cafe_farewell` (вечера у дверей
+  кафе до `victoria_password_received` — зеркало story-узла);
+  вариант-оверрайд victoria в albert_backroom (наследование позиций кафе
+  в подсобку 8×6 — паттерн npcVariantPlacementOverrides).
+- **Паритет**: DIALOGUE_PACK_ORDER ≡ статика пакет-в-пакет; пак `victoria`
+  последним в обоих реестрах;
+  `narrativeDialogueRegistryParity.test.ts` — множества id совпадают в
+  обе стороны + deep-equal каждого узла (ловит расхождение порядка при
+  коллизиях) + ensureDialogueNode-резолв паков Виктории.
+
+### Правило на будущее
+Новый диалоговый пак = файл в `data/dialogue/` + строка в `dialogue/index.ts`
++ id в `DialoguePackId` + позиция в `DIALOGUE_PACK_ORDER`, ЗЕРКАЛЬНО
+статическому порядку. Parity-тест упадёт при любом расхождении.

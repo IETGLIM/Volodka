@@ -527,6 +527,25 @@ const POEM_RECIPIENT_ELENA_SCHEDULE: NPCSchedule = {
   ],
 };
 
+/** FIX (аудит, этап 95): Виктория — хранительница ключей Хранилища гильдии.
+ *  NPC существовала в реестре (EXPANSION_NPC_STUBS) со сплешем, диалогами и
+ *  npcChange-эффектами из story, но без расписания не спавнилась НИ В ОДНОЙ
+ *  сцене. Пост — серверная гильдии: стойка ключ-карт у левого стеллажа
+ *  [-1.5,-2.5]; днём — обход вдоль стоек [0,1.5]; ночью — на посту.
+ *  Координаты в границах пола 16×14 и вне капсул стоек-шкафов [±3,-1]. */
+const VICTORIA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_victoria',
+  npcId: 'victoria',
+  entries: [
+    { startHour: 0, endHour: 6, sceneId: 'guild_mainframe', position: [-1.5, 0, -2.5], activity: 'work' },
+    { startHour: 6, endHour: 9, sceneId: 'guild_mainframe', position: [-1.5, 0, -2.5], activity: 'rest' },
+    { startHour: 9, endHour: 13, sceneId: 'guild_mainframe', position: [0, 0, 1.5], activity: 'walk' },
+    { startHour: 13, endHour: 14, sceneId: 'guild_mainframe', position: [-1.5, 0, -2.5], activity: 'rest' },
+    { startHour: 14, endHour: 22, sceneId: 'guild_mainframe', position: [0, 0, 1.5], activity: 'work' },
+    { startHour: 22, endHour: 24, sceneId: 'guild_mainframe', position: [-1.5, 0, -2.5], activity: 'work' },
+  ],
+};
+
 /* ──────────────────────────────────────────────────────────────────────────
    EXPANSION STUB SCHEDULES — гиверы одиночных квестов (акт 3–4).
    FIX (reachability): NPC-заглушки существовали в реестре, но без расписаний
@@ -710,6 +729,7 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   PARK_OLD_MAN_SCHEDULE,
   DYING_POET_SCHEDULE,
   POEM_RECIPIENT_ELENA_SCHEDULE,
+  VICTORIA_SCHEDULE,
   MERCHANT_BORIS_SCHEDULE,
   INFORMANT_SERYOZHA_SCHEDULE,
   CAPTAIN_GAROLD_SCHEDULE,
@@ -959,6 +979,26 @@ export const ACT_SCHEDULE_OVERRIDES: ActScheduleOverride[] = [
       { startHour: 7, endHour: 9, sceneId: 'cafe_evening', position: [-3.5, 0, -3.15], activity: 'read' },
       { startHour: 9, endHour: 18, sceneId: 'cafe_evening', position: [-3.5, 0, -3.15], activity: 'talk' },
       { startHour: 18, endHour: 24, sceneId: 'cafe_evening', position: [-3.5, 0, -3.15], activity: 'talk' },
+    ],
+  },
+
+  /* ── Act 4: Виктория перед уходом под прикрытие — вечера у дверей кафе ──.
+   * FIX (аудит, этап 95): зеркало story-узла act4_exp_victoria_sacrifice_prep
+   * (sceneId: cafe_evening — «Виктория стоит в дверях кафе»). До получения
+   * пароля (victoria_password_received из act4_exp_victoria_last_words) она
+   * по вечерам появляется в кафе — с 19:00 до 23:00, у двери [-1.2, 3.2].
+   * После — только серверная гильдии (базовое расписание). */
+  {
+    id: 'override_victoria_act4_cafe_farewell',
+    npcId: 'victoria',
+    minAct: 4,
+    excludedFlags: ['victoria_password_received'],
+    entries: [
+      { startHour: 0, endHour: 12, sceneId: 'guild_mainframe', position: [-1.5, 0, -2.5], activity: 'work' },
+      { startHour: 12, endHour: 16, sceneId: 'guild_mainframe', position: [0, 0, 1.5], activity: 'work' },
+      { startHour: 16, endHour: 19, sceneId: 'guild_mainframe', position: [-1.5, 0, -2.5], activity: 'rest' },
+      { startHour: 19, endHour: 23, sceneId: 'cafe_evening', position: [-1.2, 0, 3.2], activity: 'talk' },
+      { startHour: 23, endHour: 24, sceneId: 'guild_mainframe', position: [-1.5, 0, -2.5], activity: 'work' },
     ],
   },
 ];

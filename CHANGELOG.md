@@ -1,3 +1,61 @@
+## v4.15.4 (2026-09-07) — вайринг Виктории + dialogue-parity guard (этапы 95–96 закрыты)
+
+### Контекст
+Два пункта ⚠-бэклога аудита, рекомендованные к следующему раунду:
+- **Этап 95** — NPC `victoria` (хранительница ключей, EXPANSION_NPC_STUBS)
+  была зарегистрирована в реестре (сплеш, баки, npcChange-эффекты из story
+  act4/6/7), но без `dialogueNodeId` и расписания **не появлялась ни в одной
+  сцене**: разговор с ней был невозможен, а флаг `met_victoria` (спящая ветка
+  ачивки `story_meet_victoria` в AchievementEngine) не выставлялся никогда.
+- **Этап 96** — порядок слияния диалоговых паков в статике
+  (dialogue/index.ts) ≠ рантайм (DIALOGUE_PACK_ORDER): part1AlbertExpanded
+  стоял 3-м против 11-го, exploration/chk поменяны местами. Коллизий ключей
+  нет, но паритет-тест существовал только для story — расхождение было
+  не защищено.
+
+### Новое
+- **`data/dialogue/victoriaDialogues.ts`** — диалоговый пак хранительницы
+  ключей (7 узлов, guild_mainframe):
+  - `victoria_greeting` (первая встреча) → `victoria_vault_lesson`
+    («стёртые — не мёртвые», открывает легендарный лор
+    `lore_guild_first_archivist`) → `victoria_keys_question`;
+  - `victoria_who_she_is` → `victoria_key_mistake` — история ошибки,
+    оплаченной стиранием (карма/навыки/relation, `showThought`);
+  - `victoria_archivist_story` — легенда 4729-А (intuition-чек, открывает
+    `lore_guild_founding_secret`);
+  - `victoria_return` — повторные визиты с textVariants (high/lowRelation,
+    high/lowKarma) — первый возвратный узел с полным набором вариантов.
+  Все узлы задают `speakerId: 'victoria'`: без него русский спикер
+  «Виктория» резолвится в `maria` (легаси-алиас актов 1–5, где Виктория —
+  ИИ-сознание Марии). Это другая, физическая Виктория.
+- **Вайринг NPC**: `dialogueNodeId: 'victoria_greeting'` +
+  `returnDialogueNodeId: 'victoria_return'` в стабе (entry→return-маппинг
+  собирается автоматически через DIALOGUE_RETURN_ENTRY_NODES).
+- **`VICTORIA_SCHEDULE`**: пост в серверной гильдии — стойка ключ-карт
+  [-1.5,-2.5], обход стоек [0,1.5], ночные смены; act-4 override
+  `override_victoria_act4_cafe_farewell` — вечера у дверей кафе (зеркало
+  story-узла act4_exp_victoria_sacrifice_prep), до получения пароля
+  (`victoria_password_received`).
+- **Спящий вайринг ачивки**: `met_victoria` теперь выставляется при первой
+  встрече — ветка `flags['met_victoria']` в AchievementEngine
+  (story_meet_victoria «Встреча с Викторией») заработала.
+- **Parity-гард (этап 96)**: `DIALOGUE_PACK_ORDER` синхронизирован со
+  статическим слиянием пакет-в-пакет (part1AlbertExpanded → после
+  part5Expanded; chk/exploration → в статическом порядке); новый пак
+  `victoria` добавлен в ОБА реестра последним.
+
+### Тесты
+- **`narrativeDialogueRegistryParity.test.ts`** (4 теста): множество id
+  совпадает в обе стороны + **deep-equal каждого узла** (ловит расхождение
+  порядка слияния при коллизиях, история v4.8.9) + резолв паков Виктории
+  через `ensureDialogueNode`.
+- Placement-аудит: +1 вариант-оверрайд (victoria в albert_backroom —
+  наследование позиции кафе в подсобку 8×6); проверено 799 размещений,
+  0 нарушений.
+
+### Верификация
+tsc 0 · eslint 0 · vitest 410 файлов / 2489 тестов PASS · validate-content OK.
+
 ## v4.15.3 (2026-09-07) — фича: пуловые числа урона (этап 28 закрыт)
 
 ### Контекст
