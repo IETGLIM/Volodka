@@ -6,7 +6,6 @@ import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
 import { floatKarma, floatEnergy, floatStress, floatLevelUp } from '@/components/game/FloatingText';
 import { showStatChange } from '@/components/game/microAnimations/statChangePool';
-import type { SkillAchievementNotice } from '@/components/game/hud/parts/AchievementPopup';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
 import {
   resolveHudQuestBadgeCount,
@@ -173,7 +172,6 @@ export function useHUDController(props: HUDProps) {
   const [justLeveled, setJustLeveled] = useState(false);
   const [xpPulse, setXpPulse] = useState(false);
   const [lastXpDelta, setLastXpDelta] = useState(0);
-  const [skillAchievement, setSkillAchievement] = useState<SkillAchievementNotice | null>(null);
 
   useEffect(() => {
     if (karma !== prevKarma.current) {
@@ -245,19 +243,9 @@ export function useHUDController(props: HUDProps) {
     }
   }, [level, scheduleTimeout]);
 
-  useEffect(() => {
-    const unsubSkill = eventBus.on('skill:level_up', (payload) => {
-      setSkillAchievement({
-        title: `${payload.skill} ур.${payload.level}`,
-        description: 'Навык улучшен!',
-        icon: '⬆',
-      });
-      scheduleTimeout(() => setSkillAchievement(null), 3000);
-    });
-    return () => {
-      unsubSkill();
-    };
-  }, [scheduleTimeout]);
+  /* skill:level_up обрабатывается HUDNotificationFeed / ScreenEffects /
+   * hapticEventFeedback / GameAnnouncer — мёртвый конвейер
+   * skillAchievement ( AchievementPopup удалён) убран. */
 
   const [moreMenuOpen, setMoreMenuOpen] = useState(false);
   const moreMenuRef = useRef<HTMLDivElement>(null);
@@ -335,7 +323,6 @@ export function useHUDController(props: HUDProps) {
     justLeveled,
     xpPulse,
     lastXpDelta,
-    skillAchievement,
     isLowEnergy: energy < HUD_ENERGY_LOW_THRESHOLD,
     isHighStress: stress > HUD_STRESS_HIGH_THRESHOLD,
     moreMenuOpen,

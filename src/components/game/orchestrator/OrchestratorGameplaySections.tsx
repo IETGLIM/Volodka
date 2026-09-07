@@ -53,7 +53,6 @@ import { GameSystemToast } from '../GameSystemToast';
 const LazyCompassHUD = lazy(() =>
   import('../CompassHUD').then((m) => ({ default: m.CompassHUD })),
 );
-import { ExplorationMobileHud } from '../ExplorationMobileHud';
 import { VirtualJoystick } from '../VirtualJoystick';
 import { MobileActionButtons } from '../MobileActionButtons';
 import { MinimapComponent } from '../MinimapComponent';
@@ -617,21 +616,9 @@ export const GameplayStatsPanel = memo(function GameplayStatsPanel({
   return <OrchestratorStatsPanel onClose={onClose} />;
 });
 
-/** Touch-first exploration controls (D-pad + action buttons). */
-export const GameplayMobileExplorationHud = memo(function GameplayMobileExplorationHud({
-  onOpenInventory,
-  onOpenJournal,
-}: {
-  onOpenInventory: () => void;
-  onOpenJournal: () => void;
-}) {
-  const profile = useGameplayPresentationProfile();
-  const isMobile = useMobileDetection();
-  const { diegeticNarrative } = useOrchestratorNarrativeOverlay();
-  if (!isMobile || !isExplorationHudProfile(profile) || diegeticNarrative != null) return null;
-
-  return <ExplorationMobileHud onOpenInventory={onOpenInventory} onOpenJournal={onOpenJournal} />;
-});
+/** Touch-управление исследованием — VirtualJoystick + MobileActionButtons
+ *  (D-pad-обёртка ExplorationMobileHud удалена: не монтировалась и конфликтовала
+ *  с плавающим джойстиком). */
 
 /** Virtual analog joystick for touch devices — bridges to shared virtual controls. */
 export const GameplayVirtualJoystick = memo(function GameplayVirtualJoystick() {
