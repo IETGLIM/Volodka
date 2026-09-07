@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.15.7** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.15.8** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1698,6 +1698,44 @@ reset в engineRuntimeReset), **ноль React**:
 из CombatDamageFx, CSS-кейфреймы `hud-filmic-damage-rise-fade`.
 `useCombatUiController` больше не хранит damageNumbers/richDamageEvents —
 только крит-шейк/вспышки (фидбэк экрана, не числа).
+
+## v4.15.8 — пробуждение канваса «по спросу» и стабильный NPC-бэтч (этапы 64, 110; ⚠ = 0)
+
+### Проблема
+- Слепой keep-alive-интервал (invalidate каждые 2 с) в
+  `CanvasFrameloopController` гонял полный кадр R3F даже в меню/интро,
+  где канвас CSS-скрыт (`visibility: hidden` в OrchestratorCanvasLayer),
+  и в скрытой вкладке, где rAF не срабатывает — рендер без наблюдателя.
+- `useRegisterNpcFrame`: `enabled`-опция в deps-массиве эффекта →
+  инлайн-стрелки (`enabled: () => cond`) с новой идентичностью на каждом
+  рендере сносили/перерегистрировали запись бэтча → dirty →
+  `rebuildSortedEntries` почти каждый кадр при 50 NPC.
+
+### Решение
+- **`src/engine/canvas/canvasKeepAliveBurst.ts`** — событийные окна
+  пробуждения demand-фреймлупа. Меню/интро/скрытая вкладка: интервал
+  убран полностью (бут ведут пинки монтирования + сердцебиение
+  sceneLoadedGate + эффект `[idle]`). Диалог: реестр
+  `BURST_EVENTS` (npc:entry/exit_start — окно EXIT_TIMEOUT_S + 500 мс;
+  npc:animation / npc:emotion_triggered / quest:pulse_marker — 700 мс),
+  окно = rAF-цепочка с дедлайном, самозавершается; перекрытия
+  расширяют окно (max); always-режим — no-op; dispose гасит всё.
+  Правило: **новое событие, которое анимирует 3D-мир во время
+  диалогового оверлея, обязано попасть в `BURST_EVENTS`** — иначе его
+  изменения не отрисуются до закрытия оверлея.
+- `npcFrameBatch.ts`: `enabled` выведен из deps — обёртка читает
+  `enabledRef` по кадру (undefined → активен, boolean → значение,
+  функция → вызов). Правило: **deps-массив `useRegisterNpcFrame` —
+  только `[ownerKey, kind]`; динамическое состояние передавать через
+  enabled-опцию/refs, не через перерегистрацию.**
+
+### Гарды
+- `src/engine/canvas/canvasKeepAliveBurst.test.ts` (6): 0 инвалидаций
+  без событий; окно по дедлайну; always no-op; расширение (max);
+  dispose; константы.
+- `src/engine/npc/npcFrameBatch.hook.test.tsx` (6): churn-регрессия
+  (50 ре-рендеров → 1 пересортировка, счётчик
+  `getNpcFrameBatchRebuildCount`); семантика enabled; смена ownerKey.
 
 ## v4.15.7 — бюджет экранных FX и пинч-зум (этапы 32, 121)
 

@@ -50,6 +50,7 @@ import { SCENE_OVERLAY_MS } from '@/shared/constants/transitionTimings';
 import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
 import { colorBlindModeToFilter } from '@/components/a11y/ColorBlindFilters';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
+import { startKeepAliveBurst } from '@/engine/canvas/canvasKeepAliveBurst';
 
 const LazyPhysicsSceneInner = lazy(() =>
   import('./PhysicsSceneInner').then((m) => ({ default: m.PhysicsSceneInner })),
@@ -692,6 +693,7 @@ function QualityGatedRainEffect() {
 /** Kick the render loop on mount, when leaving idle mode, or when the tab becomes visible.
  *  Also invalidates when story overlay opens/closes and on scene transitions to
  *  ensure the 3D scene renders at least once before the 'demand' frameloop pauses. */
+
 function CanvasFrameloopController({ idle }: { idle: boolean }) {
   const invalidate = useThree((state) => state.invalidate);
   // Subscribe to story overlay state so we can invalidate when it changes.
@@ -748,18 +750,29 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
     return () => timers.forEach(clearTimeout);
   }, [invalidate]);
 
-  // Keep-alive: while the frameloop is in 'demand' mode (story overlay open,
-  // menu, intro, or tab hidden), periodically invalidate so the 3D scene
-  // doesn't freeze permanently if a state change fails to invalidate. Without
-  // this, a stuck showStoryOverlay=true would leave physics, camera, and input
-  // frozen indefinitely. (Task 5-A #4.)
+  // Keep-alive (аудит этап 64). Раньше слепой интервал в 2 с перерисовывал
+  // 3D-сцену даже там, где кадры никому не нужны: в меню/интро канвас
+  // CSS-скрыт (visibility: hidden в OrchestratorCanvasLayer), в скрытой
+  // вкладке rAF не срабатывает, а за story-оверлеем мир статичен намеренно.
+  // Теперь пробуждение строго «по спросу» (canvasKeepAliveBurst):
+  //  • меню/интро/скрытая вкладка — интервал убран полностью: бут продвигают
+  //    собственные механизмы (пинки монтирования 100/500/1500 мс, сердцебиение
+  //    sceneLoadedGate каждые 1.5 с через canvas:invalidate-first-frame,
+  //    слушаемое выше), а выход из demand-режима инвалидируется эффектом [idle];
+  //  • story-оверлей — короткие окна пробуждения по событиям, которые реально
+  //    анимируют мир за оверлеем (вход/выход NPC, жесты, эмоции, квест-маркеры);
+  //    окно — цепочка rAF с дедлайном, самозавершается; вне окон кадры не
+  //    запрашиваются вовсе.
+  const staticScreenRef = useRef(isStaticScreen);
+  staticScreenRef.current = isStaticScreen;
+
   useEffect(() => {
-    if (!isStaticScreen && !idle) return;
-    const interval = setInterval(() => {
-      invalidate();
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [isStaticScreen, idle, invalidate]);
+    const burst = startKeepAliveBurst({
+      isStaticScreen: () => staticScreenRef.current,
+      invalidate,
+    });
+    return () => burst.dispose();
+  }, [invalidate]);
 
   return null;
 }

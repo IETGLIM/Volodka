@@ -20,6 +20,7 @@ let nextToken = 1;
 const entries: NpcFrameEntry[] = [];
 let sortedEntries: NpcFrameEntry[] = [];
 let dirty = true;
+let rebuildCount = 0;
 
 function rebuildSortedEntries(): void {
   const kindOrder: Record<NpcFrameCallbackKind, number> = {
@@ -35,6 +36,7 @@ function rebuildSortedEntries(): void {
     return a.key.localeCompare(b.key);
   });
   dirty = false;
+  rebuildCount += 1;
 }
 
 export function registerNpcFrameCallback(
@@ -70,10 +72,18 @@ export function getNpcFrameBatchEntryCount(): number {
   return entries.length;
 }
 
+/** Число пересортировок с момента последнего сброса (аудит этап 110 —
+ *  регрессионный детектор churn: ре-рендеры компонентов не должны
+ *  инвалидировать сортировку). */
+export function getNpcFrameBatchRebuildCount(): number {
+  return rebuildCount;
+}
+
 export function resetNpcFrameBatchForTests(): void {
   entries.length = 0;
   sortedEntries = [];
   dirty = true;
+  rebuildCount = 0;
 }
 
 /** Register an NPC frame callback for the central batch runner (no per-NPC useFrameTick). */
@@ -90,20 +100,26 @@ export function useRegisterNpcFrame(
   const enabledRef = useRef(enabledOption);
   enabledRef.current = enabledOption;
 
+  // Аудит этап 110: enabledOption НЕ является зависимостью эффекта намеренно.
+  // Инлайн-стрелки вида `enabled: () => cond` получают новую идентичность на
+  // каждом рендере; с dep-массивом каждое перерисовывание компонента сносило
+  // регистрацию и регистрировало заново, ставя dirty → rebuildSortedEntries
+  // пересортировал весь список чуть ли не каждый кадр при 50 NPC. Обёртка ниже читает
+  // enabledRef в момент вызова, поэтому по-кадровая семантика enabled
+  // (undefined → всегда активен, boolean → значение, функция → вызов)
+  // сохраняется без перерегистраций.
   useLayoutEffect(() => {
     return registerNpcFrameCallback(
       ownerKey,
       kind,
       (ctx) => callbackRef.current(ctx),
       {
-        enabled:
-          enabledOption === undefined
-            ? undefined
-            : () => {
-                const enabled = enabledRef.current;
-                return typeof enabled === 'function' ? enabled() : enabled !== false;
-              },
+        enabled: () => {
+          const enabled = enabledRef.current;
+          if (enabled === undefined) return true;
+          return typeof enabled === 'function' ? enabled() : enabled !== false;
+        },
       },
     );
-  }, [ownerKey, kind, enabledOption]);
+  }, [ownerKey, kind]);
 }
