@@ -3,6 +3,7 @@ import type {
   AccessibilitySettingKey,
   AccessibilitySettingsSnapshot,
 } from './accessibilityTypes';
+import { applyPinchZoomViewport } from './pinchZoomViewport';
 
 type AccessibilityDomHookBase = {
   settingKey: AccessibilitySettingKey;
@@ -20,7 +21,16 @@ export type AccessibilityDataAttributeDomHook = AccessibilityDomHookBase & {
   serialize: (settings: AccessibilitySettingsSnapshot) => string | null;
 };
 
-export type AccessibilityDomHook = AccessibilityCssVarDomHook | AccessibilityDataAttributeDomHook;
+/** Сайд-эффект вне documentElement — перезапись <meta name="viewport"> (этап 121). */
+export type AccessibilityViewportMetaDomHook = AccessibilityDomHookBase & {
+  type: 'viewportMeta';
+  apply: (settings: AccessibilitySettingsSnapshot) => void;
+};
+
+export type AccessibilityDomHook =
+  | AccessibilityCssVarDomHook
+  | AccessibilityDataAttributeDomHook
+  | AccessibilityViewportMetaDomHook;
 
 /** Setting key → DOM presentation (CSS variables and data attributes on document root). */
 export const ACCESSIBILITY_DOM_HOOKS: readonly AccessibilityDomHook[] = [
@@ -55,6 +65,12 @@ export const ACCESSIBILITY_DOM_HOOKS: readonly AccessibilityDomHook[] = [
     cssVar: '--volodka-ui-text-scale',
     serialize: (settings) => String(settings.uiTextScale),
   },
+  // Этап 121 (WCAG 1.4.4/1.4.10): пинч-зум переключает viewport-мету.
+  {
+    settingKey: 'pinchZoomEnabled',
+    type: 'viewportMeta',
+    apply: (settings) => applyPinchZoomViewport(settings.pinchZoomEnabled),
+  },
 ] as const;
 
 function shouldApplyDomHook(
@@ -78,6 +94,9 @@ function applyDomHook(root: HTMLElement, hook: AccessibilityDomHook, settings: A
       }
       break;
     }
+    case 'viewportMeta':
+      hook.apply(settings);
+      break;
     default: {
       const _exhaustive: never = hook;
       return _exhaustive;

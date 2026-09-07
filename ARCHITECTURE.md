@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.15.6** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.15.7** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1698,6 +1698,41 @@ reset в engineRuntimeReset), **ноль React**:
 из CombatDamageFx, CSS-кейфреймы `hud-filmic-damage-rise-fade`.
 `useCombatUiController` больше не хранит damageNumbers/richDamageEvents —
 только крит-шейк/вспышки (фидбэк экрана, не числа).
+
+## v4.15.7 — бюджет экранных FX и пинч-зум (этапы 32, 121)
+
+### Проблема
+- Пик комбата: до 7 одновременных full-screen композит-слоёв (flash +
+  damage vignette + хроматика + винетки HP ×2 + edge-полосы + glitch-канвас
+  в DPR 2–3) — fill-rate дропы на iGPU. При этом `fx:screen_flash` и
+  `fx:chromatic_burst` из AaaCombatCinematic не имели ни одного слушателя
+  (мёртвые события). Viewport `user-scalable=no` — a11i-минус (WCAG
+  1.4.10): жест зума недоступен.
+
+### Решение
+- **`src/engine/fx/screenFxBudget.ts`** — чистая функция бюджета FX по
+  пресету качества. Правило: **новый экранный FX обязан читать бюджет**
+  (`resolveScreenFxBudget(preset)`) и уважать его. Тиры: low — 1
+  оверлей / без хроматики и blend / merge красных дубликатов / статичные
+  винетки / канвас DPR 1; medium — 2 / хроматика без blend; high — 3;
+  ultra — 4.
+- `ScreenEffects`: пул flash ограничен `maxOverlayLayers` (вытеснение
+  старых), `combat:hit` не дублирует красный flash поверх damage vignette,
+  `mixBlendMode` гейтится, LowHealthVignette мержит винетки и умеет
+  статичный режим. Мёртвые события **вайрены**: `fx:screen_flash` →
+  flash-пул, `fx:chromatic_burst` → хроматический слой.
+- `GlitchEffect`: DPR канваса кепится бюджетом; `HUDChromaticEdge`
+  отключается на low.
+- Этап 121: **`pinchZoomViewport.ts`** + третий тип DOM-хука
+  `viewportMeta` (accessibilityDomPresentation) + настройка
+  «Масштабирование жестом (пинч)» (дефолт off — игровая фиксация).
+  Правило: a11i-настройка никогда не меняет дефолт геймплея.
+
+### Гарды
+- `src/engine/fx/screenFxBudget.test.ts`: монотонность бюджета по тирам
+  (low→ultra не ужесточается), самый строгий low.
+- `src/engine/accessibility/pinchZoomViewport.test.ts`: зумируемая мета,
+  возврат фиксации, идемпотентность, SSR no-op.
 
 ## v4.15.6 — сателлитные диалоги (этап 84)
 

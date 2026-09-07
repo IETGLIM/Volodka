@@ -8,6 +8,8 @@
 import { motion } from 'framer-motion';
 import { useHUDControllerState } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { resolveScreenFxBudget } from '@/engine/fx/screenFxBudget';
 import {
   HUD_ENERGY_LOW_THRESHOLD,
   HUD_STRESS_HIGH_THRESHOLD,
@@ -16,11 +18,14 @@ import {
 export function HUDChromaticEdge() {
   const reducedMotion = useEffectiveReducedMotion();
   const { energy, stress } = useHUDControllerState();
+  // Этап 32: на low-тире edge-полосы отключены (бюджет экранных FX).
+  const { preset } = useGraphicsQuality();
+  const budget = resolveScreenFxBudget(preset);
 
   const intensity =
     energy < HUD_ENERGY_LOW_THRESHOLD || stress > HUD_STRESS_HIGH_THRESHOLD ? 0.8 : 0.25;
 
-  if (reducedMotion) return null;
+  if (reducedMotion || !budget.allowEdgeStrips) return null;
 
   return (
     <div

@@ -59,6 +59,7 @@ import {
   setLocomotionSpeed,
   setHighContrast,
   setUiTextScale,
+  setPinchZoomEnabled,
 } from '@/engine/accessibility/accessibilitySettings';
 import type { AccessibilitySettingsSnapshot } from '@/engine/accessibility/accessibilitySettings';
 import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
@@ -365,6 +366,18 @@ function VisualSettingsTab({
       />
       <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
         Глобальный масштаб текста интерфейса (WCAG 1.4.4). Влияет на HUD, меню и панели.
+      </p>
+      <CyberToggle
+        label="Масштабирование жестом (пинч)"
+        checked={a11y.pinchZoomEnabled}
+        onChange={(v) => {
+          setPinchZoomEnabled(v);
+        }}
+      />
+      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
+        Разрешает приближение интерфейса жестом (WCAG 1.4.10). По умолчанию выключено,
+        чтобы случайный пинч не сбивал управление в бою. Для увеличения текста
+        удобнее «Масштаб интерфейса» — он не ломает разметку HUD.
       </p>
     </motion.div>
   );

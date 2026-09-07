@@ -9,6 +9,8 @@
 import { useRef, useEffect, useState, useCallback } from 'react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { resolveScreenFxBudget } from '@/engine/fx/screenFxBudget';
 
 interface GlitchParams {
   intensity: number; // 0-1
@@ -34,6 +36,10 @@ export function GlitchEffect() {
   const [glitchType, setGlitchType] = useState<GlitchType>('horizontal-tear');
   const [intensity, setIntensity] = useState(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  // Этап 32: потолок DPR full-screen glitch-канваса из бюджета FX —
+  // на iGPU перерисовка канваса в devicePixelRatio 2–3× дропает кадр.
+  const { preset } = useGraphicsQuality();
+  const glitchCanvasMaxDpr = resolveScreenFxBudget(preset).glitchCanvasMaxDpr;
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Nested decay timer (Phase 2 of hacking burst). Previously this was a
   // local variable inside triggerHackingBurst and was only reachable from
@@ -156,7 +162,8 @@ export function GlitchEffect() {
     const ctx = canvas.getContext('2d', { alpha: true });
     if (!ctx) return;
 
-    const dpr = window.devicePixelRatio || 1;
+    // Этап 32: кап DPR из бюджета FX (low: 1, medium: 1.25, high: 2, ultra: 3).
+    const dpr = Math.min(window.devicePixelRatio || 1, glitchCanvasMaxDpr);
     canvas.width = window.innerWidth * dpr;
     canvas.height = window.innerHeight * dpr;
     canvas.style.width = `${window.innerWidth}px`;
@@ -232,7 +239,7 @@ export function GlitchEffect() {
     return () => {
       clearInterval(interval);
     };
-  }, [active, glitchType, intensity]);
+  }, [active, glitchType, intensity, glitchCanvasMaxDpr]);
 
   // Cleanup timers on unmount. Both the outer burst timer AND the nested
   // decay timer must be cleared — otherwise a burst that started shortly

@@ -137,6 +137,11 @@ export function setUiTextScale(scale: number | UiTextScale): void {
   manager().updateSetting('uiTextScale', createUiTextScale(scale));
 }
 
+/** Этап 121: включить/выключить жест масштабирования страницы (viewport-мета). */
+export function setPinchZoomEnabled(enabled: boolean): void {
+  manager().updateSetting('pinchZoomEnabled', enabled);
+}
+
 export function resetAccessibilitySettings(): AccessibilitySettingsSnapshot {
   return manager().reset();
 }

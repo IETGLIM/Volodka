@@ -79,6 +79,7 @@ export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettingsSnapshot = {
   locomotionSpeed: createLocomotionSpeed(1),
   highContrast: false,
   uiTextScale: createUiTextScale(1),
+  pinchZoomEnabled: false,
 };
 
 /** Normalize and clamp a setting value for the given key. */
@@ -106,6 +107,8 @@ export function clampInRange<K extends AccessibilitySettingKey>(
       return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
     case 'uiTextScale':
       return createUiTextScale(value, Number(fallback)) as AccessibilitySettingsSnapshot[K];
+    case 'pinchZoomEnabled':
+      return (value === true || value === 'true') as AccessibilitySettingsSnapshot[K];
     default: {
       const _exhaustive: never = key;
       return _exhaustive;

@@ -6,12 +6,14 @@
    Enhanced: damage vignette with red flash, low health pulse.
 */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { useScreenEffectsVitals } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
+import { resolveScreenFxBudget, type ScreenFxBudget } from '@/engine/fx/screenFxBudget';
 import {
   triggerFlash,
   triggerShake,
@@ -39,6 +41,10 @@ let nextEffectId = 0;
 /* ── Component ── */
 export function ScreenEffects() {
   const reducedMotion = useEffectiveReducedMotion();
+  const { preset } = useGraphicsQuality();
+  // Бюджет экранных FX (аудит этап 32): на low/iGPU — один оверлей,
+  // без blend-режимов и бесконечных пульсаций.
+  const budget = useMemo(() => resolveScreenFxBudget(preset), [preset]);
   const [flashes, setFlashes] = useState<FlashEffect[]>([]);
   const [shake, setShake] = useState<ShakeEffect | null>(null);
   const [vignetteIntensity, setVignetteIntensity] = useState(0);
@@ -54,13 +60,49 @@ export function ScreenEffects() {
         opacity: reducedMotion ? Math.min(payload.opacity, 0.12) : payload.opacity,
         duration: reducedMotion ? Math.min(payload.duration, 120) : payload.duration,
       };
-      setFlashes((prev) => [...prev, flash]);
+      // Бюджет: не держать больше maxOverlayLayers full-screen оверлеев —
+      // вытесняем самые старые (свежий хит важнее).
+      setFlashes((prev) => {
+        const next = [...prev, flash];
+        return next.length > budget.maxOverlayLayers
+          ? next.slice(next.length - budget.maxOverlayLayers)
+          : next;
+      });
       setTimeout(() => {
         setFlashes((prev) => prev.filter((f) => f.id !== flash.id));
       }, payload.duration + 50);
     });
     return unsub;
+  }, [reducedMotion, budget]);
+
+  // ── Cinematic flash listener (этап 32 вайринг) ──
+  // fx:screen_flash эмитился AaaCombatCinematic с самого его появления,
+  // но не имел НИ ОДНОГО слушателя — событие было мёртвым. Теперь
+  // пробрасывается в общий flash-пул (с бюджетом и reducedMotion-клампом).
+  useEffect(() => {
+    const unsub = eventBus.on('fx:screen_flash', (payload) => {
+      triggerFlash(
+        payload.color,
+        reducedMotion ? Math.min(0.08, 0.18) : 0.18,
+        Math.min(payload.duration, 400),
+      );
+    });
+    return unsub;
   }, [reducedMotion]);
+
+  // ── Cinematic chromatic burst listener (этап 32 вайринг) ──
+  // fx:chromatic_burst (крит-удары) был таким же мёртвым событием.
+  // Гейт по бюджету: на low-тире хроматика отключена.
+  useEffect(() => {
+    const unsub = eventBus.on('fx:chromatic_burst', (payload) => {
+      if (!budget.allowChromatic) return;
+      triggerChromaticAberration(
+        Math.min(payload.intensity * 3, 3),
+        Math.min(payload.duration, 500),
+      );
+    });
+    return unsub;
+  }, [budget]);
 
   // ── Shake listener ──
   useEffect(() => {
@@ -92,12 +134,12 @@ export function ScreenEffects() {
   // ── Chromatic aberration listener ──
   useEffect(() => {
     const unsub = eventBus.on('fx:chromatic', (payload) => {
-      if (reducedMotion) return;
+      if (reducedMotion || !budget.allowChromatic) return;
       setChromaticIntensity(payload.intensity);
       setTimeout(() => setChromaticIntensity(0), payload.duration);
     });
     return unsub;
-  }, [reducedMotion]);
+  }, [reducedMotion, budget]);
 
   // ── Damage vignette listener ──
   useEffect(() => {
@@ -119,7 +161,11 @@ export function ScreenEffects() {
 
     unsubs.push(eventBus.on('combat:hit', (payload) => {
       if (payload.isPlayerHit) {
-        triggerFlash('rgba(255,50,50,0.25)', reducedMotion ? 0.1 : 0.25, reducedMotion ? 100 : 200);
+        // Этап 32: damage vignette УЖЕ красный full-screen слой — на
+        // low/medium лишний мелкий flash дублирует его. Пропускаем.
+        if (!budget.mergeRedundantDamageFlashes) {
+          triggerFlash('rgba(255,50,50,0.25)', reducedMotion ? 0.1 : 0.25, reducedMotion ? 100 : 200);
+        }
         if (!reducedMotion) {
           triggerShake(6, 300);
           triggerDamageVignette(0.5, 400);
@@ -166,7 +212,7 @@ export function ScreenEffects() {
     }));
 
     return () => { for (const u of unsubs) u(); };
-  }, [reducedMotion]);
+  }, [reducedMotion, budget]);
 
   const shakeStyle: React.CSSProperties = shake
     ? {
@@ -259,7 +305,7 @@ export function ScreenEffects() {
       </AnimatePresence>
 
       {/* Low health/stress persistent vignette */}
-      <LowHealthVignette />
+      <LowHealthVignette budget={budget} />
 
       {/* Chromatic aberration */}
       <AnimatePresence>
@@ -273,7 +319,9 @@ export function ScreenEffects() {
             style={{
               zIndex: UI_LAYERS.GLITCH + 1,
               background: `linear-gradient(${chromaticIntensity * 2}deg, rgba(255,0,0,${chromaticIntensity * 0.04}) 0%, transparent 30%, transparent 70%, rgba(0,255,255,${chromaticIntensity * 0.04}) 100%)`,
-              mixBlendMode: 'screen',
+              // Этап 32: mixBlendMode форсит отдельный композит-проход —
+              // на low/medium тирах обходимся без него (градиент сам по себе мягкий).
+              ...(budget.allowBlendModes ? { mixBlendMode: 'screen' as const } : {}),
             }}
           />
         )}
@@ -283,7 +331,14 @@ export function ScreenEffects() {
 }
 
 /* ── Persistent low-health vignette with pulse ── */
-function LowHealthVignette() {
+interface LowHealthVignetteLayer {
+  background: string;
+  zIndex: number;
+  /** Ключ анимации: null — статичный слой (этап 32: без бесконечных пульсаций). */
+  animation: string | null;
+}
+
+function LowHealthVignette({ budget }: { budget: ScreenFxBudget }) {
   const { energy, stress } = useScreenEffectsVitals();
   // Track combat HP ratio via combat:hit events (playerHp lives in CombatState,
   // not the exploration store). When the player takes damage and HP drops low,
@@ -317,8 +372,6 @@ function LowHealthVignette() {
   const hpIntensity = hpCritical ? 0.55 : hpDanger ? 0.35 * (1 - hpPct / 0.25) : 0;
   const hpPulseRate = hpCritical ? '0.5s' : '0.9s';
 
-  if (intensity <= 0 && hpIntensity <= 0) return null;
-
   // Color shifts: red for low health, orange for high stress, purple for both
   const isCritical = energy < 15;
   const isBoth = energy < 25 && stress > 70;
@@ -334,35 +387,48 @@ function LowHealthVignette() {
   // Pulse rate increases with danger level
   const pulseRate = isCritical ? '0.8s' : isDanger ? '1.5s' : '2s';
 
+  // Этап 32: собираем кандидатов-слоёв и применяем бюджет.
+  // mergeVitalsVignettes (low/medium) — один слой вместо двух: показываем
+  // самый приоритетный сигнал (HP-сердцебиение важнее энергии/стресса).
+  // allowInfinitePulses=false — слой рендерится статично: состояние видно,
+  // но композитор не перерисовывает full-screen градиент бесконечно.
+  const candidates: LowHealthVignetteLayer[] = [];
+  if (intensity > 0) {
+    candidates.push({
+      background: `radial-gradient(ellipse at center, transparent 35%, ${pulseColor} 100%)`,
+      zIndex: UI_LAYERS.NOIR_OVERLAY + 1,
+      animation: budget.allowInfinitePulses ? `healthPulse ${pulseRate} ease-in-out infinite` : null,
+    });
+  }
+  if (hpIntensity > 0) {
+    candidates.push({
+      background: `radial-gradient(ellipse at center, transparent 25%, rgba(200,20,20,${hpIntensity}) 90%)`,
+      zIndex: UI_LAYERS.NOIR_OVERLAY + 2,
+      animation: budget.allowInfinitePulses ? `dangerPulse ${hpPulseRate} ease-in-out infinite` : null,
+    });
+  }
+  if (candidates.length === 0) return null;
+
+  const visible = budget.mergeVitalsVignettes
+    ? [candidates.reduce((a, b) => (b.zIndex > a.zIndex ? b : a))]
+    : candidates;
+
   return (
     <>
-      {intensity > 0 && (
+      {visible.map((layer) => (
         <motion.div
+          key={layer.zIndex}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 pointer-events-none"
           style={{
-            zIndex: UI_LAYERS.NOIR_OVERLAY + 1,
-            background: `radial-gradient(ellipse at center, transparent 35%, ${pulseColor} 100%)`,
-            animation: `healthPulse ${pulseRate} ease-in-out infinite`,
+            zIndex: layer.zIndex,
+            background: layer.background,
+            ...(layer.animation ? { animation: layer.animation } : {}),
           }}
         />
-      )}
-      {/* AAA low-HP heartbeat vignette — faster pulse as HP drops */}
-      {hpIntensity > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 pointer-events-none"
-          style={{
-            zIndex: UI_LAYERS.NOIR_OVERLAY + 2,
-            background: `radial-gradient(ellipse at center, transparent 25%, rgba(200,20,20,${hpIntensity}) 90%)`,
-            animation: `dangerPulse ${hpPulseRate} ease-in-out infinite`,
-          }}
-        />
-      )}
+      ))}
     </>
   );
 }

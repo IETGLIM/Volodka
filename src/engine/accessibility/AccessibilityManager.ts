@@ -31,6 +31,7 @@ export const ACCESSIBILITY_LS_KEYS = {
   locomotionSpeed: 'volodka_locomotion_speed',
   highContrast: 'volodka_high_contrast',
   uiTextScale: 'volodka_ui_text_scale',
+  pinchZoomEnabled: 'volodka_pinch_zoom_enabled',
 } as const satisfies Record<AccessibilitySettingKey, string>;
 
 const LS_KEY_TO_SETTING = Object.fromEntries(
@@ -136,6 +137,14 @@ export function readAccessibilitySettingsFromStorage(
         DEFAULT_ACCESSIBILITY_SETTINGS.uiTextScale,
       ),
       'uiTextScale',
+    ),
+    pinchZoomEnabled: clampInRange(
+      readBool(
+        storage,
+        ACCESSIBILITY_LS_KEYS.pinchZoomEnabled,
+        DEFAULT_ACCESSIBILITY_SETTINGS.pinchZoomEnabled,
+      ),
+      'pinchZoomEnabled',
     ),
   };
 }

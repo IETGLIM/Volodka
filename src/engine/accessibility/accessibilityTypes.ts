@@ -36,6 +36,10 @@ export interface AccessibilitySettingsSnapshot {
   highContrast: boolean;
   /** Global UI text scale (WCAG 1.4.4). Applied as CSS var on <html>. */
   uiTextScale: UiTextScale;
+  /** Разрешить жест масштабирования страницы (аудит этап 121, WCAG 1.4.4/1.4.10).
+   * false — игровая фиксация viewport (user-scalable=no); true — мета
+   * переписывается без блокировки зума (пинч/масштаб доступны). */
+  pinchZoomEnabled: boolean;
 }
 
 export type AccessibilitySettingKey = keyof AccessibilitySettingsSnapshot;
