@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.13.0** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.15.1** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -754,6 +754,81 @@ XSS: `sanitizePlainText` на основном пути рендера (`narrati
 ### Числовая устойчивость
 - `cameraShake.ts` — `Number.isFinite` на intensity/decay/dt (NaN не залипает).
 - `seededRand.ts` — non-finite seed → 0 (SSR/partículas без NaN в CSS).
+
+## v4.15.1 — аудит 2026-09: критические фиксы наград/утечек/60FPS
+
+### Camera Collision Proxy Registry (perf, 60 FPS)
+
+`engine/camera/cameraCollisionLayers.ts` теперь владеет **плоским реестром**
+прокси-мешей камеры (единственный источник — `CameraCollisionProxies.tsx`,
+регистрация при mount / отписка при unmount). `resolveCameraCollision`
+(cinematicCamera.ts) raycast'ит реестр БЕЗ рекурсии вместо двух рекурсивных
+обходов всего графа сцены за кадр; пустой реестр (тесты/непрогретый кадр)
+прозратно откатывается к прежнему рекурсивному пути. Слой 5 и
+`isCameraCollisionHit`-фильтр сохранены как двойная защита.
+
+### Frame Game Snapshot reuse (GC)
+
+`engine/frame/frameGameSnapshot.ts`: снапшот создаётся ОДИН раз в pre_physics
+(`FrameBudgetRunner` → `setLatestFrameGameSnapshot`) и переиспользуется
+пост-фазой (`PostFrameBudgetRunner` → `getLatestFrameGameSnapshot`) — вместо
+пересоздания объекта и пересчёта locomotion-lock дважды за кадр.
+
+### Audio public-asset URL normalization
+
+`engine/audio/SceneAudioController.ts` → `resolvePublicAssetUrl(file)`:
+данные story-нод хранят относительные пути (`sounds/ambient/*.ogg`), которые
+резолвились от текущего URL страницы — на суб-путях деплоя Vercel отдавал
+index.html вместо .ogg (тихий отказ файлового эмбиента). Теперь путь
+абсолютизируется от `import.meta.env.BASE_URL`. Громкость файлового лупа
+обновляется живьём по window-событию `AUDIO_SETTINGS_CHANGED`.
+
+### Quest rewardItems grant
+
+`store/slices/playerQuestRewardsSlice.completeQuestAndApplyRewards` выдаёт
+`questDef.rewardItems` через `batchAddItem` — раньше поле рисовалось в
+карточке наград (questObjectiveCardAdapter), но не выдавалось (12 квестов).
+
+### NPC-stub reachability (dying_poet_last_letter)
+
+`poem_recipient_elena` получил `dialogueNodeId` + расписание в
+`npcSchedules.ts` (scene `street_night`, «Болотная улица, дом 14» из лора) —
+квест стал выполним; ранее написанные диалоги Елены перестали быть мёртвыми
+данными.
+
+### Teardown-гигиена
+
+`engineRuntimeReset.ts` дополнен: `stopVoiceLinePlayback()` (глушит
+HTMLAudio+speechSynthesis VO после dispose) и
+`resetNpcPortraitCacheLifecycle()` (перепривязка scene:enter-листенера
+портретного LRU-кэша после disposeEventBus+revive).
+
+### UI-гигиена
+
+- DevPanel гейтнут `import.meta.env.DEV` (английский дев-инструмент был
+  доступен в проде по F3).
+- QuickAccessToolbar: слоты «Карта»/«Кодекс» через
+  `firePanelShortcut('KeyM'/'KeyK')`; контексты combat/dialogue/menu (все
+  слоты были заглушками) скрыты — там свои органы управления.
+- М: единственное действие — карта мира (сворачивание миникарты — тапом).
+- Zoom-кнопки миникарты 44px touch-target; `EXPLORATION_HUD_LAYOUT.MINIMAP_HEIGHT` 196→222.
+- `hud-mobile-responsive.css`: `@media (max-height: 560px)` скрывает
+  декоративную правую колонку (weather/day-night/POI) вместо клиппинга.
+- Русификация остаточных строк: ВРАГ / АТК / ЗАЩ / СКР / ПРОВЕРКА НАВЫКА /
+  СИСТЕМА ГОТОВА / Персонаж / Жители.
+- Удалены 14 мёртвых компонентов (никогда не импортировались) — см. CHANGELOG.
+
+### Frame-budget интеграция эффектов
+
+`components/3d/AmbientParticles.tsx` переведён с сырого `useFrame` на
+`useFrameTick('misc')`: мягкий пропуск при исчерпании бюджета кадра,
+авто-пауза при неактивной симуляции (demand-режим) и вне видимости.
+
+### FreeRouter status
+
+Сервис закрыт (DNS не резолвится). Edge-функции `/api/city-news` и
+`/api/matrix-quote` возвращают честные `fallback:true` — игра работает на
+статичных строках. Код-путь сохранён для будущего провайдера.
 
 ## Известные разрывы и roadmap
 

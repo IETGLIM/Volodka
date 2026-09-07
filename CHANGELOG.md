@@ -1,3 +1,71 @@
+## v4.15.1 (2026-09-07) — Аудит 132 этапа: критические баги наград, GPU-утечки, 60 FPS raycast, русификация
+
+### Контекст
+Экспертный статический аудит кодовой базы (~401k строк src, 2158 файлов) в 132
+этапа тремя параллельными аналитиками (движок/производительность, UI/HUD,
+контент/данные). Проверка — только статическая (tsc, eslint, vitest, validate,
+vite build, verify:deploy): dev-сервер и браузер не запускались.
+Статус FreeRouter: **сервис закрыт** (freerouter.eu.cc и api.freerouter.eu.cc
+не резолвятся, на сайте shutdown-заглушка) — «Шёпот города»/matrix-цитаты
+перманентно работают на статичных фолбэках, игра не ломается.
+
+### Исправления
+1. **Критично — награды квестов**: `rewardItems` (12 квестов: encrypted_usb,
+   banned_book, eye_blueprint, old_poetry_book, marat_code_copy,
+   encrypted_scroll, father_photo, anonymous_letter, old_radio_transmitter,
+   rat_king_crown и др.) декларировались в данных и показывались в карточке
+   наград, но НЕ выдавались при завершении — игрок терял предметы.
+   → `completeQuestAndApplyRewards` выдаёт rewardItems через batchAddItem.
+2. **Критично — невыполнимый квест**: `dying_poet_last_letter` зависал на
+   целях «найти/передать адресату»: Елена была в реестре NPC без dialogueNodeId
+   и расписания. → подключены диалог `poem_recipient_elena_meeting` (писался
+   мёртвым грузом) и расписание (street_night, «Болотная улица» из лора).
+3. **Аудио 404 на деплое**: файловый ambient story-нод резолвился относительным
+   URL от адреса страницы → на суб-путях Vercel отдавал index.html вместо .ogg.
+   → `resolvePublicAssetUrl()` от `import.meta.env.BASE_URL`; громкость лупа
+   теперь живая (AUDIO_SETTINGS_CHANGED), а не фиксированная при создании.
+4. **GPU-утечки**: 16 BoxGeometry+16 MeshBasicMaterial на смену сцены
+   (AaaInteractionRich), PlaneGeometry HP-баров крипов (PatrollingCreeps),
+   GL-программа CoherentNoiseEffect при смене opacity — всё получает dispose.
+5. **60 FPS — камера**: двойной рекурсивный raycast по ВСЕМУ графу сцены за
+   кадр (тысячи Object3D) заменён raycast'ом по плоскому реестру прокси-стен
+   (CameraCollisionProxies, layer 5) без рекурсии; пустой реестр → прежний путь.
+6. **Teardown-утечки**: активная VO-реплика (HTMLAudio+speechSynthesis)
+   продолжала играть после dispose движка; LRU-кэш 128 портретов терял
+   scene:enter-листенер после disposeEventBus+revive → оба сбрасываются
+   в resetEngineModuleRuntimeState.
+7. **Русификация UI**: ENEMY→ВРАГ, ATK/DEF/SPD→АТК/ЗАЩ/СКР,
+   SKILL.CHECK→ПРОВЕРКА НАВЫКА, SYSTEM READY→СИСТЕМА ГОТОВА,
+   NPC→Персонаж/Жители, «Entity occluded»→русский тултип.
+8. **DevPanel в проде**: полностью английский дев-инструмент открывался любому
+   игроку по F3 → гейт `import.meta.env.DEV`.
+9. **Мёртвый UI-код**: 14 никогда не импортируемых компонентов удалены
+   (QuickInventoryBar, LevelUpNotification, StatusEffectsBar,
+   PoemReadingCutscene, PoemDiscoveryReveal, RewardDisplay,
+   CyberpunkPoemOverlay, GamepadIndicator, DifficultySelector,
+   AchievementPopup, ExplorationMobileHud+обёртка и др.);
+   мёртвый конвейер skill:level_up→skillAchievement вырезан (событие
+   обрабатывают HUDNotificationFeed/ScreenEffects/haptics/GameAnnouncer).
+10. **Тулбар быстрого доступа**: слоты «Карта»/«Кодекс» были заглушками —
+    подключены через firePanelShortcut(KeyM/KeyK); боевые/диалоговые/меню
+    контексты (все слоты-заглушки) скрыты — там свои органы управления.
+11. **Конфликт клавиши M**: открытие карты мира одновременно сворачивало
+    миникарту → миникарта сворачивается только тапом.
+12. **Touch-таргеты**: зум-кнопки миникарты 18px → 44px (Apple HIG/WCAG),
+    MINIMAP_HEIGHT 196→222; на вьюпортах ниже 560px правая колонка HUD
+    (погода/день-ночь/POI-компас) скрывается вместо клиппинга.
+13. **Perf мелочи**: AmbientParticles в центральном frame-budget (мягкий пропуск
+    + авто-пауза в demand-режиме); PostFrameBudgetRunner переиспользует
+    game-снапшот кадра вместо пересоздания; маркер «↗ квест» в случайной
+    точке экрана (дезинформация) удалён, таймеры маркеров чистятся.
+14. **Контент-гигиена**: дубли названий квестов уникализированы
+    («Тетрадь Бориса: контрабанда», «Ночная рыбалка: разговор у воды»).
+
+### Верификация
+tsc --noEmit 0 ошибок; eslint src 0 ошибок (60 warnings — консоли в devLog);
+validate-content OK; verify-act1-extended OK; vitest 409 файлов / 2485 тестов
+PASS; vite build 39.5с; prune+verify-deploy OK (dist 110.5 МБ, бюджеты OK).
+
 ## v4.15.0 (2026-09-06) — Репорт игрока 3/10: спальня, парящие пропсы, тишина, дубли UI
 
 ### Контекст
