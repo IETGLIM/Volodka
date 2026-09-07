@@ -18,6 +18,7 @@ import { DIALOGUE_ACT4_NEW } from './act4_newDialogues';
 import { DIALOGUE_ACT3_EXPANDED } from './act3_expandedDialogues';
 import { DIALOGUE_ACT4_EXPANDED } from './act4_expandedDialogues';
 import { DIALOGUE_VICTORIA } from './victoriaDialogues';
+import { SATELLITE_BRIDGE_NODES } from './satelliteBridges';
 
 export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   // Сгенерированные return-узлы идут ПЕРВЫМИ как FALLBACK: авторские версии
@@ -47,4 +48,8 @@ export const DIALOGUE_NODES: Record<string, DialogueNode> = {
   // последним, зеркально рантайм-паку 'victoria' в DIALOGUE_PACK_ORDER
   // (narrativePackRegistry.ts). Порядок важен: поздний пак выигрывает коллизии.
   ...DIALOGUE_VICTORIA,
+  // FIX (аудит, этап 84): мосты к сателлитным веткам (темы-хабы NPC) —
+  // самым последним, зеркально рантайм-паку 'satelliteBridges'. Хабы —
+  // новые id, коллизий нет; порядок выбран для единообразия правила паков.
+  ...SATELLITE_BRIDGE_NODES,
 };

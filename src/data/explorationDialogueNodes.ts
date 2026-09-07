@@ -220,6 +220,11 @@ export const EXPLORATION_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'triggerQuest', questId: 'poetry_collection' },
         ],
       },
+      // FIX (аудит, этап 84): мост к внутренним монологам (сателлиты актов 4–5).
+      {
+        text: 'Побыть с собой наедине — разобрать мысли',
+        next: 'volodka_reflections',
+      },
     ],
   },
 

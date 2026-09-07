@@ -2318,6 +2318,11 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'albert', npcChange: { relation: 2 } },
         ],
       },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'У меня накопились вопросы. Поговорим по душам.',
+        next: 'albert_topics',
+      },
       {
         text: 'Мне пора. До встречи, философ.',
         next: null,
@@ -2364,6 +2369,11 @@ export const DIALOGUE_PART1: Record<string, DialogueNode> = {
         text: 'Банк снова зелёный — проверить вместе?',
         next: 'banking_crash_verify',
         condition: { flag: 'bash_terminal_solved', missingFlag: 'banking_system_recovered' },
+      },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Зарема, у меня накопились вопросы. Поговорим по душам.',
+        next: 'zarema_topics',
       },
       {
         text: 'Увидимся, Зарема.',

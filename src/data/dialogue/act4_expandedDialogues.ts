@@ -30,11 +30,17 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
         ],
       },
       {
-        text: 'Не interested. Найди другую мишень.',
+        text: 'Не интересно. Найди другую мишень.',
         next: null,
         effects: [
           { type: 'addKarma', value: -1 },
         ],
+      },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Дуэль позади. Скажи — что не так с моими строками?',
+        next: 'rival_poet_max_topics',
+        condition: { flag: 'poetry_duel_finished' },
       },
     ],
   },
@@ -124,6 +130,12 @@ export const DIALOGUE_ACT4_EXPANDED: Record<string, DialogueNode> = {
         text: 'Мне это не нужно. Удачи.',
         next: null,
         effects: [],
+      },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Книги найдены. Все три — забирай.',
+        next: 'old_librarian_fyodor_topics',
+        condition: { flag: 'forgotten_archive_opened' },
       },
     ],
   },

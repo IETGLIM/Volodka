@@ -933,6 +933,100 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     },
     effects: [{ type: 'addStat', stat: 'stress', value: -3 }],
   },
+  /* FIX (аудит, этап 84): триггеры к сателлитным exploration-узлам —
+   * 4 «Голос»-сцены (улица ×2, комната, кухня) были без единого входа. */
+  {
+    id: 'street_entry_bench',
+    sceneId: 'street_night',
+    position: [-5.5, 0.5, 2.5],
+    size: [1.5, 1.5, 1.5],
+    enterToast: 'Скамейка у подъезда. Воздух после дождя.',
+    linkedDialogueNodeId: 'explore_street_entry',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Скамейка у подъезда',
+      description: 'Дождь закончился, воздух влажный. Мимо идут люди — каждый в своём мире.',
+      detailText: 'Неон «Синей ямы» мигает в переулке напротив. Где-то вдалеке гудит башня гильдии.',
+      icon: '🪑',
+    },
+  },
+  {
+    id: 'street_neon_view',
+    sceneId: 'street_night',
+    position: [5.0, 0.5, 5.0],
+    size: [1.5, 2.0, 1.5],
+    enterToast: 'Улица залита неоном — можно просто смотреть.',
+    linkedDialogueNodeId: 'explore_street_bench_view',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Неоновая улица',
+      description: 'Рекламные голограммы мерцают на стенах домов.',
+      detailText: 'Стрим-дроны висят над перекрёстком. Город предлагает апгрейды всем, кто смотрит вверх.',
+      icon: '🌃',
+    },
+  },
+  {
+    id: 'home_quiet_corner',
+    sceneId: 'home_evening',
+    position: [2.5, 0.5, 1.0],
+    size: [1.2, 1.5, 1.2],
+    enterToast: 'Тихий угол кухни. Здесь можно закрыть глаза.',
+    linkedDialogueNodeId: 'explore_volodka_inner',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Тихий угол',
+      description: 'За шумом города — тишина. В ней слышно себя.',
+      detailText: 'Поэт, который видит код как стихи, а стихи как код. Побыть с собой наедине.',
+      icon: '🧘',
+    },
+  },
+  {
+    id: 'room_home_ambient',
+    sceneId: 'volodka_room',
+    position: [0, 0.5, 0.5],
+    size: [1.0, 1.5, 1.0],
+    enterToast: 'Дома. Привычно и спокойно.',
+    linkedDialogueNodeId: 'explore_go_home',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Комната',
+      description: 'Мониторы мерцают, город за окном сер.',
+      detailText: 'Но что-то неуловимо изменилось — может быть, в тебе самом.',
+      icon: '🛏️',
+    },
+  },
+  /* FIX (аудит, этап 84): движковые сироты — коридор и кухня-стол
+   * имели маппинг в explorationStoryBridge, но ни одного триггера. */
+  {
+    id: 'corridor_entry_ambient',
+    sceneId: 'volodka_corridor',
+    position: [1.0, 0.5, 6.0],
+    size: [1.0, 1.5, 1.0],
+    enterToast: 'У зеркала — Солныш поправляет платок.',
+    linkedDialogueNodeId: 'explore_corridor_door',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Коридор коммуналки',
+      description: 'Лампочка мигает, из кухни доносится звон посуды.',
+      detailText: 'Зарема уже проснулась. Обычное утро дома — самое ценное, что у тебя есть.',
+      icon: '🪞',
+    },
+  },
+  {
+    id: 'kitchen_table_ambient',
+    sceneId: 'home_evening',
+    position: [-1.5, 0.4, 1.0],
+    size: [1.0, 1.0, 1.0],
+    enterToast: 'Зарема ставит перед тобой кружку горячего чая.',
+    linkedDialogueNodeId: 'explore_kitchen_table',
+    interactionType: 'examine',
+    examineData: {
+      title: 'Чай у стола',
+      description: '«Опять не спал всю ночь?» — спрашивает она мягко.',
+      detailText: 'Хлеб, варенье и старый радиоприёмник со статикой. Единственный человек, который по-настоящему заботится о тебе.',
+      icon: '☕',
+    },
+  },
 
   /* ─────────────── OFFICE DAY ─────────────── */
   {

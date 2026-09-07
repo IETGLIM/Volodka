@@ -944,6 +944,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         next: 'colleague_gossip',
         condition: { flag: 'colleague_shared_poetry_code' },
       },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Давай начистоту — у меня накопились вопросы.',
+        next: 'office_colleague_topics',
+      },
       {
         text: 'Не буду тебя задерживать. Увидимся.',
         next: null,
@@ -995,6 +1000,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
           { type: 'setFlag', flag: 'blind_spot_active', flagValue: true },
         ],
       },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Есть серьёзный разговор. Мне нужно понять тебя.',
+        next: 'alexander_topics',
+      },
       {
         text: 'Нам не о чем говорить.',
         next: null,
@@ -1023,6 +1033,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         text: 'Новые салфетки со стихами?',
         next: 'cafe_barista_secret_messages',
         condition: { flag: 'barista_poems_received' },
+      },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Не спеши. Есть серьёзный разговор.',
+        next: 'cafe_barista_topics',
       },
       {
         text: 'Увидимся, бариста.',
@@ -1084,6 +1099,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         },
         effects: [{ type: 'visitStoryNode', nodeId: 'act7_maria_future' }],
       },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Мне нужно понять тебя. Есть серьёзный разговор.',
+        next: 'maria_topics',
+      },
       {
         text: 'Мне пора.',
         next: null,
@@ -1136,6 +1156,11 @@ export const DIALOGUE_PART2: Record<string, DialogueNode> = {
         next: null,
         condition: { flag: 'dmitry_exiled', missingFlag: 'traitor_fate_decided' },
         effects: [{ type: 'visitStoryNode', nodeId: 'act6_dmitry_exiled' }],
+      },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Дмитрий, есть серьёзный разговор. По-человечески.',
+        next: 'office_dmitry_topics',
       },
       {
         text: 'Увидимся, Дмитрий.',

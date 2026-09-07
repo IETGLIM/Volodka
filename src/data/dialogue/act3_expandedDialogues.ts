@@ -25,6 +25,12 @@ export const DIALOGUE_ACT3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addKarma', value: -1 },
         ],
       },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Я вернулся с ключами. Собери фрагменты.',
+        next: 'park_old_man_topics',
+        condition: { flag: 'rusty_keys_returned' },
+      },
     ],
   },
 
@@ -131,6 +137,12 @@ export const DIALOGUE_ACT3_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'triggerQuest', questId: 'dying_poet_last_letter' },
         ],
+      },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Письмо доставлено. Она прочитала.',
+        next: 'dying_poet_topics',
+        condition: { flag: 'last_poem_delivered' },
       },
     ],
   },
@@ -360,6 +372,12 @@ export const DIALOGUE_ACT3_EXPANDED: Record<string, DialogueNode> = {
           { type: 'addSkill', skill: 'logic', value: 1 },
         ],
       },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Подвал чист. Источник фантазмов обезврежен.',
+        next: 'factory_foreman_topics',
+        condition: { flag: 'factory_basement_cleared' },
+      },
       {
         text: 'И сколько за работу?',
         next: 'factory_foreman_payment',
@@ -515,6 +533,12 @@ export const DIALOGUE_ACT3_EXPANDED: Record<string, DialogueNode> = {
         effects: [
           { type: 'addKarma', value: -1 },
         ],
+      },
+      // FIX (аудит, этап 84): мост к темам-хабу сателлитных веток.
+      {
+        text: 'Микросхема у меня. Данные при тебе?',
+        next: 'surveillance_contact_topics',
+        condition: { flag: 'watchers_shadow_complete' },
       },
     ],
     emotion: 'whisper',

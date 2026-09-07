@@ -54,7 +54,8 @@ export type DialoguePackId =
   | 'act4New'
   | 'act3ExpandedDialogues'
   | 'act4ExpandedDialogues'
-  | 'victoria';
+  | 'victoria'
+  | 'satelliteBridges';
 
 export const STORY_PACK_ORDER: readonly StoryPackId[] = [
   'act1',
@@ -102,6 +103,10 @@ export const DIALOGUE_PACK_ORDER: readonly DialoguePackId[] = [
   // статическому слиянию dialogue/index.ts. ensureDialogueNode подгрузит
   // его по требованию при первом разговоре с хранительницей ключей.
   'victoria',
+  // FIX (аудит, этап 84): мосты-темы к сателлитным веткам (202 «мёртвых»
+  // узла глубоких разговоров) — последним, зеркально статике. Пак лёгкий
+  // (14 хабов), подгружается вместе с любым NPC-разговором по требованию.
+  'satelliteBridges',
 ] as const;
 
 /** Minimal packs for a new game (Act 1 + early NPC / exploration dialogue). */
@@ -229,6 +234,7 @@ const dialogueLoaders: Record<DialoguePackId, () => Promise<Record<string, Dialo
   act4ExpandedDialogues: () =>
     import('../dialogue/act4_expandedDialogues').then((m) => m.DIALOGUE_ACT4_EXPANDED),
   victoria: () => import('../dialogue/victoriaDialogues').then((m) => m.DIALOGUE_VICTORIA),
+  satelliteBridges: () => import('../dialogue/satelliteBridges').then((m) => m.SATELLITE_BRIDGE_NODES),
 };
 
 const storyNodes: Record<string, StoryNode> = {};
