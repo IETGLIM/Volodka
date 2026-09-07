@@ -6,6 +6,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Clock } from 'lucide-react';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 export function SessionPlayTimer() {
   const quietStyle = useHudQuietStyle();
@@ -32,7 +33,7 @@ export function SessionPlayTimer() {
       <span
         className="font-mono tracking-[0.12em] uppercase"
         style={{
-          fontSize: '7px',
+          fontSize: uiTextScaledPx(7),
           /* WS14-A contrast fix: 0.4 → 0.78 so the label reads against
              dark backgrounds. Warm-cool shadow anchors the glyph. */
           color: 'rgb(var(--cyber-cyan-rgb) / 0.82)',
@@ -48,7 +49,7 @@ export function SessionPlayTimer() {
         <span
           className="font-mono tabular-nums"
           style={{
-            fontSize: '10px',
+            fontSize: uiTextScaledPx(10),
             color: 'rgb(var(--cyber-cyan-rgb) / 0.92)',
             textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.35), 0 1px 4px rgba(0, 0, 0, 0.75)',
           }}
@@ -58,7 +59,7 @@ export function SessionPlayTimer() {
         <span
           className="session-timer-blink hud-filmic-timer-colon-blink font-mono"
           style={{
-            fontSize: '10px',
+            fontSize: uiTextScaledPx(10),
             color: 'rgb(var(--cyber-cyan-rgb) / 0.92)',
             textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.35), 0 1px 4px rgba(0, 0, 0, 0.75)',
           }}
@@ -68,7 +69,7 @@ export function SessionPlayTimer() {
         <span
           className="font-mono tabular-nums"
           style={{
-            fontSize: '10px',
+            fontSize: uiTextScaledPx(10),
             color: 'rgb(var(--cyber-cyan-rgb) / 0.92)',
             textShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.35), 0 1px 4px rgba(0, 0, 0, 0.75)',
           }}

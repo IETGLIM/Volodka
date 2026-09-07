@@ -16,6 +16,7 @@ import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { explorationAchievementCardSafeTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { CATEGORY_META, RARITY_META, TROPHY_ACHIEVEMENTS, type AchievementCategory } from '@/data/achievements';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── FIX (dedup): трофеи празднуются полноэкранной кут-сценой
    AchievementUnlockCelebration и не должны ПОВТОРНО показываться
@@ -183,7 +184,7 @@ function AchievementCard({
             width: 40,
             height: 40,
             background: `${catMeta?.color ?? '#fbbf24'}15`,
-            fontSize: 20,
+            fontSize: uiTextScaledPx(20),
             boxShadow: `0 0 12px ${catMeta?.color ?? '#fbbf24'}25`,
           }}
         >

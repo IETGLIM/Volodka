@@ -25,6 +25,8 @@
  *     верхняя центральная (у панели врага), по игроку — левая нижняя
  *     (у карточки игрока), реал-тайм замахи — центр экрана;
  *   • prefers-reduced-motion → статичная позиция, короткий fade;
+ *   • font-size через uiTextScaledPx (аудит-этап 79): числа подчиняются
+ *     слайдеру «Масштаб интерфейса», как и весь HUD;
  *   • dispose/revive: resetEngineModuleRuntimeState + HMR (паттерн
  *     floatingTextService).
  *
@@ -38,6 +40,7 @@
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ── Типы ─────────────────────────────────────────────────────────────────── */
 
@@ -279,7 +282,7 @@ function applyTextStyle(live: LiveNumber, kind: DamageNumberKind): void {
   const style = live.el.style;
   style.color = s.color;
   style.textShadow = s.glow;
-  style.fontSize = `${s.fontSizePx}px`;
+  style.fontSize = uiTextScaledPx(s.fontSizePx);
   style.fontWeight = String(s.weight);
   style.letterSpacing = s.letterSpacing;
 }

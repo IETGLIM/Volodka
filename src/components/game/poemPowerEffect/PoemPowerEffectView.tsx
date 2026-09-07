@@ -12,6 +12,7 @@ import {
   hexToRgba,
 } from '@/engine/poemPower/poemPowerEffectPresentation';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 type PoemPowerEffectViewProps = {
   notification: ActivePowerNotification | null;
@@ -51,7 +52,7 @@ function MatrixRain({
             top: '-10%',
             whiteSpace: 'nowrap',
             fontFamily: '"Courier New", monospace',
-            fontSize: '13px',
+            fontSize: uiTextScaledPx(13),
             lineHeight: '15px',
           }}
           initial={{ y: 0, opacity: 0.8 }}

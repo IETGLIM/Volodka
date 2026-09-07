@@ -13,6 +13,7 @@ import { useGamePhase, useMatrixRainOverlayState } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /** Character set: digits, hex, brackets, operators, Greek, Cyrillic, OpenStack/Bash commands */
 const CHARS = '0123456789ABCDEF{}[]<>/\\|#$@!αβγδεζηθклмнопрстуфхцчшщъыьэюяsudo_openstack_nova_awk_grep';
@@ -340,7 +341,7 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
               : `matrixFall ${col.duration / effectiveSpeed}s linear ${col.delay / effectiveSpeed}s infinite`,
             whiteSpace: 'nowrap',
             fontFamily: '"Courier New", "Lucida Console", monospace',
-            fontSize: `${activePreset.fontSize}px`,
+            fontSize: uiTextScaledPx(activePreset.fontSize),
             lineHeight: `${activePreset.fontSize}px`,
           }}
         >

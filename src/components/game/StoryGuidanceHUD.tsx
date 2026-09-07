@@ -46,6 +46,7 @@ import {
   type QuestObjectiveKind,
 } from '@/hooks/questHudPresentation';
 import type { QuestType } from '@/shared/types/game';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 const GUIDANCE_DISMISS_KEY = 'volodka_guidance_dismissed_sig';
 
 export function StoryGuidanceHUD() {
@@ -453,7 +454,7 @@ export function StoryGuidanceHUD() {
                   />
                 </div>
                 {progressLabel ? (
-                  <span className="hud-filmic-kicker shrink-0" style={{ letterSpacing: '0.08em', fontSize: 8 }}>
+                  <span className="hud-filmic-kicker shrink-0" style={{ letterSpacing: '0.08em', fontSize: uiTextScaledPx(8) }}>
                     {progressLabel}
                   </span>
                 ) : null}
@@ -511,7 +512,7 @@ export function StoryGuidanceHUD() {
                   <p className="hud-filmic-body text-[11px] opacity-70 mt-1">{chapterTitle}</p>
                 ) : null}
                 {progressLabel ? (
-                  <p className="hud-filmic-kicker mt-1" style={{ letterSpacing: '0.1em', fontSize: 8 }}>
+                  <p className="hud-filmic-kicker mt-1" style={{ letterSpacing: '0.1em', fontSize: uiTextScaledPx(8) }}>
                     {progressLabel} · {progressPercent}%
                   </p>
                 ) : null}

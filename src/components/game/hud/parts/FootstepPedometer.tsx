@@ -7,6 +7,7 @@ import { useEffect, useRef } from 'react';
 import { Footprints } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 const POP_MS = 300;
 const SPM_REFRESH_MS = 2000;
@@ -78,7 +79,7 @@ export function FootstepPedometer() {
       <span
         className="font-mono tracking-[0.12em] uppercase"
         style={{
-          fontSize: '7px',
+          fontSize: uiTextScaledPx(7),
           /* WS14-A contrast fix: 0.4 → 0.78 so the label is legible against
              dark scenes. Subtle warm shadow anchors the glyph. */
           color: 'rgba(110, 231, 183, 0.78)',
@@ -98,7 +99,7 @@ export function FootstepPedometer() {
           ref={countElRef}
           style={{
             fontFamily: 'monospace',
-            fontSize: '9px',
+            fontSize: uiTextScaledPx(9),
             color: 'rgba(167, 243, 208, 0.92)',
             textShadow: '0 1px 4px rgba(0, 0, 0, 0.75)',
             fontVariantNumeric: 'tabular-nums',
@@ -115,7 +116,7 @@ export function FootstepPedometer() {
         className="font-mono"
         hidden
         style={{
-          fontSize: '7px',
+          fontSize: uiTextScaledPx(7),
           color: 'rgba(110, 231, 183, 0.65)',
           textShadow: '0 1px 3px rgba(0, 0, 0, 0.7)',
           lineHeight: 1,

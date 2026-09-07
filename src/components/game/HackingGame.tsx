@@ -17,6 +17,7 @@ import {
   HACKING_CYAN_COLOR,
   HACKING_CYAN_RGB,
 } from '@/components/game/hacking/hackingGamePresentation';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 interface HackingGameProps {
   onClose: () => void;
@@ -106,7 +107,7 @@ export function HackingGame({ onClose }: HackingGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: HACKING_ACCENT_COLOR, fontSize: '18px' }} aria-hidden="true">🔓</span>
+            <span style={{ color: HACKING_ACCENT_COLOR, fontSize: uiTextScaledPx(18) }} aria-hidden="true">🔓</span>
             <h2
               id="hacking-game-title"
               className="text-sm font-bold tracking-widest uppercase"

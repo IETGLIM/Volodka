@@ -1,3 +1,55 @@
+## v4.15.5 (2026-09-07) — системный uiTextScale: слайдер масштаба управляет всем текстом UI (этап 79 закрыт)
+
+### Контекст
+Этап 79 аудита: «Микротекст 7–10px в 194 файлах, частично гейтируется».
+Слайдер «Масштаб интерфейса» (настройки доступности, 85–130%) применял
+`--volodka-ui-text-scale` на `<html>`, но корневое правило
+`html{font-size:calc(16px*var(…))}` масштабирует ТОЛЬКО rem-текст. Реальный
+интерфейс задавал размер шрифта px-литералами: ~1200 Tailwind
+arbitrary-классов (`text-[7px]`…`text-[13px]`), ~190 ручных CSS-деклараций
+и 57 инлайн-стилей React — слайдер не влиял на ~95% текста HUD и панелей.
+
+### Новое
+- **`vite/uiTextScalePostcss.mjs`** — PostCSS-плагин `volodka-ui-text-scale`:
+  каждая декларация `font-size` с ЧИСТЫМ px-литералом переписывается в
+  `calc(Npx * var(--volodka-ui-text-scale, 1))`. Подключён через
+  `postcss.config.mjs`. Благодаря `enforce:'pre'` у `@tailwindcss/vite`
+  плагин видит уже развёрнутые утилиты — работает в dev и build одинаково,
+  ноль правок 194 исходников, будущие `text-[Npx]` подчиняются масштабу
+  автоматически. Границы: rem/em/%/calc()/var() не трогаются (нет двойного
+  масштабирования rem-цепочки), line-height не трогается (px-leading —
+  раскладочный приём).
+- **`src/engine/accessibility/uiTextScaleCss.ts`** — хелпер `uiTextScaledPx(N)`
+  для инлайн-стилей и DOM-слоёв движка (единый источник имени переменной).
+- **Кодмод 57 инлайн-замен** в 29 файлах: `fontSize: '10px'`/`fontSize: 10` →
+  `uiTextScaledPx(10)` — HUD-виджеты (SessionPlayTimer, KarmaTierBadge,
+  FootstepPedometer, ExplorationProgressBadge, SkillRechargeHUD,
+  ActiveQuestMiniTracker, StoryGuidanceHUD), уведомления
+  (QuestNotificationSystem, AchievementNotification, AchievementDetailsPanel),
+  минигеймы (Hacking, CodeBreaker, BashTerminal, матрицы), индикаторы
+  (NpcEmotionIndicator, UmkaDog, WorldItemPickupGlow), WebGL-context-loss
+  оверлей, панели квестов/ачивок.
+- **Числа урона** (damageNumberLayer): font-size пула теперь через
+  `uiTextScaledPx` — боевой фидбэк масштабируется вместе с HUD.
+- **Кастомное свойство `--dr-font-size`** (particle-effects.css) — единственный
+  найденный обходной случай, переведён на calc вручную.
+- Canvas-текстуры 3D-мира (монитры, сны) — диегетический арт, масштабируется
+  перспективой камеры; осознанно ВНЕ uiTextScale.
+
+### Тесты
+- `vite/uiTextScalePostcss.test.ts` — 9 тестов: переписывание px (вкл.
+  минифицированные декларации и `!important`), идемпотентность, неприкосновенность
+  rem/em/%/calc/var/line-height.
+- `src/engine/accessibility/uiTextScaleCss.test.ts` — 3 теста хелпера
+  (вкл. сверку имени переменной с DOM-хуком менеджера).
+
+### Верификация
+- Интеграционная проверка реального конвейера (in-process Vite transform,
+  БЕЗ dev-сервера): **244 calc-переписывания, 0 оставшихся px-литералов
+  font-size** в итоговом CSS (~1.19 МБ).
+- tsc 0 ошибок; eslint 0 ошибок; vitest 412 файлов / 2501 тест PASS;
+  validate-content 0 нарушений; placement 799/0.
+
 ## v4.15.4 (2026-09-07) — вайринг Виктории + dialogue-parity guard (этапы 95–96 закрыты)
 
 ### Контекст

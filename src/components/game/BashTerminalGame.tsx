@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Types ─── */
 
@@ -425,7 +426,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: '#00ff41', fontSize: '14px' }}>&#9608;</span>
+            <span style={{ color: '#00ff41', fontSize: uiTextScaledPx(14) }}>&#9608;</span>
             <h2
               className="text-xs font-bold tracking-widest uppercase"
               style={{ color: '#00ff41', fontFamily: 'monospace' }}
@@ -512,7 +513,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
           className="px-4 py-3 max-h-64 overflow-y-auto"
           style={{
             fontFamily: 'monospace',
-            fontSize: '11px',
+            fontSize: uiTextScaledPx(11),
             lineHeight: '1.5',
             scrollbarWidth: 'thin',
             scrollbarColor: 'rgba(0,255,65,0.2) transparent',

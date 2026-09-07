@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useGameStore, getGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -125,7 +126,7 @@ function whisperContainerStyle(side: WhisperSide): React.CSSProperties {
 }
 
 const WHISPER_TEXT_STYLE: React.CSSProperties = {
-  fontSize: '11px',
+  fontSize: uiTextScaledPx(11),
   fontStyle: 'italic',
   color: 'var(--cyber-cyan)',
   opacity: 0.45,

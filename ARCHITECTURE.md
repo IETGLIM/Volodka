@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.15.4** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.15.5** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1698,6 +1698,36 @@ reset в engineRuntimeReset), **ноль React**:
 из CombatDamageFx, CSS-кейфреймы `hud-filmic-damage-rise-fade`.
 `useCombatUiController` больше не хранит damageNumbers/richDamageEvents —
 только крит-шейк/вспышки (фидбэк экрана, не числа).
+
+## v4.15.5 — системный uiTextScale (этап 79)
+
+### Проблема
+- Слайдер «Масштаб интерфейса» (85–130%) задавал `--volodka-ui-text-scale`
+  на `<html>`, но масштабировал только rem-текст: ~1200 Tailwind
+  arbitrary-классов (`text-[7px]`…`text-[13px]`), ~190 ручных CSS-деклараций
+  и 57 инлайн-стилей задавали размер шрифта px-литералами — слайдер не влиял
+  на ~95% текста HUD/панелей.
+
+### Решение
+- **`vite/uiTextScalePostcss.mjs`** — PostCSS-плагин в цепочке после
+  `@tailwindcss/vite` (enforce:'pre' разворачивает утилиты до vite:css):
+  чистые px-литералы `font-size` → `calc(Npx * var(--volodka-ui-text-scale, 1))`.
+  Работает в dev и build одинаково; rem/em/%/calc()/var() и line-height не
+  трогаются — нет двойного масштабирования rem-цепочки, сетки не ломаются.
+  Интеграционная проверка конвейера: 244 переписывания, 0 px-литералов
+  font-size в финальном CSS.
+- **`src/engine/accessibility/uiTextScaleCss.ts`** — `uiTextScaledPx(N)` для
+  инлайн-стилей (57 замен в 29 файлах: HUD-виджеты, уведомления, минигеймы,
+  индикаторы) и DOM-слоёв движка (числа урона damageNumberLayer).
+- Кастомные CSS-свойства вида `--dr-font-size` (единственный случай) —
+  переведены на calc вручную; canvas-текстуры 3D — диегетика, вне масштаба.
+- Тесты: `vite/uiTextScalePostcss.test.ts` (9),
+  `src/engine/accessibility/uiTextScaleCss.test.ts` (3).
+
+### Правило
+- Новый инлайн-размер текста в TSX — через `uiTextScaledPx(N)`, НЕ px-литералом.
+- Новый CSS px-литерал font-size автоматически подхватится плагином —
+  добавлять var() вручную в CSS не нужно.
 
 ## v4.15.4 — вайринг Виктории + dialogue-parity (этапы 95–96)
 

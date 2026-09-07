@@ -6,6 +6,7 @@
 import { useMemo } from 'react';
 import { CORE_SCENE_IDS } from '@/config/sceneIds';
 import { useDiscoveredScenes } from '@/store/selectors/explorationSelectors';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 export function ExplorationProgressBadge() {
   const discoveredScenes = useDiscoveredScenes();
@@ -89,7 +90,7 @@ export function ExplorationProgressBadge() {
       <span
         className="font-mono tracking-[0.12em] uppercase"
         style={{
-          fontSize: '8px',
+          fontSize: uiTextScaledPx(8),
           color: 'rgba(0, 255, 100, 0.45)',
           lineHeight: 1,
         }}
@@ -100,7 +101,7 @@ export function ExplorationProgressBadge() {
       <span
         className="font-mono"
         style={{
-          fontSize: '7px',
+          fontSize: uiTextScaledPx(7),
           color: 'rgba(148, 163, 184, 0.4)',
           lineHeight: 1,
         }}

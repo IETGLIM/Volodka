@@ -14,6 +14,7 @@ import {
   type TextureResolutionTier,
 } from './params';
 import { generateProceduralAaaScene } from './ProceduralAaaManager';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 const PANEL_STYLE: React.CSSProperties = {
   position: 'fixed',
@@ -29,7 +30,7 @@ const PANEL_STYLE: React.CSSProperties = {
   padding: '10px 12px',
   color: '#d8dff5',
   fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
-  fontSize: 11,
+  fontSize: uiTextScaledPx(11),
   boxShadow: '0 8px 28px rgba(0,0,0,0.45)',
 };
 
@@ -171,7 +172,7 @@ export function ProceduralAaaTweakPanel({ startOpen = false }: { startOpen?: boo
       <Slider label="spectrumFlicker" value={params.spectrumFlicker} min={0} max={1} step={0.01} onChange={(v) => patch({ spectrumFlicker: v })} />
       <Slider label="characterScale" value={params.characterScale} min={0.5} max={1.5} step={0.01} onChange={(v) => patch({ characterScale: v })} />
 
-      <p style={{ marginTop: 8, opacity: 0.55, fontSize: 10 }}>
+      <p style={{ marginTop: 8, opacity: 0.55, fontSize: uiTextScaledPx(10) }}>
         Defaults seed={DEFAULT_PROCEDURAL_AAA_PARAMS.seed}
       </p>
     </div>,

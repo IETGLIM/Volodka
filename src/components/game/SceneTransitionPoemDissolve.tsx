@@ -8,6 +8,7 @@
 
 import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 export interface TransitionEffectProps {
   accentColor: string;
@@ -104,7 +105,7 @@ export const PoemDissolveTransition = memo(function PoemDissolveTransition({
               left: `${line.x}%`,
               top: `${line.y}%`,
               fontFamily: '"Geist", ui-sans-serif, sans-serif',
-              fontSize: `${line.fontSize}px`,
+              fontSize: uiTextScaledPx(Number(line.fontSize)),
               color: accentColor,
               textShadow: `0 0 12px ${accentColor}40, 0 0 24px ${accentColor}20`,
               letterSpacing: '0.05em',

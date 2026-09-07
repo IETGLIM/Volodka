@@ -22,6 +22,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* Import enhanced quick slot styles */
 import '@/styles/hud-round12.css';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Type Definitions ─── */
 
@@ -486,7 +487,7 @@ const SkillSlotItem = memo(function SkillSlotItem({
           >
             <span
               style={{
-                fontSize: 12,
+                fontSize: uiTextScaledPx(12),
                 fontWeight: 600,
                 color: '#ffffff',
                 display: 'block',
@@ -497,7 +498,7 @@ const SkillSlotItem = memo(function SkillSlotItem({
             </span>
             <span
               style={{
-                fontSize: 10,
+                fontSize: uiTextScaledPx(10),
                 color: ready ? COLORS.cyan : COLORS.amber,
                 display: 'flex',
                 alignItems: 'center',
@@ -709,7 +710,7 @@ export const SkillRechargeHUD = memo(function SkillRechargeHUD({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: 9,
+            fontSize: uiTextScaledPx(9),
             fontWeight: 700,
             fontFamily: 'monospace',
             color: COLORS.cyan,

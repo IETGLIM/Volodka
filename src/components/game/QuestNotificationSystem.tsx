@@ -21,6 +21,7 @@ import { useQuests } from '@/store/selectors'
 import type { QuestState } from '@/shared/types/game'
 import { formatQuestCompletionRewards } from '@/shared/utils/questRewards'
 import { dispatchGameAction } from '@/shared/gameBridge/gameActionBridge'
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Notification types ─── */
 
@@ -297,7 +298,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
             borderRadius: 6,
             background: style.iconBg,
             color: style.textColor,
-            fontSize: 14,
+            fontSize: uiTextScaledPx(14),
             flexShrink: 0,
             fontWeight: 700,
           }}
@@ -309,7 +310,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
           <span
             style={{
               color: style.textColor,
-              fontSize: 11,
+              fontSize: uiTextScaledPx(11),
               fontWeight: 700,
               letterSpacing: '0.04em',
               textTransform: 'uppercase',
@@ -320,7 +321,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
           <span
             style={{
               color: 'rgba(255,255,255,0.92)',
-              fontSize: 13,
+              fontSize: uiTextScaledPx(13),
               fontWeight: 600,
               lineHeight: 1.3,
               whiteSpace: 'nowrap',
@@ -338,7 +339,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
         <span
           style={{
             color: 'rgba(255,255,255,0.55)',
-            fontSize: 11,
+            fontSize: uiTextScaledPx(11),
             lineHeight: 1.3,
           }}
         >
@@ -351,7 +352,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
         <span
           style={{
             color: 'rgba(255,255,255,0.55)',
-            fontSize: 11,
+            fontSize: uiTextScaledPx(11),
             lineHeight: 1.3,
           }}
         >
@@ -365,7 +366,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
           <span
             style={{
               color: 'rgba(255,255,255,0.55)',
-              fontSize: 11,
+              fontSize: uiTextScaledPx(11),
               lineHeight: 1.3,
             }}
           >
@@ -379,7 +380,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
           <span
             style={{
               color: style.textColor,
-              fontSize: 10,
+              fontSize: uiTextScaledPx(10),
               fontWeight: 600,
               marginTop: 2,
               display: 'block',
@@ -394,7 +395,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
         <span
           style={{
             color: 'rgba(255,255,255,0.45)',
-            fontSize: 10,
+            fontSize: uiTextScaledPx(10),
             lineHeight: 1.3,
           }}
         >
@@ -407,7 +408,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
         <span
           style={{
             color: 'rgba(255,255,255,0.55)',
-            fontSize: 11,
+            fontSize: uiTextScaledPx(11),
             lineHeight: 1.3,
           }}
         >
@@ -422,7 +423,7 @@ function QuestNotifCard({ notif, onDismiss, onQuestCompleteClick, reducedMotion 
             <span
               style={{
                 color: 'rgba(255,255,255,0.55)',
-                fontSize: 11,
+                fontSize: uiTextScaledPx(11),
                 lineHeight: 1.3,
               }}
             >

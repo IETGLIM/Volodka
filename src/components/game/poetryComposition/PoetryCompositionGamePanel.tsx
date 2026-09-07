@@ -16,6 +16,7 @@ import {
   getShellTransition,
 } from '@/engine/minigame/poetryComposition/poetryCompositionPresentation';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 export type PoetryCompositionGameProps = {
   onClose: () => void;
@@ -70,7 +71,7 @@ function PoetryCompositionGameInner({ onClose }: PoetryCompositionGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: POETRY_COMPOSITION_ACCENT_COLOR, fontSize: '18px' }} aria-hidden="true">
+            <span style={{ color: POETRY_COMPOSITION_ACCENT_COLOR, fontSize: uiTextScaledPx(18) }} aria-hidden="true">
               ✨
             </span>
             <h2 className="text-sm font-bold tracking-widest uppercase font-mono" style={{ color: POETRY_COMPOSITION_ACCENT_COLOR }}>

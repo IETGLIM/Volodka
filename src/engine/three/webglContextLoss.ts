@@ -17,6 +17,7 @@ import { disposeAllModuleGeometries } from '@/engine/three/moduleGeometryRegistr
 import { disposeAllModuleMaterials } from '@/engine/three/moduleMaterialRegistry';
 
 import { devWarn, devInfo } from '@/shared/utils/devLog';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 const CONTEXT_LOST_MESSAGE = 'Потеряно соединение с видеокартой. Ожидание восстановления...';
 
 let overlayElement: HTMLDivElement | null = null;
@@ -39,7 +40,7 @@ function showOverlay(): void {
     background: 'rgba(0, 0, 0, 0.85)',
     color: 'rgba(200, 220, 255, 0.9)',
     fontFamily: 'monospace',
-    fontSize: '16px',
+    fontSize: uiTextScaledPx(16),
     letterSpacing: '0.08em',
     textAlign: 'center',
     padding: '24px',

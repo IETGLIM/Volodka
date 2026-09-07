@@ -5,6 +5,7 @@ import {
 } from '@/engine/matrixQuote/matrixQuotePresentation';
 import { useDeviceTier } from '@/hooks/useDeviceTier';
 import { useViewportWidth } from '@/hooks/useViewportWidth';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 type MatrixRainColumnsProps = {
   color: string;
@@ -36,7 +37,7 @@ export const MatrixRainColumns = memo(function MatrixRainColumns({ color }: Matr
             animation: `matrixFallQuote ${col.duration}s linear ${col.delay}s infinite`,
             whiteSpace: 'nowrap',
             fontFamily: '"Courier New", monospace',
-            fontSize: '14px',
+            fontSize: uiTextScaledPx(14),
             lineHeight: '14px',
           }}
         >

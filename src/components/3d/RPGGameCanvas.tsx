@@ -49,6 +49,7 @@ import { isPostfxActive } from '@/engine/graphics/postfxActiveState';
 import { SCENE_OVERLAY_MS } from '@/shared/constants/transitionTimings';
 import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
 import { colorBlindModeToFilter } from '@/components/a11y/ColorBlindFilters';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 const LazyPhysicsSceneInner = lazy(() =>
   import('./PhysicsSceneInner').then((m) => ({ default: m.PhysicsSceneInner })),
@@ -210,7 +211,7 @@ class Canvas3DErrorBoundary extends Component<
             background: '#000',
             color: 'rgba(200, 220, 255, 0.6)',
             fontFamily: 'monospace',
-            fontSize: '14px',
+            fontSize: uiTextScaledPx(14),
             letterSpacing: '0.1em',
             gap: '16px',
           }}
@@ -227,7 +228,7 @@ class Canvas3DErrorBoundary extends Component<
               cursor: this.state.isRemounting ? 'wait' : 'pointer',
               opacity: this.state.isRemounting ? 0.5 : 1,
               fontFamily: 'monospace',
-              fontSize: '12px',
+              fontSize: uiTextScaledPx(12),
               letterSpacing: '0.1em',
             }}
           >
@@ -248,7 +249,7 @@ class Canvas3DErrorBoundary extends Component<
             background: '#000',
             color: 'rgba(200, 220, 255, 0.6)',
             fontFamily: 'monospace',
-            fontSize: '14px',
+            fontSize: uiTextScaledPx(14),
             letterSpacing: '0.1em',
           }}
         >

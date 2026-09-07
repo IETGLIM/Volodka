@@ -18,6 +18,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { QuestType } from '@/shared/types/game';
 import { focusQuestOnMap } from './focusQuestOnMap';
 import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 const CYCLE_INTERVAL_MS = 10_000;
 
@@ -331,7 +332,7 @@ export function ActiveQuestMiniTracker() {
                       transition={{ duration: 0.4 }}
                     />
                   </div>
-                  <span className="hud-filmic-kicker tabular-nums" style={{ letterSpacing: '0.08em', fontSize: 8 }}>
+                  <span className="hud-filmic-kicker tabular-nums" style={{ letterSpacing: '0.08em', fontSize: uiTextScaledPx(8) }}>
                     {progress}%
                   </span>
                 </div>
@@ -408,7 +409,7 @@ export function ActiveQuestMiniTracker() {
                     Карта
                   </button>
                   {activeQuests.length > 1 && (
-                    <span className="hud-filmic-kicker ml-auto" style={{ letterSpacing: '0.08em', fontSize: 8 }}>
+                    <span className="hud-filmic-kicker ml-auto" style={{ letterSpacing: '0.08em', fontSize: uiTextScaledPx(8) }}>
                       {activeQuests.indexOf(displayQuest) + 1}/{activeQuests.length}
                     </span>
                   )}

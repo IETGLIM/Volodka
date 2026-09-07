@@ -6,6 +6,7 @@
 
 import { motion } from 'framer-motion';
 import { getKarmaTierLabel, getKarmaTier, type KarmaTier } from '@/shared/utils/karmaTier';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 const TIER_STYLES: Record<KarmaTier, {
   color: string;
@@ -62,7 +63,7 @@ export function KarmaTierBadge({ karma }: { karma: number }) {
       }}
       transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
     >
-      <span aria-hidden="true" style={{ fontSize: '8px' }}>{style.icon}</span>
+      <span aria-hidden="true" style={{ fontSize: uiTextScaledPx(8) }}>{style.icon}</span>
       <span>{label}</span>
     </motion.div>
   );

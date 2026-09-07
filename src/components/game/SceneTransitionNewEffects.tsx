@@ -10,6 +10,7 @@ import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { GlitchRevealTransition } from './SceneTransitionGlitchReveal';
 import { PoemDissolveTransition } from './SceneTransitionPoemDissolve';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ══════════════════════════════════════════════════════════════
    TYPES
@@ -228,7 +229,7 @@ export const DataStreamTransition = memo(function DataStreamTransition({
               left: `${col.left}%`,
               width: '14px',
               fontFamily: 'monospace',
-              fontSize: '11px',
+              fontSize: uiTextScaledPx(11),
               lineHeight: '14px',
               color: accentColor,
               textShadow: `0 0 8px ${accentColor}80`,

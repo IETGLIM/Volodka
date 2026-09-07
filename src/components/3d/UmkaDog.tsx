@@ -12,6 +12,7 @@ import { getGameSnapshot } from "@/engine/GameActionDispatcher";
 import { getCurrentScheduleEntry } from '@/engine/ScheduleEngine';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import type { MutableRefObject } from 'react';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 const UMKA_SCENES = new Set(['volodka_corridor', 'solnysh_room']);
 const CORRIDOR_VERA_ANCHOR: [number, number, number] = [0, 0, 1.5];
@@ -134,7 +135,7 @@ export function UmkaDog({ livePlayerPositionRef }: UmkaDogProps) {
         <div
           ref={labelRef}
           style={{
-            fontSize: '10px',
+            fontSize: uiTextScaledPx(10),
             fontWeight: 600,
             color: '#ffe8c0',
             textShadow: '0 1px 3px rgba(0,0,0,0.8)',

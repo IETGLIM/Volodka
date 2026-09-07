@@ -26,6 +26,7 @@ import {
   type AchievementCategory } from '@/data/achievements';
 import { formatStoryEffectReward } from '@/data/achievementHelpers';
 import { resolveAchievementProgress } from '@/engine/achievementProgressResolver';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Types ─── */
 
@@ -123,7 +124,7 @@ function AchievementCard({
           style={{
             width: 44,
             height: 44,
-            fontSize: 22,
+            fontSize: uiTextScaledPx(22),
             boxShadow: unlocked
               ? `0 0 12px ${meta.color}30`
               : 'none',
@@ -241,7 +242,7 @@ function AchievementDetailPopup({
             style={{
               width: 56,
               height: 56,
-              fontSize: 28,
+              fontSize: uiTextScaledPx(28),
               background: unlocked ? 'rgba(251,191,36,0.1)' : 'rgba(30,41,59,0.4)',
               boxShadow: unlocked ? '0 0 20px rgba(251,191,36,0.2)' : 'none',
               filter: unlocked ? 'none' : 'grayscale(1) brightness(0.4)' }}

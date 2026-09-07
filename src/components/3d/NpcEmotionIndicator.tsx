@@ -15,6 +15,7 @@ import {
   type NpcEmotion,
 } from '@/engine/npc/npcEmotionTypes';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Glyphs ─── */
 
@@ -153,7 +154,7 @@ export function NpcEmotionIndicator({ npcId }: { npcId: string }) {
         >
           <div
             style={{
-              fontSize: 22,
+              fontSize: uiTextScaledPx(22),
               lineHeight: 1,
               filter: 'drop-shadow(0 0 6px rgba(0,0,0,0.85))',
               transform: 'translateZ(0)',
@@ -163,7 +164,7 @@ export function NpcEmotionIndicator({ npcId }: { npcId: string }) {
           </div>
           <span
             style={{
-              fontSize: 9,
+              fontSize: uiTextScaledPx(9),
               fontFamily: 'ui-monospace, monospace',
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
@@ -221,7 +222,7 @@ export function NpcEmotionIndicator({ npcId }: { npcId: string }) {
           >
             <div
               style={{
-                fontSize: 22,
+                fontSize: uiTextScaledPx(22),
                 lineHeight: 1,
                 filter: 'drop-shadow(0 0 6px rgba(0,0,0,0.85))',
                 transform: 'translateZ(0)',
@@ -231,7 +232,7 @@ export function NpcEmotionIndicator({ npcId }: { npcId: string }) {
             </div>
             <span
               style={{
-                fontSize: 9,
+                fontSize: uiTextScaledPx(9),
                 fontFamily: 'ui-monospace, monospace',
                 letterSpacing: '0.06em',
                 textTransform: 'uppercase',

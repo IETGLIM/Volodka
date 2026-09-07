@@ -27,6 +27,7 @@ import {
 } from '@/engine/quest/questAcceptDialogPresentation';
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
   const dialog = useQuestAcceptDialogController(props);
@@ -298,7 +299,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <span style={{ color: '#00ff66', fontSize: '14px' }} aria-hidden="true">
+                      <span style={{ color: '#00ff66', fontSize: uiTextScaledPx(14) }} aria-hidden="true">
                         📜
                       </span>
                       <span className="text-[11px] font-mono" style={{ color: '#66ffaa' }}>

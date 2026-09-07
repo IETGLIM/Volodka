@@ -19,6 +19,7 @@ import {
   type CollectBurstParticle,
 } from '@/engine/interaction/pickupCollectBurst';
 import { getSharedCircleGeometry } from '@/engine/three/moduleGeometryRegistry';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 const GLOW_COLOR = '#fbbf24'; // amber
 const GLOW_RADIUS = 0.35;
@@ -99,7 +100,7 @@ function PickupGlow({ position, label }: PickupGlowProps) {
             background: 'rgba(0,0,0,0.7)',
             border: `1px solid ${GLOW_COLOR}`,
             color: GLOW_COLOR,
-            fontSize: '11px',
+            fontSize: uiTextScaledPx(11),
             fontFamily: 'monospace',
             whiteSpace: 'nowrap',
             pointerEvents: 'none',

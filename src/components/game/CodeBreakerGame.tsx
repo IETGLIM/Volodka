@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Constants ─── */
 const CODE_LENGTH = 4;
@@ -174,7 +175,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: '#00ffee', fontSize: '18px' }}>⚡</span>
+            <span style={{ color: '#00ffee', fontSize: uiTextScaledPx(18) }}>⚡</span>
             <h2
               className="text-sm font-bold tracking-widest uppercase"
               style={{ color: '#00ffee', fontFamily: 'monospace' }}

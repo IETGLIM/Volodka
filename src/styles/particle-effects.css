@@ -175,7 +175,7 @@
   flex-direction: column;
   gap: 4px;
   font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-  font-size: var(--dr-font-size, 10px);
+  font-size: var(--dr-font-size, calc(10px * var(--volodka-ui-text-scale, 1)));
   color: rgb(var(--cyber-matrix-rgb, 0, 255, 65) / var(--dr-opacity, 0.3));
   animation: data-fall var(--dr-speed, 6s) linear var(--dr-delay, 0s) infinite;
   will-change: transform, opacity;
@@ -338,7 +338,7 @@
 /* Mobile: reduce particle count implicitly by limiting container size */
 @media (max-width: 768px) {
   .data-rain-column {
-    --dr-font-size: 8px;
+    --dr-font-size: calc(8px * var(--volodka-ui-text-scale, 1));
   }
 
   .celebration-burst .celeb-particle {

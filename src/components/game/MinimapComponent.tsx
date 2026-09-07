@@ -69,6 +69,7 @@ import {
   sharedPlayerPositionRef,
   sharedPlayerRotationRef,
 } from '@/engine/PlayerRotationState';
+import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Constants ─── */
 
@@ -993,7 +994,7 @@ export function MinimapComponent() {
                     className="font-mono leading-none"
                     style={{
                       display: 'inline-block',
-                      fontSize: 11,
+                      fontSize: uiTextScaledPx(11),
                       color: cyberCyan(0.75),
                       transform: `rotate(${pillState.northDeg}deg)`,
                       transition: 'transform 0.2s linear',
@@ -1010,7 +1011,7 @@ export function MinimapComponent() {
                     >
                       <span
                         style={{
-                          fontSize: 9,
+                          fontSize: uiTextScaledPx(9),
                           color: pillState.questReady ? QUEST_READY_COLOR : QUEST_ACTIVE_COLOR,
                           textShadow: `0 0 4px ${
                             pillState.questReady ? QUEST_READY_COLOR : QUEST_ACTIVE_COLOR
@@ -1021,7 +1022,7 @@ export function MinimapComponent() {
                       </span>
                       <span
                         className="font-mono"
-                        style={{ fontSize: 8, color: 'rgba(226, 232, 240, 0.85)' }}
+                        style={{ fontSize: uiTextScaledPx(8), color: 'rgba(226, 232, 240, 0.85)' }}
                       >
                         {pillState.questLabel.length > 10
                           ? `${pillState.questLabel.slice(0, 9)}…`
@@ -1056,7 +1057,7 @@ export function MinimapComponent() {
                   width: 44,
                   height: 44,
                   borderRadius: '50%',
-                  fontSize: 18,
+                  fontSize: uiTextScaledPx(18),
                   lineHeight: 1,
                   fontFamily: 'var(--font-mono, monospace)',
                   color: cyberCyan(0.8),
@@ -1070,7 +1071,7 @@ export function MinimapComponent() {
               </button>
               <span
                 className="font-mono whitespace-nowrap text-center"
-                style={{ fontSize: 8, color: cyberCyan(0.55), minWidth: 40 }}
+                style={{ fontSize: uiTextScaledPx(8), color: cyberCyan(0.55), minWidth: 40 }}
                 aria-hidden="true"
               >
                 {zoomLabel}
@@ -1086,7 +1087,7 @@ export function MinimapComponent() {
                   width: 44,
                   height: 44,
                   borderRadius: '50%',
-                  fontSize: 18,
+                  fontSize: uiTextScaledPx(18),
                   lineHeight: 1,
                   fontFamily: 'var(--font-mono, monospace)',
                   color: cyberCyan(0.8),
