@@ -55,6 +55,9 @@ function buildSnapshotCacheKey(state: GameStoreState): SnapshotCacheKey {
     state.rainIntensity,
     state.acquiredThoughtIds,
     state.equippedThoughtIds,
+    // v4.16: изолированные изменения очков проработки должны инвалидировать
+    // снапшот движка (масштабированные боевые эффекты мыслей).
+    state.thoughtInternalizationPoints,
   ];
 }
 

@@ -53,6 +53,8 @@ export interface GameStoreSnapshot {
     stress: number;
     visitedNodes: string[];
     equippedThoughtIds: string[];
+    /** v4.16: очки прозрения проработки мыслей для масштабирования боевых эффектов. */
+    thoughtInternalizationPoints?: Record<string, number>;
     progression: {
       level: number;
       currentAct: number;

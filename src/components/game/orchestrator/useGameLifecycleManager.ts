@@ -239,6 +239,29 @@ export function useGameLifecycleManager(mode: string) {
     // ── Reactive inner monologue on key gameplay events ──
     // Rate-limited via canShowReactiveThought() (12 s cooldown) to avoid spam.
 
+    // ── Проработка мыслей (v4.16: арки внутреннего диалога) ──
+    // Очки прозрения капают за осмысленные события: выбор в диалоге, первое
+    // посещение сцены, победа в бою, объектив квеста, собранный стих.
+    // Таблица очков — THOUGHT_INSIGHT_POINTS (единый источник правды).
+    scope.on('choice:made', () => {
+      useGameStore.getState().advanceThoughtInternalization('choice');
+    });
+    scope.on('scene:loaded', () => {
+      useGameStore.getState().advanceThoughtInternalization('sceneVisit');
+    });
+    scope.on('combat:victory', () => {
+      useGameStore.getState().advanceThoughtInternalization('combatVictory');
+    });
+    scope.on('quest:complete_objective', () => {
+      useGameStore.getState().advanceThoughtInternalization('questObjective');
+    });
+    scope.on('poem:collected', () => {
+      useGameStore.getState().advanceThoughtInternalization('poem');
+    });
+    scope.on('skill:level_up', () => {
+      useGameStore.getState().advanceThoughtInternalization('skillCheck');
+    });
+
     scope.on('combat:victory', () => {
       const store = useGameStore.getState();
       const ctx = buildThoughtContext(store);

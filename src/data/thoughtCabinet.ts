@@ -20,6 +20,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'logic', modifier: 2, description: '+2 Логика' },
       { skill: 'empathy', modifier: -1, description: '-1 Эмпатия' },
     ],
+    internalization: {
+      requiredPoints: 60,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Замечаю: я ругаю себя до того, как успел ошибиться.' },
+        { at: 0.5, text: 'Критика стала точнее. Жаль, что теплее она не стала.' },
+        { at: 0.75, text: 'Я почти научился отделять «ты плохо» от «код плохо».' },
+      ],
+      completionText: 'Теперь этот голос работает на меня, а не наоборот.',
+    },
   },
 
   /* ═══ 2. Серверный Шёпот ═══ */
@@ -34,6 +44,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'coding', modifier: 3, description: '+3 Кодинг' },
       { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
     ],
+    internalization: {
+      requiredPoints: 80,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Шум вентиляторов складывается в слова. Пока обрывки.' },
+        { at: 0.5, text: 'Серверы рассказывают, кто из них умрёт первым. Я слышу.' },
+        { at: 0.75, text: 'Мёртвые стойки шепчут архивы. Я начинаю различать голоса.' },
+      ],
+      completionText: 'Теперь я понимаю язык машин без переводчика.',
+    },
   },
 
   /* ═══ 3. Эмпатический Радиус ═══ */
@@ -49,6 +69,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'persuasion', modifier: 1, description: '+1 Убеждение' },
       { skill: 'logic', modifier: -1, description: '-1 Логика' },
     ],
+    internalization: {
+      requiredPoints: 90,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Радиус расширяется. Слышу тревогу соседа за стеной.' },
+        { at: 0.5, text: 'Город стонет на частоте, которую раньше не замечал.' },
+        { at: 0.75, text: 'Учусь не глотать чужую боль целиком — только пропустить через себя.' },
+      ],
+      completionText: 'Радиус больше не давит: чужую боль можно держать в руках, не примеряя на себя.',
+    },
   },
 
   /* ═══ 4. Тёмный Юмор ═══ */
@@ -63,6 +93,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'persuasion', modifier: 2, description: '+2 Убеждение' },
       { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
     ],
+    internalization: {
+      requiredPoints: 50,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Первая шутка на похоронах получилась неудачной. Почти.' },
+        { at: 0.5, text: 'Смех приходит быстрее страха. Это прогресс или диагноз?' },
+        { at: 0.75, text: 'Броня из чёрного хрусталя больше не режет меня — только собеседников.' },
+      ],
+      completionText: 'Теперь я смеюсь в лицо системе — и она не знает, что ответить.',
+    },
   },
 
   /* ═══ 5. Шестое Чувство ═══ */
@@ -77,6 +117,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'intuition', modifier: 3, description: '+3 Интуиция' },
       { skill: 'logic', modifier: 1, description: '+1 Логика' },
     ],
+    internalization: {
+      requiredPoints: 70,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Дважды сегодня посмотрел на экран до красной лампы. Совпадение?' },
+        { at: 0.5, text: 'Уже не совпадение. Логика возмущается, интуиция пожимает плечами.' },
+        { at: 0.75, text: 'Знаю, где ошибка, до того, как открыл лог. Это пугает и радует.' },
+      ],
+      completionText: '«Не знаю как, но знаю что» — теперь это официальный метод.',
+    },
   },
 
   /* ═══ 6. Голос Стихии ═══ */
@@ -92,6 +142,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
       { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
     ],
+    internalization: {
+      requiredPoints: 100,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Строки приходят в неподходящий момент. На совещании. В душе. В лифте.' },
+        { at: 0.5, text: 'Начал носить блокнот. Компилятор ревнует.' },
+        { at: 0.75, text: 'Поэзия больше не баг. Она — недокументированная фича меня.' },
+      ],
+      completionText: 'Строфы складываются сами. Осталось только не мешать.',
+    },
   },
 
   /* ═══ 7. Ритм Серверной ═══ */
@@ -106,6 +166,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'rhythm', modifier: 3, description: '+3 Ритм' },
       { skill: 'intuition', modifier: 1, description: '+1 Интуиция' },
     ],
+    internalization: {
+      requiredPoints: 120,
+      partialEffects: false,
+      milestones: [
+        { at: 0.25, text: 'Ловлю такт. Вентиляторы бас, индикаторы — перкуссия.' },
+        { at: 0.5, text: 'Хаос упорядочивается в 4/4. Трансформатор держит орган.' },
+        { at: 0.75, text: 'Серверы дышат со мной. Осталось дождаться полной синхронизации.' },
+      ],
+      completionText: 'Ритм-Синхронизация доступна: удары в такт гулу серверной.',
+    },
   },
 
   /* ═══ 8. Постсоветская Ностальгия (взаимоисключающая пара) ═══ */
@@ -123,6 +193,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'empathy', modifier: 1, description: '+1 Эмпатия' },
       { skill: 'coding', modifier: -1, description: '-1 Кодинг' },
     ],
+    internalization: {
+      requiredPoints: 70,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Пироги мамы. Синие тарелки. Откуда это всплыло сейчас?' },
+        { at: 0.5, text: 'Помню, как пахло летом. Озоном пахнет хуже. Факт.' },
+        { at: 0.75, text: 'Слепил из памяти чертёж того мира. Он не собирается обратно. И ладно.' },
+      ],
+      completionText: 'Тогда было не лучше. Оно было другое. Разница — важна.',
+    },
   },
 
   /* ═══ 9. Киберпанк Будущее (взаимоисключающая пара) ═══ */
@@ -173,6 +253,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'rhythm', modifier: 1, description: '+1 Ритм' },
       { skill: 'logic', modifier: -1, description: '-1 Логика' },
     ],
+    internalization: {
+      requiredPoints: 80,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Первый раз за долгое время ответил протоколом «нет». Внутри что-то щёлкнуло.' },
+        { at: 0.5, text: 'Окови слабее там, где ими пренебрегают. Проверено.' },
+        { at: 0.75, text: 'Сломанный протокол №7 — теперь мой любимый эксплойт свободы.' },
+      ],
+      completionText: 'Я — фича, которую система не предусмотрела. Смирились.',
+    },
   },
 
   /* ═══ 12. Адаптация к Системе (взаимоисключающая пара) ═══ */
@@ -206,6 +296,16 @@ export const THOUGHT_CABINET_ITEMS: ThoughtCabinetItem[] = [
       { skill: 'writing', modifier: 1, description: '+1 Писательство' },
       { skill: 'rhythm', modifier: -1, description: '-1 Ритм' },
     ],
+    internalization: {
+      requiredPoints: 90,
+      partialEffects: true,
+      milestones: [
+        { at: 0.25, text: 'Фоновый процесс просыпается чаще. Он хранит лица.' },
+        { at: 0.5, text: 'Научился вызывать их не всех сразу, а по одному. Так выносимо.' },
+        { at: 0.75, text: 'Потери перестали быть фоном. Они стали строчками.' },
+      ],
+      completionText: 'Фоновый процесс нельзя убить, но можно дать ему имя. Дал.',
+    },
   },
 
   /* ═══ 14. Инженерный Прагматизм ═══ */

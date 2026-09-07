@@ -213,3 +213,77 @@
 .thought-cabinet-scroll::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 229, 255, 0.25);
 }
+
+/* ═══ v4.16: Проработка мысли (арки внутреннего диалога) ═══ */
+
+.thought-internalization-panel {
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  background: rgba(251, 191, 36, 0.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Едва заметный сканлайновый фон панели проработки */
+.thought-internalization-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0px,
+    transparent 3px,
+    rgba(0, 0, 0, 0.12) 3px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+  opacity: 0.5;
+}
+
+.thought-internalization-bar {
+  position: relative;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(100, 116, 139, 0.15);
+  overflow: visible; /* тики вех торчат вверх */
+}
+
+.thought-internalization-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.thought-internalization-bar-fill--complete {
+  animation: thought-internalization-pulse 2.4s ease-in-out infinite;
+}
+
+@keyframes thought-internalization-pulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.25); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .thought-internalization-bar-fill,
+  .thought-internalization-bar-fill--complete {
+    transition: none;
+    animation: none;
+  }
+}
+
+/* Тик вехи: вертикальная насечка на баре */
+.thought-internalization-tick {
+  position: absolute;
+  top: -2px;
+  width: 1px;
+  height: 10px;
+  background: rgba(100, 116, 139, 0.35);
+  transform: translateX(-0.5px);
+}
+
+.thought-internalization-tick--passed {
+  background: rgba(226, 232, 240, 0.55);
+  box-shadow: 0 0 4px rgba(226, 232, 240, 0.25);
+}

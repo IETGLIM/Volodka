@@ -4,6 +4,7 @@
    like Disco Elysium where personality traits affect everything. */
 
 import type { ThoughtCabinetItem, TrainablePlayerSkill } from '@/shared/types/game';
+import { thoughtEffectScale } from '@/shared/thoughts/thoughtInternalization';
 
 /* ═══════════════════════════════════════════════════════════════
    Types
@@ -109,9 +110,14 @@ const CAPS: Record<string, number> = {
  * Multiple thoughts stack, but each bonus is capped at the values
  * defined in CAPS. The bonuses are small and add flavor rather than
  * being game-breaking — consistent with the Disco Elysium philosophy.
+ *
+ * v4.16: мысли с аркой проработки масштабируют свой вклад по прогрессу
+ * (progressMap — очки прозрения из снапшота; без записи — полный эффект
+ * для легаси-мыслей, 0 для арочных на старте).
  */
 export function resolveThoughtCombatEffects(
   equippedThoughts: ThoughtCabinetItem[],
+  progressMap?: Readonly<Record<string, number>>,
 ): ThoughtCombatEffect {
   // Start with zero baseline
   const result: ThoughtCombatEffect = {
@@ -131,8 +137,12 @@ export function resolveThoughtCombatEffects(
     const mapping = VOICE_COMBAT_MAP[thought.voice];
     if (!mapping) continue;
 
+    // v4.16: масштаб вклада по прогрессу проработки (арки внутреннего диалога).
+    const scale = thoughtEffectScale(thought, progressMap?.[thought.id]);
+    if (scale <= 0) continue;
+
     // Accumulate the bonus into the appropriate field
-    result[mapping.field] += mapping.value;
+    result[mapping.field] += mapping.value * scale;
 
     // Track rhythm for special action unlock
     if (thought.voice === 'rhythm') {
@@ -140,7 +150,8 @@ export function resolveThoughtCombatEffects(
     }
 
     // Collect per-thought description for aggregate flavor text
-    descriptions.push(`[${thought.name}] ${mapping.description}`);
+    const progressNote = scale < 1 ? ` (проработка ${Math.round(scale * 100)}%)` : '';
+    descriptions.push(`[${thought.name}] ${mapping.description}${progressNote}`);
   }
 
   // Apply caps to prevent stacking from being overpowered
@@ -213,6 +224,7 @@ function formatBonusValue(field: string, value: number): string {
  */
 export function resolveThoughtCombatContributions(
   equippedThoughts: ThoughtCabinetItem[],
+  progressMap?: Readonly<Record<string, number>>,
 ): ThoughtCombatContribution[] {
   const contributions: ThoughtCombatContribution[] = [];
 
@@ -220,13 +232,18 @@ export function resolveThoughtCombatContributions(
     const mapping = VOICE_COMBAT_MAP[thought.voice];
     if (!mapping) continue;
 
+    // v4.16: масштаб вклада по прогрессу проработки.
+    const scale = thoughtEffectScale(thought, progressMap?.[thought.id]);
+    if (scale <= 0) continue;
+    const value = mapping.value * scale;
+
     contributions.push({
       thoughtId: thought.id,
       thoughtName: thought.name,
       voice: thought.voice,
       field: mapping.field,
-      value: mapping.value,
-      label: `${formatBonusValue(mapping.field, mapping.value)} ${FIELD_LABELS[mapping.field]}`,
+      value,
+      label: `${formatBonusValue(mapping.field, value)} ${FIELD_LABELS[mapping.field]}`,
       description: mapping.description,
     });
 

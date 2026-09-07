@@ -328,6 +328,9 @@ export const SavePayloadSchema = z.object({
   acquiredThoughtIds: z.array(z.string()).optional().default([]),
   /** Thought Cabinet: currently equipped thought ids (max MAX_EQUIPPED_THOUGHTS). Persisted. */
   equippedThoughtIds: z.array(z.string()).optional().default([]),
+  /** v4.16: очки прозрения проработки мыслей (арки внутреннего диалога).
+   *  Мысли без арки в карту не попадают — сейвы старых версий совместимы. */
+  thoughtInternalizationPoints: z.record(z.string(), z.number()).optional().default({}),
   /** Notification log history — persisted for journal continuity. */
   notificationHistory: z.array(NotificationHistoryEntrySchema).optional().default([]),
   poemPowers: z.record(z.string(), PoemPowerSchema),

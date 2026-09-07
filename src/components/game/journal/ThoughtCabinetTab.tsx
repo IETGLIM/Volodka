@@ -20,9 +20,14 @@ import {
 } from 'lucide-react';
 import { JOURNAL_SKILL_LABELS } from '@/components/game/journal/journalConstants';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import { useAllThoughtCabinetItems, useAcquiredThoughts } from '@/store/selectors/thoughtCabinetSelectors';
+import {
+  useAllThoughtCabinetItems,
+  useAcquiredThoughts,
+  useThoughtInternalizationFraction,
+} from '@/store/selectors/thoughtCabinetSelectors';
 import { useGameStore } from '@/store/gameStore';
 import { MAX_EQUIPPED_THOUGHTS } from '@/data/thoughtCabinet';
+import { formatThoughtProgressPercent } from '@/shared/thoughts/thoughtInternalization';
 import './thought-cabinet.css';
 
 /* ═══════════════════════════════════════════════════════════════
@@ -53,6 +58,117 @@ export const VOICE_META: Record<
    Sub-components
    ═══════════════════════════════════════════════════════════════ */
 
+/* v4.16: секция прогресса проработки арочной мысли — бар + вехи + финал. */
+interface InternalizationProgressSectionProps {
+  thought: ThoughtCabinetItem;
+  fraction: number;
+  isEquipped: boolean;
+}
+
+const InternalizationProgressSection = memo(function InternalizationProgressSection({
+  thought,
+  fraction,
+  isEquipped,
+}: InternalizationProgressSectionProps) {
+  const arc = thought.internalization!;
+  const percentText = formatThoughtProgressPercent(fraction);
+  const completed = fraction >= 1;
+  const voiceColor = VOICE_META[thought.voice]?.color ?? '#94a3b8';
+
+  return (
+    <div
+      className="thought-internalization-panel"
+      style={{
+        borderColor: completed ? 'rgba(52, 211, 153, 0.25)' : 'rgba(251, 191, 36, 0.2)',
+        background: completed ? 'rgba(16, 185, 129, 0.04)' : 'rgba(251, 191, 36, 0.04)',
+      }}
+    >
+      <div className="flex items-center gap-2 mb-2">
+        {completed ? (
+          <ShieldCheck className="size-3.5 text-emerald-400 shrink-0" aria-hidden />
+        ) : (
+          <Sparkles className="size-3.5 text-amber-400/80 shrink-0" aria-hidden />
+        )}
+        <span
+          className={`text-[10px] font-mono uppercase tracking-widest ${completed ? 'text-emerald-300/90' : 'text-amber-300/80'}`}
+        >
+          {completed ? 'Проработано' : 'Проработка мысли'}
+        </span>
+        <span className="text-[10px] font-mono text-slate-500 ml-auto">
+          {completed ? '100%' : percentText}
+        </span>
+      </div>
+
+      {/* Прогресс-бар с метками вех */}
+      <div className="thought-internalization-bar" role="progressbar" aria-valuenow={Math.round(fraction * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={`Проработка «${thought.name}»`}>
+        <div
+          className={`thought-internalization-bar-fill ${completed ? 'thought-internalization-bar-fill--complete' : ''}`}
+          style={{
+            width: `${Math.max(2, Math.round(fraction * 100))}%`,
+            background: completed
+              ? 'linear-gradient(90deg, rgba(52, 211, 153, 0.7), rgba(16, 185, 129, 0.9))'
+              : `linear-gradient(90deg, ${voiceColor}55, ${voiceColor}aa)`,
+            boxShadow: completed ? '0 0 10px rgba(52, 211, 153, 0.3)' : `0 0 8px ${voiceColor}25`,
+          }}
+        />
+        {/* Тики вех 25/50/75 */}
+        {arc.milestones?.map((m) => (
+          <div
+            key={`${thought.id}-tick-${m.at}`}
+            className={`thought-internalization-tick ${fraction >= m.at ? 'thought-internalization-tick--passed' : ''}`}
+            style={{ left: `${Math.round(m.at * 100)}%` }}
+            aria-hidden
+          />
+        ))}
+      </div>
+
+      {/* Описание механики */}
+      <p className="text-[10px] text-slate-500 mt-2 leading-relaxed">
+        {isEquipped
+          ? completed
+            ? 'Полный эффект активен.'
+            : arc.partialEffects === false
+              ? `Эффект включится на 100%. Прогресс растёт от выборов, сцен, боёв и стихов.`
+              : `Эффекты растут с прогрессом. Очки приносят выборы, сцены, бои, квесты и стихи.`
+          : 'Экипируй мысль — проработка начнётся с сохранённого прогресса.'}
+      </p>
+
+      {/* Вехи: прошедшие — текст, будущие — замок */}
+      {arc.milestones && arc.milestones.length > 0 && (
+        <div className="mt-2 space-y-1">
+          {arc.milestones.map((m) => {
+            const passed = fraction >= m.at;
+            return (
+              <div key={`${thought.id}-ms-${m.at}`} className="flex items-start gap-2">
+                {passed ? (
+                  <Zap className="size-3 mt-0.5 shrink-0" style={{ color: voiceColor }} aria-hidden />
+                ) : (
+                  <Lock className="size-3 mt-0.5 shrink-0 text-slate-600" aria-hidden />
+                )}
+                <p
+                  className={`text-[10px] leading-snug font-mono ${passed ? 'text-slate-300' : 'text-slate-600/70'}`}
+                >
+                  {passed ? m.text : '·'.repeat(Math.min(28, m.text.length))}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Финальная реплика */}
+      {completed && arc.completionText && (
+        <p
+          className="text-xs italic leading-relaxed font-serif mt-2.5 pt-2 border-t"
+          style={{ color: 'rgba(52, 211, 153, 0.75)', borderColor: 'rgba(52, 211, 153, 0.15)' }}
+        >
+          {arc.completionText}
+        </p>
+      )}
+    </div>
+  );
+});
+
 interface ThoughtCardProps {
   thought: ThoughtCabinetItem;
   isAcquired: boolean;
@@ -61,6 +177,8 @@ interface ThoughtCardProps {
   index: number;
   onSelect: () => void;
   reducedMotion: boolean;
+  /** Прогресс проработки 0..1 (для экипированных арочных мыслей). */
+  internalizationFraction?: number;
 }
 
 const ThoughtCard = memo(function ThoughtCard({
@@ -71,6 +189,7 @@ const ThoughtCard = memo(function ThoughtCard({
   index,
   onSelect,
   reducedMotion,
+  internalizationFraction,
 }: ThoughtCardProps) {
   const voice = VOICE_META[thought.voice];
   const VoiceIcon = voice.icon;
@@ -145,7 +264,29 @@ const ThoughtCard = memo(function ThoughtCard({
         >
           {isAcquired ? thought.name : '???'}
         </span>
-        {isEquipped && (
+        {/* v4.16: статус проработки арочной мысли */}
+        {isAcquired && isEquipped && thought.internalization && internalizationFraction !== undefined && (
+          <span
+            className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
+            style={
+              internalizationFraction >= 1
+                ? {
+                    background: 'rgba(52, 211, 153, 0.1)',
+                    color: '#34d399',
+                    border: '1px solid rgba(52, 211, 153, 0.3)',
+                    boxShadow: '0 0 8px rgba(52, 211, 153, 0.15)',
+                  }
+                : {
+                    background: 'rgba(251, 191, 36, 0.1)',
+                    color: '#fbbf24',
+                    border: '1px solid rgba(251, 191, 36, 0.3)',
+                  }
+            }
+          >
+            {internalizationFraction >= 1 ? 'ПРОРАБОТАНО' : `ПРОРАБОТКА ${formatThoughtProgressPercent(internalizationFraction)}`}
+          </span>
+        )}
+        {isEquipped && (!thought.internalization || internalizationFraction === undefined) && (
           <span
             className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded shrink-0"
             style={{
@@ -209,8 +350,12 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
   const equipThought = useGameStore((s) => s.equipThought);
   const unequipThought = useGameStore((s) => s.unequipThought);
   const maxEquipped = MAX_EQUIPPED_THOUGHTS;
+  // v4.16: карта очков проработки — одна подписка для всех карточек/деталей.
+  const internalizationPoints = useGameStore((s) => s.thoughtInternalizationPoints);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const selectedFraction = useThoughtInternalizationFraction(selectedId ?? '');
 
   const selectedThought = useMemo(
     () => allThoughts.find((t) => t.id === selectedId) ?? null,
@@ -445,6 +590,15 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
           </div>
         )}
 
+        {/* Internalization arc (v4.16) — прогресс проработки */}
+        {isAcquired && selectedThought.internalization && (
+          <InternalizationProgressSection
+            thought={selectedThought}
+            fraction={selectedFraction}
+            isEquipped={isEquipped}
+          />
+        )}
+
         {/* Equip / Unequip button */}
         {isAcquired && (
           <div className="pt-2">
@@ -568,18 +722,25 @@ export function ThoughtCabinetTab({ searchQuery }: ThoughtCabinetTabProps) {
           aria-label="Мысли кабинета"
         >
           <AnimatePresence mode="popLayout">
-            {filteredAll.map((thought, idx) => (
-              <ThoughtCard
-                key={thought.id}
-                thought={thought}
-                isAcquired={acquiredThoughts.some((a) => a.id === thought.id)}
-                isEquipped={equippedThoughtIds.includes(thought.id)}
-                isSelected={selectedId === thought.id}
-                index={idx}
-                onSelect={() => handleSelect(thought.id)}
-                reducedMotion={reducedMotion}
-              />
-            ))}
+            {filteredAll.map((thought, idx) => {
+              const arc = thought.internalization;
+              const fraction = arc
+                ? Math.min((internalizationPoints[thought.id] ?? 0) / arc.requiredPoints, 1)
+                : undefined;
+              return (
+                <ThoughtCard
+                  key={thought.id}
+                  thought={thought}
+                  isAcquired={acquiredThoughts.some((a) => a.id === thought.id)}
+                  isEquipped={equippedThoughtIds.includes(thought.id)}
+                  isSelected={selectedId === thought.id}
+                  index={idx}
+                  onSelect={() => handleSelect(thought.id)}
+                  reducedMotion={reducedMotion}
+                  internalizationFraction={fraction}
+                />
+              );
+            })}
           </AnimatePresence>
         </div>
 

@@ -2,6 +2,11 @@
 
 import type { ThoughtCabinetItem, TrainablePlayerSkill } from '@/shared/types/game';
 import { THOUGHT_CABINET_ITEMS, THOUGHT_CABINET_MAP } from '@/data/thoughtCabinet';
+import {
+  scaledThoughtEffects,
+  thoughtProgressFraction,
+  formatThoughtProgressPercent,
+} from '@/shared/thoughts/thoughtInternalization';
 import { useGameSelector, useGamePrimitive } from './hooks';
 
 /* ─── React hooks ─── */
@@ -51,7 +56,8 @@ export function useAvailableThoughts(): ThoughtCabinetItem[] {
   });
 }
 
-/** Combined skill modifiers from all equipped thoughts, keyed by skill. */
+/** Combined skill modifiers from all equipped thoughts, keyed by skill.
+ * v4.16: для мыслей с аркой модификаторы масштабируются прогрессом проработки. */
 export function useThoughtSkillModifiers(): Record<TrainablePlayerSkill, number> {
   return useGameSelector((s) => {
     const modifiers: Record<TrainablePlayerSkill, number> = {
@@ -66,12 +72,44 @@ export function useThoughtSkillModifiers(): Record<TrainablePlayerSkill, number>
     for (const id of s.equippedThoughtIds) {
       const def = THOUGHT_CABINET_MAP[id];
       if (!def) continue;
-      for (const effect of def.effects) {
+      for (const effect of scaledThoughtEffects(def, s.thoughtInternalizationPoints?.[id])) {
         modifiers[effect.skill] += effect.modifier;
       }
     }
     return modifiers;
   });
+}
+
+/** Доля проработки мысли 0..1 (без арки — 1). */
+export function useThoughtInternalizationFraction(id: string): number {
+  return useGamePrimitive(
+    (s) => THOUGHT_CABINET_MAP[id]?.internalization
+      ? Math.min(
+          (s.thoughtInternalizationPoints?.[id] ?? 0) / THOUGHT_CABINET_MAP[id].internalization!.requiredPoints,
+          1,
+        )
+      : 1,
+  );
+}
+
+/** Экипированные мысли с аркой, ещё не проработанные до конца. */
+export function useInternalizingThoughts(): ThoughtCabinetItem[] {
+  return useGameSelector((s) => {
+    const inProgress: ThoughtCabinetItem[] = [];
+    for (const id of s.equippedThoughtIds) {
+      const def = THOUGHT_CABINET_MAP[id];
+      if (!def?.internalization) continue;
+      if (thoughtProgressFraction(def, s.thoughtInternalizationPoints?.[id]) < 1) {
+        inProgress.push(def);
+      }
+    }
+    return inProgress;
+  });
+}
+
+/** Русская строка прогресса для UI («42%"). */
+export function useThoughtInternalizationPercent(id: string): string {
+  return formatThoughtProgressPercent(useThoughtInternalizationFraction(id));
 }
 
 /** Whether the thought cabinet slot is full (3 equipped). */

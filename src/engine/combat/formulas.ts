@@ -179,13 +179,17 @@ function getEquippedItemsSafe(): Partial<Record<EquipmentSlot, { id: string } | 
 
 /** Resolve equipped thought combat effects from the current game state.
  *  Reads equippedThoughtIds from the snapshot and maps them to
- *  ThoughtCabinetItem definitions using THOUGHT_CABINET_MAP. */
+ *  ThoughtCabinetItem definitions using THOUGHT_CABINET_MAP.
+ *  v4.16: очки проработки из снапшота масштабируют вклад арочных мыслей. */
 function resolveThoughtEffects(): ThoughtCombatEffect {
   const s = snap();
   const equippedThoughts = (s.playerState.equippedThoughtIds ?? [])
     .map((id) => THOUGHT_CABINET_MAP[id])
     .filter(Boolean);
-  return resolveThoughtCombatEffects(equippedThoughts);
+  return resolveThoughtCombatEffects(
+    equippedThoughts,
+    s.playerState.thoughtInternalizationPoints,
+  );
 }
 
 export function getPlayerAttack(): number {

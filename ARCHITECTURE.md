@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.15.8** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.16.0** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1698,6 +1698,63 @@ reset в engineRuntimeReset), **ноль React**:
 из CombatDamageFx, CSS-кейфреймы `hud-filmic-damage-rise-fade`.
 `useCombatUiController` больше не хранит damageNumbers/richDamageEvents —
 только крит-шейк/вспышки (фидбэк экрана, не числа).
+
+## v4.16.0 — арки проработки мыслей (Thought Cabinet internalization)
+
+### Проблема
+- Кабинет мыслей был плоским: экипировка → полные эффекты мгновенно.
+  Roadmap «Days 31–60» требовал арки (Disco Elysium-style
+  internalization) — выбор голоса должен быть долгосрочным решением,
+  а не мгновенным баффом.
+
+### Решение
+- **`src/shared/thoughts/thoughtInternalization.ts`** — чистая логика
+  арок в shared-слое (доступна store/engine/UI). Таблица
+  `THOUGHT_INSIGHT_POINTS` — канонический источник очков за события
+  (выбор 2 / навык 3 / сцена 2 / победа 4 / объектив 5 / стих 4).
+  Прогресс 0..1 с клампом; `partialEffects: false` — гейт до 100%.
+  Вехи пересекаются строго «вверх» однократно (до/после) — сейв-лоад
+  повторов не даёт.
+- Срез `thoughtCabinetSlice`: `thoughtInternalizationPoints`
+  (persisted, record<string, number>), `advanceThoughtInternalization(event)`
+  (очки + уведомления вех/финала кросс-слайсом),
+  `getEquippedThoughtEffects()` масштабируется, снятие/повторная
+  экипировка сохраняет прогресс.
+- Драйверы: 6 слушателей в `useGameLifecycleManager` — событийная
+  прогрессия, **ноль таймеров**.
+- Боевой мост: `resolveThoughtCombatEffects(contributions)` принимают
+  карту очков из снапшота; кэш-ключ снапшота дополнен — изолированные
+  изменения очков не дают стейл-эффекты.
+- Контент: 10 арок (Критик 60, Шёпот 80, Радиус 90, Юмор 50, Шестое
+  Чувство 70, Стихия 100, Ритм Серверной 120 (гейт: Ритм-Синхронизация
+  только после проработки), Ностальгия 70, Сопротивление 80, Память 90).
+- UI: бейджи прогресса на карточках, `InternalizationProgressSection`
+  (бар с тиками вех, тексты вех, финальная реплика), HUD-чипы с
+  процентом, pulse-анимация завершённой арки (reduced-motion уважается).
+
+### Правила
+- **Чистая логика домена, нужная store и engine одновременно, живёт в
+  `src/shared/**`** — не в `src/engine/**` (store не импортирует
+  engine; no-restricted-imports).
+- **Новое событие-источник очков прозрения → только в
+  `THOUGHT_INSIGHT_POINTS` + слушатель в lifecycle-менеджере** — никаких
+  локальных таблиц в драйверах.
+- **Новая арочная мысль**: `internalization.requiredPoints` 40–120
+  (достижимо за ≤ 60 событий любого типа), вехи строго по возрастанию
+  в (0, 1), `completionText` обязателен для гейт-арок (игрок должен
+  знать, что изменилось).
+
+### Гарды
+- `src/shared/thoughts/thoughtInternalization.test.ts` (24): прогресс/
+  масштаб/знак/клампы; advance — накопление, завершение однократно,
+  вехи вверх, прыжки через вехи, no-op на невалидных очках;
+  контент-инварианты арок данных (>= 10, валидность, достижимость).
+- `src/store/slices/thoughtCabinetSlice.internalization.test.ts` (9):
+  накопление, масштаб эффектов через срез, гейт-арка, уведомления
+  финала/вех, совместимость безарочных мыслей, unequip/re-equip,
+  fraction-геттер.
+- Сейвы: поле в `SavePayloadSchema` с `.default({})` — старые сейвы
+  парсятся без миграций.
 
 ## v4.15.8 — пробуждение канваса «по спросу» и стабильный NPC-бэтч (этапы 64, 110; ⚠ = 0)
 

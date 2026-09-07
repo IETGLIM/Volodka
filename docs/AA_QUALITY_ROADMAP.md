@@ -4,7 +4,7 @@
 
 > Honest plan to push this browser RPG toward **AA-studio visual + systems density** with **$0 spend**.
 
-> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-07-31 (Tick 51 architecture uniformity Wave 1).
+> Companion to `ARCHITECTURE.md` / `AI_SESSION_CONTEXT.md` / `readme.md`. Last updated: 2026-09-07 (v4.16.0 — Thought Cabinet internalization arcs).
 
 
 
@@ -313,7 +313,10 @@ From `config/performanceBudgets.json` + build gate:
 
 - [ ] NPC LOD impostor upgrade (billboard bake) if FPS allows
 
-- [ ] Content: Acts 3–4 dialogue density + Thought Cabinet arcs
+- [x] Thought Cabinet arcs — DONE (v4.16.0): internalization-механика (очки прозрения
+      за события, частичные/гейт-эффекты, вехи 25/50/75%, сейв-прогресс) + 10 арок для
+      знаковых мыслей; чистая логика в `src/shared/thoughts/`
+- [ ] Content: Acts 3–4 dialogue density (осталось от пункта выше)
 
 
 
