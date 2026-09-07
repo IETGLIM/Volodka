@@ -1,63 +1,11 @@
-/* Floating damage numbers, combo counter, hit-flash overlay.
- * Task 4b-C4: Added damage number color coding (white=normal, red=critical,
- * green=heal, purple=magic/affinity), hit flash effect on enemy mesh,
- * and proper damage channel support. */
+/* Combo counter and hit-flash overlay.
+ * v4.15.3: DamageNumber удалён — числа урона рендерит единый пуловый
+ * damageNumberLayer (WAAPI transform-only, аудит-этап 28): раньше
+ * хит рисовался тремя слоями одновременно. */
 
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Flame } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
-
-export const DamageNumber = React.memo(function DamageNumber({
-  damage,
-  type,
-  isCritical,
-  damageChannel,
-}: {
-  damage: number;
-  type: string;
-  isCritical?: boolean;
-  /** Damage channel from combat log (e.g. 'magic', 'dark'). */
-  damageChannel?: string;
-}) {
-  const isHeal = type === 'player_power' && damage > 0;
-  const isPoemCombo = type === 'poem_combo';
-  // Task 4b-C4: Enhanced color coding with magic channel support
-  const isMagic = damageChannel === 'magic' || damageChannel === 'dark' || type === 'affinity_super';
-  const color = isCritical
-    ? 'text-yellow-300'
-    : isHeal
-      ? 'text-emerald-400'
-      : isMagic
-        ? 'text-purple-400'
-        : isPoemCombo
-          ? 'text-fuchsia-400'
-          : type === 'enemy_attack' || type === 'enemy_special'
-            ? 'text-red-400'
-            : 'text-slate-100';
-  const size = isCritical ? 'text-4xl' : isPoemCombo ? 'text-3xl' : 'text-2xl';
-
-  return (
-    <motion.div
-      initial={{ opacity: 1, y: 0, scale: isCritical ? 1.45 : 0.8, rotate: isCritical ? -4 : 0 }}
-      animate={{ opacity: 0, y: -68, scale: isCritical ? 1.95 : 1.1, rotate: 0 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: isCritical ? 1.85 : 1.2, ease: [0.2, 0, 0.3, 1] }}
-      className={`absolute ${size} font-bold ${color} pointer-events-none select-none text-glow-pulse ${isCritical ? 'glitch-skew' : ''}`}
-      style={{
-        zIndex: UI_LAYERS.COMBAT,
-        textShadow: `0 0 ${isCritical ? 18 : 8}px currentColor, 0 2px 4px rgba(0,0,0,0.8)`,
-        letterSpacing: isCritical ? '0.04em' : undefined,
-      }}
-    >
-      {isHeal ? '+' : '-'}
-      {damage}
-      {isCritical && (
-        <span className="ml-1 text-sm font-mono tracking-widest text-yellow-200/90">КРИТ</span>
-      )}
-    </motion.div>
-  );
-});
 
 export function ComboCounter({ count }: { count: number }) {
   if (count < 1) return null;

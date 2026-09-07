@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { CombatIntroSplash } from '@/components/game/combatUi/CombatIntroSplash';
-import { CombatScreenFlash, DamageNumber } from '@/components/game/combatUi/CombatDamageFx';
-import { CombatDamageNumbers } from '@/components/game/CombatDamageNumbers';
+import { CombatScreenFlash } from '@/components/game/combatUi/CombatDamageFx';
 import { CombatEnemyPanel } from '@/components/game/combatUi/CombatEnemyPanel';
 import { BossHealthBar } from '@/components/game/combatUi/BossHealthBar';
 import { BossIntroCinematic } from '@/components/game/combatUi/BossIntroCinematic';
@@ -60,8 +59,10 @@ export function CombatUI() {
 
         <CombatScreenFlash flashColor={ui.flashColor} />
 
-        {/* Rich typed damage numbers (poison/burn/freeze/stun/heal/miss) */}
-        <CombatDamageNumbers events={ui.richDamageEvents} />
+        {/* v4.15.3: числа урона больше НЕ рендерятся здесь — единый пуловый
+         * DOM-слой damageNumberLayer (WAAPI transform-only, ноль React)
+         * слушает combat:hit сам. До этого хит рисовался трижды:
+         * DamageNumber + CombatDamageNumbers + FloatingTextLayer. */}
 
         {/* Dedicated full-width boss health bar — only renders when the enemy
          *  is a boss. Hidden while the boss intro cinematic is playing (the
@@ -73,19 +74,6 @@ export function CombatUI() {
           enemyBuffs={ui.enemyBuffs}
           introVisible={ui.introVisible}
         />
-
-        <div className="relative flex-1 flex items-center justify-center">
-          <AnimatePresence>
-            {ui.damageNumbers.map((dn) => (
-              <DamageNumber
-                key={dn.id}
-                damage={dn.damage}
-                type={dn.type}
-                isCritical={dn.isCritical}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
 
         {/* Screen-edge red glow when player takes damage */}
         <AnimatePresence>

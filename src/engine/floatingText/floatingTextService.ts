@@ -125,15 +125,11 @@ export class FloatingTextService {
   private attachEventBusListeners(): void {
     if (!eventBus?.on) return;
 
-    this.eventUnsubs.push(
-      eventBus.on(
-        'combat:hit',
-        (payload) => {
-          floatDamage(payload.damage);
-        },
-        EventBusPriority.FX,
-      ),
-    );
+    /* v4.15.3: combat:hit → damageNumberLayer (пул DOM-узлов + WAAPI
+     * transform-only). Здесь слушателя больше НЕТ: раньше каждый хит
+     * рендерился и FloatingTextLayer'ом, и CombatDamageNumbers, и
+     * DamageNumber из CombatUI — тройное дублирование чисел урона
+     * (аудит-этап 28). */
 
     this.eventUnsubs.push(
       eventBus.on(

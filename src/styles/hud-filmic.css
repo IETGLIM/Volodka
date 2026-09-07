@@ -2875,28 +2875,8 @@
   }
 }
 
-/* ── 41. Damage rise-fade ──
-   1.2s upward rise + fade for DamageFloatSystem damage numbers.
-   One-shot. translateY(0) opacity 1 → translateY(-8px) opacity 0.4.
-   Apply via className="hud-filmic-damage-rise-fade" on the inner
-   display-text span. Layers on top of the existing framer-motion
-   outer-rise variant as a subtle inner-text "lift". */
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes hud-filmic-damage-rise-fade {
-    0% {
-      transform: translateY(0);
-      opacity: 1;
-    }
-    100% {
-      transform: translateY(-8px);
-      opacity: 0.4;
-    }
-  }
-
-  .hud-filmic-damage-rise-fade {
-    animation: hud-filmic-damage-rise-fade 1.2s ease-out both;
-  }
-}
+/* ── 41. Damage rise-fade — удалён (v4.15.3): DamageFloatSystem удалён,
+   числа урона рисует пуловый damageNumberLayer (WAAPI, без CSS-кейфреймов). */
 
 @media (prefers-reduced-motion: reduce) {
   .hud-filmic-damage-rise-fade {

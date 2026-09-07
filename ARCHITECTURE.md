@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.15.1** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.15.3** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1657,3 +1657,44 @@ flash-эффектом при падении кармы. Смонтирован 
 - `poemCollectionMeta.ts`: JSDoc `POEMS_PER_ACT` фиксирует, что акт 6 даёт 0
   основных стихов осознанно (дуга — скрытые `poem_act6_01…08`); изменение
   распределения сломало бы прогресс-UI журнала.
+
+## v4.15.3 — пуловые числа урона (damageNumberLayer)
+
+### Проблема
+Каждый хит в пошаговом бою рендерился **тремя слоями одновременно**:
+`DamageNumber` (CombatUI) + `CombatDamageNumbers` (framer-motion) +
+`FloatingTextLayer` (floatingTextService, подписка `combat:hit`).
+Наложенные числа + JS-анимации на главном потоке — риск пропуска кадров
+на босс-файтах (аудит-этап 28).
+
+### Решение: engine/floatingText/damageNumberLayer.ts
+Модуль-одиночка (паттерн floatingTextService — ленивый init, HMR-dispose,
+reset в engineRuntimeReset), **ноль React**:
+- контейнер `#volodka-damage-layer` + пул из 24 заранее созданных `<div>`
+  (ноль DOM-аллокаций в бою);
+- анимация `element.animate()` (WAAPI) с кадрами **только по
+  transform/opacity** → композитор GPU, без layout/paint/re-render;
+  деградация до setTimeout на WebView без WAAPI;
+- коалесценция бёрстов: окно 130 мс на (якорь × тип) — мульти-хит
+  доливается в летящее число `Σ×N` (босс-АоЕ/комбо-серии);
+- вытеснение по приоритету: killshot > critical > heal/damage >
+  status/strike/backstab > miss; спам ниже cheapest активного — drop;
+- якорные полосы: `enemy` (верх-центр, у панели врага), `player`
+  (лево-низ, у карточки игрока), `center` (реал-тайм замахи);
+- `prefers-reduced-motion` → статичный fade.
+
+### Владение событиями
+- `combat:hit` — damageNumberLayer (единственный владелец чисел урона;
+  floatingTextService больше НЕ слушает его — дублирование устранено);
+- `combat:melee_strike` / `combat:melee_miss` / `combat:creep_finished` —
+  метки «УДАР» / «В СПИНУ!» / «ПОВЕРЖЕН» / «ПРОМАХ» / «+N ОП»: реал-тайм
+  слой опережающего удара получил числовой фидбэк (раньше — только искры);
+- floatingTextService сохраняет XP/карму/кредиты/предметы (combat:victory),
+  навыки и лут.
+
+### Удалено
+`CombatDamageNumbers.tsx`, `hud/parts/DamageFloatSystem.tsx` (768 строк без
+импортёров), мёртвый баррель `hud/parts/index-enhanced.ts`, `DamageNumber`
+из CombatDamageFx, CSS-кейфреймы `hud-filmic-damage-rise-fade`.
+`useCombatUiController` больше не хранит damageNumbers/richDamageEvents —
+только крит-шейк/вспышки (фидбэк экрана, не числа).

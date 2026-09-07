@@ -17,7 +17,6 @@ import { isBossEnemyType } from '@/engine/combat/types';
 import type { CombatState } from '@/shared/types/game';
 import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
-import type { DamageNumberEvent, DamageNumberType } from '@/components/game/CombatDamageNumbers';
 
 export function useCombatUiController() {
   const combatActive = useUIStore((s) => s.combatActive);
@@ -27,11 +26,9 @@ export function useCombatUiController() {
   const mode = getGamePhase({ mainMenuOpen, introActive, combatActive, activeCutsceneId });
   const [combatState, setCombatState] = useState<CombatState | null>(null);
   const [showPowers, setShowPowers] = useState(false);
-  const [damageNumbers, setDamageNumbers] = useState<
-    Array<{ id: number; damage: number; type: string; isCritical?: boolean }>
-  >([]);
-  const [richDamageEvents, setRichDamageEvents] = useState<DamageNumberEvent[]>([]);
-  const richIdRef = useRef(0);
+  /* v4.15.3: damageNumbers/richDamageEvents удалены — числа урона рендерит
+   * единый пуловый damageNumberLayer (combat:hit → WAAPI transform-only).
+   * Здесь остаётся только крит-шейк/вспышки — они НЕ числа, а фидбэк экрана. */
   const [pendingAction, setPendingAction] = useState(false);
   const [screenShake, setScreenShake] = useState(false);
   const [flashColor, setFlashColor] = useState<string | null>(null);
@@ -41,7 +38,6 @@ export function useCombatUiController() {
   const isTouchDevice = useTouchDevice();
   const [gamepadSelectedIdx, setGamepadSelectedIdx] = useState(0);
   const logEndRef = useRef<HTMLDivElement>(null);
-  const damageIdRef = useRef(0);
   const timersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
 
   const scheduleTimeout = useCallback((fn: () => void, ms: number) => {
@@ -103,25 +99,6 @@ export function useCombatUiController() {
     }
   }, [combatState?.log.length]);
 
-  /** Map combat log entry type → rich damage number type */
-  const mapLogEntryToRichType = useCallback((entry: { type: string; damage?: number; isCritical?: boolean; text?: string }): DamageNumberType | null => {
-    if (entry.type === 'critical_hit' || entry.type === 'affinity_super') return 'critical';
-    if (entry.type === 'affinity_immune') return 'miss';
-    if (entry.type === 'player_power' && (entry.damage ?? 0) > 0) return 'heal';
-    if (entry.type === 'status_effect') {
-      // Detect status type from Russian text keywords in log
-      const text = entry.text ?? '';
-      if (/паралич|stupor|ОГЛУШ/i.test(text)) return 'stun';
-      if (/Отравлен|яд|ЯД/i.test(text)) return 'poison';
-      if (/горен|ГОРЕНИЕ|ожог/i.test(text)) return 'burn';
-      if (/обмороз|ОБМОРОЖ|замороз/i.test(text)) return 'freeze';
-      if (entry.damage && entry.damage > 0) return 'damage';
-      return null;
-    }
-    if (entry.damage && entry.damage > 0) return 'damage';
-    return null;
-  }, []);
-
   const prevLogLen = useRef(0);
   useEffect(() => {
     if (!combatState) return;
@@ -130,15 +107,7 @@ export function useCombatUiController() {
       const newEntries = combatState.log.slice(prevLogLen.current);
       for (const entry of newEntries) {
         if (entry.damage && entry.damage > 0) {
-          const id = damageIdRef.current++;
           const isCrit = entry.isCritical || entry.type === 'critical_hit';
-          setDamageNumbers((prev) => [
-            ...prev,
-            { id, damage: entry.damage!, type: entry.type, isCritical: isCrit },
-          ]);
-          scheduleTimeout(() => {
-            setDamageNumbers((prev) => prev.filter((d) => d.id !== id));
-          }, isCrit ? 1800 : 1200);
 
           if (isCrit) {
             setScreenShake(true);
@@ -156,29 +125,10 @@ export function useCombatUiController() {
             }, 300);
           }
         }
-
-        // Generate rich typed damage events for CombatDamageNumbers
-        const richType = mapLogEntryToRichType(entry);
-        if (richType) {
-          const richId = `rich-${richIdRef.current++}`;
-          const dmgVal = entry.type === 'affinity_immune' ? 0 : (entry.damage ?? 0);
-          setRichDamageEvents((prev) => [...prev, {
-            id: richId,
-            type: richType,
-            value: dmgVal,
-          }]);
-          const removeDelay = richType === 'critical' ? 1900
-            : richType === 'miss' ? 1000
-            : richType === 'heal' ? 1200
-            : 1300;
-          scheduleTimeout(() => {
-            setRichDamageEvents((prev) => prev.filter((e) => e.id !== richId));
-          }, removeDelay);
-        }
       }
     }
     prevLogLen.current = currentLen;
-  }, [combatState, scheduleTimeout, mapLogEntryToRichType]);
+  }, [combatState, scheduleTimeout]);
 
   useEffect(() => {
     if (combatState?.isPlayerTurn || combatState?.status !== 'active') {
@@ -347,8 +297,6 @@ export function useCombatUiController() {
     combatState,
     showPowers,
     setShowPowers,
-    damageNumbers,
-    richDamageEvents,
     pendingAction,
     screenShake,
     flashColor,

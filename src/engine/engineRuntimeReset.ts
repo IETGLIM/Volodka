@@ -25,6 +25,7 @@ import { clearAllSessionQualityOverrides } from '@/engine/graphics/autoQualitySe
 import { stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
 import { resetNpcPortraitCacheLifecycle } from '@/engine/portrait/npcPortraitGeneration';
 import { clearCreepPresenceRegistry } from '@/engine/combat/realtime/creepPresenceRegistry';
+import { resetDamageNumberLayer } from '@/engine/floatingText/damageNumberLayer';
 
 /** Idempotent — safe to call from disposeGameEngine and resetGame. */
 export function resetEngineModuleRuntimeState(): void {
@@ -56,4 +57,6 @@ export function resetEngineModuleRuntimeState(): void {
   resetNpcPortraitCacheLifecycle();
   /* v4.15.2: маркеры врагов миникарты не переживают teardown сессии. */
   clearCreepPresenceRegistry();
+  /* v4.15.3: летящие числа урона гасятся между сессиями (пул живёт дальше). */
+  resetDamageNumberLayer();
 }
