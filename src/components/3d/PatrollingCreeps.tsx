@@ -49,6 +49,10 @@ import {
   isCreepFinishable,
   noteCreepWeakened,
 } from '@/engine/combat/realtime/creepVitality';
+import {
+  removeCreepPresence,
+  reportCreepPresence,
+} from '@/engine/combat/realtime/creepPresenceRegistry';
 import { MELEE_STRIKE_REACH_M } from '@/engine/combat/realtime/meleeSweep';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
@@ -349,6 +353,13 @@ function Creep({
     hpBarFillGeometry.dispose();
   }, [hpBarFillGeometry]);
 
+  /* v4.15.2 «враги на миникарте»: крип исчез из сцены (unmount/победа) —
+   * убрать его маркер из реестра присутствия. Компонент Creep не
+   * рендерится при победе (defeated) → cleanup срабатывает автоматически. */
+  useEffect(() => () => {
+    removeCreepPresence(def.id, def.sceneId);
+  }, [def.id, def.sceneId]);
+
   /** Lazily resolve the scene nav mesh (built once per scene, then cached). */
   function resolveNavMesh(): NavMeshGraph | null {
     if (!navMeshResolvedRef.current) {
@@ -381,6 +392,12 @@ function Creep({
   useEffect(() => {
     spawnedRef.current = spawned;
   }, [spawned]);
+
+  /* Крип задеспавнился гейтом (флаг/акт) уже после монтирования —
+   * маркер тоже убираем, кадр больше не репортит. */
+  useEffect(() => {
+    if (!spawned) removeCreepPresence(def.id, def.sceneId);
+  }, [spawned, def.id, def.sceneId]);
 
   // ── Реал-тайм «Опережающий удар» (v4.8.7, добивание v4.8.8) ──
   // Крип регистрируется как цель замаха: живая позиция (positionRef),
@@ -940,6 +957,17 @@ function Creep({
         hpBar.visible = false;
       }
     }
+
+    /* v4.15.2 «враги на миникарте»: один map.set за кадр — живая позиция
+     * и поведенческое состояние (патруль/погоня/бой/возврат/передышка)
+     * для отрисовки красных маркеров в MinimapComponent. */
+    reportCreepPresence(
+      def.id,
+      def.sceneId,
+      pos.x,
+      pos.z,
+      stateRef.current,
+    );
   });
 
   if (!spawned) return null;

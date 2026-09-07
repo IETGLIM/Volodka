@@ -24,6 +24,7 @@ import { resetTransitionDirector } from '@/engine/scene/TransitionDirector';
 import { clearAllSessionQualityOverrides } from '@/engine/graphics/autoQualitySession';
 import { stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
 import { resetNpcPortraitCacheLifecycle } from '@/engine/portrait/npcPortraitGeneration';
+import { clearCreepPresenceRegistry } from '@/engine/combat/realtime/creepPresenceRegistry';
 
 /** Idempotent — safe to call from disposeGameEngine and resetGame. */
 export function resetEngineModuleRuntimeState(): void {
@@ -53,4 +54,6 @@ export function resetEngineModuleRuntimeState(): void {
    * scene:enter-листенер после disposeEventBus+revive. */
   stopVoiceLinePlayback();
   resetNpcPortraitCacheLifecycle();
+  /* v4.15.2: маркеры врагов миникарты не переживают teardown сессии. */
+  clearCreepPresenceRegistry();
 }

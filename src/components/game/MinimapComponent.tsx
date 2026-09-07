@@ -49,6 +49,7 @@ import {
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { sceneMatchesScheduleEntry } from '@/config/sceneInheritance';
 import { resolveNpcPlacementForScene } from '@/engine/scene/placementAudit';
+import { forEachCreepInScene } from '@/engine/combat/realtime/creepPresenceRegistry';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
@@ -569,6 +570,44 @@ export function MinimapComponent() {
         ctx.fill();
       }
 
+      // ── Enemy markers (v4.15.2 «враги на миникарте», WoW-стиль) ──
+      // Живые позиции патрулирующих крипов пишет PatrollingCreeps
+      // в реестр присутствия каждый кадр. Форма ≠ NPC/квестам: круги —
+      // жители, ромбы — квесты, треугольники — враги.
+      forEachCreepInScene(currentSceneId, (enemy) => {
+        const [ex, ey] = worldToMap(enemy.x, enemy.z, playerX, playerZ, yaw);
+        const [clx, cly] = clampToCircle(ex, ey);
+        const hostile = enemy.state === 'chase' || enemy.state === 'engaged';
+        const resting = enemy.state === 'return' || enemy.state === 'cooldown';
+        const tri = (visualLite ? 2.4 : 3.2) + (hostile ? pulse * 1.6 : 0);
+
+        // Агро-индикатор угрозы (погоня/бой) — пульсирующее кольцо
+        if (hostile && !visualLite) {
+          ctx.strokeStyle = `rgba(255, 51, 85, ${0.35 + pulse * 0.4})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.arc(clx, cly, tri + 3.5, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+        // Мягкая подложка-свечение
+        if (!visualLite) {
+          ctx.fillStyle = resting
+            ? 'rgba(120, 60, 70, 0.25)'
+            : 'rgba(255, 51, 85, 0.25)';
+          ctx.beginPath();
+          ctx.arc(clx, cly, tri + 1.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        // Треугольник остриём вверх
+        ctx.fillStyle = resting ? '#8a5560' : hostile ? '#ff3355' : '#c93a4e';
+        ctx.beginPath();
+        ctx.moveTo(clx, cly - tri);
+        ctx.lineTo(clx - tri * 0.87, cly + tri * 0.6);
+        ctx.lineTo(clx + tri * 0.87, cly + tri * 0.6);
+        ctx.closePath();
+        ctx.fill();
+      });
+
       // ── Breadcrumb trail ──
       trailFrameCountRef.current++;
       if (trailFrameCountRef.current % TRAIL_SAMPLE_INTERVAL === 0) {
@@ -746,7 +785,7 @@ export function MinimapComponent() {
     return () => {
       cancelAnimationFrame(animFrameRef.current);
     };
-  }, [sceneConfig, isVisible, mapSize, mapRadius, viewRadius, playerPos, visualLite, reducedMotion, isMobile]);
+  }, [sceneConfig, isVisible, mapSize, mapRadius, viewRadius, playerPos, currentSceneId, visualLite, reducedMotion, isMobile]);
 
   /* ── IntersectionObserver: pause rAF when off-screen ── */
   useEffect(() => {
