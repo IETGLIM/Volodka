@@ -412,6 +412,9 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     defaultPosition: [2.5, 0, 0],
     defaultRotation: -Math.PI / 3,
     patrolRadius: 0.5,
+    /* FIX (dying_poet_last_letter): без dialogueNodeId разговор с Еленой
+     * не запускал её ветку диалога — квест зависал на npc_talked. */
+    dialogueNodeId: 'poem_recipient_elena_meeting',
     npcSplashProfile: 'npc_poem_recipient_elena',
     description:
       'Женщина, которую предал тридцать лет назад умирающий поэт. Не простила. Не забыла. Но — пишет ему каждый год в день его рождения, и письма не отправляет.',

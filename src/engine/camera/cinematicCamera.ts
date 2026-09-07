@@ -12,6 +12,7 @@
 import { MathUtils, Object3D, Raycaster, Vector3 } from 'three';
 import {
   configureCameraCollisionRaycaster,
+  getCameraCollisionProxyList,
   isCameraCollisionHit,
 } from '@/engine/camera/cameraCollisionLayers';
 import { getExplorationCameraMotionScale } from '@/engine/player/playerLocomotionPresentation';
@@ -232,12 +233,21 @@ export function resolveCameraCollision(
 
   configureCameraCollisionRaycaster(raycaster);
 
+  /* FIX perf (60 FPS): raycast идёт по плоскому реестру прокси-стен без
+   * рекурсии вместо двух обходов всего графа сцены за кадр.
+   * Пустой реестр (тесты/непрогретый кадр) → прежний рекурсивный путь. */
+  const proxyList = getCameraCollisionProxyList();
+  const raycastTargets: Object3D[] = proxyList.length > 0
+    ? (proxyList as Object3D[])
+    : sceneChildren;
+  const recursive = proxyList.length === 0;
+
   // Forward raycast: from lookTarget toward desiredPos
   raycaster.set(lookTarget, _camDir);
   raycaster.far = fullDistance + 0.01;
   raycaster.near = 0.05; // low near distance to detect walls close to the player when zoomed in
 
-  const hits = raycaster.intersectObjects(sceneChildren, true);
+  const hits = raycaster.intersectObjects(raycastTargets, recursive);
   for (const hit of hits) {
     if (!isCameraCollisionHit(hit.object)) continue;
     if (hit.distance < fullDistance - margin) {
@@ -261,7 +271,7 @@ export function resolveCameraCollision(
   raycaster.far = fullDistance;
   raycaster.near = 0.01;
 
-  const reverseHits = raycaster.intersectObjects(sceneChildren, true);
+  const reverseHits = raycaster.intersectObjects(raycastTargets, recursive);
   for (const hit of reverseHits) {
     if (!isCameraCollisionHit(hit.object)) continue;
     if (hit.distance < fullDistance) {

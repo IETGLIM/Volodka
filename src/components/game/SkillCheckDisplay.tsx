@@ -123,7 +123,7 @@ export function SkillCheckDisplay() {
               <span className="text-xs font-mono tracking-wider" style={{ color: accentColor }}>
                 {check.passed ? '✓ ПРОВЕРКА ПРОЙДЕНА' : '✗ ПРОВЕРКА НЕ ПРОЙДЕНА'}
               </span>
-              <span className="text-xs font-mono text-slate-500">SKILL.CHECK</span>
+              <span className="text-xs font-mono text-slate-500">ПРОВЕРКА НАВЫКА</span>
             </div>
 
             {/* ── Skill name ── */}

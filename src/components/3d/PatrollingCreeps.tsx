@@ -342,6 +342,13 @@ function Creep({
     return g;
   }, []);
 
+  /* FIX (GPU-утечка): PlaneGeometry создана императивно и передаётся как
+   * prop `geometry=` — R3F такое не диспозит. При N крипах × смены сцен
+   * буферы накапливались. Диспозим при размонтировании. */
+  useEffect(() => () => {
+    hpBarFillGeometry.dispose();
+  }, [hpBarFillGeometry]);
+
   /** Lazily resolve the scene nav mesh (built once per scene, then cached). */
   function resolveNavMesh(): NavMeshGraph | null {
     if (!navMeshResolvedRef.current) {

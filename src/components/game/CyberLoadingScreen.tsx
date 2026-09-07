@@ -302,7 +302,7 @@ export function CyberLoadingScreen({
               className="flex items-center gap-2 px-4 py-2 rounded-full border border-green-500/30 bg-green-500/5"
             >
               <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-xs font-mono text-green-400">SYSTEM READY</span>
+              <span className="text-xs font-mono text-green-400">СИСТЕМА ГОТОВА</span>
             </motion.div>
           )}
         </AnimatePresence>

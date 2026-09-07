@@ -170,6 +170,22 @@ export const createPlayerQuestRewardsSlice: StateCreator<
 
     get().applyPlayerRewardBatch((draft, sideEffects) => {
       const rewards = questDef.rewards ?? [];
+
+      // КЛЮЧЕВОЙ ФИКС: rewardItems декларируются в данных квеста и показываются
+      // игроку в карточке наград (questObjectiveCardAdapter), но раньше не
+      // выдавались при завершении — игрок терял предметы из 11+ квестов.
+      const rewardItems = questDef.rewardItems ?? [];
+      for (const rewardItem of rewardItems) {
+        const item = createInventoryItem(rewardItem.itemId, rewardItem.quantity);
+        const added = batchAddItem(draft, item);
+        if (added) {
+          const itemDef = getItemDefinition(rewardItem.itemId);
+          appliedRewards.push(
+            `${itemDef?.name ?? rewardItem.itemId} x${rewardItem.quantity}`,
+          );
+        }
+      }
+
       for (const reward of rewards) {
         switch (reward.type) {
           case 'addSkill':

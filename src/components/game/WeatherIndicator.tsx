@@ -100,7 +100,7 @@ export function WeatherIndicator() {
 
   return (
     <div
-      className="fixed pointer-events-none hidden lg:block"
+      className="fixed pointer-events-none hidden lg:block hud-right-column-widget"
       data-testid="weather-indicator"
       style={{ top: explorationWeatherTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
     >

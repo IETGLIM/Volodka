@@ -12,7 +12,7 @@ import {
 } from '@/config/sceneDefinitionGenerator';
 import type { ColliderDef } from '@/shared/types/sceneDefinition';
 import type { SceneId } from '@/shared/types/game';
-import { enableCameraCollisionLayer } from '@/engine/camera/cameraCollisionLayers';
+import { enableCameraCollisionLayer, registerCameraCollisionProxy, unregisterCameraCollisionProxy } from '@/engine/camera/cameraCollisionLayers';
 
 interface CameraCollisionProxiesProps {
   sceneId: SceneId;
@@ -57,7 +57,13 @@ function CameraCollisionBox({ def }: { def: ColliderDef }) {
   useLayoutEffect(() => {
     if (meshRef.current) {
       enableCameraCollisionLayer(meshRef.current);
+      registerCameraCollisionProxy(meshRef.current);
     }
+    return () => {
+      if (meshRef.current) {
+        unregisterCameraCollisionProxy(meshRef.current);
+      }
+    };
   }, []);
 
   return (

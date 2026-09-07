@@ -14,6 +14,7 @@ import { runFrameBudgetForPhase } from '@/engine/frame/FrameBudgetRegistry';
 import { isFrameSimulationActive } from '@/engine/frame/frameVisibility';
 import {
   createFrameGameSnapshot,
+  setLatestFrameGameSnapshot,
   DEFAULT_FRAME_GAME_SNAPSHOT,
 } from '@/engine/frame/frameGameSnapshot';
 import { resetFrameProfilerCounters } from '@/engine/frame/frameProfilerCounters';
@@ -42,6 +43,7 @@ export function FrameBudgetRunner() {
     frameCtxRef.current.state = state;
     frameCtxRef.current.delta = Math.min(delta, 0.05);
     frameCtxRef.current.game = createFrameGameSnapshot(getGameSnapshot());
+    setLatestFrameGameSnapshot(frameCtxRef.current.game);
     runFrameBudgetForPhase(frameCtxRef.current, 'pre_physics');
   }, FRAME_PHASE_R3F_PRIORITY.pre_physics);
 

@@ -301,7 +301,7 @@ function LogEntryRow({ entry, index, isExpanded, onToggle }: {
               <p className="text-xs text-slate-400/80 leading-relaxed mb-1.5">{entry.description}</p>
               <div className="flex items-center gap-2 flex-wrap">
                 {entry.linkedQuestId && <span className="text-[8px] font-mono text-cyan-500/60 bg-cyan-500/10 px-1.5 py-0.5 rounded border border-cyan-500/20">Квест: {entry.linkedQuestId}</span>}
-                {entry.linkedNpcId && <span className="text-[8px] font-mono text-amber-400/60 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">NPC: {entry.linkedNpcId}</span>}
+                {entry.linkedNpcId && <span className="text-[8px] font-mono text-amber-400/60 bg-amber-400/10 px-1.5 py-0.5 rounded border border-amber-400/20">Персонаж: {entry.linkedNpcId}</span>}
                 {entry.linkedLocationId && <span className="text-[8px] font-mono text-emerald-400/60 bg-emerald-400/10 px-1.5 py-0.5 rounded border border-emerald-400/20">Место: {entry.linkedLocationId}</span>}
               </div>
             </div>

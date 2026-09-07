@@ -22,6 +22,8 @@ import { resetPendingEntryBeatFromZoneInteraction } from '@/engine/interaction/n
 import { resetSceneTransitionDedupe } from '@/engine/scene/sceneTransition';
 import { resetTransitionDirector } from '@/engine/scene/TransitionDirector';
 import { clearAllSessionQualityOverrides } from '@/engine/graphics/autoQualitySession';
+import { stopVoiceLinePlayback } from '@/engine/audio/voiceLinePlayer';
+import { resetNpcPortraitCacheLifecycle } from '@/engine/portrait/npcPortraitGeneration';
 
 /** Idempotent — safe to call from disposeGameEngine and resetGame. */
 export function resetEngineModuleRuntimeState(): void {
@@ -46,4 +48,9 @@ export function resetEngineModuleRuntimeState(): void {
   resetPlayerStaminaForNewSession();
   resetLoadingTimelineForSession();
   clearAllSessionQualityOverrides();
+  /* FIX: активная VO-реплика (HTMLAudio + speechSynthesis) продолжала
+   * играть после полного teardown оркестратора; портретный кэш терял
+   * scene:enter-листенер после disposeEventBus+revive. */
+  stopVoiceLinePlayback();
+  resetNpcPortraitCacheLifecycle();
 }

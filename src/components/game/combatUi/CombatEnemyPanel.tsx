@@ -146,7 +146,7 @@ export function CombatEnemyPanel({
             <TelegraphIndicator key={enemy.chargingSpecial.attackId} name={enemy.chargingSpecial.name} />
           )}
         </AnimatePresence>
-        <AnimatedHPBar current={enemy.hp} max={enemy.maxHp} label="ENEMY" isPlayer={false} />
+        <AnimatedHPBar current={enemy.hp} max={enemy.maxHp} label="ВРАГ" isPlayer={false} />
         {enemyBuffs.length > 0 && (
           <div className="mt-2">
             <BuffDebuffBar buffs={enemyBuffs} label="ЭФФЕКТЫ ВРАГА" />

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
+import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
 
 /* ══════════════════════════════════════════════════════════════
    Types
@@ -48,40 +49,15 @@ function getExplorationSlots(
   },
 ): ToolbarSlot[] {
   return [
-    { id: 'map', icon: '🗺', label: 'Карта', shortcut: '1', action: () => {} },
+    /* FIX: слоты «Карта» и «Кодекс» были заглушками (action: () => {}).
+     * Теперь они открывают реальные панели через панельный диспетчер —
+     * тот же путь, что и клавиши M / K. */
+    { id: 'map', icon: '🗺', label: 'Карта', shortcut: '1', action: () => { firePanelShortcut('KeyM'); } },
     { id: 'inventory', icon: '🎒', label: 'Инвентарь', shortcut: '2', action: openers.onOpenInventory },
     { id: 'quests', icon: '📋', label: 'Задания', shortcut: '3', action: openers.onOpenQuests },
-    { id: 'codex', icon: '📖', label: 'Кодекс', shortcut: '4', action: () => {} },
+    { id: 'codex', icon: '📖', label: 'Кодекс', shortcut: '4', action: () => { firePanelShortcut('KeyK'); } },
     { id: 'journal', icon: '📝', label: 'Журнал', shortcut: '5', action: openers.onOpenJournal },
     { id: 'poems', icon: '✦', label: 'Стихи', shortcut: '6', action: openers.onOpenPoetry },
-  ];
-}
-
-function getCombatSlots(): ToolbarSlot[] {
-  return [
-    { id: 'attack', icon: '⚔', label: 'Атака', shortcut: '1', action: () => {} },
-    { id: 'defend', icon: '🛡', label: 'Защита', shortcut: '2', action: () => {} },
-    { id: 'poem_power', icon: '✦', label: 'Сила стиха', shortcut: '3', action: () => {} },
-    { id: 'item', icon: '💊', label: 'Предмет', shortcut: '4', action: () => {} },
-    { id: 'flee', icon: '🏃', label: 'Бегство', shortcut: '5', action: () => {} },
-  ];
-}
-
-function getDialogueSlots(): ToolbarSlot[] {
-  return [
-    { id: 'skip', icon: '⏩', label: 'Пропустить', shortcut: '1', action: () => {} },
-    { id: 'history', icon: '📜', label: 'История', shortcut: '2', action: () => {} },
-    { id: 'settings', icon: '⚙', label: 'Настройки', shortcut: '3', action: () => {} },
-  ];
-}
-
-function getMenuSlots(): ToolbarSlot[] {
-  return [
-    { id: 'resume', icon: '▶', label: 'Продолжить', shortcut: '1', action: () => {} },
-    { id: 'save', icon: '💾', label: 'Сохранить', shortcut: '2', action: () => {} },
-    { id: 'load', icon: '📂', label: 'Загрузить', shortcut: '3', action: () => {} },
-    { id: 'settings', icon: '⚙', label: 'Настройки', shortcut: '4', action: () => {} },
-    { id: 'quit', icon: '✕', label: 'Выход', shortcut: '5', action: () => {} },
   ];
 }
 
@@ -112,13 +88,18 @@ export function QuickAccessToolbar({
 
   const context = resolveContext(mode, showStoryOverlay, narrativeKind ?? undefined, mainMenuOpen);
 
-  const explorationOpeners = { onOpenQuests, onOpenInventory, onOpenPoetry, onOpenJournal, onOpenMenu };
-
-  const slots: ToolbarSlot[] =
-    context === 'exploration' ? getExplorationSlots(explorationOpeners) :
-    context === 'combat' ? getCombatSlots() :
-    context === 'dialogue' ? getDialogueSlots() :
-    getMenuSlots();
+  /* FIX: слоты для combat/dialogue/menu были нерабочими заглушками —
+   * эти контексты уже имеют собственные органы управления
+   * (CombatTouchControls, диалог, меню). Показываем тулбар только там,
+   * где кнопки реально работают — в исследовании. */
+  const slots: ToolbarSlot[] = getExplorationSlots({
+    onOpenQuests,
+    onOpenInventory,
+    onOpenPoetry,
+    onOpenJournal,
+    onOpenMenu,
+  });
+  const active = context === 'exploration';
 
   // Show toolbar after a short delay
   useEffect(() => {
@@ -162,7 +143,7 @@ export function QuickAccessToolbar({
   }, []);
 
   return (
-    visible ? (
+    active && visible ? (
       <nav
         key="quick-access-toolbar"
         className="quick-access-toolbar quick-access-toolbar--enter"

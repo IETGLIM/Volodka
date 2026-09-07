@@ -5,7 +5,7 @@
  */
 
 import { useMemo, useRef } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { Points, PointMaterial } from '@react-three/drei';
 import { seededRand } from '@/shared/utils/seededRand';
 import * as THREE from 'three';
@@ -77,13 +77,17 @@ export function AmbientParticles(config: AmbientParticlesConfig = {}) {
     return { positions: pos, phases: ph, baseX: bx, baseZ: bz };
   }, [count, bxMin, byMin, bzMin, xRange, yRange, zRange]);
 
-  useFrame(({ clock }, delta) => {
+  /* FIX (perf): раньше сырой useFrame в обход центрального бюджет-раннера —
+   * 200 частиц считались каждый кадр даже при перегрузке и в demand-режиме
+   * (меню/диалог). Теперь тик 'misc': мягкий пропуск при исчерпании бюджета
+   * кадра, авто-пауза при неактивной симуляции и вне видимости. */
+  useFrameTick('misc', ({ state, delta }) => {
     if (!pointsRef.current) return;
 
     const geo = pointsRef.current.geometry;
     const posAttr = geo.attributes.position;
     const arr = posAttr.array as Float32Array;
-    const t = clock.getElapsedTime();
+    const t = state.clock.getElapsedTime();
     const dt = Math.min(delta, 0.1); // cap to avoid huge jumps after tab switch
 
     for (let i = 0; i < count; i++) {

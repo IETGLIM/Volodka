@@ -67,6 +67,19 @@ export function AaaInteractionRich() {
   const slotsRef = useRef(slots);
   slotsRef.current = slots;
 
+  /* FIX (GPU-утечка): геометрии/материалы создаются императивно в useMemo —
+   * R3F не диспозит их при размонтировании. Раньше каждая смена сцены
+   * оставляла 16 BoxGeometry + 16 MeshBasicMaterial в GPU-памяти. */
+  useEffect(() => () => {
+    for (const s of slots) {
+      s.innerGeo.dispose();
+      s.outerGeo.dispose();
+      s.innerMat.dispose();
+      s.outerMat.dispose();
+      s.light.dispose();
+    }
+  }, [slots]);
+
   useSceneEnterEffect(() => {
     highlightsRef.current.fill(null);
     for (const s of slotsRef.current) {

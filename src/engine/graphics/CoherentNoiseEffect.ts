@@ -98,7 +98,7 @@ export class CoherentNoiseEffect extends Effect {
 }
 
 /** R3F-compatible wrapper component for CoherentNoiseEffect */
-import { forwardRef, useMemo } from 'react';
+import { forwardRef, useEffect, useMemo } from 'react';
 import { useThree, useFrame } from '@react-three/fiber';
 import type { RefObject } from 'react';
 import { BlendFunction } from 'postprocessing';
@@ -113,6 +113,13 @@ export const CoherentNoise = forwardRef<CoherentNoiseEffect, CoherentNoiseProps>
   function CoherentNoise({ opacity = 0.022, premultiply = false, blendFunction: _blendFunction = BlendFunction.NORMAL }, ref) {
     const effect = useMemo(() => new CoherentNoiseEffect({ opacity, premultiply }), [opacity, premultiply]);
     const size = useThree((s) => s.size);
+
+    /* FIX (GPU-утечка): при смене opacity/premultiply старый Effect
+     * пересоздавался, но не диспозился — postprocessing Effect держит
+     * GL-программу. Диспозим при размонтировании/пересоздании. */
+    useEffect(() => () => {
+      effect.dispose();
+    }, [effect]);
 
     useFrame(({ clock }) => {
       effect.updateTime(clock.getElapsedTime());

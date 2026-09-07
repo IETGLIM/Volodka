@@ -75,9 +75,9 @@ export function EnemyWeaknessDisplay() {
 
         {/* Stats row */}
         <div className="flex items-center gap-3 text-[8px] font-mono text-slate-400">
-          <span>ATK <span className="text-red-400">{enemy.attack}</span></span>
-          <span>DEF <span className="text-cyan-400">{enemy.defense}</span></span>
-          <span>SPD <span className="text-amber-400">{enemy.speed}</span></span>
+          <span>АТК <span className="text-red-400">{enemy.attack}</span></span>
+          <span>ЗАЩ <span className="text-cyan-400">{enemy.defense}</span></span>
+          <span>СКР <span className="text-amber-400">{enemy.speed}</span></span>
         </div>
 
         {/* Weakness hint bar */}

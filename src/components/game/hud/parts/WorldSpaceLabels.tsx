@@ -387,7 +387,7 @@ const SingleLabel = memo<SingleLabelProps>(({
 
         {/* Occlusion indicator */}
         {label.isOccluded && (
-          <span className="ml-0.5 opacity-60" style={{ color: styleConfig.color }} title="Entity occluded">
+          <span className="ml-0.5 opacity-60" style={{ color: styleConfig.color }} title="Персонаж скрыт за препятствием">
             <AlertCircle size={10} />
           </span>
         )}

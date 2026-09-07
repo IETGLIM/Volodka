@@ -300,7 +300,7 @@ export function GameStatsDashboard({ open, onClose }: GameStatsDashboardProps) {
             />
             <StatCard
               icon={<Users className="w-3.5 h-3.5" />}
-              label="NPC"
+              label="Жители"
               value={totalNpcsMet}
               color="#60a5fa"
             />

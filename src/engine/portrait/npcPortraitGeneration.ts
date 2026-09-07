@@ -13,6 +13,7 @@ import { LRUCache } from '@/shared/utils/LRUCache';
 
 const portraitCache = new LRUCache<string, string>(NPC_PORTRAIT_CACHE_MAX);
 let lifecycleBound = false;
+let unbindPortraitLifecycle: (() => void) | null = null;
 
 function evictPortraitUrl(url: string): void {
   revokePortraitUrl(url);
@@ -33,9 +34,25 @@ export function clearNpcPortraitCache(): void {
 export function ensureNpcPortraitCacheLifecycle(): void {
   if (lifecycleBound) return;
   lifecycleBound = true;
-  eventBus.on('scene:enter', () => {
+  const unsub = eventBus.on('scene:enter', () => {
     clearNpcPortraitCache();
   });
+  unbindPortraitLifecycle = unsub;
+}
+
+/* FIX (утечка blob-URL): eventBus диспозится/revive'ится на смене игровой
+ * сессии (disposeGameEngine), а lifecycleBound оставался true — новый
+ * scene:enter-листенер не перепривязывался, и LRU-кэш до 128 портретных
+ * data-URL не чистился между сценами до перезагрузки страницы. */
+export function resetNpcPortraitCacheLifecycle(): void {
+  try {
+    unbindPortraitLifecycle?.();
+  } catch {
+    /* eventBus уже мёртв — ок */
+  }
+  unbindPortraitLifecycle = null;
+  lifecycleBound = false;
+  clearNpcPortraitCache();
 }
 
 export function renderNpcPortraitSync(

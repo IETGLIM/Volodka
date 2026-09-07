@@ -29,6 +29,7 @@ import type { SceneId } from '@/config/sceneDefinitions';
 import type { GamePhase } from '@/shared/gamePhase';
 import type { NarrativeKind } from '@/shared/types/narrativeKind';
 import { ControllerSession } from '@/engine/controller/ControllerSession';
+import { AUDIO_SETTINGS_CHANGED } from './AudioSettings';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
 import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 
@@ -53,12 +54,36 @@ export class SceneAudioController {
   init(): void {
     this.session.begin();
     applyAudioSettings();
+    this.bindAudioSettingsListener();
   }
 
   dispose(): void {
+    this.removeAudioSettingsListener();
     this.enteredScenes.clear();
     this.stopStoryAudio();
     this.session.dispose();
+  }
+
+  /* FIX: файловый ambient-луп теперь реагирует на смену громкости/мьюта
+   * в настройках мгновенно (раньше громкость фиксировалась при создании
+   * элемента и не менялась до следующей story-ноды). */
+  private readonly onAudioSettingsChanged = (): void => {
+    if (!this.storyAudio) return;
+    try {
+      this.storyAudio.volume = this.computeStoryAudioVolume();
+    } catch {
+      /* элемент уже освобождён — игнорируем */
+    }
+  };
+
+  private bindAudioSettingsListener(): void {
+    if (typeof window === 'undefined') return;
+    window.addEventListener(AUDIO_SETTINGS_CHANGED, this.onAudioSettingsChanged);
+  }
+
+  private removeAudioSettingsListener(): void {
+    if (typeof window === 'undefined') return;
+    window.removeEventListener(AUDIO_SETTINGS_CHANGED, this.onAudioSettingsChanged);
   }
 
   isDisposed(): boolean {
@@ -271,7 +296,7 @@ export class SceneAudioController {
     this.stopStoryAudioElement();
     if (!file || typeof window === 'undefined' || typeof Audio !== 'function') return;
     try {
-      const el = new Audio(file);
+      const el = new Audio(resolvePublicAssetUrl(file));
       el.loop = true;
       el.volume = this.computeStoryAudioVolume();
       void el.play().catch(() => {});
@@ -298,7 +323,7 @@ export class SceneAudioController {
   }
 
   /** Громкость файлового слоя = ambient-шина × 0.7 (лупы громче процедурных бэдов).
-   *  Пересчитывается при каждой смене story-контекста. */
+   *  Пересчитывается при каждой смене story-контекста и по событию настроек. */
   private computeStoryAudioVolume(): number {
     try {
       const s = readAudioSettings();
@@ -344,6 +369,27 @@ export class SceneAudioController {
 }
 
 let controllerInstance: SceneAudioController | null = null;
+
+/* ─── URL-нормализация публичных ассетов ─── */
+
+/** FIX (Vercel/404): данные story-нод хранят относительные пути вида
+ *  'sounds/ambient/rain_distant.ogg'. Относительный URL резолвится от
+ *  текущего адреса страницы — на деплоях с не-корневым базовым путём
+ *  (или при глубокой ссылке) запрос уходил мимо файла и Vercel отдавал
+ *  index.html вместо .ogg → тихий отказ файлового эмбиента.
+ *  Приводим путь к абсолютному от BASE_URL сборки. */
+export function resolvePublicAssetUrl(file: string): string {
+  if (/^(https?:|data:|blob:)/i.test(file)) return file;
+  if (typeof window === 'undefined') return file;
+  try {
+    const base = import.meta.env.BASE_URL || '/';
+    const baseWithSlash = base.endsWith('/') ? base : `${base}/`;
+    const normalized = file.replace(/^\//, '');
+    return new URL(`${baseWithSlash}${normalized}`, window.location.href).href;
+  } catch {
+    return file;
+  }
+}
 
 export function getSceneAudioController(): SceneAudioController {
   if (!controllerInstance) {

@@ -510,6 +510,23 @@ const DYING_POET_SCHEDULE: NPCSchedule = {
   ],
 };
 
+/** FIX (достижимость квеста dying_poet_last_letter): Елена — адресат
+ *  последнего стиха поэта — существовала в реестре NPC, но без расписания
+ *  и dialogueNodeId не появлялась в мире: цели find_poem_recipient /
+ *  deliver_poem_to_recipient (npc_talked → poem_recipient_elena) были
+ *  невыполнимы. Поэт направляет на «Болотную улицу» — улица ночью. */
+const POEM_RECIPIENT_ELENA_SCHEDULE: NPCSchedule = {
+  id: 'schedule_poem_recipient_elena',
+  npcId: 'poem_recipient_elena',
+  entries: [
+    { startHour: 0, endHour: 6, sceneId: 'street_night', position: [-2.0, 0, 2.5], activity: 'rest' },
+    { startHour: 6, endHour: 10, sceneId: 'street_night', position: [-2.0, 0, 2.5], activity: 'talk' },
+    { startHour: 10, endHour: 16, sceneId: 'street_night', position: [-2.0, 0, 2.5], activity: 'work' },
+    { startHour: 16, endHour: 22, sceneId: 'street_night', position: [-2.0, 0, 2.5], activity: 'talk' },
+    { startHour: 22, endHour: 24, sceneId: 'street_night', position: [-2.0, 0, 2.5], activity: 'rest' },
+  ],
+};
+
 /* ──────────────────────────────────────────────────────────────────────────
    EXPANSION STUB SCHEDULES — гиверы одиночных квестов (акт 3–4).
    FIX (reachability): NPC-заглушки существовали в реестре, но без расписаний
@@ -692,6 +709,7 @@ export const NPC_SCHEDULES: NPCSchedule[] = [
   MARAT_ECHO_SCHEDULE,
   PARK_OLD_MAN_SCHEDULE,
   DYING_POET_SCHEDULE,
+  POEM_RECIPIENT_ELENA_SCHEDULE,
   MERCHANT_BORIS_SCHEDULE,
   INFORMANT_SERYOZHA_SCHEDULE,
   CAPTAIN_GAROLD_SCHEDULE,

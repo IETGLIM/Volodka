@@ -61,6 +61,9 @@ export function useOrchestratorRuntime() {
 
   useEffect(() => {
     if (devToolsArmed) return;
+    /* FIX: F3 больше не открывает DevPanel в продакшене — полностью
+     * английский дев-инструмент был доступен любому игроку. */
+    if (!import.meta.env.DEV) return;
     const handleF3 = (event: KeyboardEvent) => {
       if (event.code === 'F3') {
         setDevPanelStartOpen(true);

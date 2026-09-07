@@ -29,3 +29,28 @@ export function configureCameraCollisionRaycaster(raycaster: THREE.Raycaster): v
 export function isCameraCollisionHit(object: THREE.Object3D): boolean {
   return object.layers.test(_collisionLayerMask);
 }
+
+/* ─── Реестр прокси-мешей (FIX perf: 60 FPS) ───
+ * Раньше камеры каждый кадр делали ДВА рекурсивных raycast по всему
+ * графу сцены (тысячи Object3D), чтобы найти десяток невидимых
+ * стен-прокси. Теперь прокси регистрируются здесь при монтировании
+ * (единственный источник — CameraCollisionProxies), и raycast идёт
+ * по плоскому списку без рекурсии. Пустой реестр → старый путь
+ * (для тестов/совместимости). */
+const cameraCollisionProxies = new Set<THREE.Object3D>();
+let cameraCollisionProxyArray: THREE.Object3D[] = [];
+
+export function registerCameraCollisionProxy(object: THREE.Object3D): void {
+  cameraCollisionProxies.add(object);
+  cameraCollisionProxyArray = Array.from(cameraCollisionProxies);
+}
+
+export function unregisterCameraCollisionProxy(object: THREE.Object3D): void {
+  cameraCollisionProxies.delete(object);
+  cameraCollisionProxyArray = Array.from(cameraCollisionProxies);
+}
+
+/** Snapshot плоского списка прокси (не мутировать!). */
+export function getCameraCollisionProxyList(): readonly THREE.Object3D[] {
+  return cameraCollisionProxyArray;
+}

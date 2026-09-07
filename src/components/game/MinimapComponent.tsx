@@ -19,7 +19,7 @@
    - Breadcrumb trail (recent player movement)
    - Radar sweep animation
    - Glass-morphism frame with corner brackets
-   - Toggleable via M key / tap: expanded map ↔ compact 44px pill
+   - Toggleable via tap: expanded map ↔ compact 44px pill
      (north arrow + quest target with distance), smooth transition
    - Exploration-mode-only visibility
    - Quality-gated: simpler rendering on low/visualLite presets
@@ -88,8 +88,6 @@ const TRAIL_SAMPLE_INTERVAL = 6;
 const RELATION_HOSTILE = 25;
 /** Relation value threshold for friendly NPCs */
 const RELATION_FRIENDLY = 60;
-/** M key code */
-const TOGGLE_KEY = 'KeyM';
 /** Максимум квест-маркеров на миникарте одновременно (как в компасе) */
 const MAX_QUEST_MARKERS = 4;
 /** Цвет маркера активной цели квеста (жёлтый) */
@@ -218,17 +216,11 @@ export function MinimapComponent() {
   const handleZoomOut = useCallback(() => changeZoom(-1), [changeZoom]);
   const zoomLabel = MINIMAP_ZOOM_LEVELS[zoomIndex]?.labelRu ?? MINIMAP_ZOOM_LEVELS[MINIMAP_ZOOM_DEFAULT_INDEX].labelRu;
 
-  /* ── M-key toggle ── */
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === TOGGLE_KEY && mode === 'exploration') {
-        e.preventDefault();
-        handleToggle();
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [mode, handleToggle]);
+  /* ── Toggle через тап по «таблетке» ──
+   * FIX (конфликт клавиш): раньше KeyM одновременно открывал карту мира
+   * (панельный свитчборд) и сворачивал миникарту — двойное действие на
+   * одну клавишу. M теперь принадлежит только карте мира; свернуть
+   * миникарту можно тапом по ней. */
 
   /* ── Derived values ── */
   const sceneConfig = SCENE_CONFIG[currentSceneId];
@@ -1004,13 +996,13 @@ export function MinimapComponent() {
           </AnimatePresence>
 
           {/* ── Масштаб обзора (только в развёрнутом виде) ──
-              Строчка живёт ПОД кругом, внутри зарезервированного слота
-              MINIMAP_HEIGHT (196px): круг 164px + строчка 18px — правая
-              колонка HUD не наезжает на квест-карту. */}
+              Строчка живёт ПОД кругом. Кнопки увеличены до 44px
+              touch-target (раньше были 18px — тапались плохо);
+              компенсируем высотой слота в правой колонке HUD. */}
           {expanded && (
             <div
               className="flex items-center gap-1 select-none"
-              style={{ marginTop: 2, height: 18 }}
+              style={{ marginTop: 2, height: 44 }}
               role="group"
               aria-label="Масштаб миникарты"
             >
@@ -1022,10 +1014,10 @@ export function MinimapComponent() {
                 onClick={handleZoomOut}
                 className="flex items-center justify-center transition-opacity disabled:opacity-25 disabled:cursor-default"
                 style={{
-                  width: 18,
-                  height: 18,
+                  width: 44,
+                  height: 44,
                   borderRadius: '50%',
-                  fontSize: 12,
+                  fontSize: 18,
                   lineHeight: 1,
                   fontFamily: 'var(--font-mono, monospace)',
                   color: cyberCyan(0.8),
@@ -1052,10 +1044,10 @@ export function MinimapComponent() {
                 onClick={handleZoomIn}
                 className="flex items-center justify-center transition-opacity disabled:opacity-25 disabled:cursor-default"
                 style={{
-                  width: 18,
-                  height: 18,
+                  width: 44,
+                  height: 44,
                   borderRadius: '50%',
-                  fontSize: 12,
+                  fontSize: 18,
                   lineHeight: 1,
                   fontFamily: 'var(--font-mono, monospace)',
                   color: cyberCyan(0.8),

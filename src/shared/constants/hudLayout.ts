@@ -9,8 +9,8 @@ export const EXPLORATION_HUD_LAYOUT = {
   COMPASS_HEIGHT: 32,
   OBJECTIVE_STRIP_HEIGHT: 44,
   OBJECTIVE_MAX_WIDTH: 360,
-  /** Minimap block (160px map + chrome) */
-  MINIMAP_HEIGHT: 196,
+  /** Minimap block (160px map + chrome + 44px touch-target zoom row) */
+  MINIMAP_HEIGHT: 222,
   RIGHT_INSET: 12,
   /** Bottom-center stack (px from viewport bottom) */
   BOTTOM_TOOLBAR: 12,

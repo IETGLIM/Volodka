@@ -45,6 +45,21 @@ export function createFrameGameSnapshot(store: GameStoreSnapshot): FrameGameSnap
   };
 }
 
+/* ─── FIX (perf GC): снапшот кадра создаётся ОДИН раз в pre_physics ───
+ * (FrameBudgetRunner) и переиспользуется пост-фазами того же кадра
+ * (PostFrameBudgetRunner) — раньше пост-фаза пересоздавала объект и
+ * пересчитывала locomotion-lock каждый кадр. */
+let latestFrameSnapshot: FrameGameSnapshot = DEFAULT_FRAME_GAME_SNAPSHOT;
+
+export function setLatestFrameGameSnapshot(snapshot: FrameGameSnapshot): void {
+  latestFrameSnapshot = snapshot;
+}
+
+/** Снапшот, созданный pre_physics-фазой текущего кадра. */
+export function getLatestFrameGameSnapshot(): FrameGameSnapshot {
+  return latestFrameSnapshot;
+}
+
 /** @deprecated Use createFrameGameSnapshot(getGameSnapshot()) — avoids @/store import. */
 export function createFrameGameSnapshotFromStore(state: GameStoreSnapshot): FrameGameSnapshot {
   return createFrameGameSnapshot(state);

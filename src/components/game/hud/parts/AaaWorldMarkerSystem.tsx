@@ -25,18 +25,25 @@ export function AaaWorldMarkerSystem() {
   const reducedMotion = useEffectiveReducedMotion();
 
   useEffect(() => {
+    /* Таймеры-самоудаления маркеров — снимаем при размонтировании,
+     * чтобы не звать setState на мёртвый компонент. */
+    const removeTimers: ReturnType<typeof setTimeout>[] = [];
+
     const addMarker = (id: string, text: string) => {
       // Position near center but slightly offset, like diegetic whisper
       const x = 50 + (Math.random() - 0.5) * 12;
       const y = 62 + (Math.random() - 0.5) * 8;
       setMarkers(m => [...m.filter(mm => mm.id !== id), { id, text, x, y }]);
-      setTimeout(() => setMarkers(m => m.filter(mm => mm.id !== id)), 5200);
+      removeTimers.push(
+        setTimeout(() => setMarkers(m => m.filter(mm => mm.id !== id)), 5200),
+      );
     };
 
     const unsubs = [
-      eventBus.on('quest:objective_updated' as any, ({ questTitle }: any) => {
-        if (questTitle) addMarker(`quest_${questTitle}_${Date.now()}`, `↗ ${questTitle}`);
-      }),
+      /* FIX (дезинформация): раньше здесь висела подписка на
+       * quest:objective_updated, рисовавшая «↗ Название квеста» в случайной
+       * точке экрана — стрелка указывала в никуда и дублировала
+       * QuestNotificationSystem. Атмосферные шёпоты сцен оставлены. */
       eventBus.on('scene:enter', ({ sceneId }) => {
         // First time in scene, hint at explore
         if (Math.random() < 0.22) {
@@ -51,7 +58,10 @@ export function AaaWorldMarkerSystem() {
         }
       }),
     ];
-    return () => unsubs.forEach(u => u());
+    return () => {
+      unsubs.forEach(u => u());
+      removeTimers.forEach(clearTimeout);
+    };
   }, []);
 
   return (
