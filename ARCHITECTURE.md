@@ -1,6 +1,6 @@
 # Архитектура — ВОЛОДЬКА RPG
 
-> Карта систем для инженеров. Актуально для **v4.15.5** (`package.json` / `APP_VERSION`).
+> Карта систем для инженеров. Актуально для **v4.15.6** (`package.json` / `APP_VERSION`).
 > AA visual/content density plan: [`docs/AA_QUALITY_ROADMAP.md`](./docs/AA_QUALITY_ROADMAP.md).
 > Sequential uniformity backlog: [`docs/ARCHITECTURE_UNIFICATION.md`](./docs/ARCHITECTURE_UNIFICATION.md).
 >
@@ -1698,6 +1698,40 @@ reset в engineRuntimeReset), **ноль React**:
 из CombatDamageFx, CSS-кейфреймы `hud-filmic-damage-rise-fade`.
 `useCombatUiController` больше не хранит damageNumbers/richDamageEvents —
 только крит-шейк/вспышки (фидбэк экрана, не числа).
+
+## v4.15.6 — сателлитные диалоги (этап 84)
+
+### Проблема
+- 202 из 614 диалоговых узлов были «сателлитами» — глубокие авторские
+  ветки без единого внешнего входа: WS-спринты (ws17b/ws22b/ws23b/ws26),
+  тюремная линия Заремы, эволюция Александра, исповедь Дмитрия, квест-
+  финалы expansion-NPC, эпилоги. Контент в данных есть — игрок его не
+  видел никогда.
+
+### Решение
+- **`src/data/dialogue/satelliteBridges.ts`** (пак `satelliteBridges`, 14
+  узлов): темы-хабы в стиле Gothic 2 — `<npc>_topics` для 13 NPC +
+  `volodka_reflections` для внутренних монологов. 136 тем, каждая с
+  гейтом (requiredAct 2–5 / флаги событий / minNpcRelation / missingFlag
+  одноразовых событий). Вход в хаб — выбор в return-узле NPC
+  («поговорить по душам»), для expansion-стабов — тема в их entry-узле
+  (гейт по флагу завершения квеста).
+- 6 ambient-триггер-зон (улица ×2, комната, кухня ×2, коридор) открывают
+  сироты exploration-узлов; `explore_volodka_inner` ведёт в хаб
+  размышлений.
+- Пак зарегистрирован по правилу «4 зеркальных шага»: статика
+  (dialogue/index.ts, последним) + рантайм (DialoguePackId /
+  DIALOGUE_PACK_ORDER / лоадер) — паритет-тест покрывает автоматически.
+
+### Гарды
+- **`src/data/narrative/dialogueReachability.test.ts`**: BFS от движковых
+  входов (NPC dialogue/return/milestones, зоны linkedDialogueNodeId,
+  story-выборы) — 0 недостижимых узлов. Гард строже файлового сканирования:
+  словари-маппинги и ключи НЕ считаются входами (именно так найдены 3
+  движковых сироты: zarema_rescue, explore_corridor_door,
+  explore_kitchen_table).
+- Правило: новый диалоговый узел обязан иметь вход (NPC-ссылка, зона или
+  story-выбор) — иначе красный тест.
 
 ## v4.15.5 — системный uiTextScale (этап 79)
 
