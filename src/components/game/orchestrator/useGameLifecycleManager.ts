@@ -5,6 +5,7 @@ import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
 import { withHmrCleanup } from '@/shared/dev/hmrDispose';
+import { KeyedTimeoutScheduler } from '@/shared/utils/keyedTimeoutScheduler';
 import { SCENE_CONFIG } from '@/config/scenes';
 import type { SceneId } from '@/shared/types/game';
 import { formatSceneBanner, type SceneBannerPresentation } from '@/engine/world/worldAmbiencePresentation';
@@ -73,10 +74,20 @@ function debouncedAutosave(fn: () => void, delay = 2000): void {
 
 export function useGameLifecycleManager(mode: string) {
   const [sceneBanner, setSceneBanner] = useState<SceneBannerPresentation | null>(null);
-  const sceneBannerTimeout = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const isMountedRef = useRef(true);
   /** Tracks whether the initial-scene thought has been fired (avoids duplicate). */
   const initialThoughtFiredRef = useRef(false);
+
+  /* perf/fix (v4.25, этап 107): все отложенные задачи (баннер сцены, мысли
+   * при входе в сцену, реактивные мысли) планируются через KeyedTimeoutScheduler:
+   * дедуп по ключу (быстрые серии одного события не складывают очередь эмиссий)
+   * и disposeAll при размонтировании — раньше 12 «голых» setTimeout продолжали
+   * срабатывать после unmount (фантомные мысли в HMR/StrictMode). */
+  const timersRef = useRef<KeyedTimeoutScheduler | null>(null);
+  if (timersRef.current === null) {
+    timersRef.current = new KeyedTimeoutScheduler();
+  }
+  const timers = timersRef.current;
 
   useEffect(() => withHmrCleanup(initWorldEventDirector()), []);
 
@@ -98,7 +109,7 @@ export function useGameLifecycleManager(mode: string) {
       initialThoughtFiredRef.current = true;
       store.setFlag(resolved.flagToSet, true);
       // Delay so the scene banner / tutorial fade first
-      setTimeout(() => {
+      timers.schedule('thought:scene-entry-initial', () => {
         if (!isMountedRef.current) return;
         eventBus.emit('volodka:thought', { text: resolved.text, duration: 5500 });
         try {
@@ -108,7 +119,7 @@ export function useGameLifecycleManager(mode: string) {
         }
       }, 3500);
     }
-  }, [mode]);
+  }, [mode, timers]);
 
   // gameDataReady path — narrative preload + GuidedStory init (LoadingTimeline marks ready separately)
   useEffect(() => {
@@ -150,12 +161,10 @@ export function useGameLifecycleManager(mode: string) {
         const sceneName = SCENE_CONFIG[newScene]?.name ?? '';
         if (!sceneName || !isMountedRef.current) return;
 
-        if (sceneBannerTimeout.current) clearTimeout(sceneBannerTimeout.current);
         setSceneBanner(formatSceneBanner(newScene as SceneId, sceneName));
-        sceneBannerTimeout.current = setTimeout(() => {
+        timers.schedule('scene:banner', () => {
           if (!isMountedRef.current) return;
           setSceneBanner(null);
-          sceneBannerTimeout.current = undefined;
         }, 2500);
       },
     );
@@ -163,12 +172,9 @@ export function useGameLifecycleManager(mode: string) {
     return () => {
       isMountedRef.current = false;
       unsub();
-      if (sceneBannerTimeout.current) {
-        clearTimeout(sceneBannerTimeout.current);
-        sceneBannerTimeout.current = undefined;
-      }
+      timers.disposeAll();
     };
-  }, []);
+  }, [timers]);
 
   // Quest/story sync — reconcile guidance when player/quest/TTL state changes
   useEffect(() => {
@@ -215,7 +221,7 @@ export function useGameLifecycleManager(mode: string) {
       if (resolved) {
         store.setFlag(resolved.flagToSet, true);
         // Delay slightly so the scene banner fades first
-        setTimeout(() => {
+        timers.schedule(`thought:scene-entry:${sceneId}`, () => {
           eventBus.emit('volodka:thought', { text: resolved.text, duration: 5500 });
           // Record in persistent journal so the player can re-read later
           try {
@@ -267,7 +273,7 @@ export function useGameLifecycleManager(mode: string) {
       const ctx = buildThoughtContext(store);
       const text = getPostCombatThought(ctx, true);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId), 1200);
+        timers.schedule('thought:combat:victory', () => emitReactiveThought(text, store.exploration.currentSceneId), 1200);
       }
     });
 
@@ -276,7 +282,7 @@ export function useGameLifecycleManager(mode: string) {
       const ctx = buildThoughtContext(store);
       const text = getPostCombatThought(ctx, false);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId), 1200);
+        timers.schedule('thought:combat:defeat', () => emitReactiveThought(text, store.exploration.currentSceneId), 1200);
       }
     });
 
@@ -287,7 +293,7 @@ export function useGameLifecycleManager(mode: string) {
       const poemCount = store.collectedPoems.length;
       const text = getPoemCollectedThought(ctx, poemCount);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId, 6000), 800);
+        timers.schedule('thought:poem', () => emitReactiveThought(text, store.exploration.currentSceneId, 6000), 800);
       }
     });
 
@@ -296,7 +302,7 @@ export function useGameLifecycleManager(mode: string) {
       const ctx = buildThoughtContext(store);
       const text = getLevelUpThought(ctx, newLevel);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId), 600);
+        timers.schedule('thought:levelup', () => emitReactiveThought(text, store.exploration.currentSceneId), 600);
       }
     });
 
@@ -305,7 +311,7 @@ export function useGameLifecycleManager(mode: string) {
       const ctx = buildThoughtContext(store);
       const text = getQuestCompletedThought(ctx, questId);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId), 1000);
+        timers.schedule('thought:quest', () => emitReactiveThought(text, store.exploration.currentSceneId), 1000);
       }
     });
 
@@ -314,7 +320,7 @@ export function useGameLifecycleManager(mode: string) {
       const ctx = buildThoughtContext(store);
       const text = getLoreDiscoveredThought(ctx, rarity);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId), 500);
+        timers.schedule('thought:lore', () => emitReactiveThought(text, store.exploration.currentSceneId), 500);
       }
     });
 
@@ -323,7 +329,7 @@ export function useGameLifecycleManager(mode: string) {
       const ctx = buildThoughtContext(store);
       const text = getChoiceMadeThought(ctx, karmaChange);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId), 1500);
+        timers.schedule('thought:choice', () => emitReactiveThought(text, store.exploration.currentSceneId), 1500);
       }
     });
 
@@ -333,7 +339,7 @@ export function useGameLifecycleManager(mode: string) {
       const text = getPerkUnlockedThought(ctx, perkName, category);
       if (text) {
         // Longer delay — perk thoughts deserve space after the UI notification
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId, 6000), 2000);
+        timers.schedule('thought:perk', () => emitReactiveThought(text, store.exploration.currentSceneId, 6000), 2000);
       }
     });
 
@@ -342,7 +348,7 @@ export function useGameLifecycleManager(mode: string) {
       const ctx = buildThoughtContext(store);
       const text = getSkillMilestoneThought(ctx, skill, level);
       if (text) {
-        setTimeout(() => emitReactiveThought(text, store.exploration.currentSceneId, 5500), 900);
+        timers.schedule('thought:skill', () => emitReactiveThought(text, store.exploration.currentSceneId, 5500), 900);
       }
     });
 
@@ -371,12 +377,13 @@ export function useGameLifecycleManager(mode: string) {
 
     return withHmrCleanup(() => {
       scope.dispose();
+      timers.disposeAll();
       if (autosaveTimer !== null) {
         clearTimeout(autosaveTimer);
         autosaveTimer = null;
       }
     });
-  }, []);
+  }, [timers]);
 
   useEffect(() => {
     const ttlInterval = setInterval(() => {
