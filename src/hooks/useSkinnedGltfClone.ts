@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { AnimationClip, AnimationMixer, Group, Mesh, Object3D, SkinnedMesh } from 'three';
+import { AnimationClip, AnimationMixer, BufferGeometry, Group, Material, Object3D, SkinnedMesh, Mesh, Texture } from 'three';
 import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { deepCloneWithSkeletons } from '@/utils/deepCloneWithSkeletons';
 import {
+  createSourceSkipSet,
   disposeSkinnedClone,
   type DisposeThreeOptions,
+  type DisposeThreeSkipSets,
 } from '@/engine/three/disposeThreeResources';
 
 export interface UseSkinnedGltfCloneOptions extends DisposeThreeOptions {
@@ -47,6 +49,18 @@ function createPlaceholderClone(): SkinnedGltfClone {
   return { scene: new Group(), mixer: null, ready: false };
 }
 
+/** Объединить skip-сет вызова с skip-сетом исходной сцены (оба защищены). */
+function mergeSkipSets(
+  caller: DisposeThreeSkipSets | undefined,
+  source: DisposeThreeSkipSets,
+): DisposeThreeSkipSets {
+  return {
+    geometries: new Set<BufferGeometry>([...(caller?.geometries ?? []), ...(source.geometries ?? [])]),
+    materials: new Set<Material>([...(caller?.materials ?? []), ...(source.materials ?? [])]),
+    textures: new Set<Texture>([...(caller?.textures ?? []), ...(source.textures ?? [])]),
+  };
+}
+
 /**
  * Deep-clone a cached GLTF scene with independent skeletons, optional mixer,
  * and guaranteed GPU teardown on unmount or source change.
@@ -69,12 +83,23 @@ export function useSkinnedGltfClone(
     let idleId: number | undefined;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
+    // FIX (критический, v4.17.1): SkeletonUtils.clone() шарит geometry /
+    // material / текстуры с кэшированной сценой useGLTF. Без skip-сета
+    // dispose клона уничтожал ОБЩИЕ ресурсы кэша → ре-аплоад буферов и
+    // перекомпиляция шейдеров у остальных живых клонов (спайки-фризы при
+    // LOD-свитчах и смене сцен). Skip-сет строим один раз на эффект.
+    const sourceSkip = createSourceSkipSet(sourceScene);
+
+    const resolveDisposeOptions = (): DisposeThreeOptions => {
+      const { castShadow: _c, receiveShadow: _r, ...disposeOpts } = optionsRef.current ?? {};
+      return { ...disposeOpts, skip: mergeSkipSets(disposeOpts.skip, sourceSkip) };
+    };
+
     const commitClone = () => {
       if (cancelled) return;
       const previous = cloneRef.current;
       if (previous.ready) {
-        const { castShadow: _c, receiveShadow: _r, ...disposeOpts } = optionsRef.current ?? {};
-        disposeSkinnedClone(previous.scene, previous.mixer, disposeOpts);
+        disposeSkinnedClone(previous.scene, previous.mixer, resolveDisposeOptions());
       }
       const built = buildSkinnedClone(sourceScene, animations, optionsRef.current);
       cloneRef.current = built;
@@ -99,8 +124,7 @@ export function useSkinnedGltfClone(
       }
       const current = cloneRef.current;
       if (current.ready) {
-        const { castShadow: _c, receiveShadow: _r, ...disposeOpts } = optionsRef.current ?? {};
-        disposeSkinnedClone(current.scene, current.mixer, disposeOpts);
+        disposeSkinnedClone(current.scene, current.mixer, resolveDisposeOptions());
       }
     };
   }, [sourceScene, animations]);

@@ -13,10 +13,11 @@ import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { cloneSceneMaterials } from '@/engine/graphics/materials/cloneSceneMaterials';
 import { deplasticizeCharacterMaterials } from '@/engine/graphics/materials/deplasticizeCharacterMaterials';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { DEFAULT_NPC_LOD, scaleNpcLodThresholds } from '@/engine/lod/distanceLod';
-import { disposeSkinnedClone } from '@/engine/three/disposeThreeResources';
+import { createSourceSkipSet, disposeSkinnedClone } from '@/engine/three/disposeThreeResources';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -81,6 +82,34 @@ function AmbientSkinnedFigure({
 
   const { scene, mixer, actions } = useMemo(() => {
     const clone = cloneSkinnedScene(gltf.scene) as Group;
+    const tint = new Color(tintHex);
+
+    // FIX (v4.17.1): материалы клонируются ДО мутаций — раньше
+    // deplasticizeCharacterMaterials выполнялся ПЕРВЫМ и мутировал
+    // SHARED-материалы кэша useGLTF (roughnessMul накапливался на каждом
+    // маунте каждой фигуры). Теперь deplasticize идёт ПОСЛЕ клонирования
+    // и работает только по клонам.
+    cloneSceneMaterials(clone, (cloned) => {
+      const std = cloned as MeshStandardMaterial;
+      if (!std.isMeshStandardMaterial) return cloned;
+      std.color.lerp(tint, 0.32 + slotIndex * 0.04);
+      // WS16-A: deplasticize organic surfaces on LOD NPCs — upgrade cloned MeshStandardMaterial
+      // to MeshPhysicalMaterial with sheen for skin/hair/cloth material names. Non-organic
+      // surfaces (eyes, metallics, plastic props) stay as MeshStandardMaterial.
+      const matName = (std.name || '').toLowerCase();
+      const isOrganic = /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth|hair|cloth|fabric|hoodie|jeans|shirt/.test(matName);
+      if (isOrganic && !(std as MeshPhysicalMaterial).isMeshPhysicalMaterial) {
+        const physical = new MeshPhysicalMaterial();
+        physical.copy(std);
+        physical.sheen = 0.35;
+        physical.sheenRoughness = 0.5;
+        physical.name = std.name;
+        // Промежуточный клон освобождает утилита cloneSceneMaterials.
+        return physical;
+      }
+      return cloned;
+    });
+
     deplasticizeCharacterMaterials(clone, {
       envMapIntensity: 0.52,
       minRoughness: 0.6,
@@ -88,35 +117,13 @@ function AmbientSkinnedFigure({
       maxMetalness: 0.14,
       maxEmissiveIntensity: 0.35,
     });
-    const tint = new Color(tintHex);
+
     clone.traverse((obj) => {
       const mesh = obj as Mesh;
       if (!mesh.isMesh) return;
       mesh.castShadow = false;
       mesh.receiveShadow = true;
       mesh.frustumCulled = true;
-      const sourceMats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      const nextMats = sourceMats.map((m) => {
-        if (!m || !(m as MeshStandardMaterial).isMeshStandardMaterial) return m;
-        const std = (m as MeshStandardMaterial).clone();
-        std.color.lerp(tint, 0.32 + slotIndex * 0.04);
-        // WS16-A: deplasticize organic surfaces on LOD NPCs — upgrade cloned MeshStandardMaterial
-        // to MeshPhysicalMaterial with sheen for skin/hair/cloth material names. Non-organic
-        // surfaces (eyes, metallics, plastic props) stay as MeshStandardMaterial.
-        const matName = (std.name || '').toLowerCase();
-        const isOrganic = /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth|hair|cloth|fabric|hoodie|jeans|shirt/.test(matName);
-        if (isOrganic && !(std as MeshPhysicalMaterial).isMeshPhysicalMaterial) {
-          const physical = new MeshPhysicalMaterial();
-          physical.copy(std);
-          physical.sheen = 0.35;
-          physical.sheenRoughness = 0.5;
-          physical.name = std.name;
-          std.dispose();
-          return physical;
-        }
-        return std;
-      });
-      mesh.material = nextMats.length === 1 ? nextMats[0]! : nextMats;
     });
 
     const bounds = measureCharacterGltfBounds(clone);
@@ -157,7 +164,11 @@ function AmbientSkinnedFigure({
     return { scene: clone, mixer: nextMixer, actions: nextActions };
   }, [gltf.scene, gltf.animations, tintHex, slotIndex]);
 
-  useEffect(() => () => disposeSkinnedClone(scene, mixer), [scene, mixer]);
+  // FIX (v4.17.1): dispose с skip-сетом исходной сцены — cloneSkinnedScene
+  // шарит GEOMETRY с кэшем useGLTF; без skip диспозились общие буферы →
+  // ре-аплоад и перекомпиляция шейдеров при следующем использовании рига.
+  const sourceSkip = useMemo(() => createSourceSkipSet(gltf.scene), [gltf.scene]);
+  useEffect(() => () => disposeSkinnedClone(scene, mixer, { skip: sourceSkip }), [scene, mixer, sourceSkip]);
 
   useFrameTick('npc', ({ delta }) => {
     const root = rootRef.current;
