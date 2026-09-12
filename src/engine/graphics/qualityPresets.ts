@@ -114,7 +114,11 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     lodBias: 1.25,
     textureScale: 1,
     maxDrawDistance: 120,
-    compression: 'meshopt',
+    /* Этап 123: было 'meshopt' — из-за этого в деплой попадали NPC-варианты
+     * .meshopt.glb (~12 MB). Теперь ultra тоже на draco (пары есть для всех
+     * NPC/героя/пропсов кафе), meshopt-варианты исключены из манифеста и
+     * prune-keep-set. */
+    compression: 'draco',
     npcRenderMode: 'glb',
     environmentRenderMode: 'glb',
     visualLite: false,
@@ -401,7 +405,7 @@ export function formatQualityPresetDetailRu(
 ): string {
   const base =
     selectedPreset === 'auto'
-      ? `Авто → ${preset.labelRu}: Draco/Meshopt, LOD, KTX2 при high/ultra`
+      ? `Авто → ${preset.labelRu}: Draco, LOD, KTX2 при high/ultra`
       : `${preset.labelRu}: ${preset.npcRenderMode} NPC · ${preset.environmentRenderMode} окружение · DPR ${preset.dpr[0]}–${preset.dpr[1]}`;
 
   const hints: string[] = [];

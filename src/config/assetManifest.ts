@@ -76,7 +76,8 @@ function npcCharacterAsset(
     variants: {
       none: `${base}.glb`,
       draco: `${base}.draco.glb`,
-      meshopt: `${base}.meshopt.glb`,
+      /* Этап 123: meshopt-вариант исключён — ни один пресет его не выбирает
+       * (ultra переведён на draco), файлы не попадают в keep-set деплоя. */
     },
     castShadow: true,
     shipped: true,
@@ -128,7 +129,7 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     variants: {
       none: `${MODELS}/characters/volodka/volodka_lod0.glb`,
       draco: `${MODELS}/characters/volodka/volodka_lod0.draco.glb`,
-      meshopt: `${MODELS}/characters/volodka/volodka_lod0.meshopt.glb`,
+      /* Этап 123: meshopt-вариант исключён (см. npcCharacterAsset). */
     },
     castShadow: true,
     shipped: true,
@@ -168,7 +169,7 @@ export const ASSET_MANIFEST: Record<string, GltfAssetDefinition> = {
     variants: {
       none: `${MODELS}/environments/cafe/props_lod0.glb`,
       draco: `${MODELS}/environments/cafe/props.draco.glb`,
-      meshopt: `${MODELS}/environments/cafe/props.meshopt.glb`,
+      /* Этап 123: meshopt-вариант исключён (см. npcCharacterAsset). */
     },
     instancing: true,
     receiveShadow: true,
