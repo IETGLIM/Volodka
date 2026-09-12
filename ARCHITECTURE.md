@@ -2023,6 +2023,92 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.30.0 — подсистема QTE (запуск), i18n волна 4, HUD-детали стиля
+
+### QTE-подсистема: домен + хост + локомоция-гейт (новая фича)
+- **Типы** (`engine/qte/qteTypes.ts`): нейтральный источник типов
+  QTEEventType/QTEKeyBinding/QTEDifficulty/QTEResult/QTEFinalResult —
+  и EventBus-домен, и React-оверлей зависят от engine (компонент → engine,
+  циклов нет). Оверлей ре-экспортирует типы для совместимости.
+- **EventBus-домен** (`engine/events/qteEvents.ts`): `qte:start`
+  (id/eventType/keyBindings/duration/difficulty/targetPresses/context) и
+  `qte:resolve` (id/result) — домен `qte` влит в EventMap/EVENT_DOMAINS.
+  Контракт: ровно один resolve на принятый start.
+- **Хост** (`hud/parts/QuickTimeEventHost.tsx`, паттерн PoemRevealHost —
+  always-mounted listener, единственная точка монтирования в
+  GameplaySharedEffects): гейт занятости экрана — qte:start молча
+  отбрасывается при isGameplayOverlayLocomotionLocked() (диалог/кат-сцена/
+  миниигра/осмотр/панели) или активном QTE (дедуп); qte:resolve эмитится
+  сразу по итогу, экран результата держится 1600 мс (cancelled — закрытие
+  сразу); звук qte:* → выделенные пресеты qte_* (sfxPresets.ts: +6
+  процедурных осцилляторов) через audioEngine.playSfx.
+- **Локомоция-гейт** (`engine/player/playerLocomotionGate.ts`):
+  +setQteLocomotionGate в isGameplayOverlayLocomotionLocked — модальный QTE
+  замораживает WASD/прыжок/взаимодействие (keyboardInputState держит свой
+  window-keydown; stopPropagation соседей не изолирует — гейт единственное
+  надёжное решение). Снимается на resolve/unmount (cleanup-эффект).
+
+### QuickTimeEventOverlay: переработка ядра (P0 из аудита сироты)
+- **Таймер**: setInterval(16 мс) + setState каждый тик (60 ре-рендеров/с) →
+  тик 100 мс (10 Гц); кольцо сглаживается framer-переходом
+  (transition = тик). Рендеры поддерева: 60/с → ≤10/с.
+- **Ввод**: window-keydown перерегистрировался на каждый инпут (deps
+  handleInput/state.*) → одна регистрация keydown+keyup на сессию; значения —
+  через refs-зеркала (stateRef/latestRef/inputRef/cancelRef/resolveRef);
+  быстрые нажатия между рендерами не теряются (синхронное зеркалирование
+  stateRef перед setState).
+- **Сессия**: сброс только по isActive-переходу (deps [isActive, stopTimer]) —
+  инлайн-массив keyBindings/инлайн-коллбеки больше не перезапускают сессию
+  (прежний QTE не доходил до конца при нестабильных пропсах).
+- **hold**: прогресс по OS-автоповтору (+0.02/keydown) → keydown/keyup-пара +
+  тик-накопление (HOLD_FILL_MS/speedMult, работает на таче); успех по уже
+  вычисленному значению (stale-check читал состояние ДО обновления).
+- **mash**: e.repeat игнорируется; кольцо pressCount/(pressCount+10) →
+  pressCount/targetPresses. **press**: семантика окна/near-miss сохранена
+  байт-в-байт (windowStart = adjusted·(1−windowSize), near-miss ≥ 70 % окна).
+- **Доступность/мобильность**: тап по центру = нажатие, удержание пальцем =
+  hold (pointerdown/up/cancel/leave, touch-none); Escape → onFailure('
+  cancelled') без экрана результата (тип QTEFinalResult — «pending»/
+  «cancelled» разделены); aria-live="assertive" на результате; подсказка
+  «Esc — отмена»; pointer-events-auto на корне (внутрь pointer-events-none
+  HUD-родителя ввод умирает).
+
+### i18n: волна 4 этапа 115 (финализация каталога)
+- 35 динамических вызовов в 10 файлах + 11 вызовов волн 1–2 (toast-билдеры,
+  aria PlayerStatusFrame) = 46 вызовов переведены на литеральные ключи
+  каталога-шаблонов t('hud.*', fallback, params) — карты ключей-констант
+  (HUD_DYNAMIC_KEYS и пр.) удалены по всему src; вывод байт-в-байт прежний.
+- Контракт-тест ru.hudCoverage: порог 60 → ≥220 (фактически 229 ключа);
+  it3 +14 assert-ов; шаблоны покрываются автоматически (ключ — литерал).
+  Вне контракта — только ключи-переменные из типизированных union
+  (minimap.zoom.*, ambient.*, dayNight.phase.* и т.п.).
+
+### HUD-детали стиля (словарь волн v4.27–v4.29)
+- **StaminaBar**: пороговая насечка 25 % (stamina-bar--low: риска краснеет и
+  пульсирует, fill — красное свечение; DOM-ref classList, без ре-рендеров;
+  reduced-motion — статичная риска).
+- **HUDNotificationFeed**: TTL-hairline 2px по нижнему краю карточки
+  (scaleX 1→0 за 5 с жизни; reduced-motion — статичная).
+- **SceneContextChip**: акцент типа сцены (outdoor→cyan, indoor→matrix,
+  underground→amber, dream→violet; иконка/рамка/свечение/разделители) +
+  одноразовый вспых-пульс значений NPC:/EX: (remount по key=value, паттерн
+  StatPulse); в tokens.css добавлен --cyber-violet-rgb.
+- **EnvironmentMoodIndicator**: шторм (intensity ≥ 0.8) — пульс иконки,
+  красная рамка контейнера, тень лейбла (паттерн HazardStatusIndicator).
+
+### Ассеты: −13 MB мёртвого груза в репозитории
+- 31 файл *.meshopt.glb удалён (public/models/**): этап 123 исключил
+  meshopt-варианты из манифеста/keep-set, prune вырезал их из dist, файлы же
+  оставались в репо. rg-проверка: ни одного референса на пути .meshopt.glb в
+  src/scripts/api (gltfProcess.mjs умеет генерировать их заново). Деплой-
+  инварианты не изменились: verify:deploy 114 путей, budgets OK.
+
+**Тесты +17 (2710)**: QuickTimeEventOverlay.test.tsx (12: все 4 типа событий,
+Escape-cancelled, однократная регистрация keydown, стабильность сессии при
+смене identity пропсов, чистка таймеров, pointer-ввод) и
+QuickTimeEventHost.test.tsx (5: старт/гейт занятости, дедуп start,
+qte:resolve 1:1, симметрия локомоция-гейта, cancelled-путь).
+
 ## v4.29.0 — этап 98: персистентный EffectComposer (нулевые ремaунты на смене сцен)
 
 ### Механика (ExplorationPostFX, этап 98 — закрыт)

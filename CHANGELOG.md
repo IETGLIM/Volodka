@@ -1,3 +1,106 @@
+## v4.30.0 (2026-09-13) — фича QTE (запуск подсистемы), i18n волна 4, HUD-детали стиля, −13 MB мёртвых ассетов
+
+### Сводка
+Крупнейшая фича со времён этапа 98: orphan-компонент QuickTimeEventOverlay
+(1078 строк, существовал с июля, но никогда не монтировался) переработан и
+подключён как полноценная игровая подсистема. Исправлены все P0 из аудита:
+60 FPS-setInterval с ре-рендером поддерева каждый тик → 10 Гц-тик с
+framer-интерполяцией кольца; перерегистрация window-keydown на каждый инпут
+→ одна регистрация на сессию (refs-зеркала); перезапуск сессии от
+нестабильных пропсов → сброс только по isActive; hold через OS-автоповтор →
+keydown/keyup + тик (работает и на таче); e.repeat больше не считается за
+нажатия; stale-check hold-успеха; мёртвый код; магический делитель «+10»
+кольца mash → targetPresses. Новое: тач-прохождение (тап/удержание пальцем),
+Escape-отмена (результат «cancelled» стал достижим), aria-live на результате,
+подсказка «Esc — отмена», pointer-events-auto на корне. Инфраструктура:
+EventBus-домен qte:* (qte:start/qte:resolve), хост QuickTimeEventHost с
+гейтами занятости экрана (молча пропускает start при активном
+диалоге/кат-сцене/миниигре/осмотре) и локомоция-гейтом
+setQteLocomotionGate (WASD/прыжок/взаимодействие заморожены на время QTE),
+6 выделенных SFX-пресетов qte_* вместо деградации в «click». Монтаж — в
+GameplaySharedEffects (паттерн PoemRevealHost). Прогресс реестра: 131/132
+(124 — блокер-тулинг: toktx в среде по-прежнему нет). Верификация: tsc (0),
+ESLint (0 errors, 58 legacy — базлайн), vitest ПОЛНЫЙ 2710/2710 (436 файлов,
++17: 12 оверлей + 5 хост), validate:content (0), validate:act1-extended (0),
+vite build + verify:deploy (114 путей) + budgets:check (OK).
+
+### feat(qte): подсистема быстрых событий — запуск (домен + хост + гейт + монтаж)
+- Новые модули: `src/engine/qte/qteTypes.ts` (нейтральные типы QTE для
+  engine-слоя; оверлей ре-экспортирует для совместимости),
+  `src/engine/events/qteEvents.ts` (QteEvents: qte:start/qte:resolve) — домен
+  `qte` влит в EventMap/EVENT_DOMAINS; onSuccess/onFailure оверлея сужены до
+  QTEFinalResult («pending» недостижим).
+- `QuickTimeEventHost.tsx` — единственная точка монтирования: слушает
+  qte:start (always-mounted listener, паттерн PoemRevealHost), гейтит
+  занятость экрана через isGameplayOverlayLocomotionLocked (диалог/кат-сцена/
+  миниигра/осмотр/панели), дедуп повторных start, эмитит qte:resolve ровно
+  один раз, экран результата держится 1600 мс (cancelled — сразу),
+  ставит/снимает локомоция-гейт, маппит qte:* звуки на пресеты.
+- `playerLocomotionGate.ts`: +setQteLocomotionGate — модальный QTE
+  замораживает WASD/прыжок/взаимодействие (keyboardInputState — соседний
+  window-слушатель, stopPropagation его не изолирует).
+- `sfxPresets.ts`: +6 пресетов qte_start/press/near_miss/success/failure/
+  complete (процедурные осцилляторы с собственным ритмом события).
+- Монтаж: `<QuickTimeEventHost />` в GameplaySharedEffects (Orchestrator-
+  GameplaySections) после EncounterBeatOverlay — кросс-режимный слой.
+
+### fix(qte): переработка оверлея — P0-дефекты производительности и корректности
+- Таймер: setInterval(16 мс) с setState каждый тик (60 ре-рендеров/с) →
+  тик 100 мс; кольцо сглаживается framer-переходом (duration = тик).
+- Ввод: keydown перерегистрировался на каждый инпут (deps handleInput/state) →
+  одна регистрация keydown+keyup на сессию, значения через refs-зеркала;
+  быстрые нажатия между рендерами не теряются (синхронное зеркалирование
+  stateRef).
+- Сессия: deps таймер-эффекта [isActive, eventType, adjustedDuration,
+  handleFailure, playSound, showResult, keyBindings] — инлайн-пропсы
+  перезапускали сессию и QTE не доходил до конца → deps [isActive, stopTimer],
+  сброс только по isActive-переходу.
+- hold: прогресс по OS-автоповтору (+0.02/keydown) → keydown/keyup-пара +
+  тик-накопление (HOLD_FILL_MS/speedMult); успех по уже вычисленному значению
+  (stale-check чинил срабатывание на нажатие позже порога).
+- mash: e.repeat игнорируется; кольцо mash: pressCount/(pressCount+10) →
+  pressCount/targetPresses.
+- Escape → onFailure('cancelled') без экрана результата; мёртвый код
+  `...(eventType === 'hold' ? {} : {})` удалён.
+
+### feat(i18n): волна 4 этапа 115 — все динамические HUD-ключи в каталоге
+- 35 динамических вызовов в 10 файлах (QuestObjectiveCard 8, TopBarDataTicker 6,
+  HUDNotificationFeed 8, ExplorationHUD 3, ActiveQuestMiniTracker 3, StaminaBar 2,
+  QuickAccessToolbar 2, SceneContextChip/EnvironmentMoodIndicator/EmergencyHelpButton
+  по 1) переведены на литеральные ключи t('hud.*', fallback, params) —
+  вывод байт-в-байт прежний; карты ключей-констант удалены.
+- Волна 2 добита до того же стиля: notificationToastPresentation (8) и
+  PlayerStatusFrame (3) — тоже литеральные ключи.
+- Контракт-тест ru.hudCoverage: порог 60 → ≥220 ключей (фактически 229);
+  it3 пополнен 14 assert-ами волны 4; заголовок переписан (динамические
+  ключи-переменные задокументированы как вне контракта).
+
+### style(hud): детали стиля по словарю волн v4.27–v4.29
+- StaminaBar: пороговая насечка 25% (риск+пульс при low, красное свечение
+  fill, reduced-motion-гейт) — словарь v4.27, DOM-ref-паттерн без ре-рендеров.
+- HUDNotificationFeed: TTL-hairline 2px вдоль нижнего края карточки
+  (width 100%→0 за 5 с жизни, аналог bottom-progress AutoSaveIndicator;
+  reduced-motion — статичная полоска).
+- SceneContextChip: акцент типа сцены (outdoor→cyan, indoor→matrix,
+  underground→amber, dream→violet — иконка/рамка/свечение) + одноразовый
+  вспых-пульс значений NPC:/EX: при смене (remount по key=value, паттерн
+  StatPulse); +токен --cyber-violet-rgb в tokens.css.
+- EnvironmentMoodIndicator: пульс иконки при шторме (intensity ≥ 0.8) +
+  красная рамка контейнера и тень лейбла (паттерн HazardStatusIndicator).
+
+### chore(assets): удалены мёртвые meshopt-GLB из репозитория (−13 MB)
+- 31 файл *.meshopt.glb (13 MB) в public/ больше ни на что не ссылается:
+  этап 123 исключил meshopt-варианты из манифеста/keep-set, prune вырезал их
+  из dist, но сами файлы оставались в репо. Проверено: rg по src/scripts/api
+  — ссылок на пути .meshopt.glb нет (gltfProcess.mjs умеет их генерировать
+  заново при необходимости). Рабочая копия легче на 13 MB, деплой-инварианты
+  (verify:deploy 114 путей, budgets) не изменились.
+
+### docs
+- ROADMAP: этап 115 волна 4 (реестр 131/132, 124 — блокер-тулинг).
+- ARCHITECTURE: раздел v4.30.0 (QTE-подсистема, локомоция-гейт, i18n волна 4).
+- readme: «Текущее состояние» обновлено.
+
 ## v4.29.0 (2026-09-12) — этап 98: персистентный EffectComposer (нулевые ремaунты на смене сцен)
 
 ### Сводка
