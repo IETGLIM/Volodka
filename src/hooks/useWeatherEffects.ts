@@ -127,12 +127,18 @@ export function useWeatherEffects(): WeatherEffectsState {
     }
   }, [weatherType, addEnergy, addStress]);
 
+  // Актуальный колбэк эффектов для постоянной подписки ниже: applyRef держит
+  // последнюю версию applyOngoingEffects без пересоздания подписки на UI-clock.
+  const applyRef = useRef(applyOngoingEffects);
+  useEffect(() => {
+    applyRef.current = applyOngoingEffects;
+  }, [applyOngoingEffects]);
+
   useEffect(() => {
     // perf (v4.25, этап 104): периодические эффекты погоды — на общем
     // UI-clock (один интервал на частоту, скрытая вкладка — тики пропущены).
     // Элапс-гард сохранён: догоняющий бамп после возврата видимости не должен
     // дважды списать энергию/стресс подряд с реальным тиком.
-    const applyRef: { current: () => void } = { current: applyOngoingEffects };
     const lastTickRef: { current: number } = { current: Date.now() };
     return onUiTick(EFFECT_TICK_MS, () => {
       const now = Date.now();
