@@ -441,10 +441,14 @@ function Creep({
 
         const pos = positionRef.current;
         const player = livePlayerPositionRef.current;
+        // faceYaw — направление «крип → игрок». FIX (v4.17.1): раньше крип
+        // ставился в player + dir*2.4 (за игроком) и разворачивался спиной
+        // (faceYaw + π) — теперь он встаёт в 2.4м от игрока на своей стороне
+        // и смотрит на игрока.
         const faceYaw = Math.atan2(player.x - pos.x, player.z - pos.z);
-        pos.x = player.x + Math.sin(faceYaw) * 2.4;
-        pos.z = player.z + Math.cos(faceYaw) * 2.4;
-        headingRef.current = faceYaw + Math.PI;
+        pos.x = player.x - Math.sin(faceYaw) * 2.4;
+        pos.z = player.z - Math.cos(faceYaw) * 2.4;
+        headingRef.current = faceYaw;
 
         // v4.11.0: introHpPct приходит ГОТОВЫМ от attemptMeleeStrike
         // (память HP > стелс 0.5 > база 0.75) — крип больше не решает сам;
@@ -555,11 +559,15 @@ function Creep({
 
     // During engage / combat, face the player at duel distance.
     if (inArena) {
+      // FIX (v4.17.1): позиция дуэли считалась как player + dir*2.4 — крип
+      // каждый кадр перебрасывался на противоположную от себя сторону игрока
+      // (осцилляция сквозь игрока, флип yaw на 180°). Теперь крип стоит
+      // в 2.4м от игрока на своей стороне и смотрит на него.
       const duelDist = 2.4;
       const faceYaw = Math.atan2(dx, dz);
-      pos.x = player.x + Math.sin(faceYaw) * duelDist;
-      pos.z = player.z + Math.cos(faceYaw) * duelDist;
-      headingRef.current = faceYaw + Math.PI;
+      pos.x = player.x - Math.sin(faceYaw) * duelDist;
+      pos.z = player.z - Math.cos(faceYaw) * duelDist;
+      headingRef.current = faceYaw;
     }
 
     if (contactBurstRef.current > 0) {
@@ -769,10 +777,12 @@ function Creep({
             setEngaging(true);
             contactBurstRef.current = 1;
 
+            // FIX (v4.17.1): см. applyStrike — встаём в 2.4м от игрока на
+            // своей стороне, лицом к игроку (раньше: за игроком, спиной).
             const faceYaw = Math.atan2(dx, dz);
-            pos.x = player.x + Math.sin(faceYaw) * 2.4;
-            pos.z = player.z + Math.cos(faceYaw) * 2.4;
-            headingRef.current = faceYaw + Math.PI;
+            pos.x = player.x - Math.sin(faceYaw) * 2.4;
+            pos.z = player.z - Math.cos(faceYaw) * 2.4;
+            headingRef.current = faceYaw;
 
             startEncounter({
               source: 'creep',
