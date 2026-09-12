@@ -9,6 +9,7 @@
 
 import { useSyncExternalStore, type CSSProperties } from 'react';
 import { eventBus, type EventBusUnsubscribe } from '@/engine/EventBus';
+import { onUiTick } from '@/hooks/useUiTick';
 import { useGameStore } from '@/store/gameStore';
 import { readGamePhase } from '@/shared/gamePhase';
 
@@ -20,7 +21,11 @@ export const HUD_QUIET_OPACITY = 0.14;
 let lastActivityTs = Date.now();
 let quiet = false;
 let subscriberCount = 0;
-let intervalId: ReturnType<typeof setInterval> | null = null;
+// perf (v4.25, этап 104): раньше — собственный setInterval(1000) на всё время
+// жизни HUD (даже в скрытой вкладке). Теперь — подписка на единый UI-clock:
+// интервал общий с прочими 1-секундными подписчиками, тики пропускаются,
+// пока вкладка скрыта (по возврату — догоняющий бамп пересчитает quiet).
+let tickUnsubscribe: (() => void) | null = null;
 let busUnsubs: EventBusUnsubscribe[] = [];
 const listeners = new Set<() => void>();
 
@@ -81,7 +86,7 @@ function attach(): void {
     eventBus.on('toast:add', markHudActivity),
     eventBus.on('scene:enter', markHudActivity),
   ];
-  intervalId = setInterval(tick, CHECK_INTERVAL_MS);
+  tickUnsubscribe = onUiTick(CHECK_INTERVAL_MS, tick);
 }
 
 function detach(): void {
@@ -91,9 +96,9 @@ function detach(): void {
   window.removeEventListener('wheel', markHudActivity);
   for (const unsub of busUnsubs) unsub();
   busUnsubs = [];
-  if (intervalId !== null) {
-    clearInterval(intervalId);
-    intervalId = null;
+  if (tickUnsubscribe !== null) {
+    tickUnsubscribe();
+    tickUnsubscribe = null;
   }
 }
 

@@ -20,6 +20,25 @@ const listenersByPeriod = new Map<number, Set<TickListener>>();
 const intervalsByPeriod = new Map<number, ReturnType<typeof setInterval>>();
 const versionsByPeriod = new Map<number, number>();
 
+/* FIX (v4.25, этап 104): раньше visibilitychange добавлялся при КАЖДОМ
+ * startTicker и никогда не снимался — панели, открываясь/закрываясь,
+ * накапливали листенеры (утечка + лишние бампы). Теперь он вешается
+ * один раз на модуль и живёт всё время существования реестра. */
+let visibilityListenerAttached = false;
+function ensureVisibilityListener(): void {
+  if (visibilityListenerAttached || typeof document === 'undefined') return;
+  visibilityListenerAttached = true;
+  document.addEventListener(
+    'visibilitychange',
+    () => {
+      if (!document.hidden) {
+        // Догоняющий бамп всем активным периодам — отсчёты не «застывают».
+        for (const periodMs of Array.from(intervalsByPeriod.keys())) bump(periodMs);
+      }
+    },
+  );
+}
+
 function bump(periodMs: number): void {
   const prev = versionsByPeriod.get(periodMs) ?? 0;
   versionsByPeriod.set(periodMs, prev + 1);
@@ -31,6 +50,7 @@ function bump(periodMs: number): void {
 
 function startTicker(periodMs: number): void {
   if (intervalsByPeriod.has(periodMs)) return;
+  ensureVisibilityListener();
   intervalsByPeriod.set(
     periodMs,
     setInterval(() => {
@@ -40,16 +60,6 @@ function startTicker(periodMs: number): void {
       bump(periodMs);
     }, periodMs),
   );
-
-  // Возврат видимости — догоняющий тик (отсчёты не застывают).
-  if (typeof document !== 'undefined') {
-    document.addEventListener(
-      'visibilitychange',
-      () => {
-        if (!document.hidden) bump(periodMs);
-      },
-    );
-  }
 }
 
 function stopTicker(periodMs: number): void {
@@ -61,6 +71,13 @@ function stopTicker(periodMs: number): void {
 }
 
 function subscribeTick(periodMs: number, listener: TickListener): () => void {
+  // FIX (v4.25, этап 104): период 0 (и нечисловые значения) — «выключенная»
+  // подписка. Документация хука обещала «0 = подписки нет», но гарда не было:
+  // useUiTick(open ? 1000 : 0) при закрытой панели запускал setInterval(…, 0) —
+  // фактически busy-loop. Теперь подписка с периодом ≤0 — no-op.
+  if (!Number.isFinite(periodMs) || periodMs <= 0) {
+    return () => undefined;
+  }
   let listeners = listenersByPeriod.get(periodMs);
   if (!listeners) {
     listeners = new Set();
@@ -100,4 +117,27 @@ export function useUiTick(periodMs: number): number {
   );
   const getSnapshot = useCallback(() => getVersion(periodMs), [periodMs]);
   return useSyncExternalStore(subscribe, getSnapshot, () => 0);
+}
+
+/* ─── Императивный API единого UI-clock (v4.25, этап 104) ───
+ *
+ * Хук выше — для реактивных подписок (ре-рендер). Но часть «холодных»
+ * интервалов в проекте гоняет СВОИ setInterval только ради вызова функции:
+ * поллер новостей (useCityNews, 3.5 мин), мировой тик (useWorldClock, 60 с),
+ * погодные эффекты (10 с), тихий HUD (1 с). Каждый такой интервал:
+ *   – тикал даже в скрытой вкладке (поллер сжигал серверлесс-вызовы),
+ *   – не делил таймер с другими подписчиками той же частоты,
+ *   – жил, пока жив компонент, даже если тики никому не нужны.
+ *
+ * onUiTick(periodMs, cb) подключает cb к общему тикеру той же механики:
+ * один интервал на частоту, тики пропускаются в скрытой вкладке, по
+ * возврату видимости — догоняющий бамп. Возврат — функция отписки.
+ */
+export function onUiTick(periodMs: number, callback: TickListener): () => void {
+  return subscribeTick(periodMs, callback);
+}
+
+/** Тестовая точка — текущее число активных (запущенных) тикеров. */
+export function activeUiTickersForTests(): number {
+  return intervalsByPeriod.size;
 }

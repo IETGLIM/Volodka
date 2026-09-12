@@ -7,6 +7,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useGameStore } from '@/store/gameStore';
 import { useWeatherEffectsInput } from '@/store/selectors';
+import { onUiTick, useUiTick } from '@/hooks/useUiTick';
 import { eventBus } from '@/engine/EventBus';
 import {
   type WeatherType,
@@ -61,6 +62,8 @@ export function useWeatherEffects(): WeatherEffectsState {
   // ── Get the effect for the computed type ──
   const effect = getWeatherEffect(weatherType);
 
+  const isActive = weatherType !== 'clear';
+
   // ── Reset duration timer when weather type changes ──
   useEffect(() => {
     prevWeatherTypeRef.current = weatherType;
@@ -69,14 +72,16 @@ export function useWeatherEffects(): WeatherEffectsState {
   }, [weatherType]);
 
   // ── Tick duration counter ──
+  // perf (v4.25, этап 104): раньше здесь был СВОЙ setInterval(1000), работавший
+  // даже в скрытой вкладке и при ясной погоде. Теперь — общий UI-clock:
+  // период 1000 только при активной погоде (иначе 0 — подписки нет), тики
+  // пропускаются в скрытой вкладке, интервал общий с прочими 1-секундными
+  // подписчиками и гаснет, когда последний уходит.
+  const durationTick = useUiTick(isActive ? 1000 : 0);
   useEffect(() => {
-    const tick = setInterval(() => {
-      setDurationSeconds((Date.now() - weatherStartRef.current) / 1000);
-    }, 1000);
-    return () => clearInterval(tick);
-  }, []);
-
-  const isActive = weatherType !== 'clear';
+    void durationTick;
+    setDurationSeconds((Date.now() - weatherStartRef.current) / 1000);
+  }, [durationTick, weatherType]);
 
   // ── Listen for weather events on the eventBus ──
   useEffect(() => {
@@ -99,8 +104,6 @@ export function useWeatherEffects(): WeatherEffectsState {
   }, []);
 
   // ── Apply ongoing effects (energy drain, stress) ──
-  const lastTickRef = useRef<number>(Date.now());
-
   const applyOngoingEffects = useCallback(() => {
     if (weatherType === 'clear') return;
 
@@ -125,17 +128,21 @@ export function useWeatherEffects(): WeatherEffectsState {
   }, [weatherType, addEnergy, addStress]);
 
   useEffect(() => {
-    const interval = setInterval(() => {
+    // perf (v4.25, этап 104): периодические эффекты погоды — на общем
+    // UI-clock (один интервал на частоту, скрытая вкладка — тики пропущены).
+    // Элапс-гард сохранён: догоняющий бамп после возврата видимости не должен
+    // дважды списать энергию/стресс подряд с реальным тиком.
+    const applyRef: { current: () => void } = { current: applyOngoingEffects };
+    const lastTickRef: { current: number } = { current: Date.now() };
+    return onUiTick(EFFECT_TICK_MS, () => {
       const now = Date.now();
       const elapsed = now - lastTickRef.current;
       if (elapsed >= EFFECT_TICK_MS) {
         lastTickRef.current = now;
-        applyOngoingEffects();
+        applyRef.current();
       }
-    }, EFFECT_TICK_MS);
-
-    return () => clearInterval(interval);
-  }, [applyOngoingEffects]);
+    });
+  }, []);
 
   return {
     weatherType,

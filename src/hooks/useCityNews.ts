@@ -26,6 +26,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { onUiTick } from '@/hooks/useUiTick';
 
 const LS_PREFIX = 'city-news-';
 const POLL_INTERVAL_MS = 3.5 * 60 * 1000; // 3.5 мин — «не чаще раза в 3-4 минуты»
@@ -108,7 +109,9 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
 
   const inFlightRef = useRef<AbortController | null>(null);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const pollTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+  // FIX (v4.25, этап 104): pollTimerRef заменён подпиской на единый UI-clock —
+  // тики не уходят в скрытой вкладке (раньше поллер сжигал серверлесс-вызовы,
+  // пока вкладка спит), по возврату видимости — догоняющий тик с учётом бэкоффа.
   const latestReqIdRef = useRef(0);
   // FIX (v4.12.1, прод-лог): бэкофф поллера при устойчивых СБОЯХ (ключ не
   // настроен / сеть лежит / upstream висит) — без него вкладка с живым тикером
@@ -282,22 +285,27 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
   // localStorage cache can't pin the same line forever while mounted).
   // FIX (v4.12.1): тики поллера пропускаются до истечения бэкоффа —
   // интервал остаётся фиксированным, частота запросов деградирует плавно.
+  // FIX (v4.25, этап 104): интервал — общий UI-clock; doFetch меняется при
+  // смене сцены/акта/бакета, поэтому читаем его через ref без пересоздания
+  // подписки (фаза поллера не сбрасывается при переходах).
+  const doFetchRef = useRef(doFetch);
   useEffect(() => {
-    pollTimerRef.current = setInterval(() => {
-      if (Date.now() < nextPollAllowedAtRef.current) return; // failure backoff
-      void doFetch(true);
-    }, POLL_INTERVAL_MS);
-    return () => {
-      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
-    };
+    doFetchRef.current = doFetch;
   }, [doFetch]);
+  useEffect(
+    () =>
+      onUiTick(POLL_INTERVAL_MS, () => {
+        if (Date.now() < nextPollAllowedAtRef.current) return; // failure backoff
+        void doFetchRef.current(true);
+      }),
+    [],
+  );
 
   // Cleanup any in-flight request + timers on unmount.
   useEffect(() => {
     return () => {
       inFlightRef.current?.abort();
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
-      if (pollTimerRef.current) clearInterval(pollTimerRef.current);
     };
   }, []);
 

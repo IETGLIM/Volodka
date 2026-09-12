@@ -32,6 +32,7 @@ import {
 } from '@/shared/schedule/syncWorldSchedule';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
+import { onUiTick } from '@/hooks/useUiTick';
 import {
   WORLD_CLOCK_HOURS_PER_TICK,
   WORLD_CLOCK_TICK_INTERVAL_S,
@@ -49,7 +50,12 @@ export function useWorldClock() {
     // Combat, cutscene, and menu pause the world clock
     if (mode !== 'exploration') return;
 
-    const interval = setInterval(() => {
+    // perf (v4.25, этап 104): тик мировых часов подключён к единому UI-clock
+    // вместо собственного setInterval. В скрытой вкладке тики пропускаются —
+    // симуляция «живого мира» не нужна, когда игрок не смотрит (по возврату
+    // видимости общий тикер делает догоняющий бамп, и мир сдвигается на один
+    // слот, а не копит очередь пропущенных часов).
+    return onUiTick(WORLD_CLOCK_TICK_INTERVAL_S * 1000, () => {
       // Pause time while any panel is open (inventory, quests, pause menu, etc.)
       // This mirrors the locomotion gate — if the player can't move, time shouldn't advance.
       if (isGameplayOverlayLocomotionLocked()) return;
@@ -78,9 +84,7 @@ export function useWorldClock() {
       // Emit world events for downstream systems (NPC schedules, weather, quest timers).
       eventBus.emit('world:tick', { hour: newHour, deltaHours: WORLD_CLOCK_HOURS_PER_TICK });
       eventBus.emit('world:hour_changed', payload);
-    }, WORLD_CLOCK_TICK_INTERVAL_S * 1000);
-
-    return () => clearInterval(interval);
+    });
   }, [mode]);
 
   // ── Initialize NPC states on mount / scene change ──
