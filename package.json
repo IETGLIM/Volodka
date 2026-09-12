@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "4.33.0",
+  "version": "4.34.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,6 +12,7 @@
     "assets:optimize-models": "node scripts/optimize-models.mjs",
     "assets:optimize-polyhaven": "node scripts/optimize-polyhaven.mjs",
     "assets:optimize-textures": "node scripts/optimize-polyhaven-textures.mjs",
+    "assets:polyhaven-ktx2": "node scripts/generate-polyhaven-ktx2.mjs",
     "build:analyze": "npm run validate && tsc --noEmit && vite build --mode analyze && npm run budgets",
     "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts && npx tsx --tsconfig tsconfig.json scripts/analyze-model-placement.ts",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
@@ -112,7 +113,8 @@
     "vite": "^6.3.5",
     "vite-plugin-inspect": "^11.3.3",
     "vite-plugin-singlefile": "^2.3.0",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "sharp": "^0.34.5"
   },
   "allowScripts": {
     "esbuild": true,
