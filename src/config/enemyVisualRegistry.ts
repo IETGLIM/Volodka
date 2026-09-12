@@ -58,6 +58,7 @@ const ENEMY_VISUAL_BY_TYPE: Record<EnemyType, EnemyVisualSpec> = {
   ranged_strelkov: { archetype: 'agent', scale: 0.95 },
   dark_mage: { archetype: 'ethereal', scale: 1.05 },
   boss_catacombs_keeper: { archetype: 'golem', scale: 1.6 },
+  boss_silent_warden: { archetype: 'ethereal', scale: 1.5 },
 };
 
 export function resolveEnemyVisualSpec(enemyType: EnemyType): EnemyVisualSpec {

@@ -421,3 +421,84 @@ export const FACTION_CONTRACTS_QUESTS: QuestDefinition[] = [
     ],
   },
 ];
+
+/**
+ * «Крипта Тишины» — боссовое подземелье (продолжение линии Сопротивления).
+ *
+ * Отдельный экспорт (не входит в FACTION_CONTRACTS_QUESTS из 5 квестов):
+ * вход открывается только после «Частоты „Заря-М“» — Жека доверяет спуск
+ * в нижний ярус бункера, где двадцать лет стоит тишина и её Хранитель.
+ *
+ * Босс: boss_silent_warden (Тихий Хранитель) — 520 HP, три фазы
+ * (Слушатель → Помехи → Белый шум), спец-атаки с телеграфированием.
+ * Победа автоматически ставит флаг boss_silent_warden_defeated
+ * (CombatSystem.isBoss), квестные флаги ставит пост-бойная цепочка нод.
+ */
+export const FACTION_CONTRACTS_DUNGEON_QUESTS: QuestDefinition[] = [
+  {
+    id: 'fc_silent_warden',
+    title: 'Крипта Тишины',
+    description:
+      'После подъёма «Зари-М» Жека открывает то, что Сопротивление бережёт для своих: в нижнем ярусе бункера, за вратами с довоенной символикой, стоит архив прослушки Гильдии — и его страж. Двадцать лет тишины. Двадцать лет ни один смельчак не вернулся со словами, только с молчанием. Жека говорит просто: «Станция теперь в эфире, Володька. Пусть и архив заговорит». Спустись, победи Тихого Хранителя — и реши, что делать с архивом, который слушал весь город.',
+    act: 4,
+    faction: 'resistance',
+    questType: 'side',
+    difficulty: 'hard',
+    requiresQuests: ['fc_resistance_zarya'],
+    hint: 'Жека в цеху → бункер Сопротивления → врата нижнего яруса (дальний угол) → шаг в тишину → архив после победы.',
+    objectives: [
+      {
+        id: 'hear_warden_rumor',
+        description: 'Услышать от Жеки про нижний ярус',
+        type: 'npc_talked',
+        target: 'zeka',
+        completed: false,
+      },
+      {
+        id: 'descend_to_lower_tier',
+        description: 'Спуститься в бункер Сопротивления',
+        type: 'location_visited',
+        target: 'underground_bunker',
+        completed: false,
+      },
+      {
+        id: 'find_warden_lair',
+        description: 'Найти врата нижнего яруса',
+        type: 'flag_set',
+        target: 'fc_warden_lair_found',
+        completed: false,
+      },
+      {
+        id: 'defeat_silent_warden',
+        description: 'Победить Тихого Хранителя',
+        type: 'flag_set',
+        target: 'fc_warden_defeated',
+        completed: false,
+      },
+      {
+        id: 'claim_warden_archive',
+        description: 'Решить судьбу архива прослушки',
+        type: 'flag_set',
+        target: 'fc_warden_archive_claimed',
+        completed: false,
+      },
+    ],
+    rewards: [
+      { type: 'addXp', value: 200 },
+      { type: 'addCredits', value: 120 },
+      { type: 'addSkill', skill: 'logic', value: 2 },
+      { type: 'npcChange', npcId: 'zeka', npcChange: { relation: 10 } },
+      { type: 'npcChange', npcId: 'kate', npcChange: { relation: 6 } },
+      { type: 'setFlag', flag: 'fc_silent_warden_done', flagValue: true },
+    ],
+    rewardItems: [{ itemId: 'memory_crystal', quantity: 1 }],
+    questGiverNpcId: 'zeka',
+    linkedStoryNodeId: 'fc_warden_start',
+    linkedStoryNodeIds: [
+      'fc_warden_start',
+      'fc_warden_descent',
+      'fc_warden_aftermath',
+      'fc_warden_resolve',
+    ],
+  },
+];

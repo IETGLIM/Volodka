@@ -426,7 +426,7 @@ export const FACTION_CONTRACTS_STORY_NODES: Record<string, StoryNode> = {
           { type: 'transitionScene', sceneId: 'library_basement' },
         ],
       },
-      { text: 'Осмотреться в цеху — не сейчас', next: 'bunker_explore_mode' },
+      { text: 'Осмотреться в цеху — не сейчас', next: null },
     ],
   },
 
@@ -962,6 +962,150 @@ export const FACTION_CONTRACTS_STORY_NODES: Record<string, StoryNode> = {
           { type: 'addStat', stat: 'stress', value: 2 },
           { type: 'addSkill', skill: 'persuasion', value: 1 },
         ],
+      },
+    ],
+  },
+
+  /* ═══════════════════════════════════════════════════════════════
+     «КРИПТА ТИШИНЫ» — боссовое подземелье (fc_silent_warden)
+     Жека → бункер → врата → Тихий Хранитель → архив → возврат
+     ═══════════════════════════════════════════════════════════════ */
+  fc_warden_start: {
+    id: 'fc_warden_start',
+    text: [
+      'Жека слушает эфир «Зари-М» так, как слушают только что родившегося, — и вдруг выключает приёмник. «Станция в воздухе. Значит, пора про нижний ярус.» Он понижает голос, хотя цех пуст. «Бункер — он двухэтажный, Володька. Верхний — наш: карты, рации, чай Максима. А нижний — довоенный. Там архив прослушки Гильдии: всё, что город говорил при прежних. И страж. Мы зовём его Тихим Хранителем: он не шумит. Двадцать лет — ни звука. Двое наших спускались. Вернулись оба — молча. Один до сих пор молчит, и, знаешь, счастливее всех нас.»',
+      '«Ты собрал Зарю из трёх рук. Спускайся. Если одолеешь тишину — реши, что делать с архивом: он слушал всех, и в нём, наверное, есть голоса, которые город обязан услышать. Или наоборот — обязан забыть. Врата в дальнем углу, за стойкой карт. И вот ещё, — он включает приёмник обратно, — если станет совсем тихо: говори. Шёпотом, вслух, неважно. Тишина боится сказанного.»',
+    ].join('\n'),
+    speaker: 'Жека',
+    sceneId: 'abandoned_factory',
+    contextNote: 'Жека раскрывает нижний ярус бункера: архив прослушки Гильдии и его страж — Тихий Хранитель.',
+    accessibilityAnnounce: 'Жека доверяет спуск в нижний ярус бункера, где архив прослушки сторожит Тихий Хранитель.',
+    guidanceHint: 'Спустись в бункер Сопротивления. Врата нижнего яруса — в дальнем углу.',
+    guidanceObjectiveType: 'visit_location',
+    choices: [
+      {
+        text: 'Если тишина боится сказанного — я возьму с собой слова',
+        next: 'fc_warden_descent',
+        goldenPath: true,
+        effects: [
+          { type: 'triggerQuest', questId: 'fc_silent_warden' },
+          { type: 'setFlag', flag: 'fc_silent_warden_accepted', flagValue: true },
+          { type: 'addKarma', value: 2 },
+          { type: 'transitionScene', sceneId: 'underground_bunker' },
+        ],
+      },
+      {
+        text: 'Двое вернулись молча. Что с ними там было?',
+        next: 'fc_warden_descent',
+        effects: [
+          { type: 'triggerQuest', questId: 'fc_silent_warden' },
+          { type: 'setFlag', flag: 'fc_silent_warden_accepted', flagValue: true },
+          { type: 'addSkill', skill: 'intuition', value: 1 },
+          { type: 'transitionScene', sceneId: 'underground_bunker' },
+        ],
+      },
+      { text: 'Отложить спуск — эфир только начался', next: null },
+    ],
+  },
+
+  fc_warden_descent: {
+    id: 'fc_warden_descent',
+    text: [
+      'Дальний угол бункера. За стойкой карт — врата: довоенная сталь, символика Гильдии, которую не смогли демонтировать, и табличка «ЯРУС −2. РЕЖИМ ТИШИНЫ». Замка нет — никогда не было. Слышно, как за вратами ничего не слышно: тишина там стоит плотно, как вода на глубине. Ладонь на стали ощущает холод не металла, а паузы между словами.',
+      'За вратами — коридор, и коридор этот делает одно: слушает. Каждый твой шаг уходит туда и не возвращается эхом. Тишина собрана в дальнем конце, в переходе, — и она знает, что ты здесь, уже давно: с той минуты, как ты открыл врата. Дальше начинается её территория. Шаг — и она ответит.',
+    ].join('\n'),
+    speaker: 'narrator',
+    sceneId: 'underground_bunker',
+    contextNote: 'Врата нижнего яруса. За ними — коридор, который слушает. Тишина ждёт в переходе.',
+    accessibilityAnnounce: 'Врата нижнего яруса найдены. За коридором — логово Тихого Хранителя. Шаг вперёд начнёт бой.',
+    guidanceHint: 'Сделай шаг в переход — тишина ответит. Бой с Тихим Хранителем начнётся сама.',
+    guidanceObjectiveType: 'make_choice',
+    effects: [{ type: 'setFlag', flag: 'fc_warden_lair_found', flagValue: true }],
+    choices: [
+      {
+        text: 'Шагнуть в переход — во весь голос',
+        next: 'bunker_explore_mode',
+        goldenPath: true,
+        effects: [
+          { type: 'addKarma', value: 2 },
+          { type: 'showThought', thought: 'Тишина боится сказанного. Тогда говори, Володька. Во весь голос. Пусть слушает.', thoughtDuration: 4000 },
+        ],
+      },
+      {
+        text: 'Шагнуть молча — пусть встречает тишину тишиной',
+        next: 'bunker_explore_mode',
+        effects: [{ type: 'addStat', stat: 'stress', value: 3 }],
+      },
+    ],
+  },
+
+  fc_warden_aftermath: {
+    id: 'fc_warden_aftermath',
+    text: [
+      'Тишина рассыпается, как штукатурка, — медленно и со звуком. Там, где стоял Хранитель, остаётся аккуратная (он и рушился аккуратно) стопа считанных лент: архив прослушки, двадцать лет, весь город. Ленты пахнут пылью и чужими интонациями; на каждой — дата и чья-то никому не известная жизнь. Слышно, как где-то в бункере снова тикают часы: тишина, оказывается, всю дорогу глушила и их.',
+      'Архив умещается в две коробки. Одна — голоса, которые город, возможно, обязан услышать: имя доносчика из акта 3, последнюю запись Марата, тревогу Трофима за детей на пирсе. Другая — то, что город обязан забыть: ссоры соседей, ночные признания, всё то, за чем подсматривать не имеет права никто. Коробки одинаковые. Разница — только в тебе.',
+    ].join('\n'),
+    speaker: 'narrator',
+    sceneId: 'underground_bunker',
+    contextNote: 'Хранитель повержен. Архив прослушки — в двух коробках: голоса, которые обязаны быть услышанными, и то, что обязано быть забытым.',
+    accessibilityAnnounce: 'Тихий Хранитель повержен. Реши судьбу архива прослушки.',
+    guidanceHint: 'Финальный выбор: открыть городу правду или оставить архивы спящими.',
+    guidanceObjectiveType: 'make_choice',
+    effects: [{ type: 'setFlag', flag: 'fc_warden_defeated', flagValue: true }],
+    choices: [
+      {
+        text: 'Отдать ленты правды Кате — остальное сжечь здесь же',
+        next: 'fc_warden_resolve',
+        goldenPath: true,
+        effects: [
+          { type: 'setFlag', flag: 'fc_warden_archive_claimed', flagValue: true },
+          { type: 'setFlag', flag: 'fc_warden_archive_truth', flagValue: true },
+          { type: 'addKarma', value: 5 },
+          { type: 'addItem', itemId: 'cipher_notes' },
+          { type: 'npcChange', npcId: 'kate', npcChange: { relation: 6 } },
+          { type: 'transitionScene', sceneId: 'abandoned_factory' },
+        ],
+      },
+      {
+        text: 'Запечатать обе коробки — город заслуживает тишины, а не правды',
+        next: 'fc_warden_resolve',
+        effects: [
+          { type: 'setFlag', flag: 'fc_warden_archive_claimed', flagValue: true },
+          { type: 'setFlag', flag: 'fc_warden_archive_sealed', flagValue: true },
+          { type: 'addKarma', value: 2 },
+          { type: 'addStat', stat: 'stress', value: -3 },
+          { type: 'transitionScene', sceneId: 'abandoned_factory' },
+        ],
+      },
+    ],
+  },
+
+  fc_warden_resolve: {
+    id: 'fc_warden_resolve',
+    text: [
+      'Наверху бункер встречает обычным шумом: рации, чай, Максим, спорящий с картой. Жека видит тебя раньше, чем ты успеваешь сказать что-либо, — и молчит, по-жекски, уважительно. Потом произносит единственное, что здесь принято говорить после Крипты: «Слышу, что вернулся словами». Часы в бункере продолжают тикать. Тишина больше не гасит их — и не гасит вас.',
+      '«Заря-М» в эфире, архив решён, ярус −2 — просто ярус. Жека разливает чай и поднимает кружку — не тост, а веху: «За сказанное». Где-то внизу, в остывшей Крипте, пыль оседает на пустую стойку Хранителя. Двадцать лет тишины закончились не взрывом, а предложением выпить чаю. В этом городе это лучшая из возможных концовок.',
+    ].join('\n'),
+    speaker: 'Жека',
+    sceneId: 'abandoned_factory',
+    contextNote: 'Возврат к Жеке: тишина повержена словами, архив решён, бункер снова тикает.',
+    accessibilityAnnounce: 'Поручение Сопротивления выполнено. Крипта Тишины пройдена.',
+    guidanceHint: 'Поручение закрыто. Бункер снова тикает.',
+    guidanceObjectiveType: 'complete_quest',
+    choices: [
+      {
+        text: 'Вернуться в цех — за сказанное',
+        next: 'bunker_explore_mode',
+        goldenPath: true,
+        effects: [
+          { type: 'transitionScene', sceneId: 'abandoned_factory' },
+          { type: 'addStat', stat: 'stress', value: -4 },
+        ],
+      },
+      {
+        text: 'Остаться в бункере — послушать, как тикают часы',
+        next: 'bunker_explore_mode',
+        effects: [{ type: 'addStat', stat: 'stress', value: -2 }],
       },
     ],
   },

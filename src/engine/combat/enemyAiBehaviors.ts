@@ -112,6 +112,11 @@ const ENEMY_AI_OVERRIDES: Partial<Record<EnemyType, Partial<EnemyAiConfig>>> = {
     leashRange: 28,
     attackCooldownS: 2.0,
   },
+  boss_silent_warden: {
+    aggroRange: 14,      // Крипта узкая: агро меньше
+    leashRange: 24,      // Но от тишины не убежать
+    attackCooldownS: 1.8,
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════

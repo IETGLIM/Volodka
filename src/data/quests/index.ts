@@ -18,7 +18,7 @@ import { QUESTS_ACT3_EXPANDED } from './act3_expanded';
 import { QUESTS_ACT4_EXPANDED } from './act4_expanded';
 import { STREET_LEGENDS_QUESTS } from './streetLegendsQuests';
 import { PIER_VOICES_QUESTS } from './pierVoicesQuests';
-import { FACTION_CONTRACTS_QUESTS } from './factionContracts';
+import { FACTION_CONTRACTS_QUESTS, FACTION_CONTRACTS_DUNGEON_QUESTS } from './factionContracts';
 
 export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...QUESTS_ACT1,
@@ -40,5 +40,6 @@ export const QUEST_DEFINITIONS: QuestDefinition[] = [
   ...STREET_LEGENDS_QUESTS,
   ...PIER_VOICES_QUESTS,
   ...FACTION_CONTRACTS_QUESTS,
+  ...FACTION_CONTRACTS_DUNGEON_QUESTS,
   ...CHK_QUESTS,
 ];

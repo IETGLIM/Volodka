@@ -1104,6 +1104,16 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'fc_zarya_start',
         condition: { requiredAct: 4, missingFlag: 'fc_zarya_accepted' },
       },
+      {
+        // «Крипта Тишины»: после «Зари-М» Жека доверяет спуск к Хранителю.
+        text: 'Станция в эфире. Ты обещал про нижний ярус',
+        next: 'fc_warden_start',
+        condition: {
+          requiredAct: 4,
+          flag: 'fc_resistance_zarya_done',
+          missingFlag: 'fc_silent_warden_accepted',
+        },
+      },
       { text: 'Поможешь с проникновением?', next: null, effects: [{ type: 'addSkill', skill: 'logic', value: 1 }] },
       {
         text: 'План похищения данных — схемы.',

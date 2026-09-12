@@ -1718,6 +1718,80 @@ export const ENEMY_TEMPLATES: Record<EnemyType, EnemyTemplate> = {
       'Тени... освобождены... покой... наконец...',
     ],
   },
+
+  /* ═══ «Крипта Тишины» — босс нижнего яруса бункера Сопротивления ═══ */
+  boss_silent_warden: {
+    type: 'boss_silent_warden',
+    name: 'Тихий Хранитель',
+    emoji: '🤫',
+    description: 'Страж довоенного архива прослушки в нижнем ярусе бункера. Тишина — его оружие: он слушает двадцать лет и знает каждый твой шаг до того, как ты его сделаешь. 520 HP, три фазы.',
+    baseHp: 520,
+    baseAttack: 22,
+    baseDefense: 15,
+    baseSpeed: 12,
+    targetsStat: 'logic',
+    lootTable: ['cipher_notes', 'memory_crystal', 'digital_amulet', 'firewall_code'],
+    xpReward: 560,
+    specialAttacks: [
+      {
+        id: 'warden_silence_field',
+        name: 'Поле Тишины',
+        description: 'Глушит звуки — снижает защиту и энергию игрока',
+        chance: 0.3,
+        cooldown: 3,
+        execute: (state, enemy) => {
+          let s = state;
+          const buff = createBuff(s, 'Поле Тишины', 'warden_silence_field', 'debuff', 'player', 2, { type: 'defense_reduction', value: 0.3 });
+          s = addBuff(s, buff);
+          return { ...s, _sideEffects: [{ type: 'addEnergy' as const, value: -8 }], log: [...s.log, { turn: state.turn, text: `${enemy.emoji} ПОЛЕ ТИШИНЫ! Звук схлопывается: ваша защита -30% на 2 хода, энергия -8!`, type: 'enemy_special' as const }] };
+        },
+      },
+      {
+        id: 'warden_archive_volley',
+        name: 'Архивный Залп',
+        description: 'Обрушивает стопы чужих записей — высокий урон и стресс',
+        chance: 0.3,
+        cooldown: 4,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.6 });
+          const nextState = rolled.state;
+          const wvSnapshot = getGameSnapshot();
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, wvSnapshot.playerState.progression.currentAct, wvSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
+          return { ...nextState, playerHp: Math.max(0, nextState.playerHp - damage), _sideEffects: [{ type: 'addStress' as const, value: 4 }], log: [...nextState.log, { turn: state.turn, text: `${enemy.emoji} АРХИВНЫЙ ЗАЛП! Стопы чужих записей обрушиваются: -${damage} HP, стресс +4!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+      {
+        id: 'warden_white_noise',
+        name: 'Белый Шум',
+        description: 'Финальный крик тишины — огромный урон, ярость архивов',
+        chance: 0.25,
+        cooldown: 5,
+        execute: (state, enemy) => {
+          const effectiveAttack = enemy.attack + getEnemyAttackBoost(state);
+          const rolled = rollEnemyDamage(state, { attack: effectiveAttack, multiplier: 1.9 });
+          const nextState = rolled.state;
+          const wnSnapshot = getGameSnapshot();
+          const rawDamage = scaleEnemyDamageByDifficulty(rolled.damage, undefined, wnSnapshot.playerState.progression.currentAct, wnSnapshot.playerState.progression.level);
+          const damage = applySpecialDamagePipeline(nextState, rawDamage);
+          const eBuff = createBuff(nextState, 'Гул Архивов', 'warden_white_noise_buff', 'buff', 'enemy', 2, { type: 'attack_boost', value: 8 });
+          const s = addBuff(nextState, eBuff);
+          return { ...s, playerHp: Math.max(0, s.playerHp - damage), log: [...s.log, { turn: state.turn, text: `${enemy.emoji} БЕЛЫЙ ШУМ! Тишина кричит всеми голосами сразу: -${damage} HP, враг +8 атака на 2 хода!`, type: 'enemy_special' as const, damage }] };
+        },
+      },
+    ],
+    attackBarks: [
+      '... (Хранитель не говорит. Он слушает.)',
+      'Архив помнит каждый твой вздох. Со словом — и подавно.',
+      'Говори громче. Всё равно запишу.',
+    ],
+    defeatBarks: [
+      'тишина... наконец... и для меня...',
+      'архив... закрывается... слушай... сам...',
+      'спасибо... за... гром...',
+    ],
+  },
 };
 
 /* ═══════════════════════════════════════════════════════════════

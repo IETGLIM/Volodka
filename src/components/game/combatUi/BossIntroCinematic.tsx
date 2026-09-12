@@ -66,6 +66,12 @@ const BOSS_INTRO_DATA: Partial<Record<EnemyType, BossIntroData>> = {
     accent: '#8b5cf6',
     ariaLabel: 'Босс: Хранитель Катакомб',
   },
+  boss_silent_warden: {
+    name: 'ТИХИЙ ХРАНИТЕЛЬ',
+    subtitle: 'Тишина, которая слушает. Двадцать лет — без единого слова.',
+    accent: '#35f0a0',
+    ariaLabel: 'Босс: Тихий Хранитель',
+  },
 };
 
 /* ══════════════════════════════════════════════════════════════

@@ -44,7 +44,8 @@ export type EnemyType =
   | 'boss_neuro_sys'        // Акт 3 финал: НейроСис — главный ИИ корпорации
   | 'boss_dream_eater'      // Акт 5 финал: Пожиратель Снов — сущность из Мира Снов
   | 'boss_final_code'       // Акт 7 финал: Финальный Код — последнее испытание
-  | 'boss_catacombs_keeper'; // Хранитель Катакомб — multi-phase catacombs boss
+  | 'boss_catacombs_keeper' // Хранитель Катакомб — multi-phase catacombs boss
+  | 'boss_silent_warden'; // Тихий Хранитель — босс нижнего яруса бункера («Крипта Тишины»)
 
 export type CombatAction = 'attack' | 'defend' | 'poem_power' | 'flee' | 'use_item';
 

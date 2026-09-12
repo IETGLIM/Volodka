@@ -118,9 +118,53 @@ const DEFAULT_3_PHASE: BossPhaseDefinition[] = [
   },
 ];
 
+/* ═══════════════════════════════════════════════════════════════
+   «Крипта Тишины» — Тихий Хранитель (нижний ярус бункера).
+   Фазы: Слушатель → Помехи в архиве → Белый шум.
+   ═══════════════════════════════════════════════════════════════ */
+const SILENT_WARDEN_PHASES: BossPhaseDefinition[] = [
+  {
+    phase: 0,
+    hpUpperBound: 1.0,
+    hpLowerBound: 0.6,
+    damageMultiplier: 1.0,
+    speedMultiplier: 1.0,
+    invulnerabilityOnEnter: false,
+    invulnerabilityTurns: 0,
+    flashColor: '#35f0a0',
+    canSummonAdds: false,
+    description: 'Фаза 1: Слушатель — архив копит тишину',
+  },
+  {
+    phase: 1,
+    hpUpperBound: 0.6,
+    hpLowerBound: 0.3,
+    damageMultiplier: 1.3,
+    speedMultiplier: 1.2,
+    invulnerabilityOnEnter: true,
+    invulnerabilityTurns: 1,
+    flashColor: '#c9f24b',
+    canSummonAdds: true,
+    description: 'Фаза 2: Помехи в архиве — записи просыпаются',
+  },
+  {
+    phase: 2,
+    hpUpperBound: 0.3,
+    hpLowerBound: 0.0,
+    damageMultiplier: 1.6,
+    speedMultiplier: 1.5,
+    invulnerabilityOnEnter: true,
+    invulnerabilityTurns: 1,
+    flashColor: '#ff8c42',
+    canSummonAdds: true,
+    description: 'Фаза 3: Белый шум — тишина кричит',
+  },
+];
+
 /** Phase configuration lookup by boss enemy type. */
 const BOSS_PHASE_MAP: Partial<Record<EnemyType, BossPhaseDefinition[]>> = {
   boss_catacombs_keeper: CATACOMBS_KEEPER_PHASES,
+  boss_silent_warden: SILENT_WARDEN_PHASES,
   boss_neuro_sys: DEFAULT_3_PHASE,
   boss_dream_eater: DEFAULT_3_PHASE,
   boss_final_code: DEFAULT_3_PHASE,

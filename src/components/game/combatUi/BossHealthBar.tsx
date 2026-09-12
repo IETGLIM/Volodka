@@ -48,6 +48,7 @@ const BOSS_BAR_DATA: Partial<Record<EnemyType, BossBarData>> = {
   boss_dream_eater: { name: 'ПОЖИРАТЕЛЬ СНОВ', act: 5, accent: '#9b5cff' },
   boss_final_code: { name: 'ФИНАЛЬНЫЙ КОД', act: 7, accent: '#00e5ff' },
   boss_catacombs_keeper: { name: 'ХРАНИТЕЛЬ КАТАКОМБ', act: 4, accent: '#8b5cf6' },
+  boss_silent_warden: { name: 'ТИХИЙ ХРАНИТЕЛЬ', act: 4, accent: '#35f0a0' },
 };
 
 /* ══════════════════════════════════════════════════════════════
