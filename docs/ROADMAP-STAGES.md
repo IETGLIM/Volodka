@@ -123,27 +123,53 @@
 - [x] 101. `useWorldClock`: dirty-check NPC-стейтов перед записью в стор
 - [x] 102. DPR: O(n) среднее → инкрементальная сумма
 - [x] 103. Патрули: `path.shift()` O(n) → индексный курсор
-- [ ] 104. Холодные интервалы (useCityNews/useWorldClock/панели) → единый UI-clock
+- [x] 104. Холодные интервалы (useCityNews/useWorldClock/панели) → единый UI-clock
+  - v4.25.0: императивный `onUiTick` в useUiTick; переведены useWorldClock (60с),
+    useCityNews (поллер 3,5 мин — без вызовов в скрытой вкладке), useWeatherEffects
+    (1с + 10с), useHudQuiet (1с). Фиксы: гард периода ≤0 (busy-loop) и утечка
+    visibilitychange-листенера. Тесты onUiTick (4).
 - [x] 105. Budgets-отчёт: прогнать `check-bundle-budgets --report`, зафиксировать цифры
   - Зафиксировано 2026-09-12 (v4.24.0): boot 624.5/634.8 KB gzip (hard max),
     game-start 1326.6/1757.8 KB, кумулятив до первой сцены 1951.1 KB,
     ленивый ярус (Rapier) 1565.4 KB, весь JS gzip 3607.0 KB, entry CSS 133.4 KB,
     WebGL-стек (three+r3f+drei) 270.1 KB ≈ 20% game-start.
-- [ ] 106. Профилировка LCP загрузки (perf-marks уже есть)
-- [ ] 107. Дедуп DOM-подписок в оркестраторе (13 setTimeout в useGameLifecycleManager)
-- [ ] 108. GC-давление фасада: мемоизация combined-объекта по полям
+- [x] 106. Профилировка LCP загрузки (perf-marks уже есть)
+  - v4.25.0: lcpProfiler (PerformanceObserver, buffered:true, тихое отключение в
+    средах без поддержки); DEV-лог LCP рядом с first-scene-playable в LoadingTimeline.
+- [x] 107. Дедуп DOM-подписок в оркестраторе (13 setTimeout в useGameLifecycleManager)
+  - v4.25.0: KeyedTimeoutScheduler (schedule/cancel/disposeAll, дедуп по ключу);
+    12 «голых» setTimeout переведены; хвосты больше не срабатывают после unmount.
+- [x] 108. GC-давление фасада: мемоизация combined-объекта по полям
+  - v4.25.0: переиспользуемые буферы ссылок слайсов (storeBindings) и ключа
+    снапшота на 44 поля (gameSnapshotCache); замороженные EMPTY_* вместо
+    «?? []»; кэш-попадания без аллокаций, семантика сравнения не изменена.
 
 ## Фаза 7. Контент и локализация (109–118)
 - [x] 109. Аудит русских строк HUD — непереведённого нет
 - [x] 110. Мёртвые `audioCue` (`sounds/npc/*.ogg`) в `data/chkTolpa/npcs.ts` — удалены
-- [ ] 111. Новый квест №155 (исследование: «Эхо пирса»)
-- [ ] 112. Новые предметы (3–5) с русскими описаниями
-- [ ] 113. Новый лор (3–4 записи, связанные с новыми квестами)
+- [x] 111. Новый квест №155 (исследование: «Эхо пирса»)
+  - v4.25.0: ep_pier_echo (акт 2, Трофим → тихий маршрут → прослушивание → Ритка);
+    6 story-нод (pierEchoStory.ts), пак 'pierEcho' в buildStoryNodes +
+    narrativePackRegistry (паритет статик/рантайм), хук в trofim_greeting +
+    возвратная реплика; reachability: 0 недостижимых. Тест пака (8).
+- [x] 112. Новые предметы (3–5) с русскими описаниями
+  - v4.25.0: ep_tape_echo (quest_item), ep_glass_float (misc, стресс −3),
+    ep_pier_postcard (misc), ep_lantern_battery (consumable, энергия +20).
+- [x] 113. Новый лор (3–4 записи, связанные с новыми квестами)
+  - v4.25.0: lore_pier_echo, lore_trofim_watchman, lore_glass_floats,
+    lore_pier_nineteenth — обнаружение через discoverLore-эффекты нод квеста.
 - [ ] 114. Расширение диалогов (возвратные реплики для новых NPC)
+  - Частично (v4.25.0): возвратная реплика Трофима для продолжения цепочки
+    «Эха пирса»; полноценное расширение требует отдельных NPC — в очереди.
 - [ ] 115. Вынос HUD-строк в файл локализации
 - [ ] 116. Вычитка терминологии (карма/репутация/стресс — единообразие)
-- [ ] 117. Кодекс: перекрёстные ссылки новых записей
-- [ ] 118. Баланс наград новых квестов (прогнать валидатор и reachability)
+- [x] 117. Кодекс: перекрёстные ссылки новых записей
+  - v4.25.0: relatedEntries внутри блока + на lore_great_crash_2029 и
+    lore_city_ufa; условия обнаружения (discoveryCondition) на русском.
+- [x] 118. Баланс наград новых квестов (прогнать валидатор и reachability)
+  - v4.25.0: награды ep_pier_echo в коридоре тира акта 2 (55cr/4кармы/35XP,
+    тест пака фиксирует коридор 40–60/3–5/0–50); validate:content = 0,
+    validate:act1-extended = 0, reachability 0 недостижимых.
 
 ## Фаза 8. Сборка/деплой (119–126)
 - [x] 119. `--mode analyze`: подключён rollup-plugin-visualizer (dist/stats.html)
@@ -153,7 +179,8 @@
 - [ ] 123. NPC-варианты: исключить `.meshopt.glb` из keep-set, если не выбран пресетами (−15–20 MB)
 - [ ] 124. Текстуры → KTX2 (инфраструктура basis/ уже в деплое)
 - [ ] 125. `menu/cinematic_night_plate.png` (1.2MB) → WebP
-- [ ] 126. `.nvmrc` (pin Node 22 = CI)
+- [x] 126. `.nvmrc` (pin Node 22 = CI)
+  - v4.25.0: .nvmrc с «22» — синхронизация локальной среды и CI (node-version 22).
 
 ## Фаза 9. Документация и финал (127–132)
 - [x] 127. Реестр этапов (этот файл)

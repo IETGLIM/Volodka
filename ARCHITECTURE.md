@@ -2023,6 +2023,58 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.25.0 — хвост фазы 6 (UI-clock, LCP, дедуп, GC) + фаза 7: «Эхо пирса»
+
+### Единый UI-clock: императивный API (этап 104)
+- useUiTick.ts: `onUiTick(periodMs, cb)` — та же механика, что и у реактивного
+  хука (один интервал на частоту, авто-старт/авто-стоп, скрытая вкладка —
+  тики пропущены, догоняющий бамп по visibilitychange), но для колбэков.
+- Потребители: useWorldClock (60с), useCityNews (поллер 3,5 мин), 
+  useWeatherEffects (1с + 10с, элапс-гард защищает от двойного применения
+  после догоняющего бампа), useHudQuiet (1с).
+- Инварианты: период ≤0 — no-op подписка (гард busy-loop);
+  visibilitychange-листенер вешается один раз на модуль.
+
+### Дедуп отложенных таймеров оркестратора (этап 107)
+- shared/utils/keyedTimeoutScheduler.ts: KeyedTimeoutScheduler —
+  schedule(key, fn, delay) с заменой незрелого таймера того же ключа;
+  disposeAll() в cleanup-эффектах useGameLifecycleManager.
+- Все отложенные задачи жизненного цикла имеют ключи: 'scene:banner',
+  'thought:scene-entry-initial', 'thought:scene-entry:<sceneId>',
+  'thought:combat:victory' и т.д. Быстрые серии одного события не
+  складывают очередь эмиссий; после unmount хвосты не срабатывают.
+
+### Кэши фасада без аллокаций (этап 108)
+- storeBindings.ts: SliceRefsBuffer — мутабельный кортеж на 9 слайсов;
+  collectSliceRefs заполняет его по месту, cachedSliceRefs — поэлементная
+  копия. Кэш-попадание getCombinedGameState() не аллоцирует ничего.
+- gameSnapshotCache.ts: ключ кэша на 44 поля — keyBuffer/cachedKeyBuffer
+  (постоянные массивы), замороженные EMPTY_CHOICE_LOG/EMPTY_MORAL_CHOICES.
+  Семантика — референсное сравнение по полям, как раньше.
+
+### LCP-профилировщик (этап 106)
+- engine/performance/lcpProfiler.ts: PerformanceObserver
+  ('largest-contentful-paint', buffered: true); старт в main.tsx;
+  тихое отключение там, где тип не поддерживается.
+- LoadingTimeline: после first-scene-playable DEV-лог печатает LCP и тег
+  крупнейшего элемента — сравнение с играбельной сценой диагностирует,
+  «красился» ли стартовый экран дольше загрузки игры.
+
+### Контент-пак «Эхо пирса» (этапы 111/112/113/117/118)
+- Квест ep_pier_echo (акт 2): objectives npc_talked/location_visited/
+  flag_set; активация через выбор в trofim_greeting (условие requiredAct 2,
+  missingFlag ep_pier_echo_accepted) → story-нода ep_pier_echo_start
+  (эффекты triggerQuest + setFlag) — стандартный путь достижимости
+  (гивер с расписанием = корень BFS в questReachability).
+- Пак 'pierEcho' зарегистрирован в трёх точках: buildStoryNodes (статика),
+  narrativePackRegistry — тип + ленивый загрузчик + STANDALONE_STORY_
+  SATELLITE_ORDER (паритет статик/рантайм — урок v4.8.9).
+- Лор пака обнаруживается discoverLore-эффектами нод (не LORE_SCENE_MAP):
+  discovery привязана к прогрессу квеста, а не к географии.
+- Баланс: награды 55cr/4кармы/35XP — коридор тира акта 2; тест пака
+  (pierEchoQuest.test.ts, 8 кейсов) фиксирует реестры, сцены, эффекты
+  addItem/discoverLore, перекрёстные ссылки лора и коридор наград.
+
 ## v4.24.0 — фаза 6: перф-волна AI/физики/HUD (этапы 97–105)
 
 ### Дистанционный LOD AI-тика крипов (этап 97)
