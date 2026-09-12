@@ -1,3 +1,48 @@
+## v4.21.0 (2026-09-12) — световые столбы хазардов и честный lazy story-граф
+
+### Контент
+Волна A/G из ТЗ: визуальное качество опасных зон (направленная
+подсветка) и производительность загрузки (снятие eager-импорта всего
+story-графа с gameStart-чанков). Верификация — только статический
+анализ: `tsc --noEmit` (0), ESLint (0 errors), vitest (2615/2615).
+Dev-сервер не запускался. Памятная неприкосновенность: первые 18
+стихотворений в src/data/poems.ts не изменялись (проверено git-историей).
+
+### feat: божественные лучи над опасными зонами (приоритет A)
+- ProximityGodRay расширен props coneRadius / enableLights / spotAngle:
+  ширина аддитивного конуса для площадных зон, отключение реальных
+  источников света (visualLite), угол прожектора; дистанция прожектора
+  масштабируется от высоты столба. Существующие три вызова
+  (TriggerZone / SceneExitIndicator / NPCProximityMarker) не меняются.
+- EnvironmentalHazardSystem: над каждым включённым хазардом —
+  направленный световой столб в цвет типа угрозы (HAZARD_KIND_COLOR,
+  та же палитра, что 3D-маркер и HUD): опасность читается с другого
+  конца сцены. Геометрия — из halfExtents зоны (электрощит — узкий
+  холодный столб, плесень — широкая зелёная пелена).
+- Бюджеты: visualLite (low/medium) — только аддитивный конус,
+  0 дополнительных light-юнитов и 0 изменений числа источников
+  (нет шейдер-перекомпиляций); reduced-motion — статичное свечение
+  без пульсации (imperative ref, без ре-маунта группы).
+
+### perf: ambient и content-truth читают ленивый кэш narrative-паков
+- ambientPlayContext (цепочка оркестратора: useAudioOrchestrator →
+  GameOrchestrator) статически импортировал STORY_NODES → весь story-граф
+  (~2.3 МБ исходников, все 7 актов + спутники) въезжал в gameStart-чанки,
+  полностью обходя систему ленивых narrative-паков — ради двух полей
+  текущей ноды (ambientSound / proceduralAmbientOverride).
+- Теперь модуль читает getStoryNodesCache() из narrativePackRegistry:
+  текущая нода гарантированно в кэше к моменту показа оверлея (её
+  показали — значит, её пакет загружен).
+- contentTruthManifest: eager-фолбэк '@/data/story' убран; CI-parity
+  снапшот перенесён в contentPipelineValidator (он грузится только
+  динамически — dev-проверки QuestTracker и npm run validate), так что
+  полный граф по-прежнему доступен валидатору, но не бандлу.
+- Тесты переведены на рантайм-пути вместо мёртвого eager-фолбэка:
+  freeExplorationHub.test повторяет bootstrap-порядок
+  (loadStoryPack('act1') + loadSceneExploreHubs()), ambientPlayContext
+  мерджит ноду через mergeStoryNodesIntoCacheForTests, expansionContent
+  передаёт статический граф явно.
+
 ## v4.20.0 (2026-09-12) — типографика кат-сцен и опасные зоны окружения
 
 ### Контент
