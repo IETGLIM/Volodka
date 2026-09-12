@@ -811,8 +811,10 @@ export function MinimapComponent() {
   /* ── Positioning: desktop = top-right (via HUD layout slot), mobile = top-right ── */
   const containerStyle: React.CSSProperties = isMobile
     ? {
-        top: 56, // below mobile top bar
-        right: 8,
+        // FIX (v4.17.1): учёт iOS safe-area (viewport-fit=cover в index.html) —
+        // на iPhone с чёлкой/Dynamic Island карта уходила под системную зону.
+        top: 'calc(env(safe-area-inset-top, 0px) + 56px)',
+        right: 'calc(env(safe-area-inset-right, 0px) + 8px)',
         zIndex: UI_LAYERS.HUD,
         ...quietStyle,
       }

@@ -102,9 +102,13 @@ export function explorationStatToastTopPx(): number {
   return explorationAchievementTopPx() + 88;
 }
 
-/** Event popups (combat/scene) — top-right, clear of minimap */
+/** Event popups (combat/scene) — top-CENTER, ниже топ-бара и бара здоровья
+ *  босса. FIX (v4.17.1): раньше слот был right-3 @58px и наезжал на
+ *  DifficultyIndicator (top:48) и BuffDebuffTracker (top:84) правой
+ *  колонки. Центр свободен: лево занято лут/лор-тостами и компасом,
+ *  право — миникартой и квест-картой. */
 export function explorationEventToastTopPx(): number {
-  return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
+  return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP + 38;
 }
 
 /** Lore/codex discovery toasts — top-left under objective strip */

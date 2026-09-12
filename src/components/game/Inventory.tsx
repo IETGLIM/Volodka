@@ -16,6 +16,7 @@ import { useInventoryPanel } from '@/components/game/inventory/useInventoryPanel
 import { InventoryDragProvider } from '@/components/game/inventory/inventoryDnd';
 import { useSetHotbarSlot } from '@/store/selectors/uiSelectors';
 import { useGameStore } from '@/store/gameStore';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { InventoryFilterCategory } from '@/engine/inventory/inventoryPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -348,11 +349,15 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
 
           <AnimatePresence>
             {useFeedback && (
+              /* FIX (v4.17.1): тост обратной связи рендерился ПОД панелью
+               * инвентаря (Tailwind z-50 < UI_LAYERS.PANEL=60) — игрок не
+               * видел подтверждение «использовано/надето». */
               <motion.div
                 initial={reducedMotion ? false : { opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0 }}
-                className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-cyan-950/90 border border-cyan-500/40 text-sm text-cyan-300 font-mono shadow-xl backdrop-blur-md"
+                className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg bg-cyan-950/90 border border-cyan-500/40 text-sm text-cyan-300 font-mono shadow-xl backdrop-blur-md"
+                style={{ zIndex: UI_LAYERS.TOOLTIP }}
                 aria-live="polite"
               >
                 {useFeedback}

@@ -251,8 +251,10 @@ export function EventNotificationPopup() {
 
   /* ── Render ── */
   return (
+    /* FIX (v4.17.1): топ-центр вместо right-3 — событийные тосты наезжали
+     * на индикатор сложности и бафф-трекер правой колонки. */
     <div
-      className="fixed right-3 sm:right-4 pointer-events-none flex flex-col gap-2"
+      className="fixed left-1/2 -translate-x-1/2 pointer-events-none flex flex-col items-center gap-2 max-w-[min(92vw,420px)]"
       data-exploration-ui
       style={{ top: explorationEventToastTopPx(), zIndex: UI_LAYERS.TOASTS }}
     >

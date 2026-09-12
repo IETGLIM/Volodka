@@ -91,11 +91,15 @@ html { background: #000 !important; }
   --z-examine: 38;
   --z-minigame: 40;
   --z-mobile-controls: 42;
-  --z-menu: 45;
+  /* FIX (v4.17.1): синхронизировано с UI_LAYERS (shared/constants/uiLayers.ts).
+   * Раньше --z-menu:45/--z-panel:55/--z-tooltip:58 расходились с
+   * TS-константами (58/60/62) — тултипы рендерились ПОД панелями,
+   * CSS-меню садились под боевой UI. */
+  --z-menu: 58;
   --z-combat: 50;
   --z-damage-flash: 51;
-  --z-panel: 55;
-  --z-tooltip: 58;
+  --z-panel: 60;
+  --z-tooltip: 62;
   --z-cinematic-transition: 95;
   --z-loading: 100;
   --z-dev-panel: 200;
