@@ -46,6 +46,19 @@ registerServiceWorker();
 const root = document.getElementById('root');
 if (!root) throw new Error('Root element not found');
 
+/** FIX (v4.22): WebGL2-гейт. three 0.172 / R3F v9 требуют WebGL2 — без него
+ *  игрок видел просто чёрный канвас без объяснений. Теперь до монтирования
+ *  приложения показываем понятный экран с требованиями (на русском). */
+function hasWebGl2(): boolean {
+  try {
+    if (typeof WebGL2RenderingContext === 'undefined') return false;
+    const probe = document.createElement('canvas');
+    return probe.getContext('webgl2') !== null;
+  } catch {
+    return false;
+  }
+}
+
 /** Opt-in only — StrictMode double-mount breaks Rapier KCC lifecycle in dev. */
 const enableStrictMode = import.meta.env.VITE_ENABLE_STRICT_MODE === 'true';
 
@@ -53,12 +66,31 @@ function renderAppTree(): ReactNode {
   return <AppBootRoot />;
 }
 
-createRoot(root).render(
-  enableStrictMode ? (
-    <StrictMode>{renderAppTree()}</StrictMode>
-  ) : (
-    renderAppTree()
-  ),
-);
+if (!hasWebGl2()) {
+  root.innerHTML = `
+    <div style="
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      background: #0a0e14; color: #d8dee6; font-family: system-ui, sans-serif; padding: 24px;
+    ">
+      <div style="max-width: 520px; line-height: 1.6;">
+        <h1 style="font-size: 20px; margin: 0 0 12px; color: #6ee7d8;">Нужна поддержка WebGL&nbsp;2</h1>
+        <p style="margin: 0 0 12px;">«Володька» использует WebGL&nbsp;2 для 3D-графики, но ваш браузер его не предоставляет.</p>
+        <ul style="margin: 0 0 12px; padding-left: 20px;">
+          <li>Обновите браузер (Chrome, Firefox, Edge или Safari&nbsp;15+)</li>
+          <li>Включите аппаратное ускорение в настройках браузера</li>
+          <li>Проверьте, что видеокарта не занята другой программой</li>
+        </ul>
+        <p style="margin: 0; opacity: 0.7;">После исправления просто обновите страницу.</p>
+      </div>
+    </div>`;
+} else {
+  createRoot(root).render(
+    enableStrictMode ? (
+      <StrictMode>{renderAppTree()}</StrictMode>
+    ) : (
+      renderAppTree()
+    ),
+  );
 
-markAppStart();
+  markAppStart();
+}
