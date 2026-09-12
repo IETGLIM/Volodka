@@ -312,10 +312,16 @@ function Creep({
   // Return state: home waypoint after giving up + its nav path.
   const returnWaypointRef = useRef(0);
   const returnPathRef = useRef<Array<[number, number]> | null>(null);
+  // perf (v4.24, этап 103): индексный курсор вместо path.shift() —
+  // продвижение по пути O(1) за тик, без реаллокации массива (shift O(n)
+  // на каждый пройденный вейпоинт).
+  const returnPathCursorRef = useRef(0);
   // Nav-mesh path following for wall-aware chases.
   const navMeshRef = useRef<NavMeshGraph | null>(null);
   const navMeshResolvedRef = useRef(false);
   const chasePathRef = useRef<Array<[number, number]> | null>(null);
+  // perf (v4.24, этап 103): курсор потребления chase-пути (см. выше).
+  const chasePathCursorRef = useRef(0);
   const chaseRepathTimerRef = useRef(0);
   const lastChaseTargetRef = useRef({ x: 0, z: 0 });
 
@@ -376,10 +382,12 @@ function Creep({
     alertToastSentRef.current = false;
     lostContactTimerRef.current = 0;
     chasePathRef.current = null;
+    chasePathCursorRef.current = 0;
     stuckTrackerRef.current = createCreepStuckTracker(fromX, fromZ);
     returnWaypointRef.current = nearestWaypointIndex(def.waypoints, fromX, fromZ);
     const [wx, wz] = def.waypoints[returnWaypointRef.current];
     returnPathRef.current = computeCreepNavPath(fromX, fromZ, wx, wz, resolveNavMesh());
+    returnPathCursorRef.current = 0;
   }
 
   // Spawn gating re-checked on mount only (flags rarely flip mid-scene)
@@ -676,6 +684,7 @@ function Creep({
             lostContactTimerRef.current = 0;
             stuckTrackerRef.current = createCreepStuckTracker(pos.x, pos.z);
             chasePathRef.current = null;
+            chasePathCursorRef.current = 0;
             chaseRepathTimerRef.current = 0;
             chaseFootstepTimerRef.current = 0;
             audioEngine.playSfx('error');
@@ -692,6 +701,7 @@ function Creep({
         if (Math.hypot(wx - pos.x, wz - pos.z) < CREEP_RETURN_ARRIVE_DISTANCE) {
           waypointIndexRef.current = returnWaypointRef.current;
           returnPathRef.current = null;
+          returnPathCursorRef.current = 0;
           stateRef.current = 'patrol';
           alertTimerRef.current = 0;
           alertToastSentRef.current = false;
@@ -702,14 +712,19 @@ function Creep({
           let targetZ = wz;
           let followPath = false;
           if (path && path.length > 0) {
+            // perf (v4.24, этап 103): курсор вместо shift() — O(1) за тик,
+            // массив пути не мутируется.
+            let cursor = returnPathCursorRef.current;
             while (
-              path.length > 1 &&
-              Math.hypot(pos.x - path[0][0], pos.z - path[0][1]) < CREEP_PATH_WAYPOINT_RADIUS
+              cursor < path.length - 1 &&
+              Math.hypot(pos.x - path[cursor][0], pos.z - path[cursor][1]) <
+                CREEP_PATH_WAYPOINT_RADIUS
             ) {
-              path.shift();
+              cursor++;
             }
-            targetX = path[0][0];
-            targetZ = path[0][1];
+            returnPathCursorRef.current = cursor;
+            targetX = path[cursor][0];
+            targetZ = path[cursor][1];
             followPath = true;
           }
           stepToward(targetX, targetZ, def.patrolSpeed, !followPath);
@@ -717,6 +732,7 @@ function Creep({
             // Wedged on the way home — resume patrol from wherever it stands.
             waypointIndexRef.current = nearestWaypointIndex(def.waypoints, pos.x, pos.z);
             returnPathRef.current = null;
+            returnPathCursorRef.current = 0;
             stateRef.current = 'patrol';
             alertTimerRef.current = 0;
             alertToastSentRef.current = false;
@@ -827,21 +843,25 @@ function Creep({
                   player.z,
                   resolveNavMesh(),
                 );
+                chasePathCursorRef.current = 0;
               }
               const path = chasePathRef.current;
               let targetX = player.x;
               let targetZ = player.z;
               let followPath = false;
               if (path && path.length > 0) {
+                // perf (v4.24, этап 103): курсор вместо shift() — O(1) за тик.
+                let cursor = chasePathCursorRef.current;
                 while (
-                  path.length > 1 &&
-                  Math.hypot(pos.x - path[0][0], pos.z - path[0][1]) <
+                  cursor < path.length - 1 &&
+                  Math.hypot(pos.x - path[cursor][0], pos.z - path[cursor][1]) <
                     CREEP_PATH_WAYPOINT_RADIUS
                 ) {
-                  path.shift();
+                  cursor++;
                 }
-                targetX = path[0][0];
-                targetZ = path[0][1];
+                chasePathCursorRef.current = cursor;
+                targetX = path[cursor][0];
+                targetZ = path[cursor][1];
                 followPath = true;
               }
               stepToward(targetX, targetZ, def.chaseSpeed, !followPath);
