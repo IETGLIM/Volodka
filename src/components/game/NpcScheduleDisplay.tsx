@@ -247,7 +247,7 @@ export function NpcScheduleDisplay() {
       data-testid="npc-schedule-display"
       style={{
         top: EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP + 8,
-        left: EXPLORATION_HUD_LAYOUT.RIGHT_INSET,
+        left: EXPLORATION_HUD_LAYOUT.LEFT_INSET,
         zIndex: UI_LAYERS.HUD,
         maxWidth: 260,
       }}
@@ -313,7 +313,8 @@ export function NpcScheduleDisplay() {
           style={{
             background: 'linear-gradient(90deg, transparent, rgba(51,65,85,0.3), transparent)',
           }}
-        />\n        <div className="flex items-center justify-between px-3 py-1">
+        />
+        <div className="flex items-center justify-between px-3 py-1">
           <span className="text-[8px] text-slate-600 font-mono">volodka://npcs</span>
           <span className="text-[8px] text-slate-500 font-mono tabular-nums">
             {Math.floor(timeOfDay).toString().padStart(2, '0')}:00

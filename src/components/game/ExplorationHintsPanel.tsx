@@ -171,7 +171,8 @@ export function ExplorationHintsPanel() {
       data-testid="exploration-hints-panel"
       style={{
         bottom: EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY + EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY_HEIGHT + 16,
-        left: EXPLORATION_HUD_LAYOUT.RIGHT_INSET,
+        // FIX (v4.22): был RIGHT_INSET — работало по совпадению (оба = 12px).
+        left: EXPLORATION_HUD_LAYOUT.LEFT_INSET,
         zIndex: UI_LAYERS.HUD,
         maxWidth: 280,
       }}

@@ -12,6 +12,10 @@ export const EXPLORATION_HUD_LAYOUT = {
   /** Minimap block (160px map + chrome + 44px touch-target zoom row) */
   MINIMAP_HEIGHT: 222,
   RIGHT_INSET: 12,
+  /** FIX (v4.22): левые панели (NpcScheduleDisplay, ExplorationHintsPanel) раньше
+   *  использовали RIGHT_INSET — работало по совпадению (оба = 12px).
+   *  Именованный LEFT_INSET устраняет смысловую ошибку. */
+  LEFT_INSET: 12,
   /** Bottom-center stack (px from viewport bottom) */
   BOTTOM_TOOLBAR: 12,
   /** QuickAccessToolbar chrome (~48px content + padding) */
@@ -179,6 +183,21 @@ export function bottomInteractPromptPx(isMobile = false): number {
   );
 }
 
+/** FIX (overlap, v4.22): нижне-центральные тосты-подсказки.
+ *  Раньше PlayerLostHintToast (bottom-24 = 96px) и ContextualHint
+ *  (clamp(72px, 11vh, 128px)) висели ВНУТРИ вертикального диапазона нижнего
+ *  стека (тулбар 60–112px, quick-use 68–116px, поэзия 124–180px) и наезжали
+ *  на кнопки. Оба слота теперь строго НАД слотом [E]-промпта. */
+export function bottomCenterHintPx(isMobile = false): number {
+  if (isMobile) return EXPLORATION_HUD_LAYOUT.MOBILE_BOTTOM_CONTROLS_RESERVE + 84;
+  return bottomInteractPromptPx() + 52;
+}
+
+/** Второй ряд нижне-центральных подсказок (ContextualHint) — над первым. */
+export function bottomCenterHintSecondaryPx(isMobile = false): number {
+  return bottomCenterHintPx(isMobile) + 58;
+}
+
 /** Diegetic dialogue panel — lift above mobile D-pad / action column + home indicator. */
 export function diegeticDialogueBottomPadCss(isMobile = false, stackVisible = true): string {
   const stackPx = stackVisible ? explorationBottomStackHeightPx(isMobile) : 0;
@@ -227,9 +246,13 @@ export function bottomRightInsetPx(): number {
   return EXPLORATION_HUD_LAYOUT.RIGHT_INSET_COMPACT;
 }
 
-/** Day/night widget — under minimap on narrow layouts */
+/** Day/night widget — под квест-картой в правой колонке.
+ *  FIX (overlap, v4.22): раньше виджет висел на minimapBottom+4 и налегал на
+ *  QuestObjectiveCard (minimapBottom+6, высота до 216px) — два постоянных
+ *  виджета рисовались друг на друге. Теперь цепочка правой колонки строго
+ *  вертикальная: миникарта → квест-карта → день/ночь → погода. */
 export function explorationDayNightTopPx(): number {
-  return explorationMinimapTopPx() + EXPLORATION_HUD_LAYOUT.MINIMAP_HEIGHT + 4;
+  return explorationAchievementCardSafeTopPx();
 }
 
 /** Weather widget — below day/night cycle on the right */
