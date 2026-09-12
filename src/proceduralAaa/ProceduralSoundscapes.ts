@@ -4,6 +4,7 @@
  */
 
 import type { ProceduralAaaParams } from './params';
+import { getSharedAudioContext, whenAudioReady } from '@/engine/SharedAudioContext';
 
 export interface ProceduralSoundscapeHandle {
   start: () => Promise<void>;
@@ -64,6 +65,13 @@ export async function renderOfflineAmbience(
 export function createProceduralSoundscape(
   params: ProceduralAaaParams,
 ): ProceduralSoundscapeHandle {
+  /* FIX (v4.17.1): используем ОБЩИЙ SharedAudioContext вместо собственного
+   * `new AudioContext()`. Каждый смонтированный ProceduralAaaSceneRoot
+   * создавал отдельный контекст; Chrome ограничивает ~6 одновременных
+   * AudioContext, а dispose() закрывает их асинхронно — при ремаунтах
+   * (StrictMode/смена сцен) лимит исчерпывался и звук молчал.
+   * OfflineAudioContext для рендера буфера остаётся — он не считается
+   * против лимита воспроизводящих контекстов. */
   let ctx: AudioContext | null = null;
   let analyser: AnalyserNode | null = null;
   let gainNode: GainNode | null = null;
@@ -73,7 +81,8 @@ export function createProceduralSoundscape(
 
   const ensureCtx = () => {
     if (!ctx) {
-      ctx = new AudioContext();
+      ctx = getSharedAudioContext();
+      if (!ctx) return null;
       analyser = ctx.createAnalyser();
       analyser.fftSize = 256;
       analyser.smoothingTimeConstant = 0.8;
@@ -89,7 +98,15 @@ export function createProceduralSoundscape(
   return {
     async start() {
       if (running) return;
-      const c = ensureCtx();
+      let c = ensureCtx();
+      if (!c) {
+        // FIX (v4.17.1): общий контекст доступен только после первого жеста
+        // пользователя (autoplay-политика Chrome) — ждём готовности и
+        // стартуем эмбиенс, как только контекст появится.
+        await new Promise<void>((resolve) => whenAudioReady(() => resolve()));
+        c = ensureCtx();
+        if (!c) return;
+      }
       if (c.state === 'suspended') await c.resume();
       const buffer = await renderOfflineAmbience(6, params.seed);
       source = c.createBufferSource();
@@ -122,8 +139,15 @@ export function createProceduralSoundscape(
     },
     dispose() {
       this.stop();
+      // FIX (v4.17.1): общий контекст НЕ закрываем — им пользуются все
+      // аудио-движки игры. Диспозим только собственные узлы.
       try {
-        void ctx?.close();
+        gainNode?.disconnect();
+      } catch {
+        /* ignore */
+      }
+      try {
+        analyser?.disconnect();
       } catch {
         /* ignore */
       }

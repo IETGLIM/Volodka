@@ -63,11 +63,21 @@ export function getSharedAudioContext(): AudioContext | null {
 /**
  * Queue a callback to run once AudioContext is running.
  * Use this to defer all sound playback until user gesture.
+ *
+ * FIX (v4.17.1): очередь ограничена — до первого жеста каждый playSfx/
+ * playFootstep/scene:transition складывал колбэк, и после клика очередь
+ * флошилась скопом (залп наложенных звуков). Дропаем самые старые,
+ * оставляя свежие (актуальные) запросы.
  */
+export const AUDIO_READY_QUEUE_CAP = 32;
+
 export function whenAudioReady(fn: () => void): void {
   if (isSharedAudioContextReady()) {
     fn();
   } else {
+    if (_pendingQueue.length >= AUDIO_READY_QUEUE_CAP) {
+      _pendingQueue.shift();
+    }
     _pendingQueue.push(fn);
   }
 }
