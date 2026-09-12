@@ -39,6 +39,16 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   metal: { type: 'square', frequency: 400, duration: 0.08, gain: 0.14 },
   tile: { type: 'sine', frequency: 250, duration: 0.06, gain: 0.12 },
   wood: { type: 'triangle', frequency: 180, duration: 0.07, gain: 0.13 },
+  // ─── Hazard zone SFX (EnvironmentalHazardSystem: вход в зону + тик урона) ──
+  // Ключи соответствуют HAZARD_KIND_SFX (environmentalHazards.ts).
+  // Процедурные осцилляторы: до v4.20 у зон вообще не было звука —
+  // игрок узнавал об уроне только по тосту/виньетке.
+  hazard_electric: { type: 'sawtooth', frequency: 1100, duration: 0.16, gain: 0.16 },
+  hazard_fire: { type: 'square', frequency: 90, duration: 0.3, gain: 0.13 },
+  hazard_toxic: { type: 'sine', frequency: 160, duration: 0.4, gain: 0.12 },
+  hazard_fall: { type: 'sawtooth', frequency: 70, duration: 0.5, gain: 0.2 },
+  hazard_drown: { type: 'sine', frequency: 240, duration: 0.35, gain: 0.12 },
+  hazard_static: { type: 'sawtooth', frequency: 90, duration: 0.28, gain: 0.14 },
 };
 
 export const FOOTSTEP_PRESETS: Record<string, FootstepConfig> = {

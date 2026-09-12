@@ -7,15 +7,18 @@ import {
   DEFAULT_HAZARD_TICK_INTERVAL,
   ENVIRONMENTAL_HAZARDS,
   HAZARD_KIND_COLOR,
+  HAZARD_KIND_SFX,
   HAZARD_STRESS_PER_TICK_CAP,
   getEnabledHazardsForScene,
   getHazardLabel,
   isHazardEnabled,
   isInsideHazard,
+  pickStrongestHazard,
   resolveHazardStressPerTick,
   resolveHazardTickInterval,
   type EnvironmentalHazard,
 } from '@/data/environmentalHazards';
+import { SFX_PRESETS } from '@/engine/audio/sfxPresets';
 
 const BASE: EnvironmentalHazard = {
   id: 'test_hazard',
@@ -77,10 +80,18 @@ describe('resolveHazardTickInterval', () => {
 });
 
 describe('ENVIRONMENTAL_HAZARDS registry', () => {
-  it('has unique ids across all five scenes', () => {
+  it('has unique ids across all scenes (9 зон в 9 сценах)', () => {
     const ids = ENVIRONMENTAL_HAZARDS.map((h) => h.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(ids).toHaveLength(5);
+    expect(ids).toHaveLength(9);
+    // v4.20: +4 зоны — library_basement / guild_mainframe / factory_roof /
+    // underground_bunker (глушилка «Белого шума» — перекликается с фазой
+    // «Белый шум» босса «Тихий Хранитель»).
+    const scenes = new Set(ENVIRONMENTAL_HAZARDS.map((h) => h.sceneId));
+    expect(scenes).toContain('library_basement');
+    expect(scenes).toContain('guild_mainframe');
+    expect(scenes).toContain('factory_roof');
+    expect(scenes).toContain('underground_bunker');
   });
 
   it('every zone yields sane stress (1..cap) and a valid interval', () => {
@@ -101,11 +112,49 @@ describe('ENVIRONMENTAL_HAZARDS registry', () => {
     expect(resolveHazardTickInterval(rooftop!)).toBe(0.8);
   });
 
-  it('every kind has a Russian label and a palette color', () => {
+  it('every kind has a Russian label, a palette color and an sfx preset', () => {
     for (const hazard of ENVIRONMENTAL_HAZARDS) {
       expect(getHazardLabel(hazard.kind).length).toBeGreaterThan(0);
       expect(HAZARD_KIND_COLOR[hazard.kind]).toMatch(/^#[0-9a-f]{6}$/i);
+      // v4.20: у каждого типа есть звук входа/тика — и он существует в SFX_PRESETS.
+      const sfxKey = HAZARD_KIND_SFX[hazard.kind];
+      expect(sfxKey.startsWith('hazard_')).toBe(true);
+      expect(SFX_PRESETS[sfxKey]).toBeDefined();
     }
+  });
+
+  it('static kind («Белый шум») полностью описан в реестрах', () => {
+    expect(getHazardLabel('static')).toBe('Белый шум');
+    expect(HAZARD_KIND_COLOR.static).toBe('#cfe8ff');
+    expect(HAZARD_KIND_SFX.static).toBe('hazard_static');
+    expect(SFX_PRESETS.hazard_static).toBeDefined();
+  });
+});
+
+describe('pickStrongestHazard', () => {
+  it('returns null for an empty set and the zone itself for a single zone', () => {
+    expect(pickStrongestHazard([])).toBeNull();
+    const solo = mkHazard({ id: 'solo' });
+    expect(pickStrongestHazard([solo])).toBe(solo);
+  });
+
+  it('prefers the zone with the highest stress-per-tick', () => {
+    const weak = mkHazard({ id: 'a', damagePerTick: 4 });
+    const strong = mkHazard({ id: 'b', damagePerTick: 10 });
+    expect(pickStrongestHazard([weak, strong])).toBe(strong);
+    expect(pickStrongestHazard([strong, weak])).toBe(strong);
+  });
+
+  it('breaks stress ties by raw damage, then by id (deterministic)', () => {
+    // Обе капнутся в одинаковый стресс (≥ cap), но у second урон выше.
+    const first = mkHazard({ id: 'a', damagePerTick: 25 });
+    const second = mkHazard({ id: 'b', damagePerTick: 30 });
+    expect(pickStrongestHazard([first, second])).toBe(second);
+    // Полное равенство — меньший id детерминированно выигрывает.
+    const x = mkHazard({ id: 'x', damagePerTick: 7 });
+    const y = mkHazard({ id: 'y', damagePerTick: 7 });
+    expect(pickStrongestHazard([y, x])).toBe(x);
+    expect(pickStrongestHazard([x, y])).toBe(x);
   });
 });
 
@@ -121,6 +170,16 @@ describe('isHazardEnabled / getEnabledHazardsForScene', () => {
     const noFlags: Record<string, boolean> = {};
     const factory = getEnabledHazardsForScene('abandoned_factory', noFlags);
     expect(factory.map((h) => h.id)).toEqual(['factory_electric_panel']);
+
+    // v4.20: новые сцены отдают ровно свои зоны.
+    expect(getEnabledHazardsForScene('library_basement', noFlags).map((h) => h.id))
+      .toEqual(['library_basement_mold']);
+    expect(getEnabledHazardsForScene('guild_mainframe', noFlags).map((h) => h.id))
+      .toEqual(['guild_mainframe_rail']);
+    expect(getEnabledHazardsForScene('factory_roof', noFlags).map((h) => h.id))
+      .toEqual(['factory_roof_south_edge']);
+    expect(getEnabledHazardsForScene('underground_bunker', noFlags).map((h) => h.id))
+      .toEqual(['bunker_whitenoise_emitter']);
 
     const allScenes = new Set(ENVIRONMENTAL_HAZARDS.map((h) => h.sceneId));
     for (const sceneId of allScenes) {

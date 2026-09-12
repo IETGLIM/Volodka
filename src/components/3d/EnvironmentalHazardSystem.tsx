@@ -27,13 +27,16 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { usePlayerStore } from '@/store/stores/playerStore';
 import { eventBus } from '@/engine/EventBus';
+import { audioEngine } from '@/engine/AudioEngine';
 import { useGamePhase } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { HazardZoneMarker } from './HazardZoneMarker';
 import {
   getEnabledHazardsForScene,
   getHazardLabel,
+  HAZARD_KIND_SFX,
   isInsideHazard,
+  pickStrongestHazard,
   resolveHazardStressPerTick,
   resolveHazardTickInterval,
   type EnvironmentalHazard,
@@ -51,7 +54,11 @@ export function EnvironmentalHazardSystem({
 }) {
   const mode = useGamePhase();
   const currentSceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const tickAccumulator = useRef(0);
+  // FIX (v4.20): аккумулятор тика — ПРЕДЗОННЫЙ (Map<hazardId, seconds>):
+  // наложение зон тикает независимо с интервалом каждой, а переход
+  // A→B больше не наследует накопленное время A (раньше первый тик B
+  // мог выстрелить мгновенно — аккумулятор был один на все зоны).
+  const tickAccumulators = useRef<Map<string, number>>(new Map());
   const activeHazardId = useRef<string | null>(null);
   const shownToasts = useRef<Set<string>>(new Set());
   const flags = useGameStore((s) => s.playerState.flags);
@@ -64,11 +71,14 @@ export function EnvironmentalHazardSystem({
     [currentSceneId, flags],
   );
 
-  // Смена сцены/фазы — сброс накопителя и HUD-канала, иначе индикатор
-  // завис бы на зоне прошлой сцены.
+  // Смена сцены/фазы — сброс накопителей и HUD-канала, иначе индикатор
+  // завис бы на зоне прошлой сцены. Тосты входа перезаряжаются: вернувшись
+  // в сцену позже, игрок снова получит предупреждение (один раз за вход
+  // в сцену, не за сессию — раньше Set не чистился никогда).
   useEffect(() => {
     activeHazardId.current = null;
-    tickAccumulator.current = 0;
+    tickAccumulators.current.clear();
+    shownToasts.current.clear();
     clearHazardStatus();
   }, [currentSceneId, mode]);
 
@@ -80,50 +90,69 @@ export function EnvironmentalHazardSystem({
     const dt = info.delta;
     const pos = livePlayerPositionRef.current;
 
-    // Find the first hazard the player is standing in.
-    let current: EnvironmentalHazard | null = null;
-    for (const h of enabledHazards) {
-      if (isInsideHazard(h, pos.x, pos.y, pos.z)) {
-        current = h;
-        break;
-      }
-    }
+    // Все зоны, в которых стоит игрок (не только первая — наложения
+    // тикают независимо, см. tickAccumulators).
+    const inside = enabledHazards.filter(
+      (h) => isInsideHazard(h, pos.x, pos.y, pos.z),
+    );
 
-    if (current) {
-      // Show one-time entry toast.
-      if (current.enterToast && !shownToasts.current.has(current.id)) {
-        shownToasts.current.add(current.id);
-        eventBus.emit('game:notification', {
-          title: getHazardLabel(current.kind),
-          subtitle: current.enterToast,
-          type: 'info',
-        });
+    if (inside.length > 0) {
+      // Одноразовые тосты входа (перезаряжаются при смене сцены).
+      for (const h of inside) {
+        if (h.enterToast && !shownToasts.current.has(h.id)) {
+          shownToasts.current.add(h.id);
+          eventBus.emit('game:notification', {
+            title: getHazardLabel(h.kind),
+            subtitle: h.enterToast,
+            type: 'info',
+          });
+        }
       }
-      // Visual feedback per kind + публикация в HUD-канал.
-      if (activeHazardId.current !== current.id) {
-        activeHazardId.current = current.id;
-        emitHazardFx(current.kind);
+
+      // HUD показывает сильнейшую зону (стресс за тик → урон → id).
+      const primary = pickStrongestHazard(inside);
+      if (primary && activeHazardId.current !== primary.id) {
+        activeHazardId.current = primary.id;
+        emitHazardFx(primary.kind);
+        audioEngine.playSfx(HAZARD_KIND_SFX[primary.kind]);
         setHazardStatus({
-          hazardId: current.id,
-          kind: current.kind,
-          label: getHazardLabel(current.kind),
-          stressPerTick: resolveHazardStressPerTick(current),
-          tickInterval: resolveHazardTickInterval(current),
+          hazardId: primary.id,
+          kind: primary.kind,
+          label: getHazardLabel(primary.kind),
+          stressPerTick: resolveHazardStressPerTick(primary),
+          tickInterval: resolveHazardTickInterval(primary),
         });
       }
-      // Accumulate tick — интервал тоже из данных дизайнера.
-      const interval = resolveHazardTickInterval(current);
-      tickAccumulator.current += dt;
-      if (tickAccumulator.current >= interval) {
-        tickAccumulator.current = 0;
-        applyStressDamage(current);
-        markHazardTick();
+
+      // Незадействованные аккумуляторы чистим (выход из зоны A при
+      // стоянии в B не должен хранить прогресс A — повторный вход
+      // стартует заново).
+      for (const id of [...tickAccumulators.current.keys()]) {
+        if (!inside.some((h) => h.id === id)) tickAccumulators.current.delete(id);
       }
+
+      // Независимые тики зон — интервал каждой из данных дизайнера.
+      let primaryTicked = false;
+      for (const h of inside) {
+        const interval = resolveHazardTickInterval(h);
+        const acc = (tickAccumulators.current.get(h.id) ?? 0) + dt;
+        if (acc >= interval) {
+          tickAccumulators.current.set(h.id, 0);
+          applyStressDamage(h);
+          audioEngine.playSfx(HAZARD_KIND_SFX[h.kind]);
+          if (primary && h.id === primary.id) primaryTicked = true;
+        } else {
+          tickAccumulators.current.set(h.id, acc);
+        }
+      }
+      // HUD-таймер синхронизируем с тиком показанной (сильнейшей) зоны;
+      // тики фоновых зон его не сбрасывают.
+      if (primaryTicked) markHazardTick();
     } else {
-      // Reset when leaving the hazard.
+      // Reset when leaving all hazards.
       if (activeHazardId.current) {
         activeHazardId.current = null;
-        tickAccumulator.current = 0;
+        tickAccumulators.current.clear();
         clearHazardStatus();
       }
     }
@@ -158,6 +187,12 @@ function emitHazardFx(kind: EnvironmentalHazard['kind']): void {
       break;
     case 'drown':
       eventBus.emit('fx:vignette', { intensity: 0.3, duration: 2500 });
+      break;
+    case 'static':
+      // Белый шум: лёгкая хроматика + холодная вспышка — давление на
+      // восприятие без «физического» удара (зона психологическая).
+      eventBus.emit('fx:flash', { color: '#cfe8ff', opacity: 0.18, duration: 260 });
+      eventBus.emit('fx:chromatic', { intensity: 2, duration: 800 });
       break;
   }
 }

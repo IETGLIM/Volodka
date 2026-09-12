@@ -11,7 +11,10 @@
  */
 import type { SceneId } from '@/shared/types/game';
 
-export type HazardKind = 'fire' | 'electric' | 'toxic' | 'fall' | 'drown';
+/** Типы опасности. static — «Белый шум» (глушилки Гильдии/Крипты Тишины):
+ *  психологическое давление вместо физического урона — конвертируется
+ *  в стресс так же, как остальные зоны. */
+export type HazardKind = 'fire' | 'electric' | 'toxic' | 'fall' | 'drown' | 'static';
 
 export interface EnvironmentalHazard {
   readonly id: string;
@@ -96,6 +99,59 @@ export const ENVIRONMENTAL_HAZARDS: readonly EnvironmentalHazard[] = [
     tickInterval: 1.0,
     enterToast: '🔥 Костёр горит жарко — не стой в огне!',
   },
+  // ── library_basement: вековая плесень у книжных стеллажей ──
+  // Правый стеллаж-препятствие стоит в [3, 1.8, -2]; зона — южнее, вне
+  // главной оси «вход → центр» — обходится по левой стороне.
+  {
+    id: 'library_basement_mold',
+    sceneId: 'library_basement',
+    position: [2.2, 0, 0.3],
+    halfExtents: [1.1, 0.9, 1.1],
+    kind: 'toxic',
+    damagePerTick: 6,
+    tickInterval: 1.6,
+    enterToast: '☠ Столетняя плесень сквозь вентиляцию — не дыши глубоко.',
+  },
+  // ── guild_mainframe: шина под напряжением между серверными стойками ──
+  // Стойки-препятствия в [±3, 2, -1]; зона — по центру перед мейнфреймом,
+  // обходится по краям (свободно при |x| > 1.3).
+  {
+    id: 'guild_mainframe_rail',
+    sceneId: 'guild_mainframe',
+    position: [0, 0, -2.2],
+    halfExtents: [1.3, 1.0, 0.8],
+    kind: 'electric',
+    damagePerTick: 7,
+    tickInterval: 1.3,
+    enterToast: '⚡ Шина под напряжением между стойками — обойди по краю.',
+  },
+  // ── factory_roof: южный край без парапета (разметка шевронами) ──
+  // Спавн [0, 0, 0], выход в цех — на севере (z=-8): южный край — тупиковая
+  // сторона крыши, зона не пересекает маршрут.
+  {
+    id: 'factory_roof_south_edge',
+    sceneId: 'factory_roof',
+    position: [0, 0, 4.1],
+    halfExtents: [4.4, 0.8, 0.55],
+    kind: 'fall',
+    damagePerTick: 20,
+    tickInterval: 1.0,
+    enterToast: '⚠ Парапета нет — южный край крыши.',
+  },
+  // ── underground_bunker (Крипта Тишины): глушилка «Белого шума» ──
+  // Восточная ниша главного зала [3.6, 0, 1.6] — вне маршрута к вратам
+  // яруса −2 (запад, x=-6). Перекликается с фазой «Белый шум» босса
+  // «Тихий Хранитель»: поле давит ещё до спуска.
+  {
+    id: 'bunker_whitenoise_emitter',
+    sceneId: 'underground_bunker',
+    position: [3.6, 0, 1.6],
+    halfExtents: [1.0, 1.4, 1.0],
+    kind: 'static',
+    damagePerTick: 6,
+    tickInterval: 1.4,
+    enterToast: '📻 Белый шум фонит из глушилки — давит на уши и мысли.',
+  },
 ];
 
 /* ─── Data-driven тюнинг (единый источник игровых значений) ─────────────── */
@@ -168,6 +224,7 @@ export function getHazardLabel(kind: HazardKind): string {
     case 'toxic': return 'Токсичные пары';
     case 'fall': return 'Край';
     case 'drown': return 'Глубокая вода';
+    case 'static': return 'Белый шум';
   }
 }
 
@@ -181,7 +238,41 @@ export const HAZARD_KIND_COLOR: Readonly<Record<HazardKind, string>> = {
   fall: '#ff5a5a',
   drown: '#5a9dff',
   fire: '#ff8a3d',
+  static: '#cfe8ff',
 };
+
+/** Sfx-ключ зона→звук (SFX_PRESETS) — вход в зону и каждый тик урона. */
+export const HAZARD_KIND_SFX: Readonly<Record<HazardKind, string>> = {
+  fire: 'hazard_fire',
+  electric: 'hazard_electric',
+  toxic: 'hazard_toxic',
+  fall: 'hazard_fall',
+  drown: 'hazard_drown',
+  static: 'hazard_static',
+};
+
+/**
+ * Сильнейшая зона из набора — для HUD-индикатора при наложении зон.
+ * Приоритет: стресс за тик → сырой урон → id (детерминизм для тестов).
+ */
+export function pickStrongestHazard(
+  hazards: readonly EnvironmentalHazard[],
+): EnvironmentalHazard | null {
+  if (hazards.length === 0) return null;
+  let best = hazards[0];
+  for (const h of hazards.slice(1)) {
+    const bestStress = resolveHazardStressPerTick(best);
+    const stress = resolveHazardStressPerTick(h);
+    if (
+      stress > bestStress ||
+      (stress === bestStress && h.damagePerTick > best.damagePerTick) ||
+      (stress === bestStress && h.damagePerTick === best.damagePerTick && h.id < best.id)
+    ) {
+      best = h;
+    }
+  }
+  return best;
+}
 
 /** Check if a world position is inside a hazard AABB. */
 export function isInsideHazard(

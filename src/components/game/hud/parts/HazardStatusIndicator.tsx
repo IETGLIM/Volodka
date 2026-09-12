@@ -1,9 +1,9 @@
 /* ─── Volodka RPG – HUD-индикатор активной hazard-зоны ───
  *
  * Пока игрок стоит в опасной зоне (электропанель, токсичная лужа, край
- * крыши, глубокая вода, костёр) — компактный индикатор низа экрана:
- * иконка опасности + название зоны + тикающий таймер урона (полоска
- * заполняется к следующему тику стресса).
+ * крыши, глубокая вода, костёр, белый шум) — компактный индикатор низа
+ * экрана: иконка типа опасности + название зоны + тикающий таймер урона
+ * (полоска заполняется к следующему тику стресса).
  *
  * Данные приходят напрямую из hazardStatusChannel ( EnvironmentalHazard-
  * System публикует вход/выход/тик ). Паттерн обновлений — как у StaminaBar:
@@ -11,16 +11,30 @@
  * опрашивает канал каждые 100 мс и пишет в DOM через refs — ни одного
  * ре-рендера на кадр.
  *
+ * Стилизация (v4.20): у каждого типа опасности своя иконка (Flame/Zap/
+ * Biohazard/TriangleAlert/Waves/AudioLines) и акцентный цвет из единой
+ * палитры HAZARD_KIND_COLOR — цвет дублирует 3D-маркер зоны в мире.
+ * Иконка пульсирует (кроме reduced-motion), полоска тика светится
+ * акцентом, рамка — тонкий градиент в цвет опасности.
+ *
  * Индикатор исчезает вне exploration-фазы и уважает prefers-reduced-motion.
  */
 
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { AlertTriangle } from 'lucide-react';
+import {
+  AudioLines,
+  Biohazard,
+  Flame,
+  TriangleAlert,
+  Waves,
+  Zap,
+  type LucideIcon,
+} from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGamePhase } from '@/store/selectors/uiSelectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-import { HAZARD_KIND_COLOR } from '@/data/environmentalHazards';
+import { HAZARD_KIND_COLOR, type HazardKind } from '@/data/environmentalHazards';
 import {
   getHazardStatus,
   subscribeToHazardStatus,
@@ -29,6 +43,16 @@ import {
 
 /** Опрос тикающего таймера (DOM-обновления без ре-рендеров). */
 const POLL_MS = 100;
+
+/** Иконка типа опасности — единый источник палитры и образов. */
+const HAZARD_KIND_ICON: Readonly<Record<HazardKind, LucideIcon>> = {
+  fire: Flame,
+  electric: Zap,
+  toxic: Biohazard,
+  fall: TriangleAlert,
+  drown: Waves,
+  static: AudioLines,
+};
 
 function nowMs(): number {
   return typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -68,6 +92,7 @@ export function HazardStatusIndicator() {
 
   const visible = status !== null && gamePhase === 'exploration';
   const accent = status ? HAZARD_KIND_COLOR[status.kind] : '#ff5a5a';
+  const KindIcon = status ? HAZARD_KIND_ICON[status.kind] : TriangleAlert;
 
   return (
     // Живой регион живёт на постоянном элементе (AnimatePresence внутри),
@@ -81,27 +106,50 @@ export function HazardStatusIndicator() {
       <AnimatePresence>
         {visible && status && (
           <motion.div
-            initial={{ opacity: 0, y: reducedMotion ? 0 : 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: reducedMotion ? 0 : 6 }}
+            initial={{ opacity: 0, y: reducedMotion ? 0 : 10, scale: reducedMotion ? 1 : 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: reducedMotion ? 0 : 6, scale: reducedMotion ? 1 : 0.98 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
             style={{ bottom: 'clamp(184px, 24vh, 248px)', zIndex: UI_LAYERS.HUD + 1 }}
           >
             <div
               aria-hidden="true"
-              className="hud-filmic-caption px-3.5 py-1.5 rounded-sm flex items-center gap-2.5"
+              className="hud-filmic-caption px-3.5 py-2 rounded-md flex items-center gap-3
+                         backdrop-blur-md"
               style={{
-                background: 'rgba(8, 12, 18, 0.62)',
-                boxShadow: 'inset 0 0 0 1px rgba(148, 163, 184, 0.16), 0 2px 10px rgba(0, 0, 0, 0.45)',
+                background: 'rgba(8, 12, 18, 0.72)',
+                // Акцентная рамка в цвет опасности + мягкая внешняя тень.
+                boxShadow: `inset 0 0 0 1px ${accent}55, inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 14px rgba(0, 0, 0, 0.5)`,
               }}
             >
-              <AlertTriangle className="size-3.5 shrink-0" style={{ color: accent }} />
-              <span className="hud-filmic-body text-[12px] font-semibold tracking-wide" style={{ color: accent }}>
-                {status.label}
+              {/* Иконка типа — в акцентном «стеке», пульсирует в такт опасности. */}
+              <span
+                className="relative flex items-center justify-center size-7 rounded-sm shrink-0"
+                style={{ background: `${accent}1a`, boxShadow: `inset 0 0 0 1px ${accent}40` }}
+              >
+                <motion.span
+                  className="absolute inset-0 rounded-sm"
+                  style={{ boxShadow: `inset 0 0 0 1px ${accent}30` }}
+                  animate={reducedMotion ? undefined : { opacity: [0.9, 0.2, 0.9], scale: [1, 1.08, 1] }}
+                  transition={{ duration: 1.6, repeat: Infinity, ease: 'easeInOut' }}
+                />
+                <KindIcon className="size-4 shrink-0 relative" style={{ color: accent }} strokeWidth={2.2} />
               </span>
-              <span ref={timerRef} className="hud-filmic-body text-[11px] tabular-nums text-stone-400 whitespace-nowrap">
-                {`−${status.stressPerTick} стресс · ${status.tickInterval.toFixed(1)} с`}
+
+              <span className="flex flex-col gap-0.5">
+                <span
+                  className="hud-filmic-body text-[12px] font-semibold tracking-wider uppercase leading-none"
+                  style={{ color: accent }}
+                >
+                  {status.label}
+                </span>
+                <span
+                  ref={timerRef}
+                  className="hud-filmic-body text-[11px] tabular-nums text-stone-400 whitespace-nowrap leading-none"
+                >
+                  {`−${status.stressPerTick} стресс · ${status.tickInterval.toFixed(1)} с`}
+                </span>
               </span>
             </div>
             {/* Полоска до следующего тика урона — заполняется за интервал зоны. */}
@@ -109,12 +157,12 @@ export function HazardStatusIndicator() {
               aria-hidden="true"
               style={{
                 width: '100%',
-                height: 2,
+                height: 3,
                 borderRadius: 2,
-                background: 'rgba(8, 12, 18, 0.55)',
+                background: 'rgba(8, 12, 18, 0.6)',
                 boxShadow: 'inset 0 0 0 1px rgba(148, 163, 184, 0.12)',
                 overflow: 'hidden',
-                marginTop: 4,
+                marginTop: 5,
               }}
             >
               <div
@@ -122,9 +170,10 @@ export function HazardStatusIndicator() {
                 style={{
                   width: '0%',
                   height: '100%',
-                  backgroundColor: accent,
+                  background: `linear-gradient(90deg, ${accent}cc, ${accent})`,
                   borderRadius: 2,
                   transition: 'width 100ms linear',
+                  boxShadow: `0 0 8px ${accent}66`,
                 }}
               />
             </div>

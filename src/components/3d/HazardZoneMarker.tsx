@@ -9,6 +9,7 @@
  *   fall     — красная полоса с шеврон-разметкой вдоль края крыши
  *   drown    — тёмно-синяя водяная зона с «дыханием» (scale/opacity)
  *   fire     — оранжевое пульсирующее кольцо вокруг костра
+ *   static   — концентрические кольца помех (белый шум глушилки)
  *
  * Все маркеры — примитивы THREE без внешних ассетов (зон всего 5, инстансинг
  * не нужен), материалы MeshBasicMaterial (не зависят от света, читаются как
@@ -43,6 +44,8 @@ export function HazardZoneMarker({ hazard, pulsate }: HazardZoneMarkerProps) {
       return <DeepWaterMarker hazard={hazard} pulsate={pulsate} />;
     case 'fire':
       return <CampfireRingMarker hazard={hazard} pulsate={pulsate} />;
+    case 'static':
+      return <StaticFieldMarker hazard={hazard} pulsate={pulsate} />;
   }
 }
 
@@ -282,6 +285,69 @@ function DeepWaterMarker({ hazard, pulsate }: HazardZoneMarkerProps) {
           blending={AdditiveBlending}
         />
       </mesh>
+    </group>
+  );
+}
+
+/* ─── Белый шум: концентрические кольца помех (глушилка) ─────────────────── */
+
+/** Радиусы колец помех — доля от меньшей полуоси зоны. */
+const STATIC_RING_RADII = [0.35, 0.62, 0.92] as const;
+
+function StaticFieldMarker({ hazard, pulsate }: HazardZoneMarkerProps) {
+  const color = HAZARD_KIND_COLOR.static;
+  // Радиус поля — по меньшей полуоси триггера (круг вписан в зону).
+  const baseRadius = Math.min(hazard.halfExtents[0], hazard.halfExtents[2]);
+  const ringMatRefs = useRef<Array<MeshBasicMaterial | null>>([]);
+  const coreMatRef = useRef<MeshBasicMaterial>(null);
+
+  useHazardPulse(pulsate, 1.6, (phase) => {
+    // Кольца «бегут» наружу со сдвигом фазы — как волны помех от антенны;
+    // ядро-декаль дышит в противофазе к первому кольцу.
+    for (let i = 0; i < STATIC_RING_RADII.length; i++) {
+      const mat = ringMatRefs.current[i];
+      if (!mat) continue;
+      const wave = 0.5 + 0.5 * Math.sin(phase - i * 1.1);
+      mat.opacity = 0.08 + wave * 0.26;
+    }
+    if (coreMatRef.current) {
+      coreMatRef.current.opacity = 0.1 + 0.08 * (0.5 + 0.5 * Math.sin(phase + Math.PI));
+    }
+  });
+
+  return (
+    <group position={hazard.position}>
+      {/* Ядро-декаль на полу — «пятно сигнала» под глушилкой. */}
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0.02, 0]} renderOrder={2}>
+        <circleGeometry args={[baseRadius * 0.3, 20]} />
+        <meshBasicMaterial
+          ref={coreMatRef}
+          color={color}
+          transparent
+          opacity={0.12}
+          depthWrite={false}
+          blending={AdditiveBlending}
+        />
+      </mesh>
+      {/* Кольца помех — расходятся от глушилки, каждое со своей фазой. */}
+      {STATIC_RING_RADII.map((r, i) => (
+        <mesh
+          key={i}
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0.03 + i * 0.005, 0]}
+          renderOrder={3}
+        >
+          <ringGeometry args={[baseRadius * r, baseRadius * (r + 0.07), 28]} />
+          <meshBasicMaterial
+            ref={(mat) => { ringMatRefs.current[i] = mat; }}
+            color={color}
+            transparent
+            opacity={0.2}
+            depthWrite={false}
+            blending={AdditiveBlending}
+          />
+        </mesh>
+      ))}
     </group>
   );
 }
