@@ -4,10 +4,7 @@ import { AnimationAction, AnimationClip, AnimationMixer, LoopRepeat, Object3D } 
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import {
   resolveLocomotionClipState,
-  WALK_CLIP_TIME_SCALE,
-  smoothstep,
 } from '@/engine/player/playerLocomotionPresentation';
-import { WALK_SPEED, RUN_SPEED } from '@/engine/player/playerConstants';
 import {
   bindPlayerClipActions,
 } from '@/engine/player/playerLocomotionClips';
@@ -430,24 +427,17 @@ export function usePlayerLocomotionController({
       if (idleAction) idleAction.setEffectiveWeight(currentIdleWeightRef.current);
       if (walkAction) {
         walkAction.setEffectiveWeight(currentWalkWeightRef.current);
-        // AAA Phase B: continuous speed-scaled timeScale across full walk→run band
-        // (uses same smoothstep band as camera bob + blend weights).
-        // Prevents moonwalk at low speed; gives rich cinematic stride acceleration.
-        const hSpeed = currentHSpeedRef?.current ?? 0;
-        const speedT = Math.min(1, Math.max(0, (hSpeed - WALK_SPEED * 0.25) / (RUN_SPEED - WALK_SPEED * 0.25)));
-        const walkTimeScaleCont = WALK_CLIP_TIME_SCALE * (0.42 + 0.58 * speedT);
-        walkAction.timeScale = locomotionActive
-          ? walkTimeScaleCont
-          : 1;
+        // v4.33.0: gait-matched timeScale (hSpeed ÷ clip natural speed) —
+        // feet stay phase-locked to the ground across the whole walk→run
+        // band. The old speedT formula (0.42–1.05×) made the hero skate ~8×
+        // at walk speed. Falling back to 1 when idle — weight damps to 0.
+        walkAction.timeScale = locomotionActive ? clipState.walkTimeScale : 1;
       }
       if (runAction) {
         runAction.setEffectiveWeight(currentRunWeightRef.current);
-        // Continuous run timeScale already good, but add tiny speed-modulated boost for weight
-        const hSpeed = currentHSpeedRef?.current ?? 0;
-        const runSpeedT = smoothstep(WALK_SPEED, RUN_SPEED, hSpeed);
-        runAction.timeScale = locomotionActive
-          ? clipState.runTimeScale * (0.96 + 0.08 * runSpeedT)
-          : 1;
+        // Same gait matching for the run clip — the old fixed 1.45× slid
+        // ~3.7× at sprint speed.
+        runAction.timeScale = locomotionActive ? clipState.runTimeScale : 1;
       }
 
       // When no walk clip is available, adjust idle timeScale as a

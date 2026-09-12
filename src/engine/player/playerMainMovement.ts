@@ -348,7 +348,6 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
 
   const posForGroundCheck = rb.translation();
   const groundY = scratch.groundY;
-  scratch.groundY = groundY;
   const floorSlack = isOutdoor ? 0.08 : 0.05;
   const nearFloor = posForGroundCheck.y <= groundY + floorSlack;
 

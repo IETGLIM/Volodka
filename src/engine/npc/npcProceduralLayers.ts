@@ -238,8 +238,11 @@ function setEyeScale(eye: Object3D | null, scaleY: number): void {
 }
 
 function applySway(root: Group, t: number): void {
+  // v4.33.0: больше НЕ пишем root.rotation.x — это fit-группа
+  // (GltfNPCModel: rotation=[fit.rotX,0,0]); для Z-up GLB fit.rotX = -π/2,
+  // и абсолютная запись 0.004 рад укладывала NPC на землю. Лёгкий наклон
+  // вперёд-назад визуально неотличим от нуля — убрали, а не «восстанавливали».
   root.rotation.z = Math.sin(t * 0.65) * 0.008;
-  root.rotation.x = Math.sin(t * 0.45 + 0.6) * 0.004;
   root.position.x = Math.sin(t * 0.5) * 0.003;
 }
 

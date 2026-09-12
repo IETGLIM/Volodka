@@ -76,6 +76,42 @@ export interface ExplorationCameraMotionScale {
 
 export const WALK_CLIP_TIME_SCALE = 1.05;
 export const RUN_CLIP_TIME_SCALE = 1.45;
+
+/**
+ * Measured natural ground speed of the hero Walk clip (v4.33.0).
+ * Quaternius rig, cycle 1.333 s, horizontal foot travel 0.88 m per cycle →
+ * the clip "covers" 0.66 m/s when played at 1×. Anything faster and the
+ * feet slide across the ground (moonwalk). Measured from the shipped
+ * volodka_lod0.glb Foot.L/R translation tracks.
+ */
+export const WALK_CLIP_NATURAL_MPS = 0.66;
+/** Measured natural ground speed of the hero Run clip (1.039 m per 0.8 s cycle → 1.30 m/s at 1×). */
+export const RUN_CLIP_NATURAL_MPS = 1.3;
+
+const WALK_GAIT_MIN_SCALE = 0.9;
+const WALK_GAIT_MAX_SCALE = 9.0;
+const RUN_GAIT_MIN_SCALE = 1.2;
+const RUN_GAIT_MAX_SCALE = 7.0;
+
+/**
+ * Gait-matched clip playback rate: timeScale = hSpeed / naturalClipSpeed.
+ * Playing each locomotion clip at (body speed ÷ clip's own natural ground
+ * speed) keeps the feet phase-locked to the ground at ANY hSpeed — the
+ * previous fixed scales (1.05/1.45) made the hero skate ~8× at walk speed
+ * and ~3.7× at sprint. Clamp keeps degenerate inputs (hSpeed≈0 while the
+ * hysteresis still reports 'walk') and perk-boosted sprints sane.
+ */
+export function resolveGaitTimeScale(
+  hSpeed: number,
+  naturalMps: number,
+  minScale: number,
+  maxScale: number,
+): number {
+  if (naturalMps <= 0) return 1;
+  const raw = hSpeed / naturalMps;
+  return Math.min(maxScale, Math.max(minScale, raw));
+}
+
 const MOVE_BLEND_DAMP = 4;
 
 export function dampMoveBlend(
@@ -180,8 +216,10 @@ export function resolveLocomotionClipState(
   const runWeight = smoothstep(WALK_SPEED, RUN_SPEED, hSpeed);
   return {
     locomotionActive: true,
-    walkTimeScale: WALK_CLIP_TIME_SCALE,
-    runTimeScale: RUN_CLIP_TIME_SCALE,
+    // v4.33.0: gait-matched — each clip plays at (hSpeed ÷ natural speed),
+    // so feet track the ground at every point of the walk→run blend.
+    walkTimeScale: resolveGaitTimeScale(hSpeed, WALK_CLIP_NATURAL_MPS, WALK_GAIT_MIN_SCALE, WALK_GAIT_MAX_SCALE),
+    runTimeScale: resolveGaitTimeScale(hSpeed, RUN_CLIP_NATURAL_MPS, RUN_GAIT_MIN_SCALE, RUN_GAIT_MAX_SCALE),
     runWeight,
   };
 }

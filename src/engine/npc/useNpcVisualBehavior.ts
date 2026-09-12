@@ -88,14 +88,19 @@ export function useNpcVisualBehavior({
     [activity, patrolActivity, interactionState, isInteractionTarget],
   );
 
-  // Resolve emotion-driven animation state override
+  // Resolve emotion-driven animation state override.
+  // v4.33.0: чтение эмоции вынесено в useEffect — setCurrentEmotion внутри
+  // useMemo был render-phase setState (React-антипаттерн, лишний ре-рендер).
   const emotionAnimOverride = useMemo(() => {
     const emotion = getNpcEmotion(npcId);
-    setCurrentEmotion(emotion);
     if (emotion === 'neutral') return undefined;
     const emotionBehavior = resolveEmotionBehavior(emotion);
     return emotionBehavior.animStateOverride;
   }, [npcId]);
+
+  useEffect(() => {
+    setCurrentEmotion(getNpcEmotion(npcId));
+  }, [npcId, emotionAnimOverride]);
 
   const activityClipOverrides = useMemo(
     () => resolveNpcActivityClipOverrides(activity),

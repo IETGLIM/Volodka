@@ -93,14 +93,25 @@ export function useNPCAnimation(
     }
   }, [actions]);
 
+  // v4.33.0 fix (NPC freeze): stop actions ONLY on true unmount. The merged
+  // `actions` object changes identity every time a deferred staged clip
+  // (idle/walking → sitting → sleeping → talking → working) arrives; the old
+  // `[actions]`-dep cleanup stopped ALL currently-playing actions several
+  // seconds after mount, and the locomotion blend's bind key did not change
+  // → NPCs froze mid-pose (statues / sliding without leg motion). Actions
+  // belong to the mixer — when the mixer itself is destroyed the actions die
+  // with it, so a per-object stop was never actually needed.
+  const unmountActionsRef = useRef(actions);
+  unmountActionsRef.current = actions;
   useEffect(() => {
     return () => {
-      if (!actions) return;
-      for (const action of Object.values(actions)) {
+      const current = unmountActionsRef.current;
+      if (!current) return;
+      for (const action of Object.values(current)) {
         action?.stop();
       }
     };
-  }, [actions]);
+  }, []);
 
   return {
     currentAnim: currentAnimRef,

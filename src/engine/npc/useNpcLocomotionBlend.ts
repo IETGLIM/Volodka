@@ -14,6 +14,39 @@ const BLEND_ACCEL = 5.2;
 const BLEND_DECEL = 2.8;
 const WEIGHT_EPSILON = 0.001;
 
+/** Measured natural ground speed of the Quaternius Walk clip (0.88 m per 1.333 s cycle → 0.66 m/s at 1×). */
+const QUATERNIUS_WALK_NATURAL_MPS = 0.66;
+/** Gait-matched playback for patrolling NPCs: DEFAULT_WALK_SPEED (npcPatrol.ts) ÷ natural clip speed.
+ *  Without this the patrol walk clip slid ~1.8× across the ground. */
+const NPC_WALK_CLIP_TIME_SCALE = 1.2 / QUATERNIUS_WALK_NATURAL_MPS;
+
+/**
+ * Stable key for clip overrides — the merged overrides object identity may
+ * change every render while its CONTENT stays the same, so the bind effect
+ * must key on content, not identity (v4.33.0: stale sleep/sit poses fix).
+ */
+function serializeOverridesKey(overrides?: NpcAnimationClipOverrides): string {
+  if (!overrides) return '';
+  return Object.keys(overrides)
+    .sort()
+    .map((k) => `${k}=${overrides[k as keyof NpcAnimationClipOverrides] ?? ''}`)
+    .join(',');
+}
+
+/**
+ * Re-arm an action that an external stop left deactivated. Playing NPCs
+ * whose idle/walk actions stopped but were never restarted froze mid-pose
+ * (statues / ground sliding) — the tick below only sets weights, it cannot
+ * reactivate a stopped action.
+ */
+function rearmStoppedAction(action: THREE_NS.AnimationAction | null, weight: number): void {
+  if (!action || action.isRunning()) return;
+  action.setLoop(LoopRepeat, Infinity);
+  action.setEffectiveTimeScale(1);
+  action.setEffectiveWeight(weight);
+  action.play();
+}
+
 /** States driven by simultaneous idle/walk weights instead of crossfade. */
 const LOCOMOTION_STATES: ReadonlySet<NPCAnimationState> = new Set(['idle', 'walk', 'listen']);
 
@@ -64,6 +97,11 @@ export function useNpcLocomotionBlend({
   const clipOverridesRef = useRef(clipOverrides);
   clipOverridesRef.current = clipOverrides;
 
+  // Content-keyed overrides signature: re-binds when sleep/sit/idle-variant
+  // overrides actually change (fixes NPCs that kept standing instead of
+  // adopting their schedule pose), without re-binding on identity churn.
+  const overridesKey = serializeOverridesKey(clipOverrides);
+
   useLayoutEffect(() => {
     const currentActions = actionsRef.current;
     if (!currentActions) {
@@ -76,9 +114,20 @@ export function useNpcLocomotionBlend({
 
     const idleAction = resolveNpcClipAction('idle', currentActions, clipOverridesRef.current);
     const walkAction = resolveNpcClipAction('walk', currentActions, clipOverridesRef.current);
-    const bindKey = `${idleAction?.getClip().uuid ?? 'none'}:${walkAction?.getClip().uuid ?? 'none'}`;
+    const bindKey = `${idleAction?.getClip().uuid ?? 'none'}:${walkAction?.getClip().uuid ?? 'none'}:${overridesKey}`;
 
-    if (bindKey === boundKeyRef.current) return;
+    if (bindKey === boundKeyRef.current) {
+      // The merged actions object changes identity as deferred staged clips
+      // arrive while the bound idle/walk clips stay the same. If anything
+      // stopped the actions in the meantime, re-arm them — otherwise the
+      // NPC freezes mid-pose with the mixer still ticking (v4.33.0).
+      rearmStoppedAction(idleAction, currentIdleWeightRef.current);
+      if (walkAction && walkAction !== idleAction) {
+        rearmStoppedAction(walkAction, currentWalkWeightRef.current);
+      }
+      if (idleAction || walkAction) locomotionActiveRef.current = true;
+      return;
+    }
     boundKeyRef.current = bindKey;
 
     idleActionRef.current = idleAction;
@@ -102,10 +151,13 @@ export function useNpcLocomotionBlend({
     if (walkAction && walkAction !== idleAction) {
       walkAction.reset();
       walkAction.setLoop(LoopRepeat, Infinity);
+      // Gait-matched playback: patrol speed ÷ natural clip speed — feet
+      // track the ground instead of sliding (v4.33.0).
+      walkAction.setEffectiveTimeScale(NPC_WALK_CLIP_TIME_SCALE);
       walkAction.setEffectiveWeight(currentWalkWeightRef.current);
       walkAction.play();
     }
-  }, [actions]);
+  }, [actions, overridesKey]);
 
   useLayoutEffect(() => {
     if (!isLocomotionState(animState)) {
@@ -147,6 +199,9 @@ export function useNpcLocomotionBlend({
       if (idleAction) idleAction.setEffectiveWeight(currentIdleWeightRef.current);
       if (walkAction && walkAction !== idleAction) {
         walkAction.setEffectiveWeight(currentWalkWeightRef.current);
+        // Keep the gait match across weight blending (the tick re-applies
+        // weights every frame; enforce the patrol-matched rate too).
+        walkAction.timeScale = NPC_WALK_CLIP_TIME_SCALE;
       }
     },
     { enabled },

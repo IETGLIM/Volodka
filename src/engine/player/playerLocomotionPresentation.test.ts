@@ -256,16 +256,22 @@ describe('resolveLocomotionClipState — continuous walk↔run blend', () => {
     expect(prev).toBe(1);
   });
 
-  it('timeScales stay constant across hSpeed (blend is weight-only)', () => {
-    // The continuous blend only changes runWeight; the per-clip time scales
-    // are constant properties of the locomotion state. (The walk timeScale is
-    // scaled with hSpeed separately inside usePlayerLocomotionController, not
-    // here.)
-    const walkSlow = resolveLocomotionClipState('walk', 0.5);
+  it('timeScales are gait-matched: they scale with hSpeed (v4.33.0)', () => {
+    // v4.33.0 fix: the old contract (constant 1.05/1.45× at any speed) made
+    // the hero skate — the Walk clip naturally covers 0.66 m/s, so walking at
+    // 4 m/s slid ~8×. Now each clip's timeScale = hSpeed ÷ natural clip speed,
+    // so feet stay phase-locked to the ground across the whole band.
+    const walkSlow = resolveLocomotionClipState('walk', 0.9);
     const walkFast = resolveLocomotionClipState('walk', RUN_SPEED);
-    expect(walkSlow.walkTimeScale).toBe(walkFast.walkTimeScale);
-    expect(walkSlow.runTimeScale).toBe(walkFast.runTimeScale);
     expect(walkSlow.walkTimeScale).toBeGreaterThan(0);
-    expect(walkSlow.runTimeScale).toBeGreaterThan(walkSlow.walkTimeScale);
+    // Faster body → faster playback (monotonic in hSpeed).
+    expect(walkFast.walkTimeScale).toBeGreaterThan(walkSlow.walkTimeScale);
+    expect(walkFast.runTimeScale).toBeGreaterThan(walkSlow.runTimeScale);
+    // Near the walk clip's natural speed (0.66 m/s) the scale is ~1: feet
+    // match the ground without any compensation.
+    const atNatural = resolveLocomotionClipState('walk', 0.66);
+    expect(atNatural.walkTimeScale).toBeCloseTo(1, 1);
+    // At full sprint the run clip plays at ~RUN_SPEED / 1.3.
+    expect(walkFast.runTimeScale).toBeCloseTo(RUN_SPEED / 1.3, 1);
   });
 });
