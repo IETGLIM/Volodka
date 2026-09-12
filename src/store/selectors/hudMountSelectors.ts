@@ -99,6 +99,45 @@ export function useEnvironmentalEffectsOverlayProps() {
   };
 }
 
+/* ─── Общий тик кулдаунов (FIX perf v4.22) ───
+ * Раньше useActiveEffects и useSkillSlots держали КАЖДЫЙ свой setInterval(500мс),
+ * который жил вечно после первого использования стихотворной силы: условие
+ * `Object.keys(poemPowers).length > 0` остаётся true и после истечения кулдауна
+ * (записи не удаляются), и интервал бесконечно дёргал ре-рендеры трекера и
+ * SkillRechargeHUD. Теперь общий хук: интервал запускается только пока реально
+ * есть кулдаун в пределах длительности и сам останавливается, когда всё истекло. */
+interface PoemPowerCooldownState {
+  lastUsed?: number;
+  cooldownMs: number;
+}
+
+function hasRunningCooldown(poemPowers: Record<string, PoemPowerCooldownState>): boolean {
+  const now = Date.now();
+  for (const state of Object.values(poemPowers)) {
+    if (state.lastUsed && now - state.lastUsed < state.cooldownMs) return true;
+  }
+  return false;
+}
+
+function usePoemPowerCooldownTick(poemPowers: Record<string, PoemPowerCooldownState>): number {
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (!hasRunningCooldown(poemPowers)) return;
+    let iv: number | undefined = window.setInterval(() => {
+      setTick((t) => t + 1);
+      // Все кулдауны истекли — гасим интервал, чтобы не тикать впустую.
+      if (iv !== undefined && !hasRunningCooldown(poemPowers)) {
+        window.clearInterval(iv);
+        iv = undefined;
+      }
+    }, 500);
+    return () => {
+      if (iv !== undefined) window.clearInterval(iv);
+    };
+  }, [poemPowers]);
+  return tick;
+}
+
 /* ─── BuffDebuffTracker selectors ─── */
 
 /**
@@ -108,16 +147,9 @@ export function useEnvironmentalEffectsOverlayProps() {
  */
 export function useActiveEffects(): ActiveEffect[] {
   const poemPowers = useGameSelector((s) => s.poemPowers);
-  // Force a re-render every 500ms while at least one poem power is on cooldown
-  // so countdown timers tick down. Without this, useMemo([poemPowers]) would
-  // freeze — poemPowers ref is stable until a new power is used.
-  const hasActive = Object.keys(poemPowers).length > 0;
-  const [, bump] = useState(0);
-  useEffect(() => {
-    if (!hasActive) return;
-    const iv = window.setInterval(bump, 500);
-    return () => window.clearInterval(iv);
-  }, [hasActive]);
+  // FIX (perf v4.22): общий тик, который останавливается после истечения кулдаунов
+  // (см. usePoemPowerCooldownTick) — раньше два вечных 500мс интервала.
+  const tick = usePoemPowerCooldownTick(poemPowers);
 
   return useMemo(() => {
     const entries = Object.entries(poemPowers);
@@ -144,10 +176,10 @@ export function useActiveEffects(): ActiveEffect[] {
           isWarning,
         };
       });
-    // hasActive is not a real dependency but forces recompute when set flips;
-    // the 500ms bump via useState keeps now fresh.
+    // tick — не реальная зависимость данных, но перезапускает расчёт каждую
+    // итерацию тика, пока кулдауны активны.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [poemPowers, hasActive]);
+  }, [poemPowers, tick]);
 }
 
 /* ─── SkillRechargeHUD selectors ─── */
@@ -159,14 +191,8 @@ export function useActiveEffects(): ActiveEffect[] {
  */
 export function useSkillSlots(): SkillSlot[] {
   const poemPowers = useGameSelector((s) => s.poemPowers);
-  // Force re-render every 500ms while any skill is on cooldown (see useActiveEffects).
-  const hasActive = Object.keys(poemPowers).length > 0;
-  const [, bump] = useState(0);
-  useEffect(() => {
-    if (!hasActive) return;
-    const iv = window.setInterval(bump, 500);
-    return () => window.clearInterval(iv);
-  }, [hasActive]);
+  // FIX (perf v4.22): общий тик кулдаунов с автостопом (см. useActiveEffects).
+  const tick = usePoemPowerCooldownTick(poemPowers);
 
   return useMemo(() => {
     const entries = Object.entries(poemPowers);
@@ -195,5 +221,5 @@ export function useSkillSlots(): SkillSlot[] {
         };
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [poemPowers, hasActive]);
+  }, [poemPowers, tick]);
 }
