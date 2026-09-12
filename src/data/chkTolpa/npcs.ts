@@ -47,8 +47,9 @@ export const CHK_NPCS: NPCDefinition[] = [
       pensive: ['*тихо* Лес помнит то, что Slack стирает.'],
     },
     accessibility: {
+      // FIX (v4.22): удалён мёртвый audioCue 'sounds/npc/chk_ru_idle.ogg' —
+      // каталога public/sounds/npc/ не существует, потребителей поля нет.
       visualDescription: 'Высокий мужчина в шляпе у костра, сидит на перевёрнутом ящике.',
-      audioCue: 'sounds/npc/chk_ru_idle.ogg',
     },
     soundProfile: 'chk_ru',
     linkedPOIs: ['chk_campfire', 'chk_portwine_crate'],
@@ -92,7 +93,6 @@ export const CHK_NPCS: NPCDefinition[] = [
     },
     accessibility: {
       visualDescription: 'Крепкий мужчина у ящика с бутылками, наливает портвейн в бокалы.',
-      audioCue: 'sounds/npc/chk_based_idle.ogg',
     },
     soundProfile: 'chk_based',
     linkedPOIs: ['chk_portwine_crate', 'chk_campfire'],
@@ -141,7 +141,6 @@ export const CHK_NPCS: NPCDefinition[] = [
     },
     accessibility: {
       visualDescription: 'Худая фигура в очках у костра, помешивает чай. На футболке надпись «I void warranties».',
-      audioCue: 'sounds/npc/chk_smert_idle.ogg',
     },
     soundProfile: 'chk_smert',
     linkedPOIs: ['chk_campfire'],
@@ -196,7 +195,6 @@ export const CHK_NPCS: NPCDefinition[] = [
     },
     accessibility: {
       visualDescription: 'Худощавый проводник в шарфе, оглядывает опушку и тропы вокруг костра.',
-      audioCue: 'sounds/npc/chk_stalker_idle.ogg',
     },
     soundProfile: 'chk_stalker',
     linkedPOIs: ['chk_forest_trail'],
@@ -245,7 +243,6 @@ export const CHK_NPCS: NPCDefinition[] = [
     },
     accessibility: {
       visualDescription: 'Девушка с гитарой у костра, перебирает струны между фразами.',
-      audioCue: 'sounds/npc/chk_elis_idle.ogg',
     },
     soundProfile: 'chk_elis',
     linkedPOIs: ['chk_guitar_spot', 'chk_campfire'],
@@ -393,7 +390,6 @@ export const CHK_NPCS: NPCDefinition[] = [
     },
     accessibility: {
       visualDescription: 'Молодая девушка с гитарой у костра в бочке на пирсе, смотрит на воду.',
-      audioCue: 'sounds/npc/chk_ritka_idle.ogg',
     },
     soundProfile: 'chk_ritka',
     linkedPOIs: ['pier_campfire', 'pier_guitar'],
