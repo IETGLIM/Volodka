@@ -157,4 +157,6 @@ export const POLYHAVEN_MODELS = {
   hangingPictureFrame: '/models/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.glb',
 } as const;
 
-export const POLYHAVEN_MENU_PLATE = '/menu/cinematic_night_plate.png';
+/* Этап 125: ночной кинематографический план меню конвертирован PNG → WebP (q90).
+ * 1 218 655 B → 170 576 B (−86%); визуальная разница на градиентах ночного неба отсутствует. */
+export const POLYHAVEN_MENU_PLATE = '/menu/cinematic_night_plate.webp';
