@@ -12,99 +12,20 @@
  *   light origin — GodRays projects rays FROM the sun mesh's screen position,
  *   so we need the mesh at the actual light bulb position.
  *
- * Positions mirror the existing GODRAY_PRESETS in GodRays.tsx so the
- * postprocessing rays emanate from the same origin as the mesh-based shafts.
+ * Этап 98 (persistent composer): меш смонтирован ОДИН раз на ultra-структуре
+ * и живёт между сценами — позиция/цвет применяются императивно из
+ * GODRAYS_SUN_CONFIG (scenePostFxProfiles) в effect по sceneId, JSX-props
+ * позиции/цвета больше нет: GodRaysEffect переносит меш в свой lightScene,
+ * поэтому все трансформации — только прямые мутации через ref.
  */
 
-import { forwardRef, useEffect, useLayoutEffect, useMemo } from 'react';
-import { AdditiveBlending, Mesh, SphereGeometry } from 'three';
+import { forwardRef, useEffect, useLayoutEffect, useMemo, useRef, type RefObject } from 'react';
+import { AdditiveBlending, Mesh, SphereGeometry, type MeshBasicMaterial } from 'three';
 import type { SceneId } from '@/shared/types/game';
+import { getGodRaysSunConfig, type GodRaysSunConfig } from '@/engine/graphics/scenePostFxProfiles';
 
-export interface GodRaysSunConfig {
-  position: [number, number, number];
-  color: string;
-}
-
-/** Per-scene sun mesh configs. Positions match GODRAY_PRESETS in GodRays.tsx
- *  so the postprocessing rays emanate from the same origin as the mesh-based
- *  shafts (complementary layers, not duplicates).
- *
- *  Positions + colors are sourced from `SCENE_ACCENT_LIGHTS` in Lighting.tsx
- *  so the sun mesh aligns with the actual visible practical light source
- *  (streetlamp / campfire / sunset / yard lamp) rather than the mesh-shaft
- *  center. This keeps the postprocessing rays anchored to a real bulb. */
-const GODRAYS_SUN_CONFIG: Partial<Record<SceneId, GodRaysSunConfig>> = {
-  home_evening: {
-    position: [0, 2.5, 0],
-    color: '#ffaa44',
-  },
-  factory_basement: {
-    position: [0, 2.6, -5.2],
-    color: '#22ff88',
-  },
-  // ── Expansion coverage (ultra-only postprocessing GodRays) ──
-  // Positions mirror SCENE_ACCENT_LIGHTS in Lighting.tsx so the sun mesh
-  // sits exactly on the visible practical light bulb.
-  street_night: {
-    // Pink neon streetlamp on the left side of the plaza.
-    position: [-6, 3, -2],
-    color: '#d88a9c',
-  },
-  city_square: {
-    // Central plaza lamp (shadowCaster) — cool blue-white halo.
-    position: [0, 4.2, 0],
-    color: '#aaccff',
-  },
-  river_pier: {
-    // Barrel fire at the pier head — warm flickering orange.
-    position: [0, 1.5, -1],
-    color: '#ff9944',
-  },
-  rooftop_edge: {
-    // Sunset warm practical — rooftop edge hero lamp.
-    position: [-3, 3, 0],
-    color: '#ff8844',
-  },
-  chk_campfire_night: {
-    // Campfire in the CHK clearing — primary fire light.
-    position: [0, 1.2, 0],
-    color: '#ff8833',
-  },
-  factory_roof: {
-    // Factory yard lamp — industrial warm sodium.
-    position: [-3, 3, 0],
-    color: '#ff7744',
-  },
-  // AAA Phase A: expand ultra post godrays to more hero interiors for luxurious volumetric shafts
-  cafe_evening: {
-    // Neon bar glow + window spill
-    position: [-3, 2.5, 0],
-    color: '#4488ff',
-  },
-  library_day: {
-    // Banker lamp / reading light shafts
-    position: [5, 3, 0],
-    color: '#ffdd99',
-  },
-  pier_evening: {
-    // Pier fire + dusk light
-    position: [0, 2.2, -2],
-    color: '#ff9944',
-  },
-  // AAA Phase A: dream gets ultra screen-space godrays too (ethereal cosmic light source for postprocessing GodRaysEffect)
-  sleep_dream: {
-    position: [0, 5.5, 0],
-    color: '#aa77ff',
-  },
-};
-
-export function getGodRaysSunConfig(sceneId: SceneId): GodRaysSunConfig | null {
-  return GODRAYS_SUN_CONFIG[sceneId] ?? null;
-}
-
-export const GODRAYS_POST_SCENES = new Set<SceneId>(
-  Object.keys(GODRAYS_SUN_CONFIG) as SceneId[],
-);
+// Конфиг «солнца» переехал в scenePostFxProfiles (этап 98) — ре-экспорт для совместимости.
+export type { GodRaysSunConfig };
 
 interface GodRaysSunMeshProps {
   sceneId: SceneId;
@@ -117,19 +38,33 @@ interface GodRaysSunMeshProps {
 
 /** Emissive sphere mesh that acts as the GodRays postprocessing sun source.
  *  Forwarded ref exposes the Mesh so ExplorationPostFX can pass it to
- *  the <GodRays sun={...} /> effect. */
+ *  the <GodRays sun={...} /> effect. Живёт между сценами: пер-сценная
+ *  конфигурация применяется императивно (position/color/visible). */
 export const GodRaysSunMesh = forwardRef<Mesh, GodRaysSunMeshProps>(
   function GodRaysSunMesh({ sceneId, onMount }, ref) {
-    const config = getGodRaysSunConfig(sceneId);
-
+    const meshRef = useRef<Mesh | null>(null);
     const geometry = useMemo(() => new SphereGeometry(0.1, 8, 8), []);
 
     // R3F auto-disposes geometries declared via JSX (<sphereGeometry/>), but NOT
-    // geometries passed as a prop from useMemo. This component re-mounts on every
-    // scene transition (it lives inside ManagedEffectComposer keyed by pipelineKey
-    // containing sceneId), so without explicit disposal each transition would leak
-    // one SphereGeometry. Dispose on unmount.
+    // geometries passed as a prop from useMemo. Dispose on unmount.
     useEffect(() => () => geometry.dispose(), [geometry]);
+
+    // Комбинированный ref: наружу (GodRays sun) и внутрь (императивные мутации).
+    // useImperativeHandle гарантирует, что ref.current актуален к моменту,
+    // когда родитель читает его в layout-фазе.
+    useLayoutEffect(() => {
+      const mesh = meshRef.current;
+      if (!mesh) return;
+      const config = getGodRaysSunConfig(sceneId);
+      if (config) {
+        mesh.visible = true;
+        mesh.position.set(config.position[0], config.position[1], config.position[2]);
+        (mesh.material as MeshBasicMaterial).color.set(config.color);
+      } else {
+        // Сцена без GodRays — пасс выключается аплаером; прячем и сам меш.
+        mesh.visible = false;
+      }
+    }, [sceneId]);
 
     // Signal readiness synchronously after commit so the parent can mount the
     // <GodRays> effect on the next render with a guaranteed non-null sun ref.
@@ -139,21 +74,24 @@ export const GodRaysSunMesh = forwardRef<Mesh, GodRaysSunMeshProps>(
       onMount?.();
     }, [onMount]);
 
-    if (!config) return null;
-
     return (
       <mesh
-        ref={ref}
-        position={config.position}
+        ref={(node: Mesh | null) => {
+          meshRef.current = node;
+          if (typeof ref === 'function') ref(node);
+          else if (ref) (ref as RefObject<Mesh | null>).current = node;
+        }}
         geometry={geometry}
         // GodRaysEffect requires: sun mesh must NOT write depth and must be
         // transparent. The effect's `set lightSource` auto-sets these, but
         // explicit is safer (matches postprocessing docs).
         // toneMapped={false} so the emissive color isn't tone-mapped down
-        // before GodRays samples it.
+        // before GodRays samples it. Начальный цвет нейтральный — пер-сценный
+        // цвет применяется в layout-effect выше.
+        visible={false}
       >
         <meshBasicMaterial
-          color={config.color}
+          color="#ffffff"
           transparent
           opacity={0.9}
           depthWrite={false}

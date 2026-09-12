@@ -182,3 +182,51 @@ export function disposeProceduralLutCache(): void {
   }
   lutCache.clear();
 }
+
+let neutralLut: Data3DTexture | null = null;
+
+/**
+ * Нейтральная (identity) 16³ LUT — тождественное преобразование цвета.
+ *
+ * Этап 98: LUT-пасс теперь живёт в композере постоянно, а пер-сценные вариации
+ * применяются императивной заменой текстуры (`LUT3DEffect.set lut` — чистый
+ * uniform-swap, без перекомпиляции: все процедурные LUT одного размера 16³ и
+ * UnsignedByteType → define'ы шейдера не меняются). Для сцен без LUT
+ * подставляется эта нейтральная текстура — визуально идентично отсутствию
+ * пасса (прежде LUT монтировался только для LUT-сцен).
+ */
+export function getNeutralProceduralLut3DTexture(): Data3DTexture {
+  if (neutralLut) return neutralLut;
+
+  const data = new Uint8Array(LUT_SIZE * LUT_SIZE * LUT_SIZE * 4);
+  for (let z = 0; z < LUT_SIZE; z++) {
+    for (let y = 0; y < LUT_SIZE; y++) {
+      for (let x = 0; x < LUT_SIZE; x++) {
+        const i = (x + y * LUT_SIZE + z * LUT_SIZE * LUT_SIZE) * 4;
+        data[i] = Math.round((x / (LUT_SIZE - 1)) * 255);
+        data[i + 1] = Math.round((y / (LUT_SIZE - 1)) * 255);
+        data[i + 2] = Math.round((z / (LUT_SIZE - 1)) * 255);
+        data[i + 3] = 255;
+      }
+    }
+  }
+
+  const tex = new Data3DTexture(data, LUT_SIZE, LUT_SIZE, LUT_SIZE);
+  tex.format = RGBAFormat;
+  tex.type = UnsignedByteType;
+  tex.minFilter = LinearFilter;
+  tex.magFilter = LinearFilter;
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
+  tex.wrapR = ClampToEdgeWrapping;
+  tex.needsUpdate = true;
+
+  neutralLut = tex;
+  return tex;
+}
+
+/** Test helper — dispose the neutral identity LUT. */
+export function disposeNeutralProceduralLutForTests(): void {
+  neutralLut?.dispose();
+  neutralLut = null;
+}

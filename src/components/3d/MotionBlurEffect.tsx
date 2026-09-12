@@ -25,6 +25,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { isSoftWorkAffordable } from '@/engine/graphics/softWorkBudget';
+import { useGameStore } from '@/store/gameStore';
 import type { Effect as EffectType } from 'postprocessing';
 
 /* ─── GLSL fragment shader ─── */
@@ -96,23 +97,20 @@ const BLUR_TRANSITION_DURATION = 0.4; // seconds — easeInOutCubic ramp
 
 /* ─── Public component ─── */
 
-interface MotionBlurEffectProps {
-  /** Force-enable on non-ultra presets during cutscenes (skip quality gate). */
-  forceDuringCutscene?: boolean;
-}
-
 /**
  * Cinematic radial motion blur — mounts inside <ManagedEffectComposer> / <EffectComposer>.
  * Reads target strength from motionBlurState each frame; smoothly animates via ref.
  *
- * Usage (inside ExplorationPostFX.tsx):
- *   <MotionBlurEffect forceDuringCutscene={isInCutscene} />
+ * Этап 98: cutscene/dialogue-состояние читается внутри (showStoryOverlay /
+ * activeCutsceneId из стора) — компонент больше не принимает пропов, чтобы
+ * дети композера оставались константными (мемо детей — нулевой churn при
+ * смене сцены / открытии диалога).
  *
  * To trigger blur from cinematic camera code:
  *   import { setMotionBlurStrength } from '@/engine/camera/motionBlurState';
  *   setMotionBlurStrength(0.8);  // 0–1
  */
-export function MotionBlurEffect({ forceDuringCutscene = false }: MotionBlurEffectProps) {
+export function MotionBlurEffect() {
   const { preset, selectedPreset } = useGraphicsQuality();
   const reducedMotion = useEffectiveReducedMotion();
   const isMobile = useIsMobileVisual();
@@ -125,23 +123,26 @@ export function MotionBlurEffect({ forceDuringCutscene = false }: MotionBlurEffe
     duration: BLUR_TRANSITION_DURATION,
   });
 
-  // Quality gate: ultra-only by default; forceDuringCutscene opens the gate
-  // on any preset that has postProcessing enabled (high/ultra).
+  // Quality gate: ultra-only by default; force during cutscenes/dialogue opens
+  // the gate on any preset that has postProcessing enabled (high/ultra).
+  // Виталы/оверлеи читаются getState() в тике — без store-подписок на рендер.
   const isUltra = preset.id === 'ultra' && selectedPreset === 'ultra';
   const isHighOrUltra = (preset.id === 'high' || preset.id === 'ultra') && (selectedPreset === 'high' || selectedPreset === 'ultra');
   const softOk = isSoftWorkAffordable();
-  const wantsMotionBlur =
-    !reducedMotion
-    && !isMobile
-    && softOk
-    && (isUltra || (forceDuringCutscene && isHighOrUltra));
+  const wantsMotionBlur = !reducedMotion && !isMobile && softOk && (isUltra || isHighOrUltra);
 
   // Imperative per-frame update: read module-level state, animate transition.
   useFrameTick('postfx', () => {
     const effect = effectRef.current;
     if (!effect) return;
 
-    const targetStrength = wantsMotionBlur ? getMotionBlurStrength() : 0;
+    // Силуэр cutscene-форса читается каждый кадр из стора — без ре-рендеров.
+    const state = useGameStore.getState();
+    const inCutsceneOrDialogue = !!state.activeCutsceneId || !!state.showStoryOverlay;
+    const gate = isUltra || (inCutsceneOrDialogue && isHighOrUltra);
+    const targetStrength = gate && !reducedMotion && !isMobile && isSoftWorkAffordable()
+      ? getMotionBlurStrength()
+      : 0;
 
     const t = transitionRef.current;
     if (t.target !== targetStrength) {
