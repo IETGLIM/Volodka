@@ -16,12 +16,17 @@ import { useTimeOfDay } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationDayNightTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { t } from '@/i18n';
 
 /* ── Time phases ── */
 type TimePhase = 'morning' | 'day' | 'evening' | 'night';
 
 interface PhaseConfig {
   label: string;
+  /* Ключ каталога i18n (этап 115, волна 3) — единый источник надписи
+   * для видимого текста и aria (прежняя дублированная карта phaseRuLabel удалена). */
+  labelKey: string;
   icon: React.ComponentType<{ className?: string }>;
   /* Arc gradient colors (start → end) */
   gradientStart: string;
@@ -38,6 +43,7 @@ interface PhaseConfig {
 const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
   morning: {
     label: 'Утро',
+    labelKey: 'hud.dayNight.phase.morning',
     icon: Sunrise,
     gradientStart: '#f59e0b', // amber-500
     gradientEnd: '#fbbf24',   // amber-400
@@ -48,6 +54,7 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     celestialGlow: 'rgba(251,191,36,0.5)' },
   day: {
     label: 'День',
+    labelKey: 'hud.dayNight.phase.day',
     icon: Sun,
     gradientStart: '#06b6d4', // cyan-500
     gradientEnd: 'var(--cyber-cyan)',   // cyan-400
@@ -58,6 +65,7 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     celestialGlow: 'rgb(var(--cyber-cyan-rgb) / 0.5)' },
   evening: {
     label: 'Вечер',
+    labelKey: 'hud.dayNight.phase.evening',
     icon: Sunset,
     gradientStart: '#ea580c', // orange-600
     gradientEnd: '#a855f7',   // purple-500
@@ -68,6 +76,7 @@ const PHASE_CONFIG: Record<TimePhase, PhaseConfig> = {
     celestialGlow: 'rgba(249,115,22,0.5)' },
   night: {
     label: 'Ночь',
+    labelKey: 'hud.dayNight.phase.night',
     icon: Moon,
     gradientStart: '#6d28d9', // violet-700
     gradientEnd: '#312e81',   // indigo-900
@@ -197,6 +206,7 @@ function StarParticle({ x, y, delay, size }: { x: number; y: number; delay: numb
 export function DayNightCycleIndicator() {
   const timeOfDay = useTimeOfDay();
   const quietStyle = useHudQuietStyle();
+  const reducedMotion = useEffectiveReducedMotion();
 
   const phase = useMemo(() => getPhase(timeOfDay), [timeOfDay]);
   const config = PHASE_CONFIG[phase];
@@ -204,6 +214,12 @@ export function DayNightCycleIndicator() {
   const angle = useMemo(() => positionToAngle(cyclePos), [cyclePos]);
   const nextPhase = useMemo(() => getNextPhaseInfo(phase, timeOfDay), [phase, timeOfDay]);
   const nextConfig = PHASE_CONFIG[nextPhase.phase];
+
+  /* Прогресс текущей фазы (v4.28.0): тонкая полоса в блоке «Следующий:
+   * {фаза}». Доля прошедшей фазы = 1 − hoursUntil / длительность фазы.
+   * Длительности зеркалят PHASE_RANGES (утро 4ч / день 8ч / вечер 3ч / ночь 9ч). */
+  const PHASE_DURATION_HOURS: Record<TimePhase, number> = { morning: 4, day: 8, evening: 3, night: 9 };
+  const nextPhaseProgress = Math.max(0, Math.min(1, 1 - nextPhase.hoursUntil / PHASE_DURATION_HOURS[phase]));
 
   /* Arc parameters */
   const cx = 62;
@@ -240,15 +256,14 @@ export function DayNightCycleIndicator() {
   }, [phase]);
 
   const PhaseIcon = config.icon;
+  const phaseLabel = t(config.labelKey, config.label);
 
   // ARIA: announce current time-of-day phase in Russian for screen readers.
-  const phaseRuLabel: Record<typeof phase, string> = {
-    morning: 'Утро',
-    day: 'День',
-    evening: 'Вечер',
-    night: 'Ночь',
-  };
-  const ariaLabel = `Время суток: ${phaseRuLabel[phase]}, ${formatTime(timeOfDay)}`;
+  // Единый источник надписи фазы — PHASE_CONFIG.labelKey (дедуп волны 3).
+  const ariaLabel = t('hud.dayNight.aria', `Время суток: ${phaseLabel}, ${formatTime(timeOfDay)}`, {
+    phase: phaseLabel,
+    time: formatTime(timeOfDay),
+  });
 
   return (
     <>
@@ -301,7 +316,7 @@ export function DayNightCycleIndicator() {
                 transition={{ duration: 0.25 }}
                 className="text-[11px] font-serif text-slate-200 italic"
               >
-                {config.label}
+                {phaseLabel}
               </motion.span>
             </AnimatePresence>
           </div>
@@ -471,6 +486,26 @@ export function DayNightCycleIndicator() {
               </motion.g>
             </AnimatePresence>
 
+            {/* Метки границ фаз (v4.28.0): 06 / 12 / 21 — дуга читается как шкала.
+                Декоративно: aria покрыт ролью img на контейнере. */}
+            {(() => {
+              const labelAt = (pos: number, dx: number, dy: number) => {
+                const a = (positionToAngle(pos) * Math.PI) / 180;
+                return { x: cx + (arcRadius + 8) * Math.cos(a) + dx, y: cy + (arcRadius + 8) * Math.sin(a) + dy };
+              };
+              const six = labelAt(6 / 24, 0, 2);
+              const noon = labelAt(12 / 24, 0, -4);
+              const nine = labelAt(21 / 24, 0, 2);
+              const labelStyle = { fontSize: 6, fontFamily: 'monospace', fill: 'rgba(148,163,184,0.55)' } as const;
+              return (
+                <g>
+                  <text x={six.x} y={six.y} textAnchor="middle" style={labelStyle}>06</text>
+                  <text x={noon.x} y={noon.y} textAnchor="middle" style={labelStyle}>12</text>
+                  <text x={nine.x} y={nine.y} textAnchor="middle" style={labelStyle}>21</text>
+                </g>
+              );
+            })()}
+
             {/* Horizon line */}
             <line
               x1={arcX1 - 5}
@@ -492,50 +527,71 @@ export function DayNightCycleIndicator() {
         />
 
         {/* ── Next phase indicator ── */}
-        <div className="px-2.5 py-1.5 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.div
-                key={`next-icon-${nextPhase.phase}`}
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.6 }}
-                transition={{ duration: 0.25 }}
-              >
-                {(() => {
-                  const NextIcon = nextConfig.icon;
-                  return <NextIcon className="size-2.5 text-slate-500" />;
-                })()}
-              </motion.div>
-            </AnimatePresence>
-            <span className="text-[9px] font-mono text-slate-500">
-              Следующий:
-            </span>
+        <div className="px-2.5 py-1.5 flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.div
+                  key={`next-icon-${nextPhase.phase}`}
+                  initial={{ opacity: 0, scale: 0.6 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.6 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  {(() => {
+                    const NextIcon = nextConfig.icon;
+                    return <NextIcon className="size-2.5 text-slate-500" />;
+                  })()}
+                </motion.div>
+              </AnimatePresence>
+              <span className="text-[9px] font-mono text-slate-500">
+                {t('hud.dayNight.next', 'Следующий:')}
+              </span>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.span
+                  key={`next-label-${nextPhase.phase}`}
+                  initial={{ opacity: 0, y: -3 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 3 }}
+                  transition={{ duration: 0.2 }}
+                  className="text-[9px] font-serif text-slate-400 italic"
+                >
+                  {t(nextConfig.labelKey, nextConfig.label)}
+                </motion.span>
+              </AnimatePresence>
+            </div>
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
-                key={`next-label-${nextPhase.phase}`}
-                initial={{ opacity: 0, y: -3 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 3 }}
+                key={`next-hours-${Math.floor(nextPhase.hoursUntil)}`}
+                initial={{ opacity: 0, x: 4 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -4 }}
                 transition={{ duration: 0.2 }}
-                className="text-[9px] font-serif text-slate-400 italic"
+                className="text-[9px] font-mono text-slate-500"
               >
-                {nextConfig.label}
+                {t('hud.dayNight.nextIn', `через ${Math.floor(nextPhase.hoursUntil)}ч`, { hours: Math.floor(nextPhase.hoursUntil) })}
               </motion.span>
             </AnimatePresence>
           </div>
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={`next-hours-${Math.floor(nextPhase.hoursUntil)}`}
-              initial={{ opacity: 0, x: 4 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -4 }}
-              transition={{ duration: 0.2 }}
-              className="text-[9px] font-mono text-slate-500"
-            >
-              через {Math.floor(nextPhase.hoursUntil)}ч
-            </motion.span>
-          </AnimatePresence>
+
+          {/* Полоса прогресса фазы (v4.28.0) — тонкая, aria-hidden: дублирует
+              «через Nч» только визуально. Цвет — акцент СЛЕДУЮЩЕЙ фазы:
+              полоса «растёт в будущее». */}
+          <div
+            aria-hidden="true"
+            className="h-0.5 rounded-full overflow-hidden"
+            style={{ background: 'rgba(255,255,255,0.07)' }}
+          >
+            <motion.div
+              className="h-full rounded-full"
+              style={{
+                background: `linear-gradient(90deg, ${nextConfig.gradientStart}, ${nextConfig.gradientEnd})`,
+                boxShadow: `0 0 4px ${nextConfig.glow}` }}
+              initial={false}
+              animate={{ width: `${Math.round(nextPhaseProgress * 100)}%` }}
+              transition={{ duration: reducedMotion ? 0 : 0.6, ease: 'easeOut' }}
+            />
+          </div>
         </div>
 
         {/* ── Bottom accent line ── */}

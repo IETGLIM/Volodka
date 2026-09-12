@@ -33,13 +33,8 @@
 
 import { useRef, useEffect, useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  useMiniMapState,
-  useNpcRelations,
-  useGamePhase,
-  useActiveQuests,
-  getQuestMarker,
-} from '@/store/selectors';
+import { useMinimapHudState, getQuestMarker } from '@/store/selectors';
+import { t } from '@/i18n';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
@@ -100,6 +95,13 @@ const QUEST_READY_COLOR = '#00ff66';
 const PILL_SIZE = 44;
 /** Частота обновления свёрнутой «таблетки» (мс) — дешевле rAF-цикла */
 const PILL_UPDATE_INTERVAL_MS = 200;
+
+/* ─── i18n: динамические ключи каталога (этап 115, волна 3) ───
+ * Шаблоны с плейсхолдерами лежат в RU_MESSAGES; составные значения
+ * подставляются параметрами t(key, fallback, params). */
+const MINIMAP_DYNAMIC_KEYS = {
+  distance: 'hud.minimap.distance',
+} as const;
 
 /* ─── Disposition coloring ─── */
 
@@ -186,11 +188,15 @@ export function MinimapComponent() {
   const trailFrameCountRef = useRef(0);
   const prevSceneIdRef = useRef<string>('');
 
-  /* ── Store selectors ── */
-  const mode = useGamePhase();
-  const { currentSceneId, playerPos, npcStates } = useMiniMapState();
-  const npcRelations = useNpcRelations();
-  const activeQuests = useActiveQuests();
+  /* ── Store selectors ──
+   * Этап 100 (волна 2): один shallow-бандл вместо четырёх подписок.
+   * Фильтр активных квестов — в useMemo (внутри plain-селектора фильтр
+   * нарушил бы контракт ссылочной стабильности). */
+  const { mode, currentSceneId, playerPos, npcStates, npcRelations, quests } = useMinimapHudState();
+  const activeQuests = useMemo(
+    () => quests.filter((q) => q.status === 'active'),
+    [quests],
+  );
   const quietStyle = useHudQuietStyle();
   const reducedMotion = useEffectiveReducedMotion();
 
@@ -216,7 +222,10 @@ export function MinimapComponent() {
   }, []);
   const handleZoomIn = useCallback(() => changeZoom(+1), [changeZoom]);
   const handleZoomOut = useCallback(() => changeZoom(-1), [changeZoom]);
-  const zoomLabel = MINIMAP_ZOOM_LEVELS[zoomIndex]?.labelRu ?? MINIMAP_ZOOM_LEVELS[MINIMAP_ZOOM_DEFAULT_INDEX].labelRu;
+  /* Этап 115 (волна 3): подпись уровня обзора — из каталога i18n (labelKey),
+   * labelRu остаётся фолбэком. Вывод байт-в-байт прежний. */
+  const zoomLevel = MINIMAP_ZOOM_LEVELS[zoomIndex] ?? MINIMAP_ZOOM_LEVELS[MINIMAP_ZOOM_DEFAULT_INDEX];
+  const zoomLabel = t(zoomLevel.labelKey, zoomLevel.labelRu);
 
   /* ── Toggle через тап по «таблетке» ──
    * FIX (конфликт клавиш): раньше KeyM одновременно открывал карту мира
@@ -387,7 +396,7 @@ export function MinimapComponent() {
           const px = Number.isFinite(livePos.x) ? livePos.x : playerPos[0];
           const pz = Number.isFinite(livePos.z) ? livePos.z : playerPos[2];
           const dist = Math.hypot(primary.worldX - px, primary.worldZ - pz);
-          questLabel = `${Math.round(dist)} м`;
+          questLabel = t(MINIMAP_DYNAMIC_KEYS.distance, `${Math.round(dist)} м`, { n: Math.round(dist) });
         }
       }
 
@@ -756,6 +765,24 @@ export function MinimapComponent() {
           ctx.closePath();
           ctx.fill();
           ctx.restore();
+
+          // Дистанция до цели подписана у обода (GTA-стиль, v4.28.0):
+          // прижатый маркер читается лучше, когда видно, «далеко ли идти».
+          // Внутри сцены подпись не нужна — цель и так рядом с игроком.
+          const dist = Math.hypot(marker.worldX - playerX, marker.worldZ - playerZ);
+          const distM = Math.round(dist);
+          ctx.save();
+          ctx.globalAlpha = markerAlpha;
+          ctx.fillStyle = markerColor;
+          ctx.font = `${isMobile ? 7 : 8}px monospace`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(
+            t(MINIMAP_DYNAMIC_KEYS.distance, `${distM} м`, { n: distM }),
+            cx + Math.cos(angle) * (innerR - 14),
+            cy + Math.sin(angle) * (innerR - 14),
+          );
+          ctx.restore();
         }
       }
 
@@ -850,8 +877,8 @@ export function MinimapComponent() {
                 transition={{ duration: reducedMotion ? 0 : 0.18, ease: 'easeOut' }}
                 className="relative flex items-center justify-center"
                 role="img"
-                aria-label="Миникарта"
-                title="Свернуть миникарту"
+                aria-label={t('hud.minimap.aria', 'Миникарта')}
+                title={t('hud.minimap.collapse', 'Свернуть миникарту')}
                 style={{
                   width: mapSize + 4,
                   height: mapSize + 4,
@@ -974,10 +1001,10 @@ export function MinimapComponent() {
               >
                 <button
                   type="button"
-                  aria-label="Развернуть миникарту"
-                  title="Развернуть миникарту"
+                  aria-label={t('hud.minimap.expand', 'Развернуть миникарту')}
+                  title={t('hud.minimap.expand', 'Развернуть миникарту')}
                   onClick={handleToggle}
-                  className="flex flex-col items-center justify-center gap-0.5 select-none"
+                  className="flex flex-col items-center justify-center gap-0.5 select-none transition-transform duration-150 hover:scale-105 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300/60"
                   style={{
                     width: PILL_SIZE,
                     height: PILL_SIZE,
@@ -1046,15 +1073,15 @@ export function MinimapComponent() {
               className="flex items-center gap-1 select-none"
               style={{ marginTop: 2, height: 44 }}
               role="group"
-              aria-label="Масштаб миникарты"
+              aria-label={t('hud.minimap.zoomGroupAria', 'Масштаб миникарты')}
             >
               <button
                 type="button"
-                aria-label="Отдалить миникарту"
-                title="Отдалить обзор"
+                aria-label={t('hud.minimap.zoomOut', 'Отдалить миникарту')}
+                title={t('hud.minimap.zoomOutTitle', 'Отдалить обзор')}
                 disabled={zoomIndex === 0}
                 onClick={handleZoomOut}
-                className="flex items-center justify-center transition-opacity disabled:opacity-25 disabled:cursor-default"
+                className="flex items-center justify-center transition-[opacity,transform,box-shadow] duration-150 hover:shadow-[0_0_10px_rgb(var(--cyber-cyan-rgb)/0.25)] active:scale-90 disabled:opacity-25 disabled:cursor-default focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/60"
                 style={{
                   width: 44,
                   height: 44,
@@ -1080,11 +1107,11 @@ export function MinimapComponent() {
               </span>
               <button
                 type="button"
-                aria-label="Приблизить миникарту"
-                title="Приблизить обзор"
+                aria-label={t('hud.minimap.zoomIn', 'Приблизить миникарту')}
+                title={t('hud.minimap.zoomInTitle', 'Приблизить обзор')}
                 disabled={zoomIndex === MINIMAP_ZOOM_LEVELS.length - 1}
                 onClick={handleZoomIn}
-                className="flex items-center justify-center transition-opacity disabled:opacity-25 disabled:cursor-default"
+                className="flex items-center justify-center transition-[opacity,transform,box-shadow] duration-150 hover:shadow-[0_0_10px_rgb(var(--cyber-cyan-rgb)/0.25)] active:scale-90 disabled:opacity-25 disabled:cursor-default focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-cyan-300/60"
                 style={{
                   width: 44,
                   height: 44,

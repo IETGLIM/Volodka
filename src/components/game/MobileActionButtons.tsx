@@ -14,29 +14,25 @@
 
 import { useCallback, useState, useRef, useEffect } from 'react';
 import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen, Save, FolderOpen, Sword } from 'lucide-react';
-import { useGamePhase, useHotbarSlots } from '@/store/selectors';
-import { useConsumableActions, useInventory } from '@/store/selectors';
-import { usePlayerLevel } from '@/store/selectors/playerSelectors';
-import { useCollectedPoems } from '@/store/selectors/worldSelectors';
+import { useConsumableActions, useQuickUseHotbarState } from '@/store/selectors';
 import { areSharedVirtualControlsWritable, useVirtualControlsRef, clearSharedVirtualControls, subscribeVirtualControlsGate } from '@/engine/VirtualControlsState';
 import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
 import { quickSaveGame, quickLoadGame } from './save/quickSaveLoad';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import { getItemDefinition } from '@/data/items';
 import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
 import { hapticLight, hapticMedium, hapticItemPickup, hapticError } from '@/shared/utils/hapticFeedback';
 import { attemptMeleeStrike } from '@/engine/combat/realtime/meleeStrike';
 import { eventBus } from '@/engine/EventBus';
+import { t } from '@/i18n';
 
 const TAP_DEBOUNCE_MS = 280;
 
 export function MobileActionButtons() {
   const isTouchDevice = useTouchDevice();
   const isMobile = useIsMobile();
-  const mode = useGamePhase();
   const bottomHudVisible = useExplorationBottomHudVisible();
   const virtualControlsRef = useVirtualControlsRef();
   const [runToggled, setRunToggled] = useState(false);
@@ -62,15 +58,9 @@ export function MobileActionButtons() {
     }, 120);
   }, [virtualControlsRef]);
 
-  /* ── Onboarding gate: hide during first minutes ── */
-  const level = usePlayerLevel();
-  const collectedPoems = useCollectedPoems();
-  const mainPoemCount = countCollectedMainPoems(collectedPoems);
+  /* ── Onboarding gate + хотбар — один shallow-бандл (этап 100, волна 2) ── */
+  const { mode, inventory, hotbarSlots, level, mainPoemCount } = useQuickUseHotbarState();
   const isOnboarding = level <= 1 && mainPoemCount <= 1;
-
-  /* ── Quick-use item: use first slot from hotbar ── */
-  const inventory = useInventory();
-  const hotbarSlots = useHotbarSlots();
   const { addEnergy, addStress, addKarma, addSkill, removeItem } = useConsumableActions();
 
   /* ── Interact handler ── */
@@ -89,7 +79,7 @@ export function MobileActionButtons() {
     if (outcome.status === 'tired') {
       hapticError();
       eventBus.emit('ui:exploration_message', {
-        text: 'Не хватает выносливости для удара',
+        text: t('hud.mobileActions.noStamina', 'Не хватает выносливости для удара'),
       });
       return;
     }
@@ -202,14 +192,14 @@ export function MobileActionButtons() {
       className="mobile-action-buttons"
       data-exploration-ui
       data-testid="mobile-action-buttons"
-      aria-label="Экранные кнопки действий"
+      aria-label={t('hud.mobileActions.aria', 'Экранные кнопки действий')}
     >
       {/* Primary: Interact */}
       <div className="flex flex-col items-center">
         <button
           type="button"
           className="mobile-action-btn mobile-action-btn--interact"
-          aria-label="Взаимодействовать"
+          aria-label={t('hud.mobileActions.interact', 'Взаимодействовать')}
           onPointerDown={(e) => {
             e.preventDefault();
             e.stopPropagation();
@@ -218,7 +208,7 @@ export function MobileActionButtons() {
         >
           <Hand size={24} aria-hidden="true" />
         </button>
-        <span className="mobile-action-btn__label">Действие</span>
+        <span className="mobile-action-btn__label">{t('hud.mobileActions.interactLabel', 'Действие')}</span>
       </div>
 
       {/* Secondary row: Strike + Use Item + Run Toggle */}
@@ -228,7 +218,7 @@ export function MobileActionButtons() {
           <button
             type="button"
             className="mobile-action-btn mobile-action-btn--strike"
-            aria-label="Опережающий удар"
+            aria-label={t('hud.mobileActions.strike', 'Опережающий удар')}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -237,7 +227,7 @@ export function MobileActionButtons() {
           >
             <Sword size={18} aria-hidden="true" />
           </button>
-          <span className="mobile-action-btn__label">Удар</span>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.strikeLabel', 'Удар')}</span>
         </div>
 
         {/* Use Item */}
@@ -245,7 +235,7 @@ export function MobileActionButtons() {
           <button
             type="button"
             className={`mobile-action-btn mobile-action-btn--secondary ${!hasUsableItem ? 'opacity-30 pointer-events-none' : ''}`}
-            aria-label="Использовать предмет"
+            aria-label={t('hud.mobileActions.useItem', 'Использовать предмет')}
             disabled={!hasUsableItem}
             onPointerDown={(e) => {
               e.preventDefault();
@@ -255,7 +245,7 @@ export function MobileActionButtons() {
           >
             <FlaskConical size={18} aria-hidden="true" />
           </button>
-          <span className="mobile-action-btn__label">Предмет</span>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.itemLabel', 'Предмет')}</span>
         </div>
 
         {/* Run/Sprint Toggle */}
@@ -263,7 +253,7 @@ export function MobileActionButtons() {
           <button
             type="button"
             className={`mobile-action-btn mobile-action-btn--secondary ${runToggled ? 'mobile-action-btn--run-active' : ''}`}
-            aria-label={runToggled ? 'Бег выключен' : 'Бег включён'}
+            aria-label={runToggled ? t('hud.mobileActions.runOnAria', 'Бег выключен') : t('hud.mobileActions.runOffAria', 'Бег включён')}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -273,7 +263,7 @@ export function MobileActionButtons() {
             <Zap size={18} aria-hidden="true" />
           </button>
           <span className={`mobile-action-btn__label ${runToggled ? 'mobile-action-btn__label--active' : ''}`}>
-            {runToggled ? 'Бег вкл' : 'Бег выкл'}
+            {runToggled ? t('hud.mobileActions.runOn', 'Бег вкл') : t('hud.mobileActions.runOff', 'Бег выкл')}
           </span>
         </div>
 
@@ -282,7 +272,7 @@ export function MobileActionButtons() {
           <button
             type="button"
             className="mobile-action-btn mobile-action-btn--secondary"
-            aria-label="Прыжок"
+            aria-label={t('hud.mobileActions.jump', 'Прыжок')}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -291,7 +281,7 @@ export function MobileActionButtons() {
           >
             <ArrowUp size={18} aria-hidden="true" />
           </button>
-          <span className="mobile-action-btn__label">Прыжок</span>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.jumpLabel', 'Прыжок')}</span>
         </div>
 
         {/* Inventory */}
@@ -299,7 +289,7 @@ export function MobileActionButtons() {
           <button
             type="button"
             className="mobile-action-btn mobile-action-btn--secondary"
-            aria-label="Инвентарь"
+            aria-label={t('hud.mobileActions.inventory', 'Инвентарь')}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -311,7 +301,7 @@ export function MobileActionButtons() {
           >
             <Package size={18} aria-hidden="true" />
           </button>
-          <span className="mobile-action-btn__label">Сумка</span>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.bagLabel', 'Сумка')}</span>
         </div>
 
         {/* Journal */}
@@ -319,7 +309,7 @@ export function MobileActionButtons() {
           <button
             type="button"
             className="mobile-action-btn mobile-action-btn--secondary"
-            aria-label="Журнал"
+            aria-label={t('hud.mobileActions.journal', 'Журнал')}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -329,18 +319,18 @@ export function MobileActionButtons() {
           >
             <BookOpen size={18} aria-hidden="true" />
           </button>
-          <span className="mobile-action-btn__label">Журнал</span>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.journalLabel', 'Журнал')}</span>
         </div>
       </div>
 
       {/* Быстрое сохранение/загрузка — компактная пара под кластером действий.
           Прямые вызовы движка (quickSaveLoad) — честные тосты, без клавиш. */}
-      <div className="mobile-save-load-row" role="group" aria-label="Сохранение и загрузка">
+      <div className="mobile-save-load-row" role="group" aria-label={t('hud.mobileActions.saveGroupAria', 'Сохранение и загрузка')}>
         <div className="flex flex-col items-center">
           <button
             type="button"
             className="mobile-action-btn mobile-action-btn--save"
-            aria-label="Быстрое сохранение"
+            aria-label={t('hud.mobileActions.quickSave', 'Быстрое сохранение')}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -349,14 +339,14 @@ export function MobileActionButtons() {
           >
             <Save size={16} aria-hidden="true" />
           </button>
-          <span className="mobile-action-btn__label">Сохранить</span>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.saveLabel', 'Сохранить')}</span>
         </div>
 
         <div className="flex flex-col items-center">
           <button
             type="button"
             className="mobile-action-btn mobile-action-btn--load"
-            aria-label="Быстрая загрузка"
+            aria-label={t('hud.mobileActions.quickLoad', 'Быстрая загрузка')}
             onPointerDown={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -365,7 +355,7 @@ export function MobileActionButtons() {
           >
             <FolderOpen size={16} aria-hidden="true" />
           </button>
-          <span className="mobile-action-btn__label">Загрузить</span>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.loadLabel', 'Загрузить')}</span>
         </div>
       </div>
     </div>

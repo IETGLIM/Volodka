@@ -20,6 +20,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationWeatherTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { t } from '@/i18n';
 import {
   deriveSceneWeather,
   type SceneWeatherState } from '@/shared/weather/deriveSceneWeather';
@@ -44,25 +45,25 @@ const WEATHER_ACCENT: Record<WeatherType, { border: string; glow: string; icon: 
   fog: { border: 'rgba(148,163,184,0.35)', glow: 'rgba(148,163,184,0.12)', icon: 'text-slate-400' },
   storm: { border: 'rgba(168,85,247,0.35)', glow: 'rgba(168,85,247,0.12)', icon: 'text-purple-400' } };
 
-/* ── Wind display labels ── */
-const WIND_LABELS: Record<WindLevel, { text: string; icon: string }> = {
-  calm: { text: 'Штиль', icon: 'text-slate-500' },
-  light: { text: 'Лёгкий', icon: 'text-slate-400' },
-  strong: { text: 'Сильный', icon: 'text-amber-400' } };
+/* ── Wind display labels (каталог i18n, этап 115 волна 3) ── */
+const WIND_LABELS: Record<WindLevel, { key: string; fallback: string; icon: string }> = {
+  calm: { key: 'hud.weather.wind.calm', fallback: 'Штиль', icon: 'text-slate-500' },
+  light: { key: 'hud.weather.wind.light', fallback: 'Лёгкий', icon: 'text-slate-400' },
+  strong: { key: 'hud.weather.wind.strong', fallback: 'Сильный', icon: 'text-amber-400' } };
 
-/* ── Air quality labels ── */
-const AIR_LABELS: Record<AirQuality, { text: string; color: string }> = {
-  clean: { text: 'Чистый', color: 'text-emerald-400' },
-  dusty: { text: 'Пыльный', color: 'text-amber-400' },
-  smoggy: { text: 'Смог', color: 'text-rose-400' } };
+/* ── Air quality labels (каталог i18n) ── */
+const AIR_LABELS: Record<AirQuality, { key: string; fallback: string; color: string }> = {
+  clean: { key: 'hud.weather.air.clean', fallback: 'Чистый', color: 'text-emerald-400' },
+  dusty: { key: 'hud.weather.air.dusty', fallback: 'Пыльный', color: 'text-amber-400' },
+  smoggy: { key: 'hud.weather.air.smoggy', fallback: 'Смог', color: 'text-rose-400' } };
 
-/* ── Russian weather labels ── */
-const WEATHER_LABELS: Record<WeatherType, string> = {
-  clear: 'Ясно',
-  rain: 'Дождь',
-  snow: 'Снег',
-  fog: 'Туман',
-  storm: 'Гроза' };
+/* ── Russian weather labels (каталог i18n) ── */
+const WEATHER_LABELS: Record<WeatherType, { key: string; fallback: string }> = {
+  clear: { key: 'hud.weather.type.clear', fallback: 'Ясно' },
+  rain: { key: 'hud.weather.type.rain', fallback: 'Дождь' },
+  snow: { key: 'hud.weather.type.snow', fallback: 'Снег' },
+  fog: { key: 'hud.weather.type.fog', fallback: 'Туман' },
+  storm: { key: 'hud.weather.type.storm', fallback: 'Гроза' } };
 
 /* ── Temperature display with sign ── */
 function formatTemp(temp: number): string {
@@ -139,7 +140,7 @@ export function WeatherIndicator() {
               </motion.div>
             </AnimatePresence>
             <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest">
-              Погода
+              {t('hud.weather.title', 'Погода')}
             </span>
           </div>
           <AnimatePresence mode="wait" initial={false}>
@@ -151,7 +152,7 @@ export function WeatherIndicator() {
               transition={{ duration: 0.2 }}
               className="text-[10px] font-mono text-slate-300"
             >
-              {WEATHER_LABELS[weather.type]}
+              {t(WEATHER_LABELS[weather.type].key, WEATHER_LABELS[weather.type].fallback)}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -208,7 +209,7 @@ export function WeatherIndicator() {
               </AnimatePresence>
               <span className="text-[8px] font-mono text-slate-400 mt-0.5 flex items-center gap-0.5">
                 <Thermometer className="size-2" />
-                Цельсий
+                {t('hud.weather.unit', 'Цельсий')}
               </span>
             </div>
           </div>
@@ -222,9 +223,14 @@ export function WeatherIndicator() {
 
           {/* Wind + Air Quality row */}
           <div className="flex items-center justify-between">
-            {/* Wind */}
+            {/* Wind — при сильном ветре иконка мягко пульсирует (reduced-motion — статично) */}
             <div className="flex items-center gap-1.5">
-              <Wind className={`size-3 ${windInfo.icon}`} />
+              <motion.div
+                animate={weather.wind === 'strong' && !reducedMotion ? { opacity: [1, 0.55, 1] } : undefined}
+                transition={weather.wind === 'strong' ? { duration: 1.8, repeat: Infinity, ease: 'easeInOut' } : undefined}
+              >
+                <Wind className={`size-3 ${windInfo.icon}`} />
+              </motion.div>
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
                   key={`wind-${weather.wind}`}
@@ -234,14 +240,14 @@ export function WeatherIndicator() {
                   transition={microTransition}
                   className="text-[10px] font-mono text-slate-400"
                 >
-                  {windInfo.text}
+                  {t(windInfo.key, windInfo.fallback)}
                 </motion.span>
               </AnimatePresence>
             </div>
 
-            {/* Air quality */}
+            {/* Air quality — смог: точка тревожно дышит (reduced-motion — статично) */}
             <div className="flex items-center gap-1">
-              <div
+              <motion.div
                 className="w-1.5 h-1.5 rounded-full"
                 style={{
                   background: weather.airQuality === 'clean'
@@ -254,6 +260,8 @@ export function WeatherIndicator() {
                     : weather.airQuality === 'dusty'
                     ? '0 0 4px rgba(251,191,36,0.4)'
                     : '0 0 4px rgba(244,63,94,0.4)' }}
+                animate={weather.airQuality === 'smoggy' && !reducedMotion ? { opacity: [1, 0.4, 1], scale: [1, 1.3, 1] } : undefined}
+                transition={weather.airQuality === 'smoggy' ? { duration: 2, repeat: Infinity, ease: 'easeInOut' } : undefined}
               />
               <AnimatePresence mode="wait" initial={false}>
                 <motion.span
@@ -264,7 +272,7 @@ export function WeatherIndicator() {
                   transition={microTransition}
                   className={`text-[10px] font-mono ${airInfo.color}`}
                 >
-                  {airInfo.text}
+                  {t(airInfo.key, airInfo.fallback)}
                 </motion.span>
               </AnimatePresence>
             </div>

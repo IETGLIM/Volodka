@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGamePhase } from '@/store/selectors';
-import { useGameStore } from '@/store/gameStore';
+import { useCurrentSceneId } from '@/store/selectors/explorationSelectors';
 import { SCENE_DEFINITIONS } from '@/config/sceneDefinitions';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -15,8 +15,11 @@ import { sharedPlayerRotationRef } from '@/engine/PlayerRotationState';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { explorationCompassTopPx } from '@/shared/constants/hudLayout';
 import { CompassPOIMarkers } from '@/components/game/hud/parts/CompassPOIMarkers';
+import { t } from '@/i18n';
 
-/* ── Cyrillic cardinal directions ── */
+/* ── Cyrillic cardinal directions ──
+ * Буквы направлений — из каталога i18n (этап 115, волна 3).
+ */
 interface CompassDir {
   label: string;
   angle: number; // radians, 0 = North (-Z)
@@ -24,15 +27,36 @@ interface CompassDir {
 }
 
 const COMPASS_DIRS: CompassDir[] = [
-  { label: 'С',  angle: 0,            short: 'С'  },
-  { label: 'СВ', angle: Math.PI / 4,  short: 'СВ' },
-  { label: 'В',  angle: Math.PI / 2,  short: 'В'  },
-  { label: 'ЮВ', angle: 3 * Math.PI / 4, short: 'ЮВ' },
-  { label: 'Ю',  angle: Math.PI,       short: 'Ю'  },
-  { label: 'ЮЗ', angle: 5 * Math.PI / 4, short: 'ЮЗ' },
-  { label: 'З',  angle: 3 * Math.PI / 2, short: 'З'  },
-  { label: 'СЗ', angle: 7 * Math.PI / 4, short: 'СЗ' },
+  { label: t('hud.compass.n', 'С'),   angle: 0,                  short: t('hud.compass.n', 'С') },
+  { label: t('hud.compass.ne', 'СВ'), angle: Math.PI / 4,        short: t('hud.compass.ne', 'СВ') },
+  { label: t('hud.compass.e', 'В'),   angle: Math.PI / 2,        short: t('hud.compass.e', 'В') },
+  { label: t('hud.compass.se', 'ЮВ'), angle: 3 * Math.PI / 4,    short: t('hud.compass.se', 'ЮВ') },
+  { label: t('hud.compass.s', 'Ю'),   angle: Math.PI,            short: t('hud.compass.s', 'Ю') },
+  { label: t('hud.compass.sw', 'ЮЗ'), angle: 5 * Math.PI / 4,    short: t('hud.compass.sw', 'ЮЗ') },
+  { label: t('hud.compass.w', 'З'),   angle: 3 * Math.PI / 2,    short: t('hud.compass.w', 'З') },
+  { label: t('hud.compass.nw', 'СЗ'), angle: 7 * Math.PI / 4,    short: t('hud.compass.nw', 'СЗ') },
 ];
+
+/* ── Полные названия направлений для aria (screen readers) ── */
+const HEADING_LABEL_KEYS = [
+  'hud.compass.heading.north',
+  'hud.compass.heading.northeast',
+  'hud.compass.heading.east',
+  'hud.compass.heading.southeast',
+  'hud.compass.heading.south',
+  'hud.compass.heading.southwest',
+  'hud.compass.heading.west',
+  'hud.compass.heading.northwest',
+] as const;
+const HEADING_LABEL_FALLBACKS = [
+  'Север', 'Северо-восток', 'Восток', 'Юго-восток',
+  'Юг', 'Юго-запад', 'Запад', 'Северо-запад',
+] as const;
+
+function headingLabelByIndex(index: number): string {
+  const clamped = Math.max(0, Math.min(HEADING_LABEL_KEYS.length - 1, index));
+  return t(HEADING_LABEL_KEYS[clamped], HEADING_LABEL_FALLBACKS[clamped]);
+}
 
 /* ── Normalize angle to [0, 2π) ── */
 function normalizeAngle(a: number): number {
@@ -130,7 +154,7 @@ function TickMark({ offset, isMajor }: { offset: number; isMajor: boolean }) {
 export function CompassHUD() {
   const mode = useGamePhase();
   const reducedMotion = useEffectiveReducedMotion();
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
+  const sceneId = useCurrentSceneId();
   const quietStyle = useHudQuietStyle();
   const [rotation, setRotation] = useState(sharedPlayerRotationRef.current);
   const rafRef = useRef<number | null>(null);
@@ -230,14 +254,14 @@ export function CompassHUD() {
   // ARIA: announce current cardinal heading derived from player yaw.
   const headingLabel = (() => {
     const deg = ((rotation * 180) / Math.PI + 360) % 360;
-    if (deg < 22.5 || deg >= 337.5) return 'Север';
-    if (deg < 67.5) return 'Северо-восток';
-    if (deg < 112.5) return 'Восток';
-    if (deg < 157.5) return 'Юго-восток';
-    if (deg < 202.5) return 'Юг';
-    if (deg < 247.5) return 'Юго-запад';
-    if (deg < 292.5) return 'Запад';
-    return 'Северо-запад';
+    if (deg < 22.5 || deg >= 337.5) return headingLabelByIndex(0);
+    if (deg < 67.5) return headingLabelByIndex(1);
+    if (deg < 112.5) return headingLabelByIndex(2);
+    if (deg < 157.5) return headingLabelByIndex(3);
+    if (deg < 202.5) return headingLabelByIndex(4);
+    if (deg < 247.5) return headingLabelByIndex(5);
+    if (deg < 292.5) return headingLabelByIndex(6);
+    return headingLabelByIndex(7);
   })();
 
   return (
@@ -252,7 +276,7 @@ export function CompassHUD() {
           data-exploration-ui
           data-testid="compass-hud"
           role="img"
-          aria-label={`Компас: направление ${headingLabel}`}
+          aria-label={t('hud.compass.aria', `Компас: направление ${headingLabel}`, { dir: headingLabel })}
           style={{ top: explorationCompassTopPx(), zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
         >
           {/* Glass-morphism container */}

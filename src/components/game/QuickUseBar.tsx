@@ -8,10 +8,8 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ItemIcon } from './shared/ItemIcon';
 import { QuickUseCooldownOverlay } from './hud/parts/QuickUseCooldownOverlay';
-import { useConsumableActions, useGameMode, useInventory } from '@/store/selectors';
-import { usePlayerLevel } from '@/store/selectors/playerSelectors';
-import { useCollectedPoems } from '@/store/selectors/worldSelectors';
-import { useHotbarSlots, useSetHotbarSlot } from '@/store/selectors/uiSelectors';
+import { useConsumableActions, useQuickUseHotbarState } from '@/store/selectors';
+import { useSetHotbarSlot } from '@/store/selectors/uiSelectors';
 import { useSyncExternalStore } from 'react';
 import {
   getDndMirrorSnapshot,
@@ -20,12 +18,13 @@ import {
 } from '@/components/game/inventory/inventoryDndLogic';
 import { InventoryDragProvider, useInventoryDnd } from '@/components/game/inventory/inventoryDnd';
 import { wasDraggingRecently } from '@/components/game/inventory/inventoryDndLogic';
-import { countCollectedMainPoems } from '@/data/poemCollectionMeta';
 import { getItemDefinition } from '@/data/items';
 import type { ItemDefinition } from '@/data/items';
 import { eventBus } from '@/engine/EventBus';
+import { t } from '@/i18n';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { bottomQuickUsePx } from '@/shared/constants/hudLayout';
 import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
 
@@ -34,6 +33,20 @@ import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud'
 const SLOT_COUNT = 4;
 const COOLDOWN_MS = 300;
 const LONG_PRESS_MS = 500;
+
+/* ─── i18n: динамические ключи каталога (этап 115, волна 3) ─── */
+const QUICK_USE_DYNAMIC_KEYS = {
+  assignTitle: 'hud.quickUse.assignTitle',
+  useAria: 'hud.quickUse.useAria',
+  emptyAria: 'hud.quickUse.emptyAria',
+  assignTooltip: 'hud.quickUse.assignTooltip',
+  emptyTooltip: 'hud.quickUse.emptyTooltip',
+  useToast: 'hud.quickUse.useToast',
+  energyEffect: 'hud.toast.energy',
+  stressEffect: 'hud.toast.stress',
+  karmaEffect: 'hud.toast.karma',
+  skillEffect: 'hud.quickUse.skillGain',
+} as const;
 
 /* ─── Context Menu for assigning items ─── */
 
@@ -84,13 +97,13 @@ function AssignMenu({ slotIndex, onClose, onAssign, onClear, consumables, curren
     >
       <div className="px-3 py-2 border-b border-slate-700/30">
         <p className="text-[10px] font-mono uppercase tracking-wider text-slate-500">
-          Слот {slotIndex + 1} — Назначить
+          {t(QUICK_USE_DYNAMIC_KEYS.assignTitle, `Слот ${slotIndex + 1} — Назначить`, { slot: slotIndex + 1 })}
         </p>
       </div>
       <div className="max-h-48 overflow-y-auto custom-scrollbar">
         {filteredConsumables.length === 0 ? (
           <div className="px-3 py-3 text-[11px] font-mono text-slate-600 text-center">
-            Нет расходуемых
+            {t('hud.quickUse.noConsumables', 'Нет расходуемых')}
           </div>
         ) : (
           filteredConsumables.map((c) => (
@@ -115,7 +128,7 @@ function AssignMenu({ slotIndex, onClose, onAssign, onClear, consumables, curren
           className="w-full px-3 py-1.5 text-left border-t border-slate-700/30 hover:bg-rose-950/30 transition-colors"
           onClick={() => { onClear(); onClose(); }}
         >
-          <span className="text-[11px] font-mono text-rose-400">Убрать из слота</span>
+          <span className="text-[11px] font-mono text-rose-400">{t('hud.quickUse.remove', 'Убрать из слота')}</span>
         </button>
       )}
     </motion.div>
@@ -169,12 +182,14 @@ export function QuickUseBar() {
 function QuickUseBarWithDnd() {
   const quietStyle = useHudQuietStyle();
   const bottomHudVisible = useExplorationBottomHudVisible();
-  const mode = useGameMode();
-  const inventory = useInventory();
+  /* ── Этап 100 (волна 2): один shallow-бандл вместо шести подписок
+   * (фаза + инвентарь + хотбар + онбординг-гейт). ── */
+  const { mode, inventory, hotbarSlots, level, mainPoemCount } = useQuickUseHotbarState();
   const { addEnergy, addStress, addKarma, addSkill, removeItem } = useConsumableActions();
-  const hotbarSlots = useHotbarSlots();
   const setHotbarSlot = useSetHotbarSlot();
   const { beginHotbarPointerDown } = useInventoryDnd();
+  const reducedMotion = useEffectiveReducedMotion();
+  const isOnboarding = level <= 1 && mainPoemCount <= 1;
 
   /* ── v4.7.5: DnD-зеркало — подсветка слотов при перетаскивании
         расходуемого из инвентаря (панель открыта, драг жив). ── */
@@ -278,13 +293,21 @@ function QuickUseBarWithDnd() {
       // Remove 1 quantity (consumable)
       removeItem(item.id, 1);
 
-      // Build effect text for toast
+      // Build effect text for toast — шаблоны из каталога i18n
+      // (hud.toast.* переиспользованы; вывод байт-в-байт прежний)
       const effectText = def.effects
         .map((e) => {
-          if (e.stat === 'energy') return `Энергия ${e.value > 0 ? '+' : ''}${e.value}`;
-          if (e.stat === 'stress') return `Стресс ${e.value > 0 ? '+' : ''}${e.value}`;
-          if (e.stat === 'karma') return `Карма ${e.value > 0 ? '+' : ''}${e.value}`;
-          if (e.skill) return `${e.skill} +${e.value}`;
+          const signedDelta = `${e.value > 0 ? '+' : ''}${e.value}`;
+          if (e.stat === 'energy') return t(QUICK_USE_DYNAMIC_KEYS.energyEffect, `Энергия ${signedDelta}`, { delta: signedDelta });
+          if (e.stat === 'stress') return t(QUICK_USE_DYNAMIC_KEYS.stressEffect, `Стресс ${signedDelta}`, { delta: signedDelta });
+          if (e.stat === 'karma') return t(QUICK_USE_DYNAMIC_KEYS.karmaEffect, `Карма ${signedDelta}`, { delta: signedDelta });
+          if (e.skill) {
+            // FIX (v4.28.0): раньше в тост попадал сырой ключ навыка («writing +2») —
+            // видимая не-русская строка. Теперь имя навыка берётся из каталога
+            // hud.skill.name.* (переиспользован механизм notificationToastConstants).
+            const skillName = t(`hud.skill.name.${e.skill}`, e.skill);
+            return t(QUICK_USE_DYNAMIC_KEYS.skillEffect, `${skillName} +${e.value}`, { name: skillName, delta: e.value });
+          }
           return '';
         })
         .filter(Boolean)
@@ -302,7 +325,10 @@ function QuickUseBarWithDnd() {
       });
 
       // Show toast
-      setToast(`${item.name}: ${effectText || 'Использовано'}`);
+      setToast(t(QUICK_USE_DYNAMIC_KEYS.useToast, `${item.name}: ${effectText || 'Использовано'}`, {
+        item: item.name,
+        effects: effectText || t('hud.quickUse.used', 'Использовано'),
+      }));
 
       // Flash animation
       setFlashSlots((prev) => {
@@ -386,11 +412,7 @@ function QuickUseBarWithDnd() {
     }
   }, []);
 
-  /* ── Onboarding gate ── */
-  const level = usePlayerLevel();
-  const collectedPoems = useCollectedPoems();
-  const mainPoemCount = countCollectedMainPoems(collectedPoems);
-  const isOnboarding = level <= 1 && mainPoemCount <= 1;
+  /* ── Onboarding gate — пришёл из бандла useQuickUseHotbarState ── */
 
   if (mode !== 'exploration' || !bottomHudVisible || isOnboarding) return null;
 
@@ -464,14 +486,14 @@ function QuickUseBarWithDnd() {
                   disabled={isOnCooldown}
                   aria-label={
                     hasItem
-                      ? `Использовать ${slot.item!.name} [${i + 1}] (ПКМ — назначить)`
-                      : `Пустой слот ${i + 1} (ПКМ — назначить)`
+                      ? t(QUICK_USE_DYNAMIC_KEYS.useAria, `Использовать ${slot.item!.name} [${i + 1}] (ПКМ — назначить)`, { item: slot.item!.name, slot: i + 1 })
+                      : t(QUICK_USE_DYNAMIC_KEYS.emptyAria, `Пустой слот ${i + 1} (ПКМ — назначить)`, { slot: i + 1 })
                   }
                   className={`quick-use-slot tooltip-cyber ${isFlashing ? 'quick-use-flash' : ''} ${isDimmed ? 'opacity-40' : ''} ${hotbarDragOverThis ? 'quick-use-drop-ok' : ''} ${hotbarRejectOverThis ? 'quick-use-drop-reject' : ''}`}
                   data-tooltip={
                     hasItem
-                      ? `${slot.item!.name} [${i + 1}] — ПКМ для назначения`
-                      : `Слот ${i + 1} — ПКМ для назначения`
+                      ? t(QUICK_USE_DYNAMIC_KEYS.assignTooltip, `${slot.item!.name} [${i + 1}] — ПКМ для назначения`, { item: slot.item!.name, slot: i + 1 })
+                      : t(QUICK_USE_DYNAMIC_KEYS.emptyTooltip, `Слот ${i + 1} — ПКМ для назначения`, { slot: i + 1 })
                   }
                   style={
                     isFlashing
@@ -512,6 +534,22 @@ function QuickUseBarWithDnd() {
                         >
                           {slot.item!.quantity}
                         </span>
+                      )}
+
+                      {/* Индикатор «последний предмет» (v4.28.0): янтарная точка —
+                          количество = 1. Читается периферическим зрением, не спорит
+                          с кулдаун-кольцом; motion-пульс отключается reduced-motion. */}
+                      {slot.item!.quantity === 1 && (
+                        <motion.span
+                          aria-hidden="true"
+                          className="absolute top-0.5 right-1 size-1.5 rounded-full"
+                          style={{
+                            background: '#fbbf24',
+                            boxShadow: '0 0 4px rgba(251, 191, 36, 0.7)',
+                          }}
+                          animate={reducedMotion ? undefined : { opacity: [1, 0.35, 1] }}
+                          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+                        />
                       )}
 
                       {/* Cooldown ring overlay — listens to sound:play item_use

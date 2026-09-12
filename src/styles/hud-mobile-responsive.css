@@ -333,10 +333,21 @@
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   pointer-events: auto;
-  transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.12s ease;
   box-shadow:
     0 0 8px rgb(var(--cyber-cyan-rgb) / 0.08),
     inset 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+/* v4.28.0: видимая фокус-рамка для клавиатурных/switch-access пользователей —
+ * ранее фокус на кнопках не читался вовсе. */
+.mobile-action-btn:focus-visible {
+  outline: 2px solid rgb(var(--cyber-cyan-rgb) / 0.7);
+  outline-offset: 2px;
 }
 
 .mobile-action-btn:active {

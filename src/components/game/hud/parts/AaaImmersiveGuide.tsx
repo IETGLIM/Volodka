@@ -11,6 +11,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomCenterGuidePx } from '@/shared/constants/hudLayout';
+import { t } from '@/i18n';
 
 interface GuideEntry {
   id: string;
@@ -19,39 +20,43 @@ interface GuideEntry {
   duration: number;
 }
 
+/* Этап 115 (волна 3): все строки внутреннего голоса — в каталоге RU_MESSAGES
+ * (группа hud.guide.*). Значения фолбэков байт-в-байт прежние, вывод на экран
+ * не изменился. Ключ 'осмотр' ниже — это матчер payload-события, а не
+ * видимый текст, поэтому в каталог не вынесен. */
 const INNER_VOICE_LINES: Record<string, string> = {
-  first_interact: 'Руки помнят — нажми, потяни, послушай, что ответит.',
-  first_npc: 'Кто-то рядом. Слова иногда открывают двери лучше ключей.',
-  first_poem: 'Строки на бумаге теплее, чем кажется. Прочитай — и мир ответит.',
-  low_energy: 'Дыхание сбилось. Кофе, пауза, строка стиха — тоже путь.',
-  high_stress: 'Шум в голове. Остановись. Послушай тишину между мыслями.',
-  combat_near: 'Тень сгустилась. Не обязательно драться, но будь готов.',
-  quest_new: 'Новая нить. Потянет — посмотрим, куда приведет.',
-  scene_chka: 'ЧК. Запах дешевого кофе и старых историй.',
-  scene_office: 'Офис. Гул машин и чужие разговоры за стеной.',
-  scene_library: 'Пыль, книги, тихий шепот страниц.',
-  scene_factory: 'Металл и пар. Здесь что-то большое дышит.',
-  scene_pier: 'Вода тихо плещет. Можно бросить мысли в реку.',
-  scene_roof: 'Ветер сильный. Город выглядит меньше сверху.',
-  scene_bunker: 'Зелёный свет. Машины помнят имена.',
-  scene_park: 'Листья шепчут. Здесь когда-то было тихо.',
-  first_explore_hub: 'Можно просто ходить. Мир сам расскажет, если послушать.',
-  karma_high: 'Ты стал чуть светлее. Люди это чувствуют.',
-  karma_low: 'Тяжесть в груди. Мир отвечает тем же.',
-  poem_power: 'Стихи шевелятся внутри. Можно выпустить их наружу.',
-  night_city: 'Неон мигает. Город не спит, только притворяется.',
+  first_interact: t('hud.guide.firstInteract', 'Руки помнят — нажми, потяни, послушай, что ответит.'),
+  first_npc: t('hud.guide.firstNpc', 'Кто-то рядом. Слова иногда открывают двери лучше ключей.'),
+  first_poem: t('hud.guide.firstPoem', 'Строки на бумаге теплее, чем кажется. Прочитай — и мир ответит.'),
+  low_energy: t('hud.guide.lowEnergy', 'Дыхание сбилось. Кофе, пауза, строка стиха — тоже путь.'),
+  high_stress: t('hud.guide.highStress', 'Шум в голове. Остановись. Послушай тишину между мыслями.'),
+  combat_near: t('hud.guide.combatNear', 'Тень сгустилась. Не обязательно драться, но будь готов.'),
+  quest_new: t('hud.guide.questNew', 'Новая нить. Потянет — посмотрим, куда приведет.'),
+  scene_chka: t('hud.guide.sceneChka', 'ЧК. Запах дешевого кофе и старых историй.'),
+  scene_office: t('hud.guide.sceneOffice', 'Офис. Гул машин и чужие разговоры за стеной.'),
+  scene_library: t('hud.guide.sceneLibrary', 'Пыль, книги, тихий шепот страниц.'),
+  scene_factory: t('hud.guide.sceneFactory', 'Металл и пар. Здесь что-то большое дышит.'),
+  scene_pier: t('hud.guide.scenePier', 'Вода тихо плещет. Можно бросить мысли в реку.'),
+  scene_roof: t('hud.guide.sceneRoof', 'Ветер сильный. Город выглядит меньше сверху.'),
+  scene_bunker: t('hud.guide.sceneBunker', 'Зелёный свет. Машины помнят имена.'),
+  scene_park: t('hud.guide.scenePark', 'Листья шепчут. Здесь когда-то было тихо.'),
+  first_explore_hub: t('hud.guide.firstExploreHub', 'Можно просто ходить. Мир сам расскажет, если послушать.'),
+  karma_high: t('hud.guide.karmaHigh', 'Ты стал чуть светлее. Люди это чувствуют.'),
+  karma_low: t('hud.guide.karmaLow', 'Тяжесть в груди. Мир отвечает тем же.'),
+  poem_power: t('hud.guide.poemPower', 'Стихи шевелятся внутри. Можно выпустить их наружу.'),
+  night_city: t('hud.guide.nightCity', 'Неон мигает. Город не спит, только притворяется.'),
   // AAA Phase A/C: more poetic whispers for the densest living world scenes (dream, rooftops, campfires, battle aftermath, cozy rooms)
-  sleep_dream: 'Звёзды шепчут. Это не просто сон — это память.',
-  dream_memory: 'Старый предмет плывёт. Он помнит тебя.',
-  rooftop_sky: 'Ветер сильный. Здесь можно оставить всё позади.',
-  chk_campfire: 'Огонь трещит. Истории в нём старше нас.',
-  battle_after: 'Тишина после. Обломки помнят.',
-  library_basement: 'Пыль тяжёлая. Секреты не любят свет.',
-  albert_room: 'Тёплый свет. Здесь можно остаться навсегда.',
-  solnysh_room: 'Солнце в окне. Даже в темноте светит.',
-  zarema_room: 'Цветы и зеркала. Кто-то любил это место.',
-  city_plaza: 'Неон в лужах. Город дышит неоном.',
-  forest_night: 'Деревья помнят. Шепчут то, что ты забыл.',
+  sleep_dream: t('hud.guide.sleepDream', 'Звёзды шепчут. Это не просто сон — это память.'),
+  dream_memory: t('hud.guide.dreamMemory', 'Старый предмет плывёт. Он помнит тебя.'),
+  rooftop_sky: t('hud.guide.rooftopSky', 'Ветер сильный. Здесь можно оставить всё позади.'),
+  chk_campfire: t('hud.guide.chkCampfire', 'Огонь трещит. Истории в нём старше нас.'),
+  battle_after: t('hud.guide.battleAfter', 'Тишина после. Обломки помнят.'),
+  library_basement: t('hud.guide.libraryBasement', 'Пыль тяжёлая. Секреты не любят свет.'),
+  albert_room: t('hud.guide.albertRoom', 'Тёплый свет. Здесь можно остаться навсегда.'),
+  solnysh_room: t('hud.guide.solnyshRoom', 'Солнце в окне. Даже в темноте светит.'),
+  zarema_room: t('hud.guide.zaremaRoom', 'Цветы и зеркала. Кто-то любил это место.'),
+  city_plaza: t('hud.guide.cityPlaza', 'Неон в лужах. Город дышит неоном.'),
+  forest_night: t('hud.guide.forestNight', 'Деревья помнят. Шепчут то, что ты забыл.'),
 };
 
 function toneStyle(tone: GuideEntry['tone']): React.CSSProperties {
