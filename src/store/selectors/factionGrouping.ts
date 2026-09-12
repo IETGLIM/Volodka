@@ -74,6 +74,54 @@ export interface FactionReputationEntry {
 
 export type FactionReputationMap = Record<FactionId, FactionReputationEntry>;
 
+/** Знакомый участник фракции (для ростера в панели репутации). */
+export interface FactionMember {
+  readonly id: string;
+  readonly name: string;
+  /** Текущее отношение (0–100); для «встреченного без строки» — нейтральное 50. */
+  readonly relation: number;
+}
+
+export type FactionMembersMap = Record<FactionId, FactionMember[]>;
+
+/**
+ * Ростеры встреченных участников ВСЕХ фракций одним проходом — та же
+ * конвенция «met», что в buildRelationsByFaction (флаг met_<id> ИЛИ строка
+ * в npcRelations). Сортировка внутри фракции: выше отношение — выше,
+ * при равенстве — по имени (ru-локаль).
+ */
+export function buildAllFactionMembers(
+  relations: readonly NPCRelation[],
+  metIds: ReadonlySet<string>,
+): FactionMembersMap {
+  const relationByNpcId = new Map<string, number>();
+  for (const rel of relations) {
+    relationByNpcId.set(rel.npcId, rel.value);
+  }
+
+  const members: FactionMembersMap = {
+    network: [], guild: [], resistance: [], neutral: [], tolpa: [],
+  };
+  for (const npc of ALL_NPC_DEFINITIONS) {
+    if (!npc.faction) continue;
+    const faction = normalizeFactionId(npc.faction);
+    const hasRelationRow = relationByNpcId.has(npc.id);
+    if (!metIds.has(npc.id) && !hasRelationRow) continue;
+    members[faction].push({
+      id: npc.id,
+      name: npc.name,
+      relation: relationByNpcId.get(npc.id) ?? NPC_NEUTRAL_RELATION,
+    });
+  }
+
+  for (const factionId of FACTION_IDS) {
+    members[factionId].sort(
+      (a, b) => b.relation - a.relation || a.name.localeCompare(b.name, 'ru'),
+    );
+  }
+  return members;
+}
+
 /* ──────────────────────────────────────────────────────────────
    Pure grouping (no store access)
    ────────────────────────────────────────────────────────────── */

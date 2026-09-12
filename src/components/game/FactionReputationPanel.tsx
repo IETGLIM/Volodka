@@ -17,7 +17,7 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
-  Users, Shield, Swords, CircleDot, Scale, Activity, Lock,
+  Users, Shield, Swords, CircleDot, Scale, Activity, Lock, ChevronUp,
 } from 'lucide-react';
 import { PanelWrapper } from './PanelWrapper';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,8 +30,16 @@ import {
   type FactionReputationEntry,
 } from '@/store/selectors/factionReputationSelectors';
 import {
+  buildAllFactionMembers,
+  selectMetNpcIds,
+  type FactionMember,
+  type FactionMembersMap,
+} from '@/store/selectors/factionGrouping';
+import { useGameStore } from '@/store/gameStore';
+import {
   NPC_AFFINITY_LEVELS,
   getAffinityLevel,
+  type NPCAffinityLevel,
 } from '@/data/npcGifts';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -118,15 +126,28 @@ function getTierColor(value: number): string {
   return '#f87171';
 }
 
+/** Следующая ступень репутации после текущего значения (null = максимум). */
+function getNextTier(value: number): NPCAffinityLevel | null {
+  for (const level of NPC_AFFINITY_LEVELS) {
+    if (level.minAffinity > value) return level;
+  }
+  return null;
+}
+
+/** Сколько участников фракции показывать чипами (остальные — «+N»). */
+const MEMBER_CHIPS_LIMIT = 5;
+
 /* ─── Faction Row ─── */
 
 function FactionRow({
   factionId,
   entry,
+  members,
   index,
 }: {
   factionId: FactionId;
   entry: FactionReputationEntry;
+  members: FactionMember[];
   index: number;
 }) {
   const reducedMotion = useEffectiveReducedMotion();
@@ -143,6 +164,13 @@ function FactionRow({
   // someone in the faction. Otherwise show a locked / unmet state.
   const displayValue = hasMet ? avgRelation : NPC_NEUTRAL_RELATION;
   const displayTier = hasMet ? tier : NPC_AFFINITY_LEVELS[2]; // Незнакомец
+  const nextTier = hasMet ? getNextTier(avgRelation) : null;
+  const nextTierGap = nextTier ? Math.max(0, nextTier.minAffinity - avgRelation) : 0;
+  const nextTierTick = nextTier
+    ? Math.max(0, Math.min(100, nextTier.minAffinity))
+    : null;
+  const shownMembers = members.slice(0, MEMBER_CHIPS_LIMIT);
+  const hiddenMembers = members.length - shownMembers.length;
 
   return (
     <motion.div
@@ -199,10 +227,22 @@ function FactionRow({
         {/* Numeric value + met count */}
         <div className="shrink-0 text-right">
           <div
-            className="text-base font-mono font-semibold tabular-nums"
+            className="text-base font-mono font-semibold tabular-nums overflow-hidden"
             style={{ color: hasMet ? tierColor : '#64748b' }}
           >
-            {hasMet ? displayValue : '—'}
+            <motion.span
+              key={hasMet ? displayValue : 'none'}
+              initial={reducedMotion ? false : { y: '-0.6em', opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: reducedMotion ? 0 : 0.25, ease: 'easeOut' }}
+              className="inline-block"
+              aria-hidden
+            >
+              {hasMet ? displayValue : '—'}
+            </motion.span>
+            <span className="sr-only">
+              {hasMet ? `Средняя репутация ${displayValue} из 100` : 'Нет данных'}
+            </span>
           </div>
           <div className="text-[10px] text-slate-500 font-mono mt-0.5">
             {metCount}<span className="opacity-50">/{totalMembers}</span>
@@ -222,13 +262,25 @@ function FactionRow({
         >
           {/* Neutral center tick — visual anchor at 50% */}
           <div
-            className="absolute top-0 bottom-0 w-px bg-slate-600/50"
+            className="absolute top-0 bottom-0 w-px bg-slate-600/50 z-10"
             style={{ left: '50%' }}
             aria-hidden
           />
+          {/* Next-tier threshold tick — цель следующей ступени */}
+          {hasMet && nextTierTick !== null && nextTierTick < 100 && (
+            <div
+              className="absolute top-0 bottom-0 w-px z-10"
+              style={{
+                left: `${nextTierTick}%`,
+                background: `${tierColor}90`,
+                boxShadow: `0 0 4px ${tierColor}60`,
+              }}
+              aria-hidden
+            />
+          )}
           {hasMet ? (
             <motion.div
-              className="h-full rounded-full"
+              className="h-full rounded-full relative overflow-hidden"
               style={{
                 background: `linear-gradient(90deg, ${tierColor}cc, ${tierColor})`,
                 boxShadow: `0 0 8px ${tierColor}40`,
@@ -240,7 +292,26 @@ function FactionRow({
                 ease: [0.16, 1, 0.3, 1],
                 delay: reducedMotion ? 0 : index * 0.05 + 0.1,
               }}
-            />
+            >
+              {/* Лёгкий блик на заполненной части — живость без мерцания */}
+              <motion.div
+                className="absolute inset-0"
+                style={{
+                  background:
+                    'linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.18) 50%, transparent 70%)',
+                }}
+                initial={reducedMotion ? false : { x: '-100%' }}
+                animate={reducedMotion ? { x: 0 } : { x: ['-100%', '100%'] }}
+                transition={{
+                  duration: reducedMotion ? 0 : 2.4,
+                  repeat: reducedMotion ? 0 : Infinity,
+                  repeatDelay: 3.2,
+                  ease: 'easeInOut',
+                  delay: reducedMotion ? 0 : index * 0.05 + 0.7,
+                }}
+                aria-hidden
+              />
+            </motion.div>
           ) : (
             <div
               className="h-full rounded-full bg-slate-700/40"
@@ -250,13 +321,73 @@ function FactionRow({
           )}
         </div>
 
-        {/* Tier tick marks (0 / 50 / 100) */}
+        {/* Tier tick marks (0 / 50 / 100) + next-tier hint */}
         <div className="flex justify-between mt-1 text-[9px] text-slate-600 font-mono">
           <span>0</span>
-          <span className="opacity-60">нейтрально</span>
+          <span
+            className="inline-flex items-center gap-0.5"
+            style={{ color: hasMet && nextTier ? `${tierColor}b0` : undefined }}
+          >
+            {hasMet && nextTier ? (
+              <>
+                <ChevronUp className="size-2.5" aria-hidden />
+                до «{nextTier.label}»: {nextTierGap}
+              </>
+            ) : (
+              <span className="opacity-60">нейтрально</span>
+            )}
+          </span>
           <span>100</span>
         </div>
       </div>
+
+      {/* Met member chips — ростер знакомых фракции */}
+      {shownMembers.length > 0 && (
+        <div
+          className="flex flex-wrap gap-1.5 mt-3"
+          aria-label={`Знакомые во фракции «${visual.label}»`}
+        >
+          {shownMembers.map((member) => {
+            const memberColor = getTierColor(member.relation);
+            return (
+              <span
+                key={member.id}
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 text-[10px] rounded-full border transition-colors hover:bg-slate-800/60"
+                style={{
+                  color: '#cbd5e1',
+                  borderColor: `${memberColor}35`,
+                  background: `${memberColor}0d`,
+                }}
+                title={`${member.name}: ${member.relation}/100`}
+              >
+                <span
+                  className="inline-block w-1.5 h-1.5 rounded-full shrink-0"
+                  style={{
+                    background: memberColor,
+                    boxShadow: `0 0 4px ${memberColor}80`,
+                  }}
+                  aria-hidden
+                />
+                <span className="truncate max-w-28">{member.name}</span>
+                <span className="font-mono opacity-60 tabular-nums">
+                  {member.relation}
+                </span>
+                <span className="sr-only">
+                  {`${member.name}, отношение ${member.relation} из 100`}
+                </span>
+              </span>
+            );
+          })}
+          {hiddenMembers > 0 && (
+            <span
+              className="inline-flex items-center px-2 py-0.5 text-[10px] rounded-full border border-slate-700/50 bg-slate-800/30 text-slate-500 font-mono"
+              title={`Ещё ${hiddenMembers} знакомых этой фракции`}
+            >
+              +{hiddenMembers}
+            </span>
+          )}
+        </div>
+      )}
     </motion.div>
   );
 }
@@ -358,6 +489,16 @@ function TierLegend() {
 export function FactionReputationPanel({ open, onClose }: FactionReputationPanelProps) {
   const reputationMap = useFactionReputation();
 
+  // Ростеры знакомых: прямые ref-подписки (массив отношений / флаги)
+  // пересоздаются только при реальных изменениях — useMemo экономит
+  // пересчёт на посторонних апдейтах стора.
+  const npcRelations = useGameStore((s) => s.npcRelations);
+  const playerFlags = useGameStore((s) => s.playerState.flags);
+  const membersByFaction: FactionMembersMap = useMemo(
+    () => buildAllFactionMembers(npcRelations, selectMetNpcIds(playerFlags)),
+    [npcRelations, playerFlags],
+  );
+
   const entries = useMemo(
     () => FACTION_IDS.map((id) => ({ id, entry: reputationMap[id] })),
     [reputationMap],
@@ -399,6 +540,7 @@ export function FactionReputationPanel({ open, onClose }: FactionReputationPanel
                 key={id}
                 factionId={id}
                 entry={entry}
+                members={membersByFaction[id]}
                 index={i}
               />
             ))}
