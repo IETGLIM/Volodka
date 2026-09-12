@@ -1,3 +1,80 @@
+## v4.33.0 (2026-09-13) — волна стабилизации видимых дефектов: анимации, модели, текстуры
+
+### Сводка
+Реакция на фидбек игрока «текстуры, модели, движения корректно не работают».
+Три параллельных исследования (текстуры / модели / анимации) + runtime-проба
+на реальных three.js-микшерах (вне репозитория) подтвердили 10 дефектов —
+все исправлены. Ключевые: NPC замирали «статуями» через несколько секунд
+после загрузки сцены (cleanup `useNPCAnimation` останавливал действия при
+каждом прибытии отложенного клипа, а bind `useNpcLocomotionBlend` их не
+перезапускал — подтверждено пробой isRunning:false); герой скользил ногами
+(~8× на шаге, ~3.7× на беге — клипы Quaternius имеют естественные 0.66/1.30
+м/с против скоростей тела 4/7.2 м/с, timeScale теперь гейт-матчится: hSpeed ÷
+естественная скорость клипа); ambient-толпа на high/ultra в ПРОДЕ — 404 трёх
+ригов (`male_03/male_05/female_03` выпиливались prune'ом) → чёрный канвас
+«Ошибка 3D-движка» (keep-set дополнен пулом ригов + per-figure
+ErrorBoundary + verify-deploy проверяет 117 путей); тайлинг PolyHaven-текстур
+«плавал» между сценами (repeat мутировался на SHARED-инстансах кэша useTexture —
+теперь конфигурируются клоны, шарящие Source без лишней VRAM); NPC «спали
+стоя» (clipOverrides не влияли на bind) и Z-up-модели укладывались на землю
+(applySway писал rotation.x в fit-группу); закрыта KTX2-гонка
+(configureGltfPipeline стартует импорт транскодера сам) до этапа 133; SW
+media-кэш v3→v4. Поправлена ошибочная инвентаризация v4.32.0: «0-байтовых
+заглушек» нет — это палитровые Kit-текстуры по дизайну (0-байтовых изображений
+в 149 GLB не найдено). Скорости движения и баланс НЕ менялись.
+Верификация: tsc (0), ESLint (0 errors, 58 legacy — базлайн), vitest ПОЛНЫЙ
+2725/2725 (437 файлов), validate:content (0), validate:act1-extended (0),
+vite build + budgets (OK), prune 161 путь, verify:deploy 117 путей,
+assets:validate (OK).
+
+### fix(anim): NPC-«статуи», скольжение ног, расписание-позы, sway
+- `useNPCAnimation`: cleanup со stop() всех действий — только на анмаунт
+  хука (actionsRef-паттерн); identity-чurn объединённого actions больше не
+  глушит играющие действия.
+- `useNpcLocomotionBlend`: ветка «bindKey не изменился» ре-армит
+  остановленные действия (rearmStoppedAction — play с сохранёнными весами);
+  bindKey учитывает контент-ключ clipOverrides (sleep/sit/идл-варианты
+  применяются при смене расписания); патрульный Walk получает гейт-матч
+  1.2/0.66 ≈ 1.82.
+- `playerLocomotionPresentation`: WALK/RUN_CLIP_NATURAL_MPS (замер по
+  трекам Foot.L/R GLB) + resolveGaitTimeScale; resolveLocomotionClipState
+  возвращает гейт-матченные walkTimeScale/runTimeScale; тест «timeScales
+  constant» переписан под новый контракт.
+- `usePlayerLocomotionController`: timeScale берётся из clipState (убраны
+  старые формулы 0.42–1.05×/1.45×); NPC-толпа: AMBIENT_WANDER_MPS = 0.5 —
+  единый источник для mover и клипа (0.5/0.66 ≈ 0.76).
+- `npcProceduralLayers.applySway`: убрана запись root.rotation.x (для
+  Z-up GLB fit.rotX = −π/2 укладывала NPC на землю).
+- `playerMainMovement`: удалён мёртвый self-assignment scratch.groundY;
+  `useNpcVisualBehavior`: setCurrentEmotion вынесен из useMemo в useEffect.
+
+### fix(assets): ambient-риги больше не выпадают из деплоя
+- `quaterniusRigCatalog`: AMBIENT_SKINNED_RIG_POOL + getAmbientSkinnedRigUrls
+  (канонический пул; компонент импортирует из каталога).
+- `prune-deploy-assets`: пул в keep-set (161 путь; stripped 27 файлов/9.6 MB
+  вместо 30/11.7 MB); `verify-deploy-assets`: пул в обязательных путях (117)
+  — дрейф реестра роняет сборку до деплоя.
+- `AmbientSkinnedMidLod`: каждая фигура под ErrorBoundary (fallback null) —
+  отказ одного GLB деградирует в отсутствие прохожего, а не в чёрный канвас.
+- `public/sw.js`: MEDIA_CACHE_NAME v3→v4 (cache-first кэш моделей бампится
+  при смене ассетов).
+
+### fix(textures): независимый тайлинг PolyHaven у каждого потребителя
+- `usePolyHavenPbr`: конфигурация (colorSpace/wrap/repeat/anisotropy)
+  выполняется на клонах текстур (Texture.clone() шарит Source — одна GPU-
+  загрузка); repeat больше не «гонки» layout-эффектов ~60 call-site'ов.
+
+### fix(pipeline): KTX2-гонка закрыта до этапа 133
+- `gltfPipeline`: configureGltfPipeline стартует динамический импорт
+  KTX2Loader сразу (рандерер закэширован); исправлен неверный комментарий
+  (GLTFLoader бросает исключение на basisu без KTX2Loader, а не молча
+  фолбэкается на PNG).
+
+### docs: поправка инвентаризации v4.32.0
+- ARCHITECTURE: раздел «Инвентаризация текстур» дополнен поправкой —
+  палитровые Kit-текстуры по дизайну, интерьеры 512×512 ~12 KB; без текстур
+  только 8 сгенерированных пропсов. README/ROADMAP актуализированы.
+
 ## v4.32.0 (2026-09-13) — этап 124 закрыт: тулчейн KTX2, фикс порядка пассов ETC1S/Draco
 
 ### Сводка
