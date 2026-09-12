@@ -13,9 +13,10 @@ import {
 import { EXPLORE_HUB_NODE_IDS } from '@/shared/exploreHubNodes';
 import { isAct1DiegeticStoryNode } from '@/engine/narrative/narrativePresentationPolicy';
 import { dispatchGameAction, getGameSnapshot } from '@/engine/GameActionDispatcher';
+import { startCombat } from '@/engine/CombatSystem';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { guessNarrativeKind } from '@/engine/narrative/narrativeKindResolution';
-import type { DialogueChoice, StoryChoice, StoryEffect } from '@/shared/types/game';
+import type { DialogueChoice, StoryChoice, StoryEffect, EnemyType } from '@/shared/types/game';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import type { SceneId } from '@/shared/types/game';
 
@@ -30,6 +31,38 @@ let choiceExecutionInFlight = false;
 
 /** Guard against rapid double-click on dialogue choices. */
 let dialogueChoiceExecutionInFlight = false;
+
+/**
+ * Мост combat-эффекта для выборов story/dialogue-узлов.
+ *
+ * История бага: эффект { type: 'combat' } применялся только через путь
+ * триггер-зон (InteractionController). В choice-путях (StoryRenderer /
+ * DialogueRenderer / DiegeticDialogueHud → executeStoryChoice /
+ * executeDialogueChoice) applyEffects вызывался без коллбэка startCombat —
+ * 16 сюжетных боёв (включая боссов актов: boss_neuro_sys, boss_dream_eater,
+ * nexus_guardian, void_echo, boss_final_code и патрули «Крысиных гонок»)
+ * молча пропускались: игрок выбирал «драться», а повествование сразу
+ * переходило на пост-бойную ноду, описывающую победу.
+ *
+ * Порядок работы: startEncounter асинхронен (сначала presentation-beat
+ * ~1 с, потом rAF-коммит), а навигация на choice.next выполняется синхронно.
+ * Поэтому к моменту коммита боя currentNodeId уже равен пост-бойной ноде и
+ * оверлей открыт: startCombatImmediate пушит эту ноду как return-node и
+ * прячет оверлей на время боя. После победы/поражения игрок возвращается
+ * на пост-бойную ноду (поражение = ретрай того же выбора).
+ *
+ * ВАЖНО: НЕ подключать к mount-эффектам узлов — возврат на узел после боя
+ * повторно применил бы combat-эффект и зациклил встречу. Mount-путь с
+ * боем в данных не используется; поддерживаемый путь — выбор игрока.
+ */
+function startCombatFromChoice(enemyType: EnemyType): void {
+  startCombat(enemyType, { encounterSource: 'story' });
+}
+
+/** Коллбэки applyEffects для choice-путей (см. startCombatFromChoice). */
+const CHOICE_EFFECT_CALLBACKS = {
+  startCombat: startCombatFromChoice,
+};
 
 /** Первый visitStoryNode-эффект в списке эффектов (для хуков с next:null). */
 function extractVisitedStoryNodeId(
@@ -80,14 +113,14 @@ export function executeStoryChoice(
       if (choice.next) {
         dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
       }
-      applyEffects(choice.effects);
+      applyEffects(choice.effects, CHOICE_EFFECT_CALLBACKS);
       ctx.onAppliedEffects?.(choice.effects);
       // Close overlay after effects are dispatched so React sees consistent state.
       closeNarrativeOverlay();
       closeDiegeticNarrative();
       return; // Prevent fall-through to explore-hub or next-node branch
     } else {
-      applyEffects(choice.effects);
+      applyEffects(choice.effects, CHOICE_EFFECT_CALLBACKS);
       ctx.onAppliedEffects?.(choice.effects);
     }
   }
@@ -173,13 +206,13 @@ export function executeDialogueChoice(choice: DialogueChoice): void {
       if (choice.next) {
         dispatchGameAction({ type: 'story/setCurrentNodeId', nodeId: choice.next });
       }
-      applyEffects(choice.effects);
+      applyEffects(choice.effects, CHOICE_EFFECT_CALLBACKS);
       // Close overlay after effects are dispatched so React sees consistent state.
       closeNarrativeOverlay();
       closeDiegeticNarrative();
       return; // Prevent fall-through to next-node navigation
     } else {
-      applyEffects(choice.effects);
+      applyEffects(choice.effects, CHOICE_EFFECT_CALLBACKS);
     }
   }
 
