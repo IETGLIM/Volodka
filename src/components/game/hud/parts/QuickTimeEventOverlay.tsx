@@ -38,36 +38,17 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Type Definitions ─── */
 
-/**
- * Типы QTE событий / QTE event types
- */
-export type QTEEventType = 
-  | 'press'      // Однократное нажатие / Single press
-  | 'hold'       // Удержание клавиши / Hold key down
-  | 'mash'       // Быстрые повторные нажатия / Rapid repeated presses (mash)
-  | 'sequence';  // Последовательность клавиш / Key sequence
-
-/**
- * Клавишная привязка для QTE / Key binding for QTE
- */
-export interface QTEKeyBinding {
-  /** Отображаемая метка клавиши / Display label for key */
-  display: string;
-  /** Фактический код клавиши (для обработки) / Actual key code */
-  code: string;
-  /** Иконка (опционально) / Icon element (optional) */
-  icon?: React.ReactNode;
-}
-
-/**
- * Уровни сложности / Difficulty levels
- */
-export type QTEDifficulty = 'easy' | 'normal' | 'hard' | 'extreme' | 'impossible';
-
-/**
- * Результат QTE / QTE result type
- */
-export type QTEResult = 'success' | 'failure' | 'timeout' | 'cancelled' | 'pending';
+/* v4.30: типы QTE перенесены в engine-слой (src/engine/qte/qteTypes.ts),
+ * чтобы EventBus-домен qteEvents и этот оверлей зависели от одного
+ * нейтрального источника. Экспорт сохранён для обратной совместимости. */
+export type {
+  QTEEventType,
+  QTEKeyBinding,
+  QTEDifficulty,
+  QTEResult,
+  QTEFinalResult,
+} from '@/engine/qte/qteTypes';
+import type { QTEEventType, QTEKeyBinding, QTEDifficulty, QTEResult, QTEFinalResult } from '@/engine/qte/qteTypes';
 
 /**
  * Состояние QTE / QTE internal state
@@ -87,8 +68,6 @@ interface QTEState {
   comboMultiplier: number;
   /** Был ли near-miss / Was there a near-miss */
   nearMiss: boolean;
-  /** Клавишные привязки для QTE / Key bindings for QTE */
-  keyBindings: QTEKeyBinding[];
 }
 
 /**
@@ -105,9 +84,9 @@ export interface QuickTimeEventOverlayProps {
   /** Длительность в мс / Duration in ms */
   duration: number;
   /** Callback при успешном выполнении / Success callback */
-  onSuccess?: (result: QTEResult) => void;
+  onSuccess?: (result: QTEFinalResult) => void;
   /** Callback при неудаче / Failure callback */
-  onFailure?: (result: QTEResult) => void;
+  onFailure?: (result: QTEFinalResult) => void;
   /** Сложность события / Event difficulty */
   difficulty?: QTEDifficulty;
   /** Общее количество нажатий (для mash) / Total presses needed for mash */
@@ -189,6 +168,13 @@ const SOUNDS = {
   complete: 'qte:complete',
 } as const;
 
+/** Период тика таймера (v4.30): 10 Гц вместо 60 FPS-интервала —
+ * рендеры поддерева падают с 60/с до ≤10/с, а кольцо сглаживает
+ * framer-motion-интерполяцией (transition = TICK_MS). */
+const TICK_MS = 100;
+/** Время удержания для 'hold' (при speedMult 1.0), мс. */
+const HOLD_FILL_MS = 1500;
+
 /* ─── Utility Functions ─── */
 
 /**
@@ -216,25 +202,28 @@ function calculateRingProgress(
   eventType: QTEEventType,
   state: QTEState,
   totalDuration: number,
+  targetPresses: number,
+  sequenceLength: number,
 ): number {
   switch (eventType) {
     case 'press':
       // Для press – кольцо сжимается к центру / Ring shrinks inward
       return state.timeRemaining / totalDuration;
-    
+
     case 'hold':
       // Для hold – кольцо заполняется / Ring fills up
       return state.progress;
-    
+
     case 'mash':
-      // Для mash – прогресс по нажатиям / Progress by presses
-      return state.pressCount / (state.pressCount + 10); // Relative progress
-    
+      // FIX (v4.30): прогресс от targetPresses, а не магического «+10» —
+      // кольцо теперь честно заполняется к моменту успеха.
+      return state.pressCount / Math.max(1, targetPresses);
+
     case 'sequence':
       // Для sequence – прогресс по индексу / Progress by current index
-      if (state.keyBindings.length === 0) return 0;
-      return state.currentIndex / state.keyBindings.length;
-    
+      if (sequenceLength === 0) return 0;
+      return state.currentIndex / sequenceLength;
+
     default:
       return 1;
   }
@@ -382,7 +371,7 @@ const TimerRing = memo(function TimerRing({
           transition={
             reducedMotion
               ? { duration: 0 }
-              : { duration: 0.05, ease: 'linear' }
+              : { duration: 0.1, ease: 'linear' }
           }
           style={{
             filter: `drop-shadow(0 0 8px ${isWarning ? 'rgba(255,68,68,0.6)' : glowColor})`,
@@ -561,13 +550,36 @@ export function QuickTimeEventOverlay({
     pressCount: 0,
     comboMultiplier: 1,
     nearMiss: false,
-    keyBindings: keyBindings,
   });
   const [showResult, setShowResult] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const reducedMotion = useEffectiveReducedMotion();
+
+  /* ── Refs-зеркала (v4.30) ──
+   * Таймер и слушатели ввода регистрируются ОДИН раз на сессию (deps [isActive])
+   * и читают актуальные значения через refs. Нестабильные пропсы (инлайн-массив
+   * keyBindings, инлайн-коллбеки) больше НЕ перезапускают сессию и НЕ
+   * перерегистрируют обработчики — сброс только по явному isActive-переходу. */
+  const stateRef = useRef(state);
+  stateRef.current = state;
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const startTimeRef = useRef<number>(Date.now());
+  /** hold: клавиша/палец удерживается прямо сейчас (keydown/keyup, pointerdown/up). */
+  const holdingRef = useRef(false);
+  const latestRef = useRef({
+    eventType,
+    keyBindings,
+    duration,
+    difficulty,
+    targetPresses,
+    onSuccess,
+    onFailure,
+    onSoundTrigger,
+  });
+  latestRef.current = { eventType, keyBindings, duration, difficulty, targetPresses, onSuccess, onFailure, onSoundTrigger };
+  /** Стабильные хэндлы для обработчиков, зарегистрированных один раз. */
+  const inputRef = useRef<() => void>(() => {});
+  const cancelRef = useRef<() => void>(() => {});
 
   /* Конфигурация / Configuration */
   const diffConfig = getDifficultyConfig(difficulty);
@@ -577,195 +589,261 @@ export function QuickTimeEventOverlay({
   const isSuccess = state.result === 'success';
   const isFailure = state.result === 'failure' || state.result === 'timeout';
 
-  /**
-   * Триггер звука / Trigger sound effect
-   */
-  const playSound = useCallback((soundId: string) => {
-    onSoundTrigger?.(soundId);
-  }, [onSoundTrigger]);
+  const stopTimer = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
 
   /**
-   * Обработчик успешного результата / Handle success result
+   * Единая точка завершения сессии / Single resolution point.
+   * success/failure/timeout — с драматическим экраном результата;
+   * cancelled (Escape) — без него, оверлей закрывает хост сразу.
    */
-  const handleSuccess = useCallback(() => {
-    setState(prev => ({ ...prev, result: 'success' }));
+  const resolveRef = useRef<(result: QTEFinalResult) => void>(() => {});
+  resolveRef.current = (result: QTEFinalResult) => {
+    stopTimer();
+    const next = { ...stateRef.current, result };
+    stateRef.current = next;
+    setState(next);
+    if (result === 'cancelled') {
+      holdingRef.current = false;
+      onFailure?.('cancelled');
+      return;
+    }
     setShowResult(true);
-    playSound(SOUNDS.success);
-    onSuccess?.('success');
-  }, [onSuccess, playSound]);
+    onSoundTrigger?.(result === 'success' ? SOUNDS.success : SOUNDS.failure);
+    if (result === 'success') {
+      onSuccess?.('success');
+    } else {
+      onFailure?.(result);
+    }
+  };
 
   /**
-   * Обработчик неудачи / Handle failure result
+   * Тик таймера (10 Гц): остаток времени + заполнение hold.
+   * Читает refs — стабилен, переиспользуется сессией.
    */
-  const handleFailure = useCallback((reason: QTEResult = 'failure') => {
-    setState(prev => ({ ...prev, result: reason }));
-    setShowResult(true);
-    playSound(SOUNDS.failure);
-    onFailure?.(reason);
-  }, [onFailure, playSound]);
+  const tickRef = useRef<() => void>(() => {});
+  tickRef.current = () => {
+    if (stateRef.current.result !== 'pending') {
+      stopTimer();
+      return;
+    }
+    const latest = latestRef.current;
+    const cfg = getDifficultyConfig(latest.difficulty);
+    const adj = latest.duration / cfg.speedMult;
+    const current = stateRef.current;
+    const elapsed = Date.now() - startTimeRef.current;
+    const remaining = Math.max(0, adj - elapsed);
+
+    // hold: прогресс копится по времени удержания (holdingRef), а не по
+    // OS-автоповтору keydown — стабильно и на клавиатуре, и на таче.
+    if (latest.eventType === 'hold' && holdingRef.current) {
+      const holdMs = HOLD_FILL_MS / cfg.speedMult;
+      const newProgress = Math.min(1, current.progress + TICK_MS / holdMs);
+      const next = { ...current, timeRemaining: remaining, progress: newProgress };
+      stateRef.current = next;
+      setState(next);
+      // FIX (v4.30): успех по уже вычисленному значению — прежний stale-check
+      // читал состояние ДО обновления и срабатывал на нажатие позже порога.
+      if (newProgress >= 1) {
+        resolveRef.current('success');
+        return;
+      }
+    } else {
+      const next = { ...current, timeRemaining: remaining };
+      stateRef.current = next;
+      setState(next);
+    }
+
+    if (remaining <= 0) {
+      resolveRef.current('timeout');
+    }
+  };
 
   /**
-   * Обработка ввода от пользователя / Process user input
+   * Обработка ввода / Process user input (press / mash / sequence).
+   * Читает stateRef/latestRef и синхронно зеркалит их — быстрые нажатия
+   * между рендерами не теряются.
    */
-  const handleInput = useCallback(() => {
-    if (!isActive || showResult) return;
-    
-    playSound(SOUNDS.press);
+  inputRef.current = () => {
+    const latest = latestRef.current;
+    if (stateRef.current.result !== 'pending') return;
+    onSoundTrigger?.(SOUNDS.press);
 
-    switch (eventType) {
+    switch (latest.eventType) {
       case 'press': {
         // Проверяем попадание в окно успеха / Check if within success window
-        const windowStart = adjustedDuration * (1 - diffConfig.windowSize);
+        const cfg = getDifficultyConfig(latest.difficulty);
+        const adj = latest.duration / cfg.speedMult;
+        const windowStart = adj * (1 - cfg.windowSize);
         const elapsed = Date.now() - startTimeRef.current;
-        
+
         if (elapsed >= windowStart) {
           // Попадание! / Hit!
-          handleSuccess();
+          resolveRef.current('success');
         } else if (elapsed >= windowStart * 0.7) {
           // Near-miss! Почти попал!
-          playSound(SOUNDS.nearMiss);
-          setState(prev => ({ ...prev, nearMiss: true }));
+          onSoundTrigger?.(SOUNDS.nearMiss);
+          const next = { ...stateRef.current, nearMiss: true };
+          stateRef.current = next;
+          setState(next);
           setShowFlash(true);
-          setTimeout(() => setShowFlash(false), SIZES.flashDuration);
+          window.setTimeout(() => setShowFlash(false), SIZES.flashDuration);
         } else {
           // Рано! / Too early!
-          handleFailure('failure');
+          resolveRef.current('failure');
         }
         break;
       }
 
-      case 'hold': {
-        // Накапливаем прогресс при удержании / Accumulate progress while held
-        setState(prev => ({
-          ...prev,
-          progress: Math.min(1, prev.progress + 0.02),
-        }));
-        
-        if (state.progress >= 1) {
-          handleSuccess();
-        }
+      case 'hold':
+        // Удержание обрабатывается тиками (holdingRef); keydown только запускает его.
         break;
-      }
 
       case 'mash': {
-        const newCount = state.pressCount + 1;
-        const newCombo = newCount % 5 === 0 ? state.comboMultiplier + 0.5 : state.comboMultiplier;
-        
-        setState(prev => ({
-          ...prev,
-          pressCount: newCount,
-          comboMultiplier: newCombo,
-        }));
-        
-        if (newCount >= targetPresses) {
-          handleSuccess();
+        const newCount = stateRef.current.pressCount + 1;
+        const newCombo = newCount % 5 === 0
+          ? stateRef.current.comboMultiplier + 0.5
+          : stateRef.current.comboMultiplier;
+        const next = { ...stateRef.current, pressCount: newCount, comboMultiplier: newCombo };
+        stateRef.current = next;
+        setState(next);
+        if (newCount >= latest.targetPresses) {
+          resolveRef.current('success');
         }
         break;
       }
 
       case 'sequence': {
-        const nextIndex = state.currentIndex + 1;
-        
-        if (nextIndex >= keyBindings.length) {
+        const nextIndex = stateRef.current.currentIndex + 1;
+        if (nextIndex >= latest.keyBindings.length) {
           // Последовательность завершена! / Sequence complete!
-          playSound(SOUNDS.complete);
-          handleSuccess();
+          onSoundTrigger?.(SOUNDS.complete);
+          resolveRef.current('success');
         } else {
           // Переход к следующей клавише / Move to next key
-          setState(prev => ({ ...prev, currentIndex: nextIndex }));
+          const next = { ...stateRef.current, currentIndex: nextIndex };
+          stateRef.current = next;
+          setState(next);
         }
         break;
       }
     }
-  }, [
-    isActive, showResult, playSound, eventType, adjustedDuration, diffConfig.windowSize,
-    handleSuccess, handleFailure, state.progress, state.pressCount, state.currentIndex,
-    state.comboMultiplier, targetPresses, keyBindings.length,
-  ]);
+  };
+
+  /** Отмена (Escape): без экрана результата — хост закрывает оверлей сразу. */
+  cancelRef.current = () => {
+    if (stateRef.current.result !== 'pending') return;
+    resolveRef.current('cancelled');
+  };
 
   /**
-   * Таймер обратного отсчёта / Countdown timer
+   * Сессия QTE: сброс + запуск 10 Гц-таймера. Зависимость только [isActive] —
+   * смена identity коллбеков/массивов пропсов сессию не перезапускает.
    */
   useEffect(() => {
-    if (!isActive || showResult) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+    if (!isActive) {
+      stopTimer();
       return;
     }
 
     // Сброс состояния при активации / Reset state on activation
-    startTimeRef.current = Date.now();
-    setState({
+    const cfg = getDifficultyConfig(latestRef.current.difficulty);
+    const adj = latestRef.current.duration / cfg.speedMult;
+    const initial: QTEState = {
       result: 'pending',
-      timeRemaining: adjustedDuration,
+      timeRemaining: adj,
       progress: 0,
       currentIndex: 0,
       pressCount: 0,
       comboMultiplier: 1,
       nearMiss: false,
-      keyBindings: keyBindings,
-    });
+    };
+    stateRef.current = initial;
+    setState(initial);
     setShowResult(false);
     setShowFlash(false);
-    
-    playSound(SOUNDS.start);
+    holdingRef.current = false;
+    startTimeRef.current = Date.now();
 
-    // Запуск таймера / Start timer
-    timerRef.current = setInterval(() => {
-      const elapsed = Date.now() - startTimeRef.current;
-      const remaining = Math.max(0, adjustedDuration - elapsed);
-      
-      setState(prev => ({
-        ...prev,
-        timeRemaining: remaining,
-        // Для hold-type обновляем прогресс только если не нажато
-        ...(eventType === 'hold' ? {} : {}),
-      }));
+    latestRef.current.onSoundTrigger?.(SOUNDS.start);
 
-      // Тайм-аут / Timeout check
-      if (remaining <= 0) {
-        handleFailure('timeout');
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-          timerRef.current = null;
-        }
-      }
-    }, 16); // ~60 FPS
-
+    timerRef.current = setInterval(() => tickRef.current(), TICK_MS);
     return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
+      stopTimer();
+      holdingRef.current = false;
     };
-  }, [isActive, eventType, adjustedDuration, handleFailure, playSound, showResult, keyBindings]);
-
+  }, [isActive, stopTimer]);
   /**
-   * Глобальный обработчик клавиатуры / Global keyboard handler
+   * Глобальные обработчики клавиатуры (регистрация ОДИН раз на сессию;
+   * фактические значения читаются через refs — никаких перерегистраций
+   * на каждый инпут, как это было в прежнем коде).
    */
   useEffect(() => {
-    if (!isActive || showResult) return;
+    if (!isActive) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Проверяем совпадение кода клавиши / Check key code match
-      const expectedCode = currentBinding?.code;
-      if (expectedCode && e.code === expectedCode) {
+      // Escape — отмена события (фикс: 'cancelled' раньше был недостижим).
+      if (e.code === 'Escape') {
         e.preventDefault();
-        e.stopPropagation();
-        handleInput();
+        cancelRef.current();
+        return;
+      }
+      // FIX (v4.30): OS-автоповтор не считается за честные нажатия.
+      if (e.repeat) return;
+      const latest = latestRef.current;
+      const expectedCode = latest.keyBindings[stateRef.current.currentIndex]?.code
+        ?? latest.keyBindings[0]?.code;
+      if (!expectedCode || e.code !== expectedCode) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (latest.eventType === 'hold') {
+        holdingRef.current = true;
+        return;
+      }
+      inputRef.current();
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      const latest = latestRef.current;
+      const expectedCode = latest.keyBindings[stateRef.current.currentIndex]?.code
+        ?? latest.keyBindings[0]?.code;
+      if (latest.eventType === 'hold' && expectedCode && e.code === expectedCode) {
+        holdingRef.current = false;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isActive, showResult, currentBinding, handleInput]);
+    window.addEventListener('keyup', handleKeyUp);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [isActive]);
+
+  /**
+   * Тач/мышь (v4.30): QTE проходим на мобильных — тап по центру считается
+   * нажатием (press/mash/sequence), удержание пальцем — hold.
+   */
+  const handlePointerDown = useCallback(() => {
+    const latest = latestRef.current;
+    if (latest.eventType === 'hold') {
+      holdingRef.current = true;
+      return;
+    }
+    inputRef.current();
+  }, []);
+  const handlePointerUp = useCallback(() => {
+    holdingRef.current = false;
+  }, []);
 
   /* Вычисляемые значения / Computed values */
   const ringProgress = useMemo(
-    () => calculateRingProgress(eventType, { ...state, keyBindings }, adjustedDuration),
-    [eventType, state, keyBindings, adjustedDuration]
+    () => calculateRingProgress(eventType, state, adjustedDuration, targetPresses, keyBindings.length),
+    [eventType, state, adjustedDuration, targetPresses, keyBindings.length]
   );
 
   /* Не рендерим если неактивен / Don't render if not active */
@@ -782,6 +860,9 @@ export function QuickTimeEventOverlay({
               zIndex: UI_LAYERS.MINIGAME,
               background: 'radial-gradient(circle at center, rgba(0,0,0,0.85), rgba(0,0,0,0.95))',
               backdropFilter: 'blur(8px)',
+              /* FIX (v4.30): корень принимает ввод — иначе внутри
+               * pointer-events-none-родителя (HUD) тач-кнопки мертвы. */
+              pointerEvents: 'auto',
             }}
             initial={reducedMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -811,7 +892,11 @@ export function QuickTimeEventOverlay({
 
             {/* ── Основной контейнер QTE / Main QTE container ── */}
             <motion.div
-              className="relative flex flex-col items-center hud-filmic-qte-pulse-ring"
+              className="relative flex flex-col items-center hud-filmic-qte-pulse-ring touch-none"
+              onPointerDown={handlePointerDown}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
+              onPointerLeave={handlePointerUp}
               initial={reducedMotion ? {} : { scale: 0.5, opacity: 0 }}
               animate={isSuccess || isFailure ? { scale: 1.1, opacity: 1 } : { scale: 1, opacity: 1 }}
               transition={{
@@ -836,7 +921,7 @@ export function QuickTimeEventOverlay({
                 <Volume2
                   size={14}
                   className="opacity-40 cursor-pointer hover:opacity-70 transition-opacity"
-                  onClick={() => playSound(SOUNDS.start)}
+                  onClick={() => latestRef.current.onSoundTrigger?.(SOUNDS.start)}
                   aria-label="Звуковой сигнал"
                 />
               </div>
@@ -959,6 +1044,14 @@ export function QuickTimeEventOverlay({
                       {state.currentIndex + 1} / {keyBindings.length}
                     </p>
                   )}
+
+                  {/* Подсказка отмены / Cancel hint (v4.30) */}
+                  <p
+                    className="text-[10px] font-mono uppercase tracking-widest"
+                    style={{ color: 'rgba(160,170,180,0.4)' }}
+                  >
+                    Esc — отмена
+                  </p>
                 </motion.div>
               )}
 
@@ -967,6 +1060,8 @@ export function QuickTimeEventOverlay({
                 {showResult && (
                   <motion.div
                     className="mt-8 flex flex-col items-center gap-3"
+                    /* FIX (v4.30): итог события анонсируется скринридеру. */
+                    aria-live="assertive"
                     initial={reducedMotion ? {} : { opacity: 0, y: 20, scale: 0.8 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={reducedMotion ? {} : { opacity: 0, y: -20 }}
@@ -1068,10 +1163,12 @@ export default QuickTimeEventOverlay;
  *
  * @accessibility
  * - role="dialog" с aria-modal
- * - ARIA-метки для состояний
- * - Поддержка клавиатурного ввода
+ * - ARIA-метки для состояний, aria-live="assertive" на блоке результата
+ * - Поддержка клавиатурного ввода (включая Escape-отмену)
+ * - Тач/мышь: тап = нажатие, удержание пальцем = hold (мобильные)
  *
  * @performance
- * - Оптимизированный таймер с requestAnimationFrame-like interval
- * - Минимальные перерендеры через стабильные колбэки
+ * - v4.30: таймер 10 Гц вместо 60 FPS-setInterval; refs-зеркала устраняют
+ *   перерегистрацию window-слушателей на каждый инпут и перезапуск сессии
+ *   от нестабильных пропсов; кольцо сглаживается framer-интерполяцией
  */
