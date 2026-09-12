@@ -91,10 +91,23 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
   }, [revealed, totalChars, reduceMotion, charByGi, lineStartGis]);
 
   // ── Scramble re-roll for the active look-ahead window ──
+  // FIX (perf v4.22): был setInterval(22мс) ≈ 45 ре-рендеров/сек компонента
+  // поэмы — на слабых устройствах это джанкило самый дорогой первый экран.
+  // Теперь rAF с капом ~45Гц: пауза в скрытой вкладке бесплатно (браузер
+  // не вызывает rAF), выравнивание с кадрами отрисовки.
   useEffect(() => {
     if (reduceMotion || revealed >= totalChars) return;
-    const id = setInterval(() => setScrambleSeed((s) => s + 1), 22);
-    return () => clearInterval(id);
+    let raf = 0;
+    let last = 0;
+    const tick = (t: number) => {
+      if (t - last >= 22) {
+        last = t;
+        setScrambleSeed((s) => s + 1);
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [reduceMotion, revealed, totalChars]);
 
   // ── Completion: short dwell to absorb the final lines, then continue ──
