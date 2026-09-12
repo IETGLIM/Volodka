@@ -92,6 +92,7 @@ import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestM
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
+import { QuickTimeEventHost } from '@/components/game/hud/parts/QuickTimeEventHost';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
 import { LevelUpSummary } from '../LevelUpSummary';
@@ -427,6 +428,9 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       {/* FIX-C1: <GameplayIntroWakeOverlay /> removed — CutsceneOverlay
           below already handles the intro_wakeup letterbox + skip + text. */}
       <EncounterBeatOverlay />
+      {/* QTE (v4.30): быстрое событие как кросс-режимный оверлей — гейт занятости
+          экрана и локомоция-гейт внутри хоста (паттерн PoemRevealHost). */}
+      <QuickTimeEventHost />
       <GameplayCutsceneOverlay />
       <GameplayPoemReveal />
       <GameplaySceneTransitionFx />

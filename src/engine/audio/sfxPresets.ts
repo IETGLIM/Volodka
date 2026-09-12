@@ -49,6 +49,15 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   hazard_fall: { type: 'sawtooth', frequency: 70, duration: 0.5, gain: 0.2 },
   hazard_drown: { type: 'sine', frequency: 240, duration: 0.35, gain: 0.12 },
   hazard_static: { type: 'sawtooth', frequency: 90, duration: 0.28, gain: 0.14 },
+  // ─── QTE (QuickTimeEventHost: маппинг SOUNDS из QuickTimeEventOverlay) ──
+  // Отдельные пресеты вместо деградации в «click» — у события свой ритм:
+  // старт (вход), нажатие (метроном), near-miss (звон), успех/провал (каденция).
+  qte_start: { type: 'triangle', frequency: 520, duration: 0.12, gain: 0.18 },
+  qte_press: { type: 'square', frequency: 900, duration: 0.035, gain: 0.12 },
+  qte_near_miss: { type: 'sine', frequency: 1200, duration: 0.08, gain: 0.15 },
+  qte_success: { type: 'sine', frequency: 780, duration: 0.18, gain: 0.2 },
+  qte_failure: { type: 'sawtooth', frequency: 160, duration: 0.25, gain: 0.18 },
+  qte_complete: { type: 'sine', frequency: 640, duration: 0.22, gain: 0.18 },
 };
 
 export const FOOTSTEP_PRESETS: Record<string, FootstepConfig> = {

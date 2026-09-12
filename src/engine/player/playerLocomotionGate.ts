@@ -21,6 +21,7 @@ import {
 
 let panelStackBlocksLocomotion = false;
 let minigameBlocksLocomotion = false;
+let qteBlocksLocomotion = false;
 
 export function setPanelStackLocomotionGate(blocked: boolean): void {
   panelStackBlocksLocomotion = blocked;
@@ -30,12 +31,18 @@ export function setMinigameLocomotionGate(blocked: boolean): void {
   minigameBlocksLocomotion = blocked;
 }
 
+/** Модальный QTE (v4.30): WASD/прыжок/взаимодействие замораживаются на время события. */
+export function setQteLocomotionGate(blocked: boolean): void {
+  qteBlocksLocomotion = blocked;
+}
+
 /** True when a modal gameplay overlay should freeze WASD / stick locomotion. */
 export function isGameplayOverlayLocomotionLocked(): boolean {
   return (
     isExamineOverlayOpen() ||
     panelStackBlocksLocomotion ||
-    minigameBlocksLocomotion
+    minigameBlocksLocomotion ||
+    qteBlocksLocomotion
   );
 }
 
@@ -91,4 +98,5 @@ export function resolvePlayerMovementLocked(store: GameStoreSnapshot): boolean {
 export function resetPlayerLocomotionGateForTests(): void {
   panelStackBlocksLocomotion = false;
   minigameBlocksLocomotion = false;
+  qteBlocksLocomotion = false;
 }
