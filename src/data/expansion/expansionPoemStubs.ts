@@ -31,7 +31,10 @@ function expansionPoem(
 }
 
 export const EXPANSION_POEM_STUBS: Poem[] = [
-  expansionPoem('poem_36', 'Под подушкой', 36, 'examine_bed_pillow', {
+  // FIX (v4.17.1): order 36/37 коллидировал с poem_tolpa (order 36) и
+  // poem_act6_01 (order 37) из poems.ts — мина при слиянии кодекса.
+  // Бонусные фрагменты получают order 112/113 (вне канонического коруса).
+  expansionPoem('poem_36', 'Под подушкой', 112, 'examine_bed_pillow', {
     author: 'Володька (во сне)',
     themes: ['сон', 'сервер', 'подсознание', 'код'],
     intro: 'Строки, написанные в полусне — почерк твой, память — нет.',
@@ -52,7 +55,7 @@ export const EXPANSION_POEM_STUBS: Poem[] = [
       'в чужой, но родной репозиторий.',
     ],
   }),
-  expansionPoem('poem_37', 'Отражение', 37, 'examine_mirror_thought', {
+  expansionPoem('poem_37', 'Отражение', 113, 'examine_mirror_thought', {
     author: 'Володька',
     themes: ['зеркало', 'идентичность', 'усталость', 'выбор'],
     intro: 'Манифест, продавленный карандашом без грифеля — между стихом и исповедью.',
