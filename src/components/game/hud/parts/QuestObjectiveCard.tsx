@@ -560,38 +560,43 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
         tabIndex={0}
         aria-label={`${quest.title} — прогресс ${quest.progress}%`}
       >
-        <div className="flex items-center gap-2">
-          <typeConfig.icon size={16} color={typeConfig.color} />
+        {/* FIX (v4.22): заголовок больше не обрезается до «Первое чте…» —
+         * раньше в одну строку с truncate умещалось ~135px (maxWidth 300 минус
+         * иконка, бар 64px и проценты). Теперь заголовок — до 2 строк с
+         * min-w-0 и title-атрибутом, прогресс — отдельной полосой на всю ширину. */}
+        <div className="flex items-start gap-2">
+          <span className="shrink-0 mt-0.5">
+            <typeConfig.icon size={16} color={typeConfig.color} />
+          </span>
           <span
-            className="text-sm font-semibold truncate flex-1"
+            className="text-sm font-semibold leading-snug line-clamp-2 flex-1 min-w-0"
             style={{ color: typeConfig.color }}
+            title={quest.title}
           >
             {quest.title}
           </span>
-          
-          {/* Прогресс / Progress indicator */}
-          <div
-            className="w-16 h-1.5 rounded-full overflow-hidden"
-            style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
-          >
-            <motion.div
-              className="h-full rounded-full"
-              style={{
-                backgroundColor: isFailed ? '#ff3333' : typeConfig.color,
-                width: `${quest.progress}%`,
-              }}
-            />
-          </div>
-          
           <span
-            className="text-[10px] font-mono tabular-nums"
+            className="text-[10px] font-mono tabular-nums shrink-0 mt-0.5"
             style={{
               color: isFailed ? '#ff5555' : typeConfig.color,
-              minWidth: 32,
             }}
           >
             {quest.progress}%
           </span>
+        </div>
+
+        {/* Прогресс — тонкая полоса на всю ширину карточки */}
+        <div
+          className="mt-1.5 h-1 w-full rounded-full overflow-hidden"
+          style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+        >
+          <motion.div
+            className="h-full rounded-full"
+            style={{
+              backgroundColor: isFailed ? '#ff3333' : typeConfig.color,
+              width: `${quest.progress}%`,
+            }}
+          />
         </div>
         
         {/* Таймер если есть / Timer if applicable */}
