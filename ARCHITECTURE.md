@@ -1969,3 +1969,56 @@ reset в engineRuntimeReset), **ноль React**:
 - Объективы `flag_set` без сеттера запрещены ракет-тестом: контент-патч
   обязан нести сеттер в тех же изменениях (или осознанно расширить
   KNOWN_DEAD_FLAG_OBJECTIVES с обоснованием).
+
+## v4.22.0 — слот-сетка HUD, реактивный гейт осмотра, перф-волна
+
+### Слот-сетка HUD (shared/constants/hudLayout.ts — единый источник координат)
+- Правая колонка — строгая вертикальная цепочка: топ-бар (0–40) →
+  сложность (48) → баффы (84) → миникарта (146–368) → квест-карта
+  (374, до 216px) → день/ночь (`explorationDayNightTopPx()` =
+  `explorationAchievementCardSafeTopPx()`) → погода (каскад) → POI-
+  компас. Коллизия квест-карта ↔ день/ночь (оба ≈ minimapBottom+4/6)
+  устранена на уровне констант, а не точечными оффсетами.
+- Нижний центр: тулбар (60) → quick-use (68) → поэзия (124) →
+  [E]-промпт (`bottomInteractPromptPx()` ≈ 234) → тосты-подсказки
+  (`bottomCenterHintPx()` / `bottomCenterHintSecondaryPx()`): тост
+  «Вы сбились с пути», ContextualHint, CriticalStatusWhisper. Хардкоды
+  `bottom-24` / `clamp(72–128px)` / `clamp(118–176px)` запрещены —
+  только слоты.
+- Левая колонка: именованный `LEFT_INSET` (панели «Персонажи» и
+  «Подсказки» раньше использовали `RIGHT_INSET` слева).
+- Правило: любой новый HUD-виджет обязан брать координаты из
+  hudLayout.ts; хардкод vh/px в fixed-позициях — код-ревью флаг.
+
+### Реактивный гейт оверлеев (engine/assets/gltfPreloadOverlayGate.ts)
+- Модульный boolean-гейт (осмотр/сюжет) получил подписки:
+  `subscribeOverlayGate` + нотификация на смену → хук
+  `useExamineOverlayOpen()` (useSyncExternalStore, getServerSnapshot
+  = isExamineOverlayOpen).
+- Потребители: InteractionHintPopup, EnhancedCrosshairPrompt,
+  ContextualHint, PlayerLostHintToast — пока осмотр/сюжет открыт,
+  нижне-центральные подсказки размонтируются (раньше висели поверх
+  панели осмотра — «стопка тултипов» со скриншота игрока).
+- Сеттеры стали идемпотентными (early-return на same-value) — нотификации
+  без дублирования.
+
+### Перф-инварианты горячих путей
+- HUD-кулдауны: единый `usePoemPowerCooldownTick` (store/selectors/
+  hudMountSelectors.ts) — интервал 500мс живёт ТОЛЬКО пока есть
+  кулдаун в пределах длительности; критерий «есть записи в poemPowers»
+  не является критерием активности (записи персистентны).
+- Интро: анимации первого экрана — только rAF (не setInterval), кап
+  частоты через аккумулятор dt.
+- DPR-замер (useDynamicDPR): опция `enabled`; в demand-фреймлоупе
+  замер suspend'ится (RPGGameCanvas передаёт frameloop-флаг) —
+  измерение FPS вне рендера бессмысленно и платно.
+- Погодный множитель движения: кэш по квантовому ключу
+  (enabled|scene|hour|rain×10) в playerMainMovement.ts —
+  determineWeatherType больше не в каждом кадре.
+- Аудио-визуализатор: rAF только при реальном AnalyserNode; idle —
+  один статичный кадр «нет данных»; persist видимости/режима в
+  localStorage (volodka.audioViz.*).
+
+### Бут-гард
+- WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
+  минимум) рендерится русский экран требований вместо чёрного канваса.
