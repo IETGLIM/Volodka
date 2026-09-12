@@ -26,7 +26,10 @@ import { readGamePhase } from '@/shared/gamePhase';
 import { useGamePhase } from '@/store/selectors';
 import { eventBus } from '@/engine/EventBus';
 import { buildNPCStatesForTime } from '@/shared/schedule/ScheduleEngine';
-import { buildWorldHourChangedPayload } from '@/shared/schedule/syncWorldSchedule';
+import {
+  areNpcScheduleStatesEqual,
+  buildWorldHourChangedPayload,
+} from '@/shared/schedule/syncWorldSchedule';
 import { buildScheduleContext } from '@/shared/scheduleContext';
 import { isGameplayOverlayLocomotionLocked } from '@/engine/player/playerLocomotionGate';
 import {
@@ -62,9 +65,15 @@ export function useWorldClock() {
       const scheduleCtx = buildScheduleContext(store);
       const payload = buildWorldHourChangedPayload(newHour, previousHour, scheduleCtx);
 
-      // Update store with new time and NPC states
+      // Update store with new time and NPC states.
+      // perf (v4.24, этап 101): dirty-check — если построенное расписание
+      // равно текущему ПО ЗНАЧЕНИЮ (типичный тик: час сдвинулся, но слот
+      // расписания тот же), запись в стор пропускается. Иначе новая карта
+      // сбросила бы ссылки и перерисовала всех подписчиков npcStates.
       store.setExplorationTimeOfDay(newHour);
-      store.setExplorationNPCStates(payload.npcStates);
+      if (!areNpcScheduleStatesEqual(payload.npcStates, store.exploration.npcStates)) {
+        store.setExplorationNPCStates(payload.npcStates);
+      }
 
       // Emit world events for downstream systems (NPC schedules, weather, quest timers).
       eventBus.emit('world:tick', { hour: newHour, deltaHours: WORLD_CLOCK_HOURS_PER_TICK });
