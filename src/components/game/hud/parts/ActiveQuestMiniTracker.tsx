@@ -19,6 +19,18 @@ import type { QuestType } from '@/shared/types/game';
 import { focusQuestOnMap } from './focusQuestOnMap';
 import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключи динамических строк трекера. Они сознательно НЕ добавлены
+ * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
+ * и статичная запись перебила бы интерполяцию значений внутри fallback
+ * (t() вернул бы шаблон вместо подставленных значений — видимый текст менялся бы).
+ * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
+const HUD_DYNAMIC_KEYS = {
+  progressAria: 'hud.questTracker.progressAria',
+  doneAria: 'hud.questTracker.doneAria',
+  poemsCollected: 'hud.questTracker.poemsCollected',
+} as const;
 
 const CYCLE_INTERVAL_MS = 10_000;
 
@@ -207,7 +219,7 @@ export function ActiveQuestMiniTracker() {
   const questType = questDef.questType;
   const typeColor = QUEST_TYPE_COLOR[questType];
   const typeIcon = QUEST_TYPE_ICON[questType];
-  const trackerLine = liveHint ?? nextObjective?.description ?? 'Все цели выполнены';
+  const trackerLine = liveHint ?? nextObjective?.description ?? t('hud.questTracker.allDone', 'Все цели выполнены');
   const objIcon = nextObjective
     ? getObjectiveTypeIcon(
         questDef.objectives.find((o) => o.id === nextObjective.objectiveId)?.type ?? 'custom',
@@ -244,8 +256,8 @@ export function ActiveQuestMiniTracker() {
           }}
           aria-label={
             liveHint || nextObjective
-              ? `${questDef.title}: ${trackerLine}`
-              : `${questDef.title}: все цели выполнены`
+              ? t(HUD_DYNAMIC_KEYS.progressAria, `${questDef.title}: ${trackerLine}`)
+              : t(HUD_DYNAMIC_KEYS.doneAria, `${questDef.title}: все цели выполнены`)
           }
         >
           {/* Quest type icon */}
@@ -272,7 +284,7 @@ export function ActiveQuestMiniTracker() {
 
           {/* Pin indicator */}
           {pinnedQuestId === displayQuest.questId && (
-            <Pin className="size-3 text-amber-400/70 flex-shrink-0" aria-label="Закреплено" />
+            <Pin className="size-3 text-amber-400/70 flex-shrink-0" aria-label={t('hud.questTracker.pinnedAria', 'Закреплено')} />
           )}
 
           {/* Expand chevron */}
@@ -311,7 +323,7 @@ export function ActiveQuestMiniTracker() {
                       border: `1px solid ${typeColor}33`,
                     }}
                   >
-                    {questType === 'main' ? 'ОСН' : questType === 'side' ? 'ПОБ' : questType === 'hidden' ? 'СКР' : 'ЕЖД'}
+                    {questType === 'main' ? t('hud.questTracker.typeShort.main', 'ОСН') : questType === 'side' ? t('hud.questTracker.typeShort.side', 'ПОБ') : questType === 'hidden' ? t('hud.questTracker.typeShort.hidden', 'СКР') : t('hud.questTracker.typeShort.daily', 'ЕЖД')}
                   </span>
                 </div>
 
@@ -341,14 +353,14 @@ export function ActiveQuestMiniTracker() {
                 {questDef.progressiveRevealCount && (() => {
                   const totalObjs = questDef.objectives.length;
                   const completedObjs = questDef.objectives.filter((o) => displayQuest.objectives[o.id]).length;
-                  const poemWord = completedObjs === 1 ? 'стихотворение'
-                    : completedObjs >= 2 && completedObjs <= 4 ? 'стихотворения'
-                    : 'стихотворений';
+                  const poemWord = completedObjs === 1 ? t('hud.questTracker.poemWord.one', 'стихотворение')
+                    : completedObjs >= 2 && completedObjs <= 4 ? t('hud.questTracker.poemWord.few', 'стихотворения')
+                    : t('hud.questTracker.poemWord.many', 'стихотворений');
                   return (
                     <div className="flex items-center gap-1.5 px-1 py-0.5">
                       <BookOpen className="size-2.5 text-stone-500 shrink-0" />
                       <span className="hud-filmic-kicker" style={{ letterSpacing: '0.08em' }}>
-                        Собрано {poemWord}: {completedObjs} из {totalObjs}
+                        {t(HUD_DYNAMIC_KEYS.poemsCollected, `Собрано ${poemWord}: ${completedObjs} из ${totalObjs}`)}
                       </span>
                     </div>
                   );
@@ -383,30 +395,30 @@ export function ActiveQuestMiniTracker() {
                     onClick={(e) => { e.stopPropagation(); togglePin(); }}
                     className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-sm hover:bg-white/5 transition-colors"
                     style={{ color: pinnedQuestId ? 'var(--hud-filmic-accent)' : 'var(--hud-filmic-ink-faint)' }}
-                    aria-label={pinnedQuestId ? 'Открепить' : 'Закрепить'}
+                    aria-label={pinnedQuestId ? t('hud.questTracker.unpinAria', 'Открепить') : t('hud.questTracker.pinAria', 'Закрепить')}
                   >
                     {pinnedQuestId ? <PinOff className="size-3" /> : <Pin className="size-3" />}
-                    {pinnedQuestId ? 'Открепить' : 'Закрепить'}
+                    {pinnedQuestId ? t('hud.questTracker.unpin', 'Открепить') : t('hud.questTracker.pin', 'Закрепить')}
                   </button>
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); openQuestJournal(); }}
                     className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-sm hover:bg-white/5 transition-colors"
                     style={{ color: 'var(--hud-filmic-ink-faint)' }}
-                    aria-label="Открыть журнал"
+                    aria-label={t('hud.questTracker.journalAria', 'Открыть журнал')}
                   >
                     <BookOpen className="size-3" />
-                    Журнал
+                    {t('hud.questTracker.journal', 'Журнал')}
                   </button>
                   <button
                     type="button"
                     onClick={(e) => { e.stopPropagation(); openQuestOnMap(); }}
                     className="flex items-center gap-1 text-[9px] font-mono px-1.5 py-0.5 rounded-sm hover:bg-white/5 transition-colors"
                     style={{ color: 'var(--hud-filmic-ink-faint)' }}
-                    aria-label="Показать цель на карте"
+                    aria-label={t('hud.questTracker.mapAria', 'Показать цель на карте')}
                   >
                     <MapIcon className="size-3" />
-                    Карта
+                    {t('hud.questTracker.map', 'Карта')}
                   </button>
                   {activeQuests.length > 1 && (
                     <span className="hud-filmic-kicker ml-auto" style={{ letterSpacing: '0.08em', fontSize: uiTextScaledPx(8) }}>

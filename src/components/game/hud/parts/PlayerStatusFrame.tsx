@@ -20,6 +20,18 @@ import { usePlayerKarma, usePlayerEnergy, usePlayerStress, usePlayerLevel } from
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { KARMA_HIGH_THRESHOLD, KARMA_LOW_THRESHOLD } from '@/data/constants';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключи динамических aria-строк. Они сознательно НЕ добавлены
+ * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
+ * и статичная запись перебила бы интерполяцию значений внутри fallback
+ * (t() вернул бы шаблон вместо подставленных чисел — видимый текст менялся бы).
+ * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
+const HUD_DYNAMIC_KEYS = {
+  energyAria: 'hud.playerStatus.energyAria',
+  stressAria: 'hud.playerStatus.stressAria',
+  karmaAria: 'hud.playerStatus.karmaAria',
+} as const;
 
 interface BarRowProps {
   label: string;
@@ -122,7 +134,7 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
       className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/55 px-2 py-1.5 backdrop-blur-sm"
       style={{ boxShadow: '0 0 14px rgba(0, 210, 255, 0.12)' }}
       role="group"
-      aria-label="Состояние героя: энергия, стресс, карма"
+      aria-label={t('hud.playerStatus.aria', 'Состояние героя: энергия, стресс, карма')}
     >
       {/* Портрет: монограмма героя в кольце уровня */}
       <div className="relative shrink-0" aria-hidden="true">
@@ -138,7 +150,7 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
             className="font-serif text-lg font-bold text-cyan-100"
             style={{ textShadow: '0 0 6px rgba(0,229,255,0.7)' }}
           >
-            В
+            {t('hud.playerStatus.monogram', 'В')}
           </span>
         </div>
         {/* Уровень — бейдж в углу портрета, как в WoW */}
@@ -152,33 +164,33 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
       {/* Бары: Энергия / Стресс / Карма */}
       <div className="flex flex-col gap-[3px]">
         <BarRow
-          label="ЭН"
+          label={t('hud.playerStatus.energyShort', 'ЭН')}
           value={energy}
           max={Math.max(100, energy)}
           fill="linear-gradient(90deg, #16a34a, #4ade80)"
           glow="0 0 6px rgba(74, 222, 128, 0.45)"
           flash={energy <= 25}
-          ariaValue={`Энергия: ${Math.round(energy)} из 100`}
+          ariaValue={t(HUD_DYNAMIC_KEYS.energyAria, `Энергия: ${Math.round(energy)} из 100`)}
           reducedMotion={reducedMotion}
         />
         <BarRow
-          label="СТР"
+          label={t('hud.playerStatus.stressShort', 'СТР')}
           value={stress}
           max={100}
           fill="linear-gradient(90deg, #be123c, #fb7185)"
           glow="0 0 6px rgba(251, 113, 133, 0.4)"
           flash={stress >= 85}
-          ariaValue={`Стресс: ${Math.round(stress)} из 100`}
+          ariaValue={t(HUD_DYNAMIC_KEYS.stressAria, `Стресс: ${Math.round(stress)} из 100`)}
           reducedMotion={reducedMotion}
         />
         <BarRow
-          label="КАР"
+          label={t('hud.playerStatus.karmaShort', 'КАР')}
           value={karmaPct}
           max={100}
           fill="linear-gradient(90deg, #3b82f6, #6366f1)"
           glow="0 0 6px rgba(99, 102, 241, 0.4)"
           flash={karmaDrop}
-          ariaValue={`Карма: ${karma}, ${tierLabel}`}
+          ariaValue={t(HUD_DYNAMIC_KEYS.karmaAria, `Карма: ${karma}, ${tierLabel}`)}
           reducedMotion={reducedMotion}
         />
       </div>

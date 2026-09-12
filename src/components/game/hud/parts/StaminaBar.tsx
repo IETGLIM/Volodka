@@ -10,6 +10,17 @@
 import { useEffect, useRef } from 'react';
 import { getPlayerStamina } from '@/engine/player/playerStamina';
 import { bottomStaminaBarPx } from '@/shared/constants/hudLayout';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключи динамических aria-строк. Они сознательно НЕ добавлены
+ * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
+ * и статичная запись перебила бы интерполяцию значений внутри fallback
+ * (t() вернул бы шаблон вместо подставленных процентов — видимый текст менялся бы).
+ * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
+const HUD_DYNAMIC_KEYS = {
+  aria: 'hud.stamina.aria',
+  exhaustedAria: 'hud.stamina.exhaustedAria',
+} as const;
 
 const POLL_MS = 100;
 /** Ниже этого отношения стамина считается «полной» (плавный fade-out у 100%). */
@@ -52,8 +63,8 @@ export function StaminaBar() {
       const label = labelRef.current;
       if (label) {
         label.textContent = exhausted
-          ? `Выносливость: ${pct}% — дыхание сбито, бег временно недоступен`
-          : `Выносливость: ${pct}%`;
+          ? t(HUD_DYNAMIC_KEYS.exhaustedAria, `Выносливость: ${pct}% — дыхание сбито, бег временно недоступен`)
+          : t(HUD_DYNAMIC_KEYS.aria, `Выносливость: ${pct}%`);
       }
     };
 
@@ -72,11 +83,11 @@ export function StaminaBar() {
       aria-valuemax={100}
       aria-valuenow={100}
       aria-orientation="horizontal"
-      aria-label="Выносливость"
+      aria-label={t('hud.stamina.label', 'Выносливость')}
     >
       {/* Русская a11y-подпись для скринридеров (только sr-only). */}
       <span ref={labelRef} className="sr-only" aria-live="polite">
-        Выносливость: 100%
+        {t('hud.stamina.initialAria', 'Выносливость: 100%')}
       </span>
       <div
         aria-hidden="true"

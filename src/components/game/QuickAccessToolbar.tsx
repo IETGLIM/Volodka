@@ -4,6 +4,16 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключи динамических подписей слотов. Они сознательно НЕ добавлены
+ * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
+ * и статичная запись перебила бы интерполяцию значений внутри fallback (видимый
+ * текст менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний литерал. */
+const HUD_DYNAMIC_KEYS = {
+  slotAria: 'hud.toolbar.slotAria',
+  slotTitle: 'hud.toolbar.slotTitle',
+} as const;
 
 /* ══════════════════════════════════════════════════════════════
    Types
@@ -52,12 +62,12 @@ function getExplorationSlots(
     /* FIX: слоты «Карта» и «Кодекс» были заглушками (action: () => {}).
      * Теперь они открывают реальные панели через панельный диспетчер —
      * тот же путь, что и клавиши M / K. */
-    { id: 'map', icon: '🗺', label: 'Карта', shortcut: '1', action: () => { firePanelShortcut('KeyM'); } },
-    { id: 'inventory', icon: '🎒', label: 'Инвентарь', shortcut: '2', action: openers.onOpenInventory },
-    { id: 'quests', icon: '📋', label: 'Задания', shortcut: '3', action: openers.onOpenQuests },
-    { id: 'codex', icon: '📖', label: 'Кодекс', shortcut: '4', action: () => { firePanelShortcut('KeyK'); } },
-    { id: 'journal', icon: '📝', label: 'Журнал', shortcut: '5', action: openers.onOpenJournal },
-    { id: 'poems', icon: '✦', label: 'Стихи', shortcut: '6', action: openers.onOpenPoetry },
+    { id: 'map', icon: '🗺', label: t('hud.toolbar.map', 'Карта'), shortcut: '1', action: () => { firePanelShortcut('KeyM'); } },
+    { id: 'inventory', icon: '🎒', label: t('hud.toolbar.inventory', 'Инвентарь'), shortcut: '2', action: openers.onOpenInventory },
+    { id: 'quests', icon: '📋', label: t('hud.toolbar.quests', 'Задания'), shortcut: '3', action: openers.onOpenQuests },
+    { id: 'codex', icon: '📖', label: t('hud.toolbar.codex', 'Кодекс'), shortcut: '4', action: () => { firePanelShortcut('KeyK'); } },
+    { id: 'journal', icon: '📝', label: t('hud.toolbar.journal', 'Журнал'), shortcut: '5', action: openers.onOpenJournal },
+    { id: 'poems', icon: '✦', label: t('hud.toolbar.poems', 'Стихи'), shortcut: '6', action: openers.onOpenPoetry },
   ];
 }
 
@@ -151,7 +161,7 @@ export function QuickAccessToolbar({
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
         role="toolbar"
-        aria-label="Быстрый доступ"
+        aria-label={t('hud.toolbar.aria', 'Быстрый доступ')}
       >
           <div className="quick-access-toolbar-inner">
             {slots.map((slot) => (
@@ -162,8 +172,8 @@ export function QuickAccessToolbar({
                 onClick={() => handleSlotAction(slot)}
                 onMouseEnter={() => setHoveredSlot(slot.id)}
                 onMouseLeave={() => setHoveredSlot(null)}
-                aria-label={`${slot.label} (${slot.shortcut})`}
-                title={`${slot.label} [${slot.shortcut}]`}
+                aria-label={t(HUD_DYNAMIC_KEYS.slotAria, `${slot.label} (${slot.shortcut})`)}
+                title={t(HUD_DYNAMIC_KEYS.slotTitle, `${slot.label} [${slot.shortcut}]`)}
               >
                 <span className="quick-access-slot-icon" aria-hidden="true">{slot.icon}</span>
                 <span className="quick-access-slot-label">{slot.label}</span>

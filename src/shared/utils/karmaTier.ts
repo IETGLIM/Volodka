@@ -1,4 +1,5 @@
 import { KARMA_HIGH_THRESHOLD, KARMA_LOW_THRESHOLD } from '@/data/constants';
+import { t } from '@/i18n';
 
 export type KarmaTier = 'positive' | 'neutral' | 'negative';
 
@@ -12,10 +13,10 @@ export function getKarmaTier(karma: number): KarmaTier {
 export function getKarmaTierLabel(karma: number): string {
   switch (getKarmaTier(karma)) {
     case 'positive':
-      return 'Позитивная';
+      return t('hud.karmaTier.positive', 'Позитивная');
     case 'negative':
-      return 'Негативная';
+      return t('hud.karmaTier.negative', 'Негативная');
     default:
-      return 'Нейтральная';
+      return t('hud.karmaTier.neutral', 'Нейтральная');
   }
 }

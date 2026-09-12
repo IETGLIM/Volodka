@@ -38,6 +38,7 @@ import {
   HUD_ENERGY_WARN_THRESHOLD,
   HUD_STRESS_HIGH_THRESHOLD,
 } from '@/components/game/hud/hudThresholds';
+import { t } from '@/i18n';
 
 export const SceneTopBarHud = memo(function SceneTopBarHud() {
   const quietStyle = useHudQuietStyle();
@@ -61,7 +62,7 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
       className="fixed left-0 right-0 top-0 pointer-events-none"
       style={{ zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
       role="region"
-      aria-label="Верхняя панель интерфейса: сцена, уровень, опыт, компас и время"
+      aria-label={t('hud.topBar.aria', 'Верхняя панель интерфейса: сцена, уровень, опыт, компас и время')}
     >
       {/* Top-left: WoW-стиль фрейм героя (портрет + бары ЭН/СТР/КАР) + сцена-чип.
           Фрейм скрыт на мобильных (compact тач-HUD) — как и правый кластер.

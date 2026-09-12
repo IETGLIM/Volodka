@@ -17,6 +17,13 @@ import { useCurrentSceneId } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomStatusEffectsPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключ динамической строки «Что рядом (N)» — сознательно НЕ в
+ * статическом каталоге RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
+ * и статичная запись перебила бы интерполяцию значения внутри fallback (видимый
+ * текст менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний литерал. */
+const HUD_NEARBY_KEY = 'hud.emergency.nearby';
 
 const IDLE_PULSE_THRESHOLD_MS = 15_000;
 
@@ -91,7 +98,7 @@ export function EmergencyHelpButton() {
       if (!objectiveText) {
         const activeQuest = snap.quests.find((q) => q.status === 'active');
         if (activeQuest) {
-          objectiveText = 'Активное задание — открой журнал [Q]';
+          objectiveText = t('hud.emergency.activeQuestFallback', 'Активное задание — открой журнал [Q]');
         }
       }
 
@@ -147,8 +154,8 @@ export function EmergencyHelpButton() {
               backdropFilter: 'blur(8px)',
               color: 'var(--hud-filmic-ink-muted)',
             }}
-            aria-label="Что делать?"
-            title="Что делать?"
+            aria-label={t('hud.emergency.aria', 'Что делать?')}
+            title={t('hud.emergency.title', 'Что делать?')}
           >
             <CircleHelp className="size-5" />
             {/* Idle pulse ring */}
@@ -179,7 +186,7 @@ export function EmergencyHelpButton() {
           {/* Header */}
           <div className="flex items-center gap-2 px-3 py-2.5 border-b" style={{ borderColor: 'var(--hud-filmic-border)' }}>
             <CircleHelp className="size-4" style={{ color: 'var(--hud-filmic-ink-muted)' }} />
-            <span className="hud-filmic-kicker">Что делать?</span>
+            <span className="hud-filmic-kicker">{t('hud.emergency.title', 'Что делать?')}</span>
           </div>
 
           {/* Content */}
@@ -187,7 +194,7 @@ export function EmergencyHelpButton() {
             {/* Current objective */}
             {helpContent.objectiveText && (
               <div>
-                <p className="hud-filmic-kicker mb-0.5">Текущая цель</p>
+                <p className="hud-filmic-kicker mb-0.5">{t('hud.emergency.currentObjective', 'Текущая цель')}</p>
                 <p className="hud-filmic-body text-[12px]" style={{ textAlign: 'left' }}>
                   {helpContent.objectiveText}
                 </p>
@@ -197,7 +204,7 @@ export function EmergencyHelpButton() {
             {/* First reading contextual hint */}
             {helpContent.firstReadingHint && (
               <div>
-                <p className="hud-filmic-kicker mb-0.5" style={{ color: 'var(--hud-filmic-accent)' }}>Подсказка</p>
+                <p className="hud-filmic-kicker mb-0.5" style={{ color: 'var(--hud-filmic-accent)' }}>{t('hud.emergency.hint', 'Подсказка')}</p>
                 <p className="hud-filmic-body text-[12px] opacity-90" style={{ textAlign: 'left', fontStyle: 'italic' }}>
                   {helpContent.firstReadingHint}
                 </p>
@@ -209,7 +216,7 @@ export function EmergencyHelpButton() {
               <div>
                 <p className="hud-filmic-kicker mb-1">
                   <Eye className="size-2.5 inline-block mr-1 -mt-px" />
-                  Что рядом ({helpContent.sceneZones.length})
+                  {t(HUD_NEARBY_KEY, `Что рядом (${helpContent.sceneZones.length})`)}
                 </p>
                 <div className="space-y-0.5">
                   {helpContent.sceneZones.map((zone) => (
@@ -223,7 +230,7 @@ export function EmergencyHelpButton() {
                     </p>
                   ))}
                   {helpContent.sceneZones.length >= 6 && (
-                    <p className="hud-filmic-kicker pl-3">…и другие</p>
+                    <p className="hud-filmic-kicker pl-3">{t('hud.emergency.more', '…и другие')}</p>
                   )}
                 </div>
               </div>
@@ -240,7 +247,7 @@ export function EmergencyHelpButton() {
             >
               <RotateCcw className="size-3 text-stone-500 group-hover:text-stone-300 transition-colors" />
               <span className="text-[10px] font-mono text-stone-500 group-hover:text-stone-300 transition-colors">
-                Сбросить взаимодействие
+                {t('hud.emergency.reset', 'Сбросить взаимодействие')}
               </span>
             </button>
 
@@ -248,7 +255,7 @@ export function EmergencyHelpButton() {
             <div className="flex items-start gap-1.5 px-2 pt-0.5">
               <AlertTriangle className="size-3 text-stone-600 mt-px shrink-0" />
               <p className="hud-filmic-kicker leading-snug" style={{ letterSpacing: '0.06em' }}>
-                Если ничего не помогает — сохраните и загрузите игру
+                {t('hud.emergency.lastResort', 'Если ничего не помогает — сохраните и загрузите игру')}
               </p>
             </div>
           </div>

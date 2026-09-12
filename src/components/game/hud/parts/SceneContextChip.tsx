@@ -11,6 +11,13 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import type { SceneDefinition } from '@/shared/types/sceneDefinition';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключ динамической aria-строки — сознательно НЕ в статическом
+ * каталоге RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback, и статичная
+ * запись перебила бы интерполяцию значений внутри fallback (видимый текст
+ * менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний литерал. */
+const HUD_ARIA_KEY = 'hud.sceneContext.aria';
 
 type SceneType = SceneDefinition['type'];
 
@@ -18,10 +25,10 @@ const SCENE_TYPE_CONFIG: Record<
   SceneType,
   { icon: typeof Sun; label: string }
 > = {
-  outdoor: { icon: Sun, label: 'Улица' },
-  indoor: { icon: Home, label: 'Помещение' },
-  underground: { icon: Mountain, label: 'Подземелье' },
-  dream: { icon: Cloud, label: 'Сон' },
+  outdoor: { icon: Sun, label: t('hud.sceneContext.street', 'Улица') },
+  indoor: { icon: Home, label: t('hud.sceneContext.indoor', 'Помещение') },
+  underground: { icon: Mountain, label: t('hud.sceneContext.underground', 'Подземелье') },
+  dream: { icon: Cloud, label: t('hud.sceneContext.dream', 'Сон') },
 };
 
 export function SceneContextChip() {
@@ -63,7 +70,7 @@ export function SceneContextChip() {
         boxShadow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.15), inset 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.05)',
         ...quietStyle,
       }}
-      aria-label={`${sceneLabel} — NPC: ${npcCount}, Выходов: ${exitsCount}`}
+      aria-label={t(HUD_ARIA_KEY, `${sceneLabel} — NPC: ${npcCount}, Выходов: ${exitsCount}`)}
     >
       <SceneIcon
         size={10}
@@ -87,7 +94,7 @@ export function SceneContextChip() {
         className="font-mono text-[8px] tabular-nums"
         style={{ color: 'rgba(148, 163, 184, 0.6)' }}
       >
-        NPC:{npcCount}
+        {t('hud.sceneContext.npcPrefix', 'NPC:')}{npcCount}
       </span>
 
       {/* Divider dot */}
@@ -101,7 +108,7 @@ export function SceneContextChip() {
         className="font-mono text-[8px] tabular-nums"
         style={{ color: 'rgba(148, 163, 184, 0.6)' }}
       >
-        EX:{exitsCount}
+        {t('hud.sceneContext.exitsPrefix', 'EX:')}{exitsCount}
       </span>
     </div>
   );

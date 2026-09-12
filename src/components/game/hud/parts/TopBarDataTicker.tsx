@@ -21,6 +21,21 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { APP_VERSION } from '@/shared/constants/appVersion';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useCityNews } from '@/hooks/useCityNews';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключи динамических строк тикера. Они сознательно НЕ добавлены
+ * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
+ * и статичная запись перебила бы интерполяцию значений внутри fallback
+ * (t() вернул бы шаблон вместо подставленных чисел — видимый текст менялся бы).
+ * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
+const HUD_DYNAMIC_KEYS = {
+  quests: 'hud.ticker.quests',
+  locations: 'hud.ticker.locations',
+  poems: 'hud.ticker.poems',
+  scene: 'hud.ticker.scene',
+  time: 'hud.ticker.time',
+  system: 'hud.ticker.system',
+} as const;
 
 interface TickerItem {
   text: string;
@@ -47,18 +62,18 @@ export function TopBarDataTicker() {
 
   const items = useMemo<TickerItem[]>(() => {
     const half: TickerItem[] = [
-      { text: `ЗАДАНИЯ: ${activeQuests.length}`, accent: activeQuests.length > 0 ? 'rgb(var(--cyber-cyan-rgb) / 0.9)' : undefined },
-      { text: `ЛОКАЦИИ: ${discovered.length}` },
-      { text: `СТИХИ: ${poemCount}/${TOTAL_MAIN_POEMS}`, accent: 'rgba(251,191,36,0.8)' },
-      { text: `СЦЕНА: ${sceneName.toUpperCase()}` },
-      { text: `ВРЕМЯ: ${formatGameClock(timeOfDay)}` },
-      { text: `СИСТЕМА: v${APP_VERSION}` },
+      { text: t(HUD_DYNAMIC_KEYS.quests, `ЗАДАНИЯ: ${activeQuests.length}`), accent: activeQuests.length > 0 ? 'rgb(var(--cyber-cyan-rgb) / 0.9)' : undefined },
+      { text: t(HUD_DYNAMIC_KEYS.locations, `ЛОКАЦИИ: ${discovered.length}`) },
+      { text: t(HUD_DYNAMIC_KEYS.poems, `СТИХИ: ${poemCount}/${TOTAL_MAIN_POEMS}`), accent: 'rgba(251,191,36,0.8)' },
+      { text: t(HUD_DYNAMIC_KEYS.scene, `СЦЕНА: ${sceneName.toUpperCase()}`) },
+      { text: t(HUD_DYNAMIC_KEYS.time, `ВРЕМЯ: ${formatGameClock(timeOfDay)}`) },
+      { text: t(HUD_DYNAMIC_KEYS.system, `СИСТЕМА: v${APP_VERSION}`) },
       { text: '█'.repeat(3) },
-      { text: 'ВОЛОДКА://DATASTREAM' },
+      { text: t('hud.ticker.datastream', 'ВОЛОДКА://DATASTREAM') },
     ];
     // AI-строка городского эфира — только когда прокси вернул текст.
     if (aiNews) {
-      half.push({ text: aiNews, accent: 'rgba(251,191,36,0.85)', badge: 'ЭФИР' });
+      half.push({ text: aiNews, accent: 'rgba(251,191,36,0.85)', badge: t('hud.ticker.badge.onAir', 'ЭФИР') });
     }
     // Дублируем половину — бесшовная ротация бегущей строки (как раньше:
     // без AI-новости это ровно тот же список из 16 статичных строк).

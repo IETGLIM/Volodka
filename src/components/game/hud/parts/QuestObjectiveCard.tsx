@@ -41,6 +41,23 @@ import {
   Timer,
 } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключи динамических строк карточки. Они сознательно НЕ добавлены
+ * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
+ * и статичная запись перебила бы интерполяцию значений внутри fallback
+ * (t() вернул бы шаблон вместо подставленных значений — видимый текст менялся бы).
+ * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
+const HUD_DYNAMIC_KEYS = {
+  timeHoursMinutes: 'hud.questCard.timeHoursMinutes',
+  timeMinutesSeconds: 'hud.questCard.timeMinutesSeconds',
+  timeSeconds: 'hud.questCard.timeSeconds',
+  compactAria: 'hud.questCard.compactAria',
+  fullAria: 'hud.questCard.fullAria',
+  recommendedLevel: 'hud.questCard.recommendedLevel',
+  objectivesAria: 'hud.questCard.objectivesAria',
+  objectiveAria: 'hud.questCard.objectiveAria',
+} as const;
 
 /* ─── Type Definitions ─── */
 
@@ -166,31 +183,31 @@ const QUEST_TYPE_CONFIG: Record<QuestType, {
   main: {
     color: '#ff6644',
     glow: 'rgba(255, 102, 68, 0.5)',
-    label: 'ОСНОВНОЙ',
+    label: t('hud.questCard.type.main', 'ОСНОВНОЙ'),
     icon: Swords,
   },
   side: {
     color: '#00d4e0',
     glow: 'rgba(0, 212, 224, 0.5)',
-    label: 'ПОБОЧНЫЙ',
+    label: t('hud.questCard.type.side', 'ПОБОЧНЫЙ'),
     icon: BookOpen,
   },
   hidden: {
     color: '#cc66ff',
     glow: 'rgba(204, 102, 255, 0.5)',
-    label: 'СКРЫТЫЙ',
+    label: t('hud.questCard.type.hidden', 'СКРЫТЫЙ'),
     icon: Star,
   },
   daily: {
     color: '#aaaaaa',
     glow: 'rgba(170, 170, 170, 0.4)',
-    label: 'ЕЖЕДНЕВНЫЙ',
+    label: t('hud.questCard.type.daily', 'ЕЖЕДНЕВНЫЙ'),
     icon: Clock,
   },
   weekly: {
     color: '#ffaa00',
     glow: 'rgba(255, 170, 0, 0.5)',
-    label: 'ЕЖЕДЕЛЬНЫЙ',
+    label: t('hud.questCard.type.weekly', 'ЕЖЕДЕЛЬНЫЙ'),
     icon: Trophy,
   },
 };
@@ -201,12 +218,12 @@ const DIFFICULTY_CONFIG: Record<QuestDifficulty, {
   bgColor: string;
   label: string;
 }> = {
-  trivial: { color: '#888888', bgColor: 'rgba(136,136,136,0.15)', label: 'ТРИВИАЛЬНЫЙ' },
-  easy: { color: '#88cc44', bgColor: 'rgba(136,204,68,0.15)', label: 'ЛЁГКИЙ' },
-  normal: { color: '#4488cc', bgColor: 'rgba(68,136,204,0.15)', label: 'ОБЫЧНЫЙ' },
-  hard: { color: '#cc8844', bgColor: 'rgba(204,136,68,0.15)', label: 'СЛОЖНЫЙ' },
-  nightmare: { color: '#cc4444', bgColor: 'rgba(204,68,68,0.15)', label: 'КОШМАР' },
-  impossible: { color: '#aa00ff', bgColor: 'rgba(170,0,255,0.2)', label: 'НЕВОЗМОЖНЫЙ' },
+  trivial: { color: '#888888', bgColor: 'rgba(136,136,136,0.15)', label: t('hud.questCard.difficulty.trivial', 'ТРИВИАЛЬНЫЙ') },
+  easy: { color: '#88cc44', bgColor: 'rgba(136,204,68,0.15)', label: t('hud.questCard.difficulty.easy', 'ЛЁГКИЙ') },
+  normal: { color: '#4488cc', bgColor: 'rgba(68,136,204,0.15)', label: t('hud.questCard.difficulty.normal', 'ОБЫЧНЫЙ') },
+  hard: { color: '#cc8844', bgColor: 'rgba(204,136,68,0.15)', label: t('hud.questCard.difficulty.hard', 'СЛОЖНЫЙ') },
+  nightmare: { color: '#cc4444', bgColor: 'rgba(204,68,68,0.15)', label: t('hud.questCard.difficulty.nightmare', 'КОШМАР') },
+  impossible: { color: '#aa00ff', bgColor: 'rgba(170,0,255,0.2)', label: t('hud.questCard.difficulty.impossible', 'НЕВОЗМОЖНЫЙ') },
 };
 
 /** Цветовые схемы для статусов / Color schemes by status */
@@ -245,7 +262,7 @@ const RARITY_COLORS: Record<string, string> = {
  * Форматировать оставшееся время / Format remaining time
  */
 function formatTimeRemaining(ms: number): string {
-  if (ms <= 0) return 'Время вышло!';
+  if (ms <= 0) return t('hud.questCard.timeUp', 'Время вышло!');
   
   const totalSeconds = Math.ceil(ms / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -253,12 +270,12 @@ function formatTimeRemaining(ms: number): string {
   const seconds = totalSeconds % 60;
   
   if (hours > 0) {
-    return `${hours}ч ${minutes.toString().padStart(2, '0')}м`;
+    return t(HUD_DYNAMIC_KEYS.timeHoursMinutes, `${hours}ч ${minutes.toString().padStart(2, '0')}м`);
   }
   if (minutes > 0) {
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return t(HUD_DYNAMIC_KEYS.timeMinutesSeconds, `${minutes}:${seconds.toString().padStart(2, '0')}`);
   }
-  return `${seconds}с`;
+  return t(HUD_DYNAMIC_KEYS.timeSeconds, `${seconds}с`);
 }
 
 /**
@@ -301,8 +318,8 @@ const ObjectiveItem = memo(function ObjectiveItem({
         className="flex items-center gap-2 py-1 px-2 text-xs"
         style={{ color: 'rgba(150,160,170,0.6)' }}
       >
-        <span className="font-mono">???</span>
-        <span>Цель скрыта</span>
+        <span className="font-mono">{t('hud.questCard.hiddenMask', '???')}</span>
+        <span>{t('hud.questCard.objectiveHidden', 'Цель скрыта')}</span>
       </div>
     );
   }
@@ -326,7 +343,7 @@ const ObjectiveItem = memo(function ObjectiveItem({
         opacity: objective.isOptional ? 0.75 : 1,
       }}
       role="listitem"
-      aria-label={`${objective.description}: ${objective.current}/${objective.target}`}
+      aria-label={t(HUD_DYNAMIC_KEYS.objectiveAria, `${objective.description}: ${objective.current}/${objective.target}`)}
     >
       {/* Галочка или кружок / Check or circle */}
       <motion.div
@@ -372,7 +389,7 @@ const ObjectiveItem = memo(function ObjectiveItem({
         >
           {objective.description}
           {objective.isOptional && (
-            <span className="ml-1 opacity-50">(опционально)</span>
+            <span className="ml-1 opacity-50">{t('hud.questCard.optional', '(опционально)')}</span>
           )}
         </p>
         
@@ -558,7 +575,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
         }}
         role="button"
         tabIndex={0}
-        aria-label={`${quest.title} — прогресс ${quest.progress}%`}
+        aria-label={t(HUD_DYNAMIC_KEYS.compactAria, `${quest.title} — прогресс ${quest.progress}%`)}
       >
         {/* FIX (v4.22): заголовок больше не обрезается до «Первое чте…» —
          * раньше в одну строку с truncate умещалось ~135px (maxWidth 300 минус
@@ -645,7 +662,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
         ['--quest-color' as string]: typeConfig.color,
       } as React.CSSProperties}
       role="article"
-      aria-label={`Квест: ${quest.title}, статус: ${quest.status}, прогресс: ${quest.progress}%`}
+      aria-label={t(HUD_DYNAMIC_KEYS.fullAria, `Квест: ${quest.title}, статус: ${quest.status}, прогресс: ${quest.progress}%`)}
     >
       {/* ── Оверлей статуса / Status overlay ── */}
       {isFailed && (
@@ -749,7 +766,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
               className="text-[9px] font-mono ml-auto"
               style={{ color: 'rgba(180,190,200,0.6)' }}
             >
-              рек. ур. {quest.recommendedLevel}
+              {t(HUD_DYNAMIC_KEYS.recommendedLevel, `рек. ур. ${quest.recommendedLevel}`)}
             </span>
           )}
         </div>
@@ -834,7 +851,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
                 className="text-[10px] font-mono uppercase tracking-wider"
                 style={{ color: 'rgba(150,165,180,0.7)' }}
               >
-                Прогресс:
+                {t('hud.questCard.progressLabel', 'Прогресс:')}
               </span>
               <div
                 className="flex-1 h-2 rounded-full overflow-hidden"
@@ -864,7 +881,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
             <div
               className="px-2 pb-2 space-y-0.5 max-h-40 overflow-y-auto"
               role="list"
-              aria-label={`Цели квеста: ${quest.objectives.length}`}
+              aria-label={t(HUD_DYNAMIC_KEYS.objectivesAria, `Цели квеста: ${quest.objectives.length}`)}
               style={{ scrollbarWidth: 'thin', scrollbarColor: `${typeConfig.color}33 transparent` }}
             >
               {quest.objectives.map((obj, i) => (
@@ -895,7 +912,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
               className="text-[10px] font-mono uppercase tracking-wider"
               style={{ color: 'rgba(180,160,100,0.8)' }}
             >
-              Награды:
+              {t('hud.questCard.rewardsLabel', 'Награды:')}
             </span>
           </div>
           
@@ -925,15 +942,15 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
             e.stopPropagation();
             handleTrackToggle();
           }}
-          aria-label={quest.isTracked ? 'Снять отслеживание' : 'Отслеживать'}
+          aria-label={quest.isTracked ? t('hud.questCard.untrackAria', 'Снять отслеживание') : t('hud.questCard.trackAria', 'Отслеживать')}
         >
           {quest.isTracked ? (
             <>
-              <PinOff size={12} /> Снять
+              <PinOff size={12} /> {t('hud.questCard.untrack', 'Снять')}
             </>
           ) : (
             <>
-              <Pin size={12} /> Отслеж.
+              <Pin size={12} /> {t('hud.questCard.track', 'Отслеж.')}
             </>
           )}
         </button>
@@ -947,9 +964,9 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
             setIsExpanded(!isExpanded);
           }}
           aria-expanded={isExpanded}
-          aria-label={isExpanded ? 'Свернуть' : 'Развернуть'}
+          aria-label={isExpanded ? t('hud.questCard.collapseAria', 'Свернуть') : t('hud.questCard.expandAria', 'Развернуть')}
         >
-          {isExpanded ? 'Свернуть ▲' : 'Развернуть ▼'}
+          {isExpanded ? t('hud.questCard.collapse', 'Свернуть ▲') : t('hud.questCard.expand', 'Развернуть ▼')}
         </button>
       </div>
     </motion.div>

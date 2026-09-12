@@ -10,6 +10,13 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { SCENE_LOCATION_CATEGORIES } from '@/config/sceneLocationCategories';
 import type { SceneId } from '@/config/sceneDefinitions';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключ динамической aria-строки — сознательно НЕ в статическом
+ * каталоге RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback, и статичная
+ * запись перебила бы интерполяцию значений внутри fallback (видимый текст
+ * менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний литерал. */
+const HUD_MOOD_ARIA_KEY = 'hud.mood.aria';
 
 interface MoodData {
   icon: string;
@@ -38,29 +45,29 @@ function deriveMood(
   const isRainy = weatherEnabled && rainIntensity > 0;
 
   // Priority: storm > rain > night > dusk/dawn > category default
-  if (isStormy) return { icon: '⛈', label: 'ШТОРМ', intensity: 0.9, hue: 'rgba(148, 163, 184, 0.8)' };
-  if (isRainy) return { icon: '🌧', label: 'ДОЖДЬ', intensity: 0.6, hue: 'rgb(var(--cyber-cyan-rgb) / 0.7)' };
-  if (isNight) return { icon: '🌙', label: 'НОЧЬ', intensity: 0.7, hue: 'rgba(139, 92, 246, 0.8)' };
-  if (isDusk) return { icon: '🌅', label: 'СУМЕРКИ', intensity: 0.5, hue: 'rgba(251, 146, 60, 0.8)' };
-  if (isDawn) return { icon: '🌄', label: 'РАССВЕТ', intensity: 0.4, hue: 'rgba(251, 191, 36, 0.8)' };
+  if (isStormy) return { icon: '⛈', label: t('hud.mood.storm', 'ШТОРМ'), intensity: 0.9, hue: 'rgba(148, 163, 184, 0.8)' };
+  if (isRainy) return { icon: '🌧', label: t('hud.mood.rain', 'ДОЖДЬ'), intensity: 0.6, hue: 'rgb(var(--cyber-cyan-rgb) / 0.7)' };
+  if (isNight) return { icon: '🌙', label: t('hud.mood.night', 'НОЧЬ'), intensity: 0.7, hue: 'rgba(139, 92, 246, 0.8)' };
+  if (isDusk) return { icon: '🌅', label: t('hud.mood.dusk', 'СУМЕРКИ'), intensity: 0.5, hue: 'rgba(251, 146, 60, 0.8)' };
+  if (isDawn) return { icon: '🌄', label: t('hud.mood.dawn', 'РАССВЕТ'), intensity: 0.4, hue: 'rgba(251, 191, 36, 0.8)' };
 
   // Category defaults — map to actual LocationCategory values
   switch (category) {
     case 'home':
-      return { icon: '🏠', label: 'УЮТ', intensity: 0.25, hue: 'rgba(251, 191, 36, 0.7)' };
+      return { icon: '🏠', label: t('hud.mood.cozy', 'УЮТ'), intensity: 0.25, hue: 'rgba(251, 191, 36, 0.7)' };
     case 'rooftop':
     case 'park':
     case 'street':
-      return { icon: '☀', label: 'ТИШИНА', intensity: 0.3, hue: 'var(--cyber-cyan)' };
+      return { icon: '☀', label: t('hud.mood.calm', 'ТИШИНА'), intensity: 0.3, hue: 'var(--cyber-cyan)' };
     case 'factory':
     case 'corridor':
-      return { icon: '🕳', label: 'ПОДЗЕМЬЕ', intensity: 0.6, hue: 'rgba(148, 163, 184, 0.6)' };
+      return { icon: '🕳', label: t('hud.mood.underground', 'ПОДЗЕМЬЕ'), intensity: 0.6, hue: 'rgba(148, 163, 184, 0.6)' };
     case 'cafe':
     case 'office':
     case 'library':
-      return { icon: '✦', label: 'НЕЙТРАЛЬ', intensity: 0.2, hue: 'var(--cyber-cyan)' };
+      return { icon: '✦', label: t('hud.mood.neutral', 'НЕЙТРАЛЬ'), intensity: 0.2, hue: 'var(--cyber-cyan)' };
     default:
-      return { icon: '✦', label: 'НЕЙТРАЛЬ', intensity: 0.2, hue: 'var(--cyber-cyan)' };
+      return { icon: '✦', label: t('hud.mood.neutral', 'НЕЙТРАЛЬ'), intensity: 0.2, hue: 'var(--cyber-cyan)' };
   }
 }
 
@@ -82,7 +89,7 @@ export function EnvironmentMoodIndicator() {
         background: 'rgba(0,0,0,0.25)',
         border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.08)',
       }}
-      aria-label={`Настроение: ${mood.label}`}
+      aria-label={t(HUD_MOOD_ARIA_KEY, `Настроение: ${mood.label}`)}
       role="status"
     >
       <span

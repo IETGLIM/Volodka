@@ -48,6 +48,18 @@ import { QuestChainUnlockToast } from '@/components/game/hud/parts/QuestChainUnl
 import { ObjectiveCompleteVfx } from '@/components/game/hud/parts/ObjectiveCompleteVfx';
 import { useActiveQuestCardData } from '@/components/game/hud/parts/questObjectiveCardAdapter';
 import { useGamePhase } from '@/store/selectors/uiSelectors';
+import { t } from '@/i18n';
+
+/* i18n (этап 115): ключи динамических строк шёпота статуса. Они сознательно НЕ
+ * добавлены в статический каталог RU_MESSAGES: t() возвращает
+ * RU_MESSAGES[key] ?? fallback, и статичная запись перебила бы интерполяцию
+ * значений внутри fallback (видимый текст менялся бы). Фолбэк внутри t()
+ * байт-в-байт повторяет прежний литерал — вывод не меняется. */
+const HUD_CRITICAL_KEYS = {
+  energyAndStress: 'hud.critical.energyAndStress',
+  energyLow: 'hud.critical.energyLow',
+  stressHigh: 'hud.critical.stressHigh',
+} as const;
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -67,10 +79,10 @@ function CriticalStatusWhisper({
   if (!isLowEnergy && !isHighStress) return null;
 
   const line = isLowEnergy && isHighStress
-    ? `Силы на исходе · стресс ${stress}%`
+    ? t(HUD_CRITICAL_KEYS.energyAndStress, `Силы на исходе · стресс ${stress}%`)
     : isLowEnergy
-      ? `Силы на исходе · ${energy}%`
-      : `Дыхание сбито · стресс ${stress}%`;
+      ? t(HUD_CRITICAL_KEYS.energyLow, `Силы на исходе · ${energy}%`)
+      : t(HUD_CRITICAL_KEYS.stressHigh, `Дыхание сбито · стресс ${stress}%`);
 
   return (
     <motion.div
@@ -222,7 +234,7 @@ export function ExplorationHUD(props: HUDProps) {
             aria-live="polite"
           >
             <Save className="size-3 text-stone-500" aria-hidden />
-            <span className="hud-filmic-body text-[12px]">Запись сохранена</span>
+            <span className="hud-filmic-body text-[12px]">{t('hud.save.toast', 'Запись сохранена')}</span>
           </motion.div>
         )}
       </AnimatePresence>
