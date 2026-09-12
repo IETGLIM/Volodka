@@ -465,6 +465,8 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   }, []);
 
   // Dynamic DPR scaling based on measured FPS + quality preset
+  // FIX (perf v4.22): замер FPS suspend'ится в demand-режиме — в меню и за
+  // статичными оверлеями кадры не рисуются, и замер был чистым расходом rAF.
   const dpr = useDynamicDPR({
     targetDpr: preset.dpr,
     lowFpsThreshold: 25,
@@ -472,6 +474,7 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
     minDpr: preset.dpr[0],
     step: 0.1,
     windowMs: 2000,
+    enabled: canvasFrameloop === 'always',
   });
 
   // Auto-focus canvas on mount for keyboard events

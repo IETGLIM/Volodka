@@ -21,6 +21,10 @@ export interface DynamicDPROptions {
    *  hovers near a threshold. Default: 2 (must see 2 consecutive windows
    *  of low/high FPS before changing). */
   stabilizationWindows?: number;
+  /** FIX (perf v4.22): suspend замера, когда канвас не рендерит (demand-фреймлоуп
+   *  меню/оверлеев). Раньше rAF-цикл замера жил всегда и жёг кадры впустую,
+   *  а среднее FPS в demand-режиме искажалось (кадры рисует только invalidate). */
+  enabled?: boolean;
 }
 
 /**
@@ -49,6 +53,7 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
     step = 0.1,
     windowMs = 2000,
     stabilizationWindows = 2,
+    enabled = true,
   } = options;
 
   const [targetDprMin, targetDprMax] = targetDpr;
@@ -74,6 +79,7 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
 
   // Continuously measure FPS
   useEffect(() => {
+    if (!enabled) return;
     const capacity = bufferCapacityRef.current;
     frameTimes.current = new Float64Array(capacity);
     frameFps.current = new Float64Array(capacity);
@@ -112,10 +118,11 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
     };
     rafId = requestAnimationFrame(measure);
     return () => cancelAnimationFrame(rafId);
-  }, [windowMs]);
+  }, [windowMs, enabled]);
 
   // Adjust DPR periodically with stabilization
   useEffect(() => {
+    if (!enabled) return;
     const interval = setInterval(() => {
       const count = bufferCount.current;
       if (count < 20) return; // Not enough data yet
@@ -164,7 +171,7 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
     }, windowMs);
 
     return () => clearInterval(interval);
-  }, [lowFpsThreshold, highFpsThreshold, minDpr, step, targetDprMin, targetDprMax, windowMs, stabilizationWindows]);
+  }, [lowFpsThreshold, highFpsThreshold, minDpr, step, targetDprMin, targetDprMax, windowMs, stabilizationWindows, enabled]);
 
   // Re-sync when quality preset changes
   useEffect(() => {
