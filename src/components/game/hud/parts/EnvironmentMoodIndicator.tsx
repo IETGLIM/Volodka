@@ -12,11 +12,9 @@ import type { SceneId } from '@/config/sceneDefinitions';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключ динамической aria-строки — сознательно НЕ в статическом
- * каталоге RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback, и статичная
- * запись перебила бы интерполяцию значений внутри fallback (видимый текст
- * менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний литерал. */
-const HUD_MOOD_ARIA_KEY = 'hud.mood.aria';
+/* i18n (этап 115): с волны 4 aria-строка — шаблон каталога с плейсхолдером
+ * {name} и параметром t(key, fallback, params); ключ литеральный, фолбэк
+ * байт-в-байт повторяет прежний литерал. */
 
 interface MoodData {
   icon: string;
@@ -82,18 +80,20 @@ export function EnvironmentMoodIndicator() {
     [sceneId, timeOfDay, weatherEnabled, rainIntensity]
   );
 
+  const isStorm = mood.intensity >= 0.8;
+
   return (
     <div
       className="flex items-center gap-2 px-2 py-0.5 rounded-md"
       style={{
         background: 'rgba(0,0,0,0.25)',
-        border: '1px solid rgb(var(--cyber-cyan-rgb) / 0.08)',
+        border: `1px solid ${isStorm ? 'rgba(255, 68, 68, 0.25)' : 'rgb(var(--cyber-cyan-rgb) / 0.08)'}`,
       }}
-      aria-label={t(HUD_MOOD_ARIA_KEY, `Настроение: ${mood.label}`)}
+      aria-label={t('hud.mood.aria', `Настроение: ${mood.label}`, { label: mood.label })}
       role="status"
     >
       <span
-        className={`mood-bar-icon text-xs ${reducedMotion ? '' : ''}`}
+        className={`mood-bar-icon text-xs ${isStorm && !reducedMotion ? 'hud-filmic-mood-storm-pulse' : ''}`}
         style={{ animation: reducedMotion ? 'none' : undefined }}
       >
         {mood.icon}
@@ -113,7 +113,10 @@ export function EnvironmentMoodIndicator() {
       </div>
       <span
         className="mood-bar-label"
-        style={{ color: mood.hue }}
+        style={{
+          color: mood.hue,
+          textShadow: isStorm ? '0 0 8px rgba(255, 68, 68, 0.45)' : undefined,
+        }}
       >
         {mood.label}
       </span>

@@ -69,6 +69,7 @@ html { background: #000 !important; }
   --cyber-amber-rgb: 255 171 0;
   --cyber-rose: #ff1744;
   --cyber-violet: #d500f9;
+  --cyber-violet-rgb: 213 0 249;
   /* CyberpunkTheme context aliases */
   --cyber-matrix-green: var(--cyber-matrix);
   --cyber-neon-cyan: var(--cyber-cyan);

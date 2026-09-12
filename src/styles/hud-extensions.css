@@ -1417,6 +1417,34 @@
   }
 }
 
+/* v4.30 — пороговая насечка 25% (словарь v4.27): риска краснеет и мягко
+ * пульсирует ниже порога, fill получает красное свечение. Слой absolute
+ * с pointer-events-none — layout не трогает. */
+.stamina-bar-root.stamina-bar--low .stamina-bar-notch {
+  background: rgba(248, 113, 113, 0.95);
+  box-shadow: 0 0 6px rgba(248, 113, 113, 0.7);
+}
+
+.stamina-bar-root.stamina-bar--low .stamina-bar-fill {
+  box-shadow: 0 0 6px rgba(248, 113, 113, 0.45);
+}
+
+@keyframes stamina-notch-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .stamina-bar-root.stamina-bar--low .stamina-bar-notch {
+    animation: stamina-notch-pulse 1.4s ease-in-out infinite;
+  }
+}
+
 /* ══════════════════════════════════════════════════════════════
    v4.8.7 — «Опережающий удар»: HUD-подсказка + мобильная кнопка
    ══════════════════════════════════════════════════════════════ */

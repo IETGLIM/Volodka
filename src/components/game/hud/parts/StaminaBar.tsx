@@ -12,19 +12,15 @@ import { getPlayerStamina } from '@/engine/player/playerStamina';
 import { bottomStaminaBarPx } from '@/shared/constants/hudLayout';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических aria-строк. Они сознательно НЕ добавлены
- * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
- * и статичная запись перебила бы интерполяцию значений внутри fallback
- * (t() вернул бы шаблон вместо подставленных процентов — видимый текст менялся бы).
- * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
-const HUD_DYNAMIC_KEYS = {
-  aria: 'hud.stamina.aria',
-  exhaustedAria: 'hud.stamina.exhaustedAria',
-} as const;
+/* i18n (этап 115): с волны 4 aria-строки DOM-лейбла — шаблоны каталога
+ * с плейсхолдерами {name} и параметрами t(key, fallback, params); ключи
+ * литеральные, фолбэки байт-в-байт повторяют прежние литералы — вывод не меняется. */
 
 const POLL_MS = 100;
 /** Ниже этого отношения стамина считается «полной» (плавный fade-out у 100%). */
 const FULL_RATIO_EPSILON = 0.999;
+/** Пороговая насечка (v4.30, словарь v4.27): риска 25% как в PlayerStatusFrame. */
+const LOW_THRESHOLD = 0.25;
 
 /** Зелёный → жёлтый → янтарный по мере истощения. */
 function resolveBarColor(ratio: number): string {
@@ -51,6 +47,8 @@ export function StaminaBar() {
       // «Дыхание» подсветкой при полном истощении (v4.8.6) — CSS-анимация
       // с prefers-reduced-motion-гейтом в hud-extensions.css.
       root.classList.toggle('stamina-bar--exhausted', visible && exhausted);
+      // Насечка порога (v4.30): красная риска 25% + красное свечение fill.
+      root.classList.toggle('stamina-bar--low', visible && clamped < LOW_THRESHOLD);
 
       const fill = fillRef.current;
       if (fill) {
@@ -63,8 +61,8 @@ export function StaminaBar() {
       const label = labelRef.current;
       if (label) {
         label.textContent = exhausted
-          ? t(HUD_DYNAMIC_KEYS.exhaustedAria, `Выносливость: ${pct}% — дыхание сбито, бег временно недоступен`)
-          : t(HUD_DYNAMIC_KEYS.aria, `Выносливость: ${pct}%`);
+          ? t('hud.stamina.exhaustedAria', `Выносливость: ${pct}% — дыхание сбито, бег временно недоступен`, { n: pct })
+          : t('hud.stamina.aria', `Выносливость: ${pct}%`, { n: pct });
       }
     };
 
@@ -92,6 +90,7 @@ export function StaminaBar() {
       <div
         aria-hidden="true"
         style={{
+          position: 'relative',
           width: 'clamp(160px, 26vw, 300px)',
           height: 3,
           borderRadius: 2,
@@ -103,12 +102,28 @@ export function StaminaBar() {
       >
         <div
           ref={fillRef}
+          className="stamina-bar-fill"
           style={{
             width: '100%',
             height: '100%',
             backgroundColor: 'rgba(74, 222, 128, 0.88)',
             borderRadius: 2,
             transition: 'width 120ms linear, background-color 300ms linear',
+          }}
+        />
+        {/* Насечка порога 25% (v4.30): абсолютная риска, layout не трогает. */}
+        <div
+          aria-hidden="true"
+          className="stamina-bar-notch pointer-events-none"
+          style={{
+            position: 'absolute',
+            top: 0,
+            bottom: 0,
+            left: `${LOW_THRESHOLD * 100}%`,
+            width: 2,
+            transform: 'translateX(-1px)',
+            background: 'rgba(255, 255, 255, 0.22)',
+            transition: 'background-color 300ms linear, box-shadow 300ms linear',
           }}
         />
       </div>
