@@ -2023,6 +2023,57 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.24.0 — фаза 6: перф-волна AI/физики/HUD (этапы 97–105)
+
+### Дистанционный LOD AI-тика крипов (этап 97)
+- Константы в чистом creepTactics.ts: CREEP_AI_LOD_FAR_M = 30 м,
+  CREEP_AI_LOD_FAR_TICK_S = 0.1 с. Мирные состояния (patrol/return/
+  cooldown) дальних крипов тикают на ~10 Гц с аккумуляцией delta
+  (lodDeltaRef) — движение/таймеры/LOS/stuck точны по времени; между
+  LOD-тиками пропускаются страйк-репорты, навигация, презентация.
+- Инвариант: engaged/chase/зона замаха — всегда каждый кадр.
+  Связка с HUD-подсказкой замаха: HINT_STALE_MS = 260 мс >
+  LOD-период 100 мс, подсказка не протухает.
+
+### Индексный курсор нав-путей (этап 103)
+- Потребление путей крипов (returnPathRef/chasePathRef) — через
+  курсоры (returnPathCursorRef/chasePathCursorRef) вместо path.shift():
+  O(1) за тик, массив не мутируется; сброс курсора обязателен на любом
+  присвоении/очистке пути (единый жизненный цикл).
+
+### Выборочная интерполяция динамических физтел (этап 99)
+- engine/physics/propSmoothing.ts: EMA-follower (α = 1 − exp(−rate·dt),
+  PROP_SMOOTHING_RATE = 22) в фазе post_physics — после снапа
+  трансформаций Rapier (порядок R3F-приоритетов: physics 0 →
+  post_physics 100).
+- Ограничение API: @react-three/rapier 2.2.0 не имеет per-body
+  interpolate — глобальный флаг вернул бы лаг аватара за камерой
+  (см. PhysicsSceneInner). Поэтому <Physics interpolate={false}>
+  сохранён, а плавность получают ТОЛЬКО динамические пропсы
+  (DynamicProps): визуальная группа внутри <RigidBody> ставится в
+  сглаженную мировую точку через inv(matrixWorld) тела.
+- Компромиссы: вращение не сглаживается; спящие тела и сдвиги
+  > PROP_SMOOTHING_SNAP_M (0.5 м) снапаются; коллизии — по физтелам.
+
+### Dirty-check расписания мировых часов (этап 101)
+- syncWorldSchedule.ts: areNpcScheduleStatesEqual — value-сравнение
+  карт {npcId → {position, sceneId}}. useWorldClock записывает
+  setExplorationNPCStates только при фактическом изменении: типичный
+  тик (60 с реального времени, 0.25 игровых часов) попадает в тот же
+  слот расписания. События world:tick/world:hour_changed эмитятся
+  всегда — потребители событий не задеты.
+
+### O(1)-среднее DPR (этап 102)
+- useDynamicDPR: инкрементальная сумма FPS (frameFpsSum): + на push,
+  − на вытеснении (переполнение кольца и протухание по окну), сброс
+  при реинициализации буфера. Оценочное окно больше не обходит буфер.
+
+### Зафиксированные бюджеты (этап 105, check-bundle-budgets --report)
+- boot 624.5/634.8 KB gzip (hard max), game-start 1326.6/1757.8 KB,
+  кумулятив до первой сцены 1951.1 KB, ленивый ярус (Rapier)
+  1565.4 KB, весь JS 3607.0 KB gzip, entry CSS 133.4 KB,
+  WebGL-стек (three+r3f+drei) 270.1 KB ≈ 20% game-start.
+
 ## v4.23.0 — фаза 5 закрыта: полная слот-сетка, UI-clock, тесты-контракты
 
 ### Нижне-центральная цепочка — финальная модель
