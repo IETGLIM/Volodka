@@ -5,6 +5,7 @@
 
 import { Cache } from 'three';
 import { resetGltfPipeline } from '@/engine/assets/gltfPipeline';
+import { resetKtx2TextureLoader } from '@/engine/assets/ktx2Textures';
 import { resetGltfPreloadQueue } from '@/engine/assets/gltfPreloadScheduler';
 import {
   forceDisposeOrphanedWebGLResources,
@@ -72,6 +73,10 @@ export function disposeAllEngineGpuResources(reason: GpuDisposeReason = 'engine'
   evictQualityDependentGpuCache();
   Cache.clear();
   resetGltfPipeline();
+  // Этап 133: standalone KTX2-загрузчик внешних текстур — убить воркеры
+  // транскодера и кэш промисов; новый renderer пересоздаст его через
+  // detectSupport (usePolyHavenPbr → ensureKtx2TextureLoader).
+  resetKtx2TextureLoader();
   resetGltfPreloadQueue();
 
   if (reason === 'hmr') {

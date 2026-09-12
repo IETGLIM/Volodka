@@ -10,6 +10,14 @@ import { getNpcModelUrls } from '../src/config/npcModelRegistry';
 import { getAmbientSkinnedRigUrls } from '../src/config/quaterniusRigCatalog';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
+import {
+  getPolyHavenFallbackMapUrl,
+  getPolyHavenMapUrl,
+  POLYHAVEN_HDRI,
+  POLYHAVEN_MAP_KINDS,
+  POLYHAVEN_MATERIAL_IDS,
+  POLYHAVEN_TEXTURE_SCALES,
+} from '../src/config/polyhavenAssets';
 
 /** External textures referenced by Kenney GLBs (relative to GLB path). Required on Vercel. */
 const VERCEL_GLB_EXTERNAL_TEXTURES = [
@@ -56,6 +64,20 @@ function loadRequiredPublicPaths(): string[] {
   for (const url of Object.values(MODEL_URLS)) paths.add(url.replace(/^\//, ''));
 
   for (const rel of VERCEL_GLB_EXTERNAL_TEXTURES) paths.add(rel);
+
+  // v4.34.0 (этап 133): внешние карты PolyHaven + HDRI теперь обязательны —
+  // раньше вообще не проверялись (дыра: prune-дрейф не валил build).
+  // Проверяем и KTX2-путь, и WebP-фолбэк (staged rollout — фолбэк в деплое
+  // до первой браузерной QA KTX2).
+  for (const materialId of POLYHAVEN_MATERIAL_IDS) {
+    for (const map of POLYHAVEN_MAP_KINDS) {
+      for (const scale of POLYHAVEN_TEXTURE_SCALES) {
+        paths.add(getPolyHavenMapUrl(materialId, map, scale).replace(/^\//, ''));
+        paths.add(getPolyHavenFallbackMapUrl(materialId, map, scale).replace(/^\//, ''));
+      }
+    }
+  }
+  for (const url of Object.values(POLYHAVEN_HDRI)) paths.add(url.replace(/^\//, ''));
 
   return [...paths];
 }

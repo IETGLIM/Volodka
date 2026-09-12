@@ -14,6 +14,20 @@ export type PolyHavenMapKind = 'diff' | 'nor_gl' | 'rough' | 'ao';
 
 export type PolyHavenRes = '1k' | '2k';
 
+/** Канонические списки кросс-продукта (этап 133): prune/verify/тесты обязаны
+ *  использовать их, а не собственные локальные копии (источник дрейфа keep-set). */
+export const POLYHAVEN_MATERIAL_IDS: readonly PolyHavenMaterialId[] = [
+  'asphalt_02',
+  'concrete_floor_painted',
+  'wood_floor',
+  'plastered_wall',
+  'metal_plate',
+];
+
+export const POLYHAVEN_MAP_KINDS: readonly PolyHavenMapKind[] = ['diff', 'nor_gl', 'rough', 'ao'];
+
+export const POLYHAVEN_TEXTURE_SCALES = [0.25, 0.5, 1] as const;
+
 const HAS_2K: Partial<Record<PolyHavenMaterialId, true>> = {
   asphalt_02: true,
   wood_floor: true,
@@ -27,15 +41,55 @@ export function resolvePolyHavenRes(
   return '1k';
 }
 
+/** Типы карт, для которых KTX2 одобрен ИЗМЕРЕНИЯМИ (см.
+ *  scripts/generate-polyhaven-ktx2.mjs — шапка с PSNR/размерами):
+ *  diff/rough/ao → basis-lz прозрачен (49.4 dB) и в 2-3× меньше WebP.
+ *  nor_gl исключён: ETC1S 30.1 dB (блочность бликов), UASTC 8bpp-пол
+ *  (5.1 MB на одну 2k) — нормали грузятся по WebP-пути. */
+export const POLYHAVEN_KTX2_MAP_KINDS: ReadonlySet<PolyHavenMapKind> = new Set([
+  'diff',
+  'rough',
+  'ao',
+]);
+
+/** Резолвер расширения: единая логика имени для KTX2 и WebP-фолбэка. */
+function getPolyHavenMapUrlBase(
+  materialId: PolyHavenMaterialId,
+  map: PolyHavenMapKind,
+  textureScale: 0.25 | 0.5 | 1,
+  ext: 'ktx2' | 'webp',
+): string {
+  const res = resolvePolyHavenRes(materialId, textureScale);
+  // Fall back to 1k path if 2k not shipped for this material/map
+  const useRes = HAS_2K[materialId] && res === '2k' ? '2k' : '1k';
+  return `/textures/polyhaven/${materialId}/${materialId}_${map}_${useRes}.${ext}`;
+}
+
+/** Этап 133: основной формат внешних карт — KTX2/Basis для diff/rough/ao
+ *  (basis-lz, mip-цепочка); нормали остаются WebP (решение по измерениям).
+ *  Генерация — `npm run assets:polyhaven-ktx2`
+ *  (scripts/generate-polyhaven-ktx2.mjs). Роутинг загрузчика — по расширению
+ *  URL (src/engine/assets/ktx2Textures.ts). */
 export function getPolyHavenMapUrl(
   materialId: PolyHavenMaterialId,
   map: PolyHavenMapKind,
   textureScale: 0.25 | 0.5 | 1 = 1,
 ): string {
-  const res = resolvePolyHavenRes(materialId, textureScale);
-  // Fall back to 1k path if 2k not shipped for this material/map
-  const useRes = HAS_2K[materialId] && res === '2k' ? '2k' : '1k';
-  return `/textures/polyhaven/${materialId}/${materialId}_${map}_${useRes}.webp`;
+  const ext = POLYHAVEN_KTX2_MAP_KINDS.has(map) ? 'ktx2' : 'webp';
+  return getPolyHavenMapUrlBase(materialId, map, textureScale, ext);
+}
+
+/** WebP-вариант той же карты — фолбэк при недоступности транскодера Basis
+ *  (детектируется в рантайме и логируется в diagnostics). Для nor_gl
+ *  совпадает с основным путём (нормали всегда WebP). STAGED ROLLOUT:
+ *  WebP-фолбэк цветовых карт ОСТАЁТСЯ в deploy keep-set до первой браузерной
+ *  QA KTX2-пути; после подтверждения — исключить из keep-set. */
+export function getPolyHavenFallbackMapUrl(
+  materialId: PolyHavenMaterialId,
+  map: PolyHavenMapKind,
+  textureScale: 0.25 | 0.5 | 1 = 1,
+): string {
+  return getPolyHavenMapUrlBase(materialId, map, textureScale, 'webp');
 }
 
 export interface PolyHavenPbrUrls {
@@ -63,6 +117,21 @@ export function getPolyHavenPbrUrls(
     normalMap: getPolyHavenMapUrl(materialId, 'nor_gl', textureScale),
     roughnessMap: getPolyHavenMapUrl(materialId, 'rough', textureScale),
     aoMap: getPolyHavenMapUrl(materialId, 'ao', textureScale),
+    repeat: DEFAULT_REPEAT[materialId],
+  };
+}
+
+/** WebP-вариант PBR-набора — используется только при сбое KTX2-пути
+ *  (см. usePolyHavenPbr / loadPolyHavenPbrTextureSet). */
+export function getPolyHavenFallbackPbrUrls(
+  materialId: PolyHavenMaterialId,
+  textureScale: 0.25 | 0.5 | 1 = 1,
+): PolyHavenPbrUrls {
+  return {
+    map: getPolyHavenFallbackMapUrl(materialId, 'diff', textureScale),
+    normalMap: getPolyHavenFallbackMapUrl(materialId, 'nor_gl', textureScale),
+    roughnessMap: getPolyHavenFallbackMapUrl(materialId, 'rough', textureScale),
+    aoMap: getPolyHavenFallbackMapUrl(materialId, 'ao', textureScale),
     repeat: DEFAULT_REPEAT[materialId],
   };
 }

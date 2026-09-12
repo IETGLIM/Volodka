@@ -20,12 +20,14 @@ import { getAmbientSkinnedRigUrls } from '../src/config/quaterniusRigCatalog';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
 import {
+  getPolyHavenFallbackMapUrl,
   getPolyHavenMapUrl,
   POLYHAVEN_HDRI,
+  POLYHAVEN_MAP_KINDS,
+  POLYHAVEN_MATERIAL_IDS,
   POLYHAVEN_MENU_PLATE,
   POLYHAVEN_MODELS,
-  type PolyHavenMapKind,
-  type PolyHavenMaterialId,
+  POLYHAVEN_TEXTURE_SCALES,
 } from '../src/config/polyhavenAssets';
 import { MIXAMO_ANIMATION_CATALOG } from '../src/config/mixamoAnimationCatalog';
 import { MIXAMO_CLIP_IDS_ON_DISK } from '../src/config/mixamoClipsOnDisk';
@@ -41,16 +43,6 @@ const VERCEL_GLB_EXTERNAL_TEXTURES = [
 
 const MANAGED_ROOTS = new Set(['hdri', 'menu', 'models', 'textures']);
 const PRESERVED_PREFIXES = ['assets/', 'basis/', 'draco/'];
-
-const POLYHAVEN_MATERIALS: PolyHavenMaterialId[] = [
-  'asphalt_02',
-  'concrete_floor_painted',
-  'wood_floor',
-  'plastered_wall',
-  'metal_plate',
-];
-const POLYHAVEN_MAPS: PolyHavenMapKind[] = ['diff', 'nor_gl', 'rough', 'ao'];
-const TEXTURE_SCALES = [0.25, 0.5, 1] as const;
 
 function normalizePublicPath(url: string): string {
   return url.replace(/^\//, '').replaceAll('\\', '/');
@@ -96,10 +88,15 @@ function collectRuntimePublicPaths(): Set<string> {
     if (mixamoOnDisk.has(clip.id)) addUrl(keep, clip.publicUrl);
   }
 
-  for (const material of POLYHAVEN_MATERIALS) {
-    for (const map of POLYHAVEN_MAPS) {
-      for (const scale of TEXTURE_SCALES) {
+  // Этап 133: KTX2-роутинг в самих URL-функциях; WebP-фолбэк цветовых карт
+  // остаётся в деплое до первой браузерной QA KTX2-пути (staged rollout,
+  // после QA — убрать вторую строку и выкинуть ~14 MB из деплоя). Для nor_gl
+  // основной путь уже WebP — дедуплицируется Set'ом.
+  for (const material of POLYHAVEN_MATERIAL_IDS) {
+    for (const map of POLYHAVEN_MAP_KINDS) {
+      for (const scale of POLYHAVEN_TEXTURE_SCALES) {
         addUrl(keep, getPolyHavenMapUrl(material, map, scale));
+        addUrl(keep, getPolyHavenFallbackMapUrl(material, map, scale));
       }
     }
   }

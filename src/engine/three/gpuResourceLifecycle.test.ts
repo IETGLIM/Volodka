@@ -7,6 +7,7 @@ import {
 } from '@/engine/three/gpuResourceLifecycle';
 import { registerModuleGeometry } from '@/engine/three/moduleGeometryRegistry';
 import { resetGltfPipeline, isGltfPipelineConfigured } from '@/engine/assets/gltfPipeline';
+import { isKtx2TextureLoaderActive } from '@/engine/assets/ktx2Textures';
 import {
   resetCanvasRendererRegistry,
   forceDisposeOrphanedWebGLResources,
@@ -59,6 +60,10 @@ describe('gpuResourceLifecycle', () => {
 
     expect(forceDisposeOrphanedWebGLResources).not.toHaveBeenCalled();
     expect(isGltfPipelineConfigured()).toBe(false);
+    // Этап 133: standalone KTX2-загрузчик внешних текстур тоже сбрасывается
+    // (воркеры транскодера убиты, кэш промисов очищен — новый renderer
+    // пересоздаст лоадер через detectSupport).
+    expect(isKtx2TextureLoaderActive()).toBe(false);
   });
 
   it('registerGpuHmrHandler runs during GPU dispose', () => {
