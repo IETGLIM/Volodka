@@ -2023,6 +2023,59 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.26.0 — фаза 7 закрыта: диалоги, i18n HUD, терминология, CI-бюджеты, WebP
+
+### Возвратные реплики новых NPC (этап 114)
+- Паттерн «возвратная реплика» = conditional choice в уже достижимом
+  greeting/return-узле диалога (`condition: { flag, missingFlag }`,
+  `next` → мини-узел с эффектами `setFlag`-гарда + npcChange/addKarma).
+  Регистрация новых узлов не нужна — они живут внутри зарегистрированных
+  паков `chk`/`expanded` (паритет и достижимость проверяются тестами).
+- Закрыты нарративные хвосты: Ритка (`chk_ritka_fourth_voice_echo`, выбор
+  доступен и в `chk_ritka_pier_return`), Трофим (`trofim_echo_afterword`),
+  Баба Зина (`baba_zina_box_afterword` — согласовано с «Сама приду» Марины),
+  Марат-эхо (`marat_echo_server_afterword`, маркер завершения — флаг
+  `pv_server_block_raised`, тот же, что у гейта четвёртого голоса).
+
+### Локализация HUD: t(key, fallback) (этап 115)
+- Инфраструктура `src/i18n` расширена секцией `/* HUD */` в
+  `messages/ru.ts` (113 статических ключей `hud.*`).
+- Контракт волны: фолбэк байт-в-байт равен прежнему литералу → вывод не
+  меняется, все текстовые тесты зелёные без правок.
+- Динамические (составленные) строки: `t(HUD_DYNAMIC_KEYS.x, \`шаблон ${v}\`)`
+  — ключи-константы сознательно НЕ добавлены в каталог: статичная запись
+  `RU_MESSAGES[key]` перебила бы интерполяцию (t возвращает каталог ?? фолбэк).
+- Покрытие волны 1: PlayerStatusFrame, TopBarDataTicker, SceneContextChip,
+  EnvironmentMoodIndicator, QuestObjectiveCard, ActiveQuestMiniTracker,
+  HUDNotificationFeed, StaminaBar, EmergencyHelpButton, ExplorationHUD,
+  SceneTopBarHud, QuickAccessToolbar, notificationToastConstants,
+  notificationToastPresentation, karmaTier.
+- Контракт-тест `ru.hudCoverage.test.ts`: скан всех `t('...')` по src/ —
+  каждый ключ `hud.*` обязан быть в RU_MESSAGES (≥60), фолбэки совпадают.
+
+### Терминология: инвариант и фиксы знака кармы (этап 116)
+- Инвариант (подтверждён вычиткой): игрок — «Карма»; фракции — всегда
+  «Репутация фракции»; «Стресс» — без синонимов.
+- Фикс двойного знака: награда `addKarma: -15` (factory_secret_blueprint)
+  рендерилась «Карма +-15». Исправлены questAcceptDialogConstants,
+  QuestsPanel.humanizeRewardLabel, QuestObjectiveCard (знак + только для
+  положительных). Регресс-тест в questAcceptDialogPresentation.test.ts.
+
+### CI: бюджеты и деплой-верификация (этап 122)
+- ci.yml: после build — `npm run budgets:check` и `npm run verify:deploy`
+  (оба рассчитаны на plain build без prune; проверены локально).
+
+### Ассеты: ночной план меню PNG → WebP (этап 125)
+- `public/menu/cinematic_night_plate.webp` (q90, 170 576 B) вместо PNG
+  (1 218 655 B) — −86% / −1.05 MB деплоя. Единственный потребитель —
+  `POLYHAVEN_MENU_PLATE` (MenuBackgroundEffects).
+
+### Находка этапа 123 (отложен)
+- Посылка «исключить meshopt, если не выбран пресетами» частично неверна:
+  пресет ultra выбирает `compression: 'meshopt'` → NPC-варианты meshopt
+  (19 файлов ≈ 12.0 MB) выбираются. Исключение = перевод ultra на draco
+  (решение о визуальном тире), отдельное окно.
+
 ## v4.25.0 — хвост фазы 6 (UI-clock, LCP, дедуп, GC) + фаза 7: «Эхо пирса»
 
 ### Единый UI-clock: императивный API (этап 104)
