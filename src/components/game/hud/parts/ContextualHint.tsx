@@ -4,6 +4,8 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomCenterHintSecondaryPx } from '@/shared/constants/hudLayout';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import type { ContextualHintData, HintCategory } from '@/hooks/useContextualHints';
 
 interface ContextualHintProps {
@@ -21,6 +23,7 @@ const CATEGORY_RULE: Record<HintCategory, string> = {
 };
 
 export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
+  const isMobile = useIsMobileVisual();
   return (
     <AnimatePresence mode="wait">
       {hint && (
@@ -32,7 +35,9 @@ export function ContextualHint({ hint, onDismiss }: ContextualHintProps) {
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           className="fixed left-1/2 -translate-x-1/2 pointer-events-auto cursor-pointer"
           style={{
-            bottom: 'clamp(72px, 11vh, 128px)',
+            /* FIX (overlap, v4.22): был хардкод clamp(72px, 11vh, 128px) — внутри
+             * диапазона тулбара/quick-use. Теперь второй ряд над [E]-промптом. */
+            bottom: `calc(${bottomCenterHintSecondaryPx(isMobile)}px + env(safe-area-inset-bottom, 0px))`,
             zIndex: UI_LAYERS.HUD + 3,
           }}
           onClick={onDismiss}

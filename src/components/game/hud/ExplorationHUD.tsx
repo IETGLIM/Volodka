@@ -10,10 +10,11 @@ import { useContextualHints } from '@/hooks/useContextualHints';
 import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { useExamineOverlayOpen } from '@/hooks/useExamineOverlayOpen';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
-import { explorationQuestCardTopPx } from '@/shared/constants/hudLayout';
+import { explorationQuestCardTopPx, bottomCenterHintSecondaryPx } from '@/shared/constants/hudLayout';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { HazardStatusIndicator } from '@/components/game/hud/parts/HazardStatusIndicator';
 import { CityWhisperOverlay } from '@/components/game/hud/parts/CityWhisperOverlay';
@@ -55,11 +56,13 @@ function CriticalStatusWhisper({
   stress,
   isLowEnergy,
   isHighStress,
+  isMobile,
 }: {
   energy: number;
   stress: number;
   isLowEnergy: boolean;
   isHighStress: boolean;
+  isMobile: boolean;
 }) {
   if (!isLowEnergy && !isHighStress) return null;
 
@@ -76,7 +79,9 @@ function CriticalStatusWhisper({
       exit={{ opacity: 0, y: 6 }}
       transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
       className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
-      style={{ bottom: 'clamp(118px, 16vh, 176px)' }}
+      /* FIX (overlap, v4.22): был хардкод clamp(118px, 16vh, 176px) — на низких
+       * вьюпортах наезжал на поэзию/[E]-промпт. Теперь второй ряд подсказок. */
+      style={{ bottom: bottomCenterHintSecondaryPx(isMobile) }}
       role="status"
       aria-live="polite"
     >
@@ -96,6 +101,8 @@ export function ExplorationHUD(props: HUDProps) {
   const { currentHint, dismissHint } = useContextualHints();
   const reducedMotion = useEffectiveReducedMotion();
   const isMobile = useIsMobileVisual();
+  // FIX (v4.22): пока открыт осмотр — центральные подсказки скрыты (не висят над панелью).
+  const examineOverlayOpen = useExamineOverlayOpen();
   const gamePhase = useGamePhase();
 
   /* ── QuestObjectiveCard data ──
@@ -189,7 +196,7 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Subtle sparkle on nearby interactables — show-don't-tell
           affordance that draws the eye without a text prompt. */}
       <InteractableSparkle />
-      {proximityFxActive ? <EnhancedCrosshairPrompt /> : null}
+      {proximityFxActive && !examineOverlayOpen ? <EnhancedCrosshairPrompt /> : null}
 
       <AnimatePresence>
         <CriticalStatusWhisper
@@ -197,6 +204,7 @@ export function ExplorationHUD(props: HUDProps) {
           stress={stress}
           isLowEnergy={isLowEnergy}
           isHighStress={isHighStress}
+          isMobile={isMobile}
         />
       </AnimatePresence>
 
@@ -218,7 +226,10 @@ export function ExplorationHUD(props: HUDProps) {
         )}
       </AnimatePresence>
 
-      <ContextualHint hint={currentHint} onDismiss={dismissHint} />
+      {/* FIX (v4.22): контекстная подсказка скрыта, пока открыт осмотр. */}
+      {!examineOverlayOpen && (
+        <ContextualHint hint={currentHint} onDismiss={dismissHint} />
+      )}
       <AaaImmersiveGuide />
       <AaaWorldMarkerSystem />
 

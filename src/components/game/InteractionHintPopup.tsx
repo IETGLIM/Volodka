@@ -12,6 +12,7 @@ import {
   useGameplayPresentationProfile,
 } from '@/hooks/useGameplayPresentationProfile';
 import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
+import { useExamineOverlayOpen } from '@/hooks/useExamineOverlayOpen';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { useMobileDetection } from '@/components/game/orchestrator/useMobileDetection';
 import { useDiegeticNarrativeState } from '@/store/selectors';
@@ -59,6 +60,8 @@ export function InteractionHintPopup() {
   const isTouchDevice = useTouchDevice();
   const isMobileViewport = useMobileDetection();
   const crosshairPromptActive = useHudProximityFxActive();
+  // FIX (v4.22): пока открыт осмотр — подсказка скрыта (раньше висела над панелью).
+  const examineOverlayOpen = useExamineOverlayOpen();
   const gamepadConnected = useGamepadConnected();
   const diegeticNarrative = useDiegeticNarrativeState();
   const [hint, setHint] = useState<InteractionHint | null>(null);
@@ -89,16 +92,17 @@ export function InteractionHintPopup() {
   }, []);
 
   useEffect(() => {
-    if (!explorationHudActive) {
+    if (!explorationHudActive || examineOverlayOpen) {
       setIsVisible(false);
     }
-  }, [explorationHudActive]);
+  }, [explorationHudActive, examineOverlayOpen]);
 
   const shouldRender =
     explorationHudActive
     && hint !== null
     && diegeticNarrative == null
-    && !crosshairPromptActive;
+    && !crosshairPromptActive
+    && !examineOverlayOpen;
 
   /* ── Get accent style for current hint type ── */
   const accent = hint ? getInteractionHintVisual(hint.type) : getInteractionHintVisual('npc');

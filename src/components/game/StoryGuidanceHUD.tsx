@@ -27,10 +27,13 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   EXPLORATION_HUD_LAYOUT,
   explorationObjectiveTopPx,
+  bottomCenterHintPx,
 } from '@/shared/constants/hudLayout';
 import { EXPLORATION_HUD_HANDOFF } from '@/shared/constants/transitionTimings';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { useExamineOverlayOpen } from '@/hooks/useExamineOverlayOpen';
 import {
   isExplorationHudProfile,
   useGameplayPresentationProfile,
@@ -537,6 +540,9 @@ export function StoryGuidanceHUD() {
 export function PlayerLostHintToast() {
   const [hint, setHint] = useState<string | null>(null);
   const reducedMotion = useEffectiveReducedMotion();
+  const isMobile = useIsMobileVisual();
+  // FIX (v4.22): пока открыт осмотр — тост скрыт (не висит над панелью осмотра).
+  const examineOverlayOpen = useExamineOverlayOpen();
   const motionDuration = reducedMotion ? 0 : 0.4;
 
   useEffect(() => {
@@ -563,7 +569,7 @@ export function PlayerLostHintToast() {
 
   const dismiss = useCallback(() => setHint(null), []);
 
-  if (!hint) return null;
+  if (!hint || examineOverlayOpen) return null;
 
   return (
     <AnimatePresence>
@@ -572,8 +578,15 @@ export function PlayerLostHintToast() {
         animate={{ opacity: 1, y: 0 }}
         exit={reducedMotion ? undefined : { opacity: 0, y: 20 }}
         transition={{ duration: motionDuration, ease: 'easeOut' }}
-        className="fixed bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto"
-        style={{ zIndex: UI_LAYERS.HUD + 3, maxWidth: 320 }}
+        /* FIX (overlap, v4.22): был класс bottom-24 (96px) — внутри вертикального
+         * диапазона тулбара (60–112px) и quick-use. Теперь единый слот над
+         * [E]-промптом (см. bottomCenterHintPx). */
+        className="fixed left-1/2 -translate-x-1/2 pointer-events-auto"
+        style={{
+          bottom: `calc(${bottomCenterHintPx(isMobile)}px + env(safe-area-inset-bottom, 0px))`,
+          zIndex: UI_LAYERS.HUD + 3,
+          maxWidth: 340,
+        }}
       >
         <div className="flex items-center gap-2 px-3 py-2 hud-filmic-toast">
           <Compass className="size-3.5 shrink-0" style={{ color: 'var(--hud-filmic-accent)' }} aria-hidden />
