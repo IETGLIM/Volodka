@@ -1384,6 +1384,12 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: { flag: 'ep_pier_echo_accepted', missingFlag: 'ep_echo_listened' },
       },
       {
+        // Возвратная реплика «Эха пирса»: после прослушанной ленты.
+        text: 'Лента записана. Послушай сам — там четыре удара.',
+        next: 'trofim_echo_afterword',
+        condition: { flag: 'ep_echo_listened', missingFlag: 'ep_echo_afterword_done' },
+      },
+      {
         text: 'Трофим, ленты — это про четвёртый голос?',
         next: 'trofim_fourth_voice_gate',
         condition: {
@@ -1411,6 +1417,23 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       { text: 'Пойду я.', next: null },
+    ],
+  },
+
+  trofim_echo_afterword: {
+    id: 'trofim_echo_afterword',
+    speaker: 'Трофим',
+    text: '*прикладывает наушник к уху, долго молчит* Четыре удара. Раньше было три — тридцать лет три. А тут четыре. *снимает наушник, бережно мотает ленту* Значит, кто-то ещё считает удары вместе с рекой. Хороший это знак, парень. Живой. Ленту оставь себе. У меня — река, у тебя — плёнка. Услышь в ней ещё кого — приходи, послушаем вместе.',
+    choices: [
+      {
+        text: 'Услышу — сразу к тебе.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'ep_echo_afterword_done', flagValue: true },
+          { type: 'npcChange', npcId: 'fisherman_trofim', npcChange: { relation: 3 } },
+          { type: 'addKarma', value: 1 },
+        ],
+      },
     ],
   },
 
@@ -1689,11 +1712,34 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         condition: { requiredAct: 2, missingFlag: 'pv_zina_box_accepted' },
       },
       {
+        // Возвратная реплика «Голосов пирса»: коробка доставлена.
+        text: 'Коробку Марина приняла. Тихо всё прошло.',
+        next: 'baba_zina_box_afterword',
+        condition: { flag: 'pv_zina_box_delivered', missingFlag: 'pv_zina_afterword_done' },
+      },
+      {
         text: 'Релейный блок в дальней стене — «Заря-М» молчит из-за него?',
         next: 'aaa_factory_broken_mechanism_start',
         condition: { requiredAct: 5, missingFlag: 'aaa_mechanism_accepted' },
       },
       { text: 'Потом.', next: null },
+    ],
+  },
+
+  baba_zina_box_afterword: {
+    id: 'baba_zina_box_afterword',
+    speaker: 'Баба Зина',
+    text: '*отворачивается к верстаку, голос тише* Значит, дожило. Тридцать лет коробка ехала — а дожило. *долго молчит* Что она? Ничего? Правильно. Мы с ней одно слово на двоих недавно выучили: «помирились». Оно короткое, но идти с ним далеко. *вытирает руки о фартук* Увидишь её у моста — не подходи. Просто покарауль, чтоб мост выдержал.',
+    choices: [
+      {
+        text: 'Покараулю. Молча.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'pv_zina_afterword_done', flagValue: true },
+          { type: 'npcChange', npcId: 'baba_zina', npcChange: { relation: 3 } },
+          { type: 'addKarma', value: 1 },
+        ],
+      },
     ],
   },
 
@@ -1841,6 +1887,12 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        // Возвратная реплика «Голосов пирса»: блок поднят, разумы разбужены.
+        text: 'Блок поднят. Разумы проснулись?',
+        next: 'marat_echo_server_afterword',
+        condition: { flag: 'pv_server_block_raised', missingFlag: 'pv_marat_afterword_done' },
+      },
+      {
         // «Фракционные поручения»: Сеть доверяет сбор цифрового следа Марата.
         text: 'Ты рассыпаешься? Скажи, где тебя собрать',
         next: 'fc_echo_start',
@@ -1850,6 +1902,23 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Ответить строкой из тетради',
         next: null,
         effects: [{ type: 'visitStoryNode', nodeId: 'library_marat_echo' }],
+      },
+    ],
+  },
+
+  marat_echo_server_afterword: {
+    id: 'marat_echo_server_afterword',
+    speaker: 'Марат (эхо)',
+    text: '[терминал печатает медленней обычного] Двенадцать. Разбудить сумел двенадцать. Двое не проснутся — с ними я говорил отдельно, честно, как умеет эхо. *курсор мигает в такт* Остальные спрашивают: «это сон?» Отвечаю: нет. Это река. Она не топит — она хранит, пока не придёт кто-то с руками. У тебя были руки. Сеть запомнит. И я — тем более: я теперь часть реки.',
+    choices: [
+      {
+        text: 'Река запомнит. И я.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'pv_marat_afterword_done', flagValue: true },
+          { type: 'npcChange', npcId: 'marat_echo', npcChange: { relation: 3 } },
+          { type: 'addKarma', value: 1 },
+        ],
       },
     ],
   },

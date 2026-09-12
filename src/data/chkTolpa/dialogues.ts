@@ -703,7 +703,30 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'chk_ritka_after_song',
         condition: { flag: 'quiet_song_ritka' },
       },
+      {
+        // Возвратная реплика «Эха пирса»: четвёртый голос на ленте.
+        text: 'Послушай ленту — там четвёртый голос.',
+        next: 'chk_ritka_fourth_voice_echo',
+        condition: { flag: 'ep_echo_listened', missingFlag: 'ep_ritka_fourth_voice_talked' },
+      },
       { text: 'Не буду мешать.', next: null },
+    ],
+  },
+  chk_ritka_fourth_voice_echo: {
+    id: 'chk_ritka_fourth_voice_echo',
+    speaker: 'Ритка',
+    speakerId: 'chk_ritka',
+    text: '*надевает наушник, замирает на полтакта* Три... пауза... три... а тут — четвёртый. Слышишь? Он не с воды. Он с берега. *срывает наушники, глаза горят* Это же контрапункт! Река держит три, кто-то с берега кладёт сверху четвёртый — и они сходятся в такт. Возьму в песню. Тебе — место в первом ряду. Навсегда. ЧК не забывает своих слушателей.',
+    choices: [
+      {
+        text: 'Сыграй, когда соберёшь песню.',
+        next: null,
+        effects: [
+          { type: 'setFlag', flag: 'ep_ritka_fourth_voice_talked', flagValue: true },
+          { type: 'npcChange', npcId: 'chk_ritka', npcChange: { relation: 4 } },
+          { type: 'addKarma', value: 1 },
+        ],
+      },
     ],
   },
   chk_ritka_pier_return: {
@@ -717,6 +740,12 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         text: 'Стих на перилах — я его прочитал.',
         next: 'chk_ritka_pier_poem',
         condition: { flag: 'pier_chalk_poem_seen' },
+      },
+      {
+        // Возвратная реплика «Эха пирса»: четвёртый голос на ленте.
+        text: 'Послушай ленту — там четвёртый голос.',
+        next: 'chk_ritka_fourth_voice_echo',
+        condition: { flag: 'ep_echo_listened', missingFlag: 'ep_ritka_fourth_voice_talked' },
       },
       { text: 'Просто мимо.', next: null },
     ],
