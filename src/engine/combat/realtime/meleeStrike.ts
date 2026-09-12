@@ -288,11 +288,11 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   // Кандидаты: живые, не вовлечённые крипы. Плоский тип (target + XZ) для
   // resolveMeleeSweep. Spread безопасен: зарегистрированные цели — замыкания
   // над ref-ами компонента (не используют this).
-  const candidates: Array<MeleeStrikeTarget & { x: number; z: number }> = [];
+  const candidates: Array<MeleeStrikeTarget & { x: number; z: number; y: number }> = [];
   for (const target of strikeTargets.values()) {
     if (!target.canStrike()) continue;
     const pos = target.getPosition();
-    candidates.push({ ...target, x: pos.x, z: pos.z });
+    candidates.push({ ...target, x: pos.x, z: pos.z, y: pos.y });
   }
   if (candidates.length === 0) return { status: 'none' };
 
@@ -305,6 +305,8 @@ export function attemptMeleeStrike(source: MeleeStrikeSource): MeleeStrikeOutcom
   const sweepHits = resolveMeleeSweep({
     px: player.x,
     pz: player.z,
+    // FIX (v4.17.1): вертикаль — замах больше не пробивает этажи.
+    py: player.y,
     forwardX: Math.sin(yaw),
     forwardZ: Math.cos(yaw),
     reachM: MELEE_STRIKE_REACH_M,

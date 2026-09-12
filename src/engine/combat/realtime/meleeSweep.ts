@@ -31,12 +31,14 @@ const STRIKE_HALF_ANGLE_COS = Math.cos(MELEE_STRIKE_HALF_ANGLE_RAD);
 export interface MeleeSweepInput<T> {
   px: number;
   pz: number;
+  /** FIX (v4.17.1): вертикаль цели — фильтр «крип на этаж выше/ниже». */
+  py?: number;
   /** Единичный вектор взгляда (см. конвенцию в шапке файла). */
   forwardX: number;
   forwardZ: number;
   reachM: number;
-  /** Кандидаты с живой позицией (XZ). */
-  candidates: ReadonlyArray<T & { x: number; z: number }>;
+  /** Кандидаты с живой позицией (XZ; y опционален). */
+  candidates: ReadonlyArray<T & { x: number; z: number; y?: number }>;
 }
 
 export interface MeleeSweepHit<T> {
@@ -49,11 +51,16 @@ export interface MeleeSweepHit<T> {
  * Секторная проверка: цель поражена, если она в пределах reachM и либо
  * вплотную (≤ MELEE_STRIKE_POINT_BLANK_M), либо внутри конуса взгляда.
  * Возвращает попадания, отсортированные по возрастанию дистанции.
+ *
+ * FIX (v4.17.1): добавлен вертикальный фильтр — раньше хитбокс был чисто
+ * в XZ и замах пробивал крипов на этаж выше/ниже сквозь перекрытие.
  */
+export const MELEE_STRIKE_VERTICAL_TOLERANCE_M = 1.6;
+
 export function resolveMeleeSweep<T>(
   input: MeleeSweepInput<T>,
 ): Array<MeleeSweepHit<T>> {
-  const { px, pz, forwardX, forwardZ, reachM, candidates } = input;
+  const { px, pz, py, forwardX, forwardZ, reachM, candidates } = input;
   const hits: Array<MeleeSweepHit<T>> = [];
 
   const fwdLenSq = forwardX * forwardX + forwardZ * forwardZ;
@@ -64,6 +71,11 @@ export function resolveMeleeSweep<T>(
     const dz = target.z - pz;
     const distSq = dx * dx + dz * dz;
     if (distSq > reachM * reachM) continue;
+
+    // Вертикальный фильтр: цели на другом этаже не поражаются.
+    if (py !== undefined && target.y !== undefined) {
+      if (Math.abs(target.y - py) > MELEE_STRIKE_VERTICAL_TOLERANCE_M) continue;
+    }
 
     const dist = Math.sqrt(distSq);
     if (dist <= MELEE_STRIKE_POINT_BLANK_M) {
