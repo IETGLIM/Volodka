@@ -57,6 +57,10 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.playerStatus.energyShort': 'ЭН',
   'hud.playerStatus.stressShort': 'СТР',
   'hud.playerStatus.karmaShort': 'КАР',
+  /* Шаблоны aria-строк PlayerStatusFrame (этап 115, волна 2) */
+  'hud.playerStatus.energyAria': 'Энергия: {n} из 100',
+  'hud.playerStatus.stressAria': 'Стресс: {n} из 100',
+  'hud.playerStatus.karmaAria': 'Карма: {karma}, {tier}',
 
   /* karmaTier.ts */
   'hud.karmaTier.positive': 'Позитивная',

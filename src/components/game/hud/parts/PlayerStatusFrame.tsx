@@ -19,14 +19,17 @@ import { motion } from 'framer-motion';
 import { usePlayerKarma, usePlayerEnergy, usePlayerStress, usePlayerLevel } from '@/store/selectors/playerSelectors';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
 import { KARMA_HIGH_THRESHOLD, KARMA_LOW_THRESHOLD } from '@/data/constants';
+import {
+  HUD_ENERGY_LOW_THRESHOLD,
+  HUD_STRESS_HIGH_THRESHOLD,
+} from '@/components/game/hud/hudThresholds';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических aria-строк. Они сознательно НЕ добавлены
- * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
- * и статичная запись перебила бы интерполяцию значений внутри fallback
- * (t() вернул бы шаблон вместо подставленных чисел — видимый текст менялся бы).
- * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
+/* i18n (этап 115, волна 2): динамические aria-ключи перенесены в каталог
+ * RU_MESSAGES как шаблоны с плейсхолдерами ({n}, {karma}, {tier}) —
+ * t(key, fallback, params) интерполирует их. Фолбэк внутри t() байт-в-байт
+ * повторяет прежний литерал — вывод не меняется. */
 const HUD_DYNAMIC_KEYS = {
   energyAria: 'hud.playerStatus.energyAria',
   stressAria: 'hud.playerStatus.stressAria',
@@ -42,14 +45,21 @@ interface BarRowProps {
   glow: string;
   /** Force red flash (karma drop / low resource) */
   flash?: boolean;
+  /** Абсолютный порог опасной зоны — рисует насечку на этой позиции */
+  threshold?: number;
+  /** Порог пересечён (насечка краснеет и пульсирует) */
+  thresholdActive?: boolean;
   ariaValue: string;
   reducedMotion: boolean;
 }
 
 const BarRow = memo(function BarRow({
-  label, value, max, fill, glow, flash = false, ariaValue, reducedMotion,
+  label, value, max, fill, glow, flash = false, threshold, thresholdActive = false, ariaValue, reducedMotion,
 }: BarRowProps) {
   const pct = Math.max(0, Math.min(100, (value / Math.max(1, max)) * 100));
+  const thresholdPct = threshold === undefined
+    ? null
+    : Math.max(0, Math.min(100, (threshold / Math.max(1, max)) * 100));
   return (
     <div
       className="flex items-center gap-1.5"
@@ -86,6 +96,25 @@ const BarRow = memo(function BarRow({
         />
         {/* Глянцевый блик поверх заливки — читается как «стекло» панели */}
         <div className="pointer-events-none absolute inset-x-0 top-0 h-1/2 rounded-full bg-white/5" />
+        {/* Пороговая насечка (AAA): тонкая риска на границе опасной зоны.
+            Пока запас есть — бледно-белая; при пересечении порога краснеет
+            и мягко пульсирует (reduced-motion — просто красная). */}
+        {thresholdPct !== null && (
+          <motion.div
+            className="pointer-events-none absolute inset-y-0 w-[2px] -translate-x-1/2"
+            style={{
+              left: `${thresholdPct}%`,
+              background: thresholdActive ? 'rgba(248, 113, 113, 0.95)' : 'rgba(255, 255, 255, 0.22)',
+              boxShadow: thresholdActive ? '0 0 6px rgba(248, 113, 113, 0.85)' : 'none',
+            }}
+            animate={thresholdActive && !reducedMotion ? { opacity: [1, 0.45, 1] } : { opacity: 1 }}
+            transition={
+              thresholdActive && !reducedMotion
+                ? { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+                : { duration: 0.2 }
+            }
+          />
+        )}
       </div>
       <span className="w-[30px] shrink-0 font-mono text-[9px] tabular-nums text-slate-200/90">
         {Math.round(value)}
@@ -170,7 +199,11 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           fill="linear-gradient(90deg, #16a34a, #4ade80)"
           glow="0 0 6px rgba(74, 222, 128, 0.45)"
           flash={energy <= 25}
-          ariaValue={t(HUD_DYNAMIC_KEYS.energyAria, `Энергия: ${Math.round(energy)} из 100`)}
+          threshold={HUD_ENERGY_LOW_THRESHOLD}
+          thresholdActive={energy < HUD_ENERGY_LOW_THRESHOLD}
+          ariaValue={t(HUD_DYNAMIC_KEYS.energyAria, `Энергия: ${Math.round(energy)} из 100`, {
+            n: Math.round(energy),
+          })}
           reducedMotion={reducedMotion}
         />
         <BarRow
@@ -180,7 +213,11 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           fill="linear-gradient(90deg, #be123c, #fb7185)"
           glow="0 0 6px rgba(251, 113, 133, 0.4)"
           flash={stress >= 85}
-          ariaValue={t(HUD_DYNAMIC_KEYS.stressAria, `Стресс: ${Math.round(stress)} из 100`)}
+          threshold={HUD_STRESS_HIGH_THRESHOLD}
+          thresholdActive={stress > HUD_STRESS_HIGH_THRESHOLD}
+          ariaValue={t(HUD_DYNAMIC_KEYS.stressAria, `Стресс: ${Math.round(stress)} из 100`, {
+            n: Math.round(stress),
+          })}
           reducedMotion={reducedMotion}
         />
         <BarRow
@@ -190,7 +227,10 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           fill="linear-gradient(90deg, #3b82f6, #6366f1)"
           glow="0 0 6px rgba(99, 102, 241, 0.4)"
           flash={karmaDrop}
-          ariaValue={t(HUD_DYNAMIC_KEYS.karmaAria, `Карма: ${karma}, ${tierLabel}`)}
+          ariaValue={t(HUD_DYNAMIC_KEYS.karmaAria, `Карма: ${karma}, ${tierLabel}`, {
+            karma,
+            tier: tierLabel,
+          })}
           reducedMotion={reducedMotion}
         />
       </div>
