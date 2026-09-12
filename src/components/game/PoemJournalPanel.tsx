@@ -6,7 +6,7 @@
    and reading progress. Does NOT modify poem text content.
 */
 
-import { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   BookOpen, ScrollText, Zap, Search, ChevronLeft,
@@ -20,6 +20,7 @@ import { getUnifiedPoem } from '@/data/unifiedPoemRegistry';
 import { getPoemPower, canUsePower, getCooldownRemaining } from '@/engine/PoemPowerSystem';
 import { TOTAL_UNIFIED_POEMS } from '@/data/poemCollectionMeta';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useUiTick } from '@/hooks/useUiTick';
 
 /* ─── Types ─── */
 
@@ -411,14 +412,11 @@ export function PoemJournalPanel({ open, onClose }: PoemJournalPanelProps) {
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<JournalTab>('collected');
   const [searchQuery, setSearchQuery] = useState('');
-  const [_, setTick] = useState(0);
 
-  // Tick to refresh cooldowns
-  useEffect(() => {
-    if (!open) return;
-    const iv = setInterval(() => setTick((t) => t + 1), 1000);
-    return () => clearInterval(iv);
-  }, [open]);
+  // FIX (perf v4.23, этап 91): был собственный setInterval(1с) на панель.
+  // Теперь общий UI-clock: один интервал на всех подписчиков 1с; при закрытой
+  // панели (periodMs = 0) подписки и интервал не существуют вовсе.
+  useUiTick(open ? 1000 : 0);
 
   const collected = useMemo(
     () => POEMS.filter((p) => collectedPoems.includes(p.id)),

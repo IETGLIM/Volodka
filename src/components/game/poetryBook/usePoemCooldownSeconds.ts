@@ -1,25 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getCooldownRemaining } from '@/engine/PoemPowerSystem';
+import { useUiTick } from '@/hooks/useUiTick';
 
+/* FIX (perf v4.23, этап 91): был собственный setInterval(500мс) на каждого
+ * потребителя. Теперь общий UI-clock (useUiTick): один интервал на ВСЕХ
+ * подписчиков частоты 500мс, гасится, когда подписчиков не остаётся. */
 export function usePoemCooldownSeconds(poemId: string | null, active: boolean): number {
-  const [seconds, setSeconds] = useState(0);
+  const tick = useUiTick(poemId && active ? 500 : 0);
 
-  useEffect(() => {
-    if (!poemId || !active) {
-      setSeconds(0);
-      return;
-    }
-
-    const tick = () => {
-      setSeconds(Math.ceil(getCooldownRemaining(poemId) / 1000));
-    };
-
-    tick();
-    const interval = setInterval(tick, 500);
-    return () => clearInterval(interval);
-  }, [poemId, active]);
-
-  return seconds;
+  return useMemo(() => {
+    if (!poemId || !active) return 0;
+    return Math.ceil(getCooldownRemaining(poemId) / 1000);
+    // tick — не данные, а сигнал общего тика: перезапускает расчёт отсчёта.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [poemId, active, tick]);
 }
 
 /** Refreshes once per second only while any listed poem is on cooldown. */

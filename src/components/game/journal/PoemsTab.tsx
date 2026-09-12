@@ -1,4 +1,4 @@
-import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useMemo, useState } from 'react';
 import {
   ChevronLeft,
   Clock,
@@ -11,9 +11,12 @@ import {
 import { POEMS, getMainPoems, getHiddenPoems } from '@/data/poems';
 import {
   canUsePower,
-  getCooldownRemaining,
   getPoemPower,
 } from '@/engine/PoemPowerSystem';
+/* FIX (v4.23, этап 91): локальный дубликат usePoemCooldownSeconds удалён —
+ * используется канонический хук из poetryBook (общий UI-clock вместо
+ * собственного интервала на каждую вкладку журнала). */
+import { usePoemCooldownSeconds } from '@/components/game/poetryBook/usePoemCooldownSeconds';
 import { requestPoemPowerActivation } from '@/engine/poemReading/poemReadingOrchestrator';
 import { journalTelemetry } from '@/engine/journal/journalTelemetry';
 import { JOURNAL_THEME_COLORS } from '@/components/game/journal/journalConstants';
@@ -88,28 +91,6 @@ const PoemGridCard = memo(function PoemGridCard({
     </button>
   );
 });
-
-function usePoemCooldownSeconds(poemId: string | null, active: boolean): number {
-  const [seconds, setSeconds] = useState(0);
-
-  useEffect(() => {
-    if (!poemId || !active) {
-      setSeconds(0);
-      return;
-    }
-
-    const tick = () => {
-      const remaining = getCooldownRemaining(poemId);
-      setSeconds(Math.ceil(remaining / 1000));
-    };
-
-    tick();
-    const interval = setInterval(tick, 500);
-    return () => clearInterval(interval);
-  }, [poemId, active]);
-
-  return seconds;
-}
 
 export function PoemsTab({ searchQuery }: PoemsTabProps) {
   const reducedMotion = useEffectiveReducedMotion();
