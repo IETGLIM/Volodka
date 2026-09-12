@@ -66,6 +66,8 @@ import {
 } from '@/engine/npc/npcObstacleAvoidance';
 import type { NavMeshGraph } from '@/engine/npc/navMeshBuilder';
 import {
+  CREEP_AI_LOD_FAR_M,
+  CREEP_AI_LOD_FAR_TICK_S,
   CREEP_CHASE_REPATH_MOVE,
   CREEP_CHASE_REPATH_S,
   CREEP_CONTACT_LOST_S,
@@ -302,6 +304,8 @@ function Creep({
   // Throttled LOS cache for the vision cone (~5 Hz, see creepTactics.ts).
   const losTimerRef = useRef(0);
   const losClearRef = useRef(true);
+  // perf (v4.24, этап 97): аккумулятор delta для LOD-тика дальних крипов.
+  const lodDeltaRef = useRef(0);
   // Leash bookkeeping: where the chase began + contact-loss grace timer.
   const chaseOriginRef = useRef({ x: def.waypoints[0][0], z: def.waypoints[0][1] });
   const lostContactTimerRef = useRef(0);
@@ -541,6 +545,29 @@ function Creep({
     const dz = player.z - pos.z;
     const playerDist = Math.sqrt(dx * dx + dz * dz);
 
+    // ── AI LOD (v4.24, этап 97): дистанционный уровень детализации тика ──
+    // Мирные дальние крипы (> CREEP_AI_LOD_FAR_M) симулируются на ~10 Гц
+    // вместо каждого кадра: delta аккумулируется в lodDeltaRef, поэтому
+    // движение/таймеры/зрение остаются точными по времени. Между LOD-тиками
+    // пропускается самая дорогая часть: страйк-репорты (map.set + LOS),
+    // навигация по путям и презентация. Дальние крипы на экране крошечные —
+    // редкие обновления позиции/конуса незаметны. Бой (engaged), погоня
+    // (chase) и зона замаха (< 2.7 м) всегда реал-тайм — гейт их не
+    // затрагивает: замах возможен только на дистанции удара.
+    const lodEligible =
+      exploring
+      && (state === 'patrol' || state === 'return' || state === 'cooldown')
+      && playerDist > CREEP_AI_LOD_FAR_M;
+    let simDelta = delta;
+    if (lodEligible) {
+      lodDeltaRef.current += delta;
+      if (lodDeltaRef.current < CREEP_AI_LOD_FAR_TICK_S) return;
+      simDelta = lodDeltaRef.current;
+      lodDeltaRef.current = 0;
+    } else {
+      lodDeltaRef.current = 0;
+    }
+
     // ── HUD-подсказка «враг в зоне удара» (v4.8.7, добивание v4.8.8) ──
     // Отчёт в реал-тайм слой каждый кадр (дешёвый map.set). LOS считаем
     // только когда крип в зоне удара — обычно не больше одного такого.
@@ -579,7 +606,7 @@ function Creep({
     }
 
     if (contactBurstRef.current > 0) {
-      contactBurstRef.current = Math.max(0, contactBurstRef.current - delta * 1.8);
+      contactBurstRef.current = Math.max(0, contactBurstRef.current - simDelta * 1.8);
     }
     const burst = contactBurstRef.current;
     if (shockwaveRef.current) {
@@ -611,7 +638,7 @@ function Creep({
           dirZ = avoidance.dirZ;
           speedScale = avoidance.speedScale;
         }
-        const step = Math.min(speed * speedScale * delta, mDist);
+        const step = Math.min(speed * speedScale * simDelta, mDist);
         pos.x += dirX * step;
         pos.z += dirZ * step;
         headingRef.current = Math.atan2(dirX, dirZ);
@@ -626,7 +653,7 @@ function Creep({
           waypointIndexRef.current = (waypointIndexRef.current + 1) % def.waypoints.length;
         } else {
           bodyWalking = true;
-          const step = Math.min(def.patrolSpeed * delta, wDist);
+          const step = Math.min(def.patrolSpeed * simDelta, wDist);
           pos.x += (wdx / wDist) * step;
           pos.z += (wdz / wDist) * step;
           headingRef.current = Math.atan2(wdx, wdz);
@@ -646,7 +673,7 @@ function Creep({
         if (coneCandidate) {
           // Throttled LOS re-check (~5 Hz) — the cached result is reused
           // between checks so the slab test doesn't run every frame.
-          losTimerRef.current -= delta;
+          losTimerRef.current -= simDelta;
           if (losTimerRef.current <= 0) {
             losTimerRef.current = CREEP_LOS_CHECK_INTERVAL_S;
             losClearRef.current = hasCreepLineOfSight(
@@ -675,7 +702,7 @@ function Creep({
               });
             }
           }
-          alertTimerRef.current -= delta;
+          alertTimerRef.current -= simDelta;
           if (alertTimerRef.current <= 0) {
             stateRef.current = 'chase';
             // WoW-style chase bookkeeping: leash origin + fresh stuck window.
@@ -728,7 +755,7 @@ function Creep({
             followPath = true;
           }
           stepToward(targetX, targetZ, def.patrolSpeed, !followPath);
-          if (updateCreepStuckTracker(stuckTrackerRef.current, pos.x, pos.z, delta)) {
+          if (updateCreepStuckTracker(stuckTrackerRef.current, pos.x, pos.z, simDelta)) {
             // Wedged on the way home — resume patrol from wherever it stands.
             waypointIndexRef.current = nearestWaypointIndex(def.waypoints, pos.x, pos.z);
             returnPathRef.current = null;
@@ -741,7 +768,7 @@ function Creep({
       } else {
         // CHASE — WoW-style: leash range, contact-loss grace, ranged kiting,
         // nav-mesh paths around walls and stuck detection (creepTactics.ts).
-        chaseFootstepTimerRef.current -= delta;
+        chaseFootstepTimerRef.current -= simDelta;
         if (chaseFootstepTimerRef.current <= 0) {
           chaseFootstepTimerRef.current = CREEP_CHASE_FOOTSTEP_S;
           // Spatial chase footstep — anchor at the creep's current position so
@@ -766,7 +793,7 @@ function Creep({
           gaveUp = true;
         } else if (playerDist > LOSE_AGGRO_DISTANCE) {
           // Contact lost — a short grace window before giving up for good.
-          lostContactTimerRef.current += delta;
+          lostContactTimerRef.current += simDelta;
           if (lostContactTimerRef.current >= CREEP_CONTACT_LOST_S) gaveUp = true;
         } else {
           lostContactTimerRef.current = 0;
@@ -825,7 +852,7 @@ function Creep({
               // Wall-aware pursuit: follow a nav-mesh path to the player,
               // recomputed on a fixed cadence or when the player strays.
               bodyWalking = true;
-              chaseRepathTimerRef.current -= delta;
+              chaseRepathTimerRef.current -= simDelta;
               const driftSq =
                 (player.x - lastChaseTargetRef.current.x) ** 2 +
                 (player.z - lastChaseTargetRef.current.z) ** 2;
@@ -873,7 +900,7 @@ function Creep({
             // is wall-blocked; give up as lost (no teleports).
             if (
               kiteMove !== 'hold' &&
-              updateCreepStuckTracker(stuckTrackerRef.current, pos.x, pos.z, delta)
+              updateCreepStuckTracker(stuckTrackerRef.current, pos.x, pos.z, simDelta)
             ) {
               enterReturnState(pos.x, pos.z);
               eventBus.emit('ui:exploration_message', {
@@ -895,10 +922,10 @@ function Creep({
     bodyAnimRef.current = alerting ? 'idle' : bodyWalking || chasing ? 'walk' : 'idle';
 
     if (hitReactRef.current > 0) {
-      hitReactRef.current = Math.max(0, hitReactRef.current - delta * 5);
+      hitReactRef.current = Math.max(0, hitReactRef.current - simDelta * 5);
     }
     if (attackLungeRef.current > 0) {
-      attackLungeRef.current = Math.max(0, attackLungeRef.current - delta * 4.5);
+      attackLungeRef.current = Math.max(0, attackLungeRef.current - simDelta * 4.5);
     }
     const hitKick = hitReactRef.current;
     const atkLunge = attackLungeRef.current;
