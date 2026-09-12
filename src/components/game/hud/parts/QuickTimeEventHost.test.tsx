@@ -126,4 +126,43 @@ describe('QuickTimeEventHost (v4.30 — запуск QTE через EventBus)', 
 
     unsub();
   });
+
+  it('v4.31: closed эмитится сразу при cancelled (оверлей ушёл — экран свободен)', () => {
+    const closedListener = vi.fn();
+    const unsub = eventBus.on('qte:closed', (payload) => closedListener(payload));
+    render(<QuickTimeEventHost />);
+
+    act(() => {
+      eventBus.emit('qte:start', mashPayload());
+    });
+    fireEvent.keyDown(window, { code: 'Escape', key: 'Escape' });
+
+    expect(closedListener).toHaveBeenCalledTimes(1);
+    expect(closedListener).toHaveBeenCalledWith({ id: 'qte-test-1', result: 'cancelled' });
+
+    unsub();
+  });
+
+  it('v4.31: closed эмитится один раз после экрана результата (успех)', () => {
+    const closedListener = vi.fn();
+    const unsub = eventBus.on('qte:closed', (payload) => closedListener(payload));
+    render(<QuickTimeEventHost />);
+
+    act(() => {
+      eventBus.emit('qte:start', mashPayload());
+    });
+    for (let i = 0; i < 2; i++) {
+      fireEvent.keyDown(window, { code: 'Space', key: ' ' });
+    }
+
+    // Resolve уже случился, но экран результата ещё держится — closed нет.
+    expect(closedListener).not.toHaveBeenCalled();
+    act(() => {
+      vi.advanceTimersByTime(1700);
+    });
+    expect(closedListener).toHaveBeenCalledTimes(1);
+    expect(closedListener).toHaveBeenCalledWith({ id: 'qte-test-1', result: 'success' });
+
+    unsub();
+  });
 });

@@ -33,8 +33,23 @@ export interface QteResolvePayload {
   result: QTEFinalResult;
 }
 
-/** QTE start/resolve — QuickTimeEventHost, сценарные триггеры. */
+/**
+ * Payload для `qte:closed` (v4.31).
+ *
+ * Эмитится хостом ровно один раз на принятый qte:start — когда оверлей
+ * полностью ушёл с экрана: при отмене (Escape) — сразу, при остальных
+ * исходах — после экрана результата. В отличие от qte:resolve (логика
+ * наград) здесь сигнал «экран свободен»: сценарные триггеры открывают
+ * следующий шаг цепочки (миниигру, диалог) без наложения модалок.
+ */
+export interface QteClosedPayload {
+  id: string;
+  result: QTEFinalResult;
+}
+
+/** QTE start/resolve/closed — QuickTimeEventHost, сценарные триггеры. */
 export interface QteEvents {
   'qte:start': QteStartPayload;
   'qte:resolve': QteResolvePayload;
+  'qte:closed': QteClosedPayload;
 }

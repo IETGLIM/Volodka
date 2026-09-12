@@ -10,6 +10,10 @@
    - `qte:start`  — сценарий/движок просит показать QTE;
    - `qte:resolve`— хост эмитит ровно один раз на принятый start
      (success / failure / timeout / cancelled);
+   - `qte:closed` — v4.31: оверлей полностью ушёл с экрана (cancelled —
+     сразу, остальные — после экрана результата); сигнал для сценарных
+     цепочек «следующий шаг цепочки можно открывать без наложения».
+
    - пока QTE активен, WASD/прыжок/взаимодействие заморожены через
      setQteLocomotionGate (модальный ввод не просачивается в мир).
 ────────────────────────────────────────────────────────────────────────────── */
@@ -70,12 +74,16 @@ export function QuickTimeEventHost() {
     eventBus.emit('qte:resolve', { id: current.id, result });
     if (result === 'cancelled') {
       setActive(null);
+      // v4.31: «экран свободен» — сразу (сценарные цепочки ждут именно closed).
+      eventBus.emit('qte:closed', { id: current.id, result });
       return;
     }
     clearUnmountTimer();
     unmountTimerRef.current = setTimeout(() => {
       unmountTimerRef.current = null;
       setActive(null);
+      // v4.31: «экран свободен» — после экрана результата (оверлей ушёл).
+      eventBus.emit('qte:closed', { id: current.id, result });
     }, RESULT_HOLD_MS);
   }, [clearUnmountTimer]);
 
