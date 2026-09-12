@@ -287,6 +287,14 @@
     display: none !important;
   }
 
+  /* FIX (v4.23): аудио-визуализатор — декоративный виджет, на мобильных
+   * скрыт по той же причине, что и миксер: на bottom 168 налегал бы на
+   * поднятый ряд статусов и кластер мобильных кнопок справа. */
+  .av-panel,
+  [class*="audio-visualizer"] {
+    display: none !important;
+  }
+
   /* Photo mode button — repositioned */
   [class*="photo-mode-btn"] {
     bottom: calc(180px + var(--safe-bottom)) !important;

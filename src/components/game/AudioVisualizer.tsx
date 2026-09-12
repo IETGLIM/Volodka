@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Music, Waves, BarChart3, CircleDot, EyeOff } from 'lucide-react';
 import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomAudioVisualizerPx, bottomRightInsetPx } from '@/shared/constants/hudLayout';
 import { getAnalyserNode, getAudioData } from '@/engine/audio/audioVisualizerBridge';
 
 /* ─── Types ─── */
@@ -236,11 +237,15 @@ export function AudioVisualizer() {
 
   return (
     <div
-      /* FIX (v4.22): убран нерабочий динамический класс `z-[${...}]` (Tailwind
-       * не может сгенерировать класс из шаблонной строки) — zIndex и так
-       * выставлен инлайном. */
-      className={`fixed bottom-4 right-4 ${panelClass}`}
-      style={{ zIndex: UI_LAYERS.HUD }}
+      className={`fixed ${panelClass}`}
+      style={{
+        zIndex: UI_LAYERS.HUD,
+        /* FIX (v4.23): был bottom-4/right-4 — налегал на миксер звука в том же
+         * углу. Теперь 4-й ряд правой нижней колонки (над миксером, статусами
+         * и кнопкой помощи). */
+        bottom: bottomAudioVisualizerPx(),
+        right: bottomRightInsetPx(),
+      }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       role="region"
