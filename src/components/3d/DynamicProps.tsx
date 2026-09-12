@@ -5,11 +5,17 @@
  */
 
 import { useRef } from 'react';
-import { RigidBody, CylinderCollider, CuboidCollider } from '@react-three/rapier';
+import type { Group } from 'three';
+import { RigidBody, CylinderCollider, CuboidCollider, type RapierRigidBody } from '@react-three/rapier';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { DYNAMIC_PROPS, type DynamicPropDef } from '@/data/dynamicProps';
+import {
+  createPropSmoothFollower,
+  updatePropSmoothFollower,
+} from '@/engine/physics/propSmoothing';
 
 /** Footstep material reused as a cheap impact "clatter" per prop kind */
 const IMPACT_MATERIAL: Record<DynamicPropDef['kind'], string> = {
@@ -32,6 +38,26 @@ const IMPACT_COOLDOWN_S = 0.3;
 
 function PropBody({ def }: { def: DynamicPropDef }) {
   const lastImpactRef = useRef(0);
+  // perf (v4.24, этап 99): выборочная интерполяция — refs физического тела
+  // и внутренней визуальной группы для follower'а сглаживания.
+  const bodyRef = useRef<RapierRigidBody>(null);
+  const visualGroupRef = useRef<Group>(null);
+  const smoothFollowerRef = useRef(createPropSmoothFollower());
+
+  // Сглаживание в фазе post_physics: после снапа трансформ Rapier
+  // визуал плавно догоняет физическое тело (мировая EMA, см.
+  // propSmoothing.ts). Спящие/покойные тела — ранний выход, стоимость
+  // ~один isSleeping() вызов на кадр.
+  useFrameTick(
+    'misc',
+    ({ delta }) => {
+      const body = bodyRef.current;
+      const visual = visualGroupRef.current;
+      if (!body || !visual) return;
+      updatePropSmoothFollower(smoothFollowerRef.current, body, visual, delta);
+    },
+    { phase: 'post_physics', label: `prop-smoothing:${def.id}`, visibilityRef: visualGroupRef },
+  );
 
   const onImpact = () => {
     const now = performance.now() / 1000;
@@ -66,60 +92,72 @@ function PropBody({ def }: { def: DynamicPropDef }) {
   switch (def.kind) {
     case 'can':
       return (
-        <RigidBody {...common} colliders={false} mass={PROP_MASS.can} ccd>
+        <RigidBody ref={bodyRef} {...common} colliders={false} mass={PROP_MASS.can} ccd>
           <CylinderCollider args={[0.08, 0.06]} restitution={0.35} friction={0.5} />
-          <mesh castShadow>
-            <cylinderGeometry args={[0.06, 0.06, 0.16, 10]} />
-            <meshStandardMaterial color="#8a3a2a" metalness={0.6} roughness={0.35} />
-          </mesh>
-          <mesh position={[0, 0.081, 0]}>
-            <cylinderGeometry args={[0.058, 0.058, 0.004, 10]} />
-            <meshStandardMaterial color="#b8b8b8" metalness={0.8} roughness={0.25} />
-          </mesh>
+          {/* v4.24 (этап 99): визуальная группа для follower'а сглаживания */}
+          <group ref={visualGroupRef}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.06, 0.06, 0.16, 10]} />
+              <meshStandardMaterial color="#8a3a2a" metalness={0.6} roughness={0.35} />
+            </mesh>
+            <mesh position={[0, 0.081, 0]}>
+              <cylinderGeometry args={[0.058, 0.058, 0.004, 10]} />
+              <meshStandardMaterial color="#b8b8b8" metalness={0.8} roughness={0.25} />
+            </mesh>
+          </group>
         </RigidBody>
       );
     case 'bottle':
       return (
-        <RigidBody {...common} colliders={false} mass={PROP_MASS.bottle} ccd>
+        <RigidBody ref={bodyRef} {...common} colliders={false} mass={PROP_MASS.bottle} ccd>
           <CylinderCollider args={[0.12, 0.045]} restitution={0.25} friction={0.45} />
-          <mesh castShadow>
-            <cylinderGeometry args={[0.045, 0.05, 0.2, 8]} />
-            <meshStandardMaterial color="#1a3a18" metalness={0.2} roughness={0.15} transparent opacity={0.92} />
-          </mesh>
-          <mesh position={[0, 0.14, 0]} castShadow>
-            <cylinderGeometry args={[0.018, 0.03, 0.08, 8]} />
-            <meshStandardMaterial color="#1a3a18" metalness={0.2} roughness={0.15} transparent opacity={0.92} />
-          </mesh>
+          {/* v4.24 (этап 99): визуальная группа для follower'а сглаживания */}
+          <group ref={visualGroupRef}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.045, 0.05, 0.2, 8]} />
+              <meshStandardMaterial color="#1a3a18" metalness={0.2} roughness={0.15} transparent opacity={0.92} />
+            </mesh>
+            <mesh position={[0, 0.14, 0]} castShadow>
+              <cylinderGeometry args={[0.018, 0.03, 0.08, 8]} />
+              <meshStandardMaterial color="#1a3a18" metalness={0.2} roughness={0.15} transparent opacity={0.92} />
+            </mesh>
+          </group>
         </RigidBody>
       );
     case 'box':
       return (
-        <RigidBody {...common} colliders={false} mass={PROP_MASS.box} ccd>
+        <RigidBody ref={bodyRef} {...common} colliders={false} mass={PROP_MASS.box} ccd>
           <CuboidCollider args={[0.18, 0.13, 0.15]} restitution={0.2} friction={0.7} />
-          <mesh castShadow>
-            <boxGeometry args={[0.36, 0.26, 0.3]} />
-            <meshStandardMaterial color="#7a5c38" roughness={0.95} />
-          </mesh>
-          <mesh position={[0, 0.131, 0]} rotation-x={-Math.PI / 2}>
-            <planeGeometry args={[0.34, 0.06]} />
-            <meshStandardMaterial color="#a8906a" roughness={0.95} />
-          </mesh>
+          {/* v4.24 (этап 99): визуальная группа для follower'а сглаживания */}
+          <group ref={visualGroupRef}>
+            <mesh castShadow>
+              <boxGeometry args={[0.36, 0.26, 0.3]} />
+              <meshStandardMaterial color="#7a5c38" roughness={0.95} />
+            </mesh>
+            <mesh position={[0, 0.131, 0]} rotation-x={-Math.PI / 2}>
+              <planeGeometry args={[0.34, 0.06]} />
+              <meshStandardMaterial color="#a8906a" roughness={0.95} />
+            </mesh>
+          </group>
         </RigidBody>
       );
     case 'barrel':
       return (
-        <RigidBody {...common} colliders={false} mass={PROP_MASS.barrel} ccd>
+        <RigidBody ref={bodyRef} {...common} colliders={false} mass={PROP_MASS.barrel} ccd>
           <CylinderCollider args={[0.3, 0.24]} restitution={0.15} friction={0.7} />
-          <mesh castShadow>
-            <cylinderGeometry args={[0.24, 0.24, 0.6, 12]} />
-            <meshStandardMaterial color="#4a4438" metalness={0.55} roughness={0.5} />
-          </mesh>
-          {[-0.18, 0.18].map((y) => (
-            <mesh key={y} position={[0, y, 0]}>
-              <torusGeometry args={[0.245, 0.012, 6, 14]} />
-              <meshStandardMaterial color="#2e2a22" metalness={0.7} roughness={0.4} />
+          {/* v4.24 (этап 99): визуальная группа для follower'а сглаживания */}
+          <group ref={visualGroupRef}>
+            <mesh castShadow>
+              <cylinderGeometry args={[0.24, 0.24, 0.6, 12]} />
+              <meshStandardMaterial color="#4a4438" metalness={0.55} roughness={0.5} />
             </mesh>
-          ))}
+            {[-0.18, 0.18].map((y) => (
+              <mesh key={y} position={[0, y, 0]}>
+                <torusGeometry args={[0.245, 0.012, 6, 14]} />
+                <meshStandardMaterial color="#2e2a22" metalness={0.7} roughness={0.4} />
+              </mesh>
+            ))}
+          </group>
         </RigidBody>
       );
     default: {
