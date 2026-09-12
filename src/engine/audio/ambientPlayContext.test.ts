@@ -1,9 +1,27 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 import {
   buildAmbienceResolveOptions,
   getStoryProceduralAmbientOverride,
   resolveAmbientPresentation,
 } from '@/engine/audio/ambientPlayContext';
+import { mergeStoryNodesIntoCacheForTests } from '@/data/narrative/narrativePackRegistry';
+
+// Модуль читает ленивый кэш narrative-паков (а не eager STORY_NODES),
+// поэтому тестовая нода с override-ambient мерджится в кэш напрямую.
+beforeAll(() => {
+  mergeStoryNodesIntoCacheForTests(
+    {
+      act6_nadzor_battle: {
+        id: 'act6_nadzor_battle',
+        text: ' Nadzor battle',
+        sceneId: 'street_night',
+        choices: [],
+        proceduralAmbientOverride: 'combat',
+      },
+    },
+    'ambientPlayContext.test',
+  );
+});
 
 describe('ambientPlayContext', () => {
   it('returns story override only when overlay is open', () => {

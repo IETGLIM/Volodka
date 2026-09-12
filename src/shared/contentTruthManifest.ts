@@ -8,8 +8,8 @@
 
 import type { NarrativeKind } from '@/shared/types/narrativeKind';
 import type { StoryNode } from '@/shared/types/game';
-import { STORY_NODES as STATIC_STORY_NODES } from '@/data/story';
 import { getStoryNodes } from '@/data/gameDataLoader';
+import { getStoryNodesCache } from '@/data/narrative/narrativePackRegistry';
 import {
   getExploreHubDef,
   STORY_DEFINED_EXPLORE_HUB_IDS,
@@ -17,14 +17,11 @@ import {
 
 export { STORY_DEFINED_EXPLORE_HUB_IDS } from '@/shared/sceneExploreHubRegistry';
 
-/**
- * CI / validator eager story graph — same merge as `story/index` STORY_NODES.
- * Runtime UI/engine should prefer `getStoryNodes()` via resolvers; keep parity
- * tests against this static snapshot.
- */
-export function getCiParityStoryNodes(): Readonly<Record<string, StoryNode>> {
-  return STATIC_STORY_NODES;
-}
+/* Perf (gameStart bundle): этот модуль раньше держал статический импорт
+ * '@/data/story' (eager-граф всех актов, ~2.3 МБ) как CI-parity снапшот и
+ * фолбэк для прозы. Снапшот перенесён в contentPipelineValidator (он
+ * грузится динамически и только для валидации), фолбэк читает ленивый
+ * кэш narrative-паков напрямую — без поднятия загрузчика. */
 
 function resolveStoryNodesForProse(
   storyNodes?: Readonly<Record<string, StoryNode>>,
@@ -33,7 +30,9 @@ function resolveStoryNodesForProse(
   try {
     return getStoryNodes();
   } catch {
-    return STATIC_STORY_NODES;
+    // Narrative preload not finished (or loader asserts) — fall back to
+    // whatever packs are already merged into the lazy cache.
+    return getStoryNodesCache();
   }
 }
 

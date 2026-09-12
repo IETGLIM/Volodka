@@ -38,8 +38,8 @@ import { getGoldenPathDerivationReport } from '@/engine/guidedStory/buildGuidedS
 import {
   STORY_DEFINED_EXPLORE_HUB_IDS,
   resolveExploreHubIntroText,
-  getCiParityStoryNodes,
 } from '@/shared/contentTruthManifest';
+import { STORY_NODES } from '@/data/story';
 import { SCENE_EXPLORE_HUB_DEFS } from '@/shared/sceneExploreHubRegistry';
 import { QUEST_ITEM_DEFINITIONS } from '@/data/questItems';
 import { isKnownMinigameId, MINIGAME_COMPLETION_FLAGS } from '@/shared/constants/minigames';
@@ -78,8 +78,10 @@ function issue(
   return { severity, category, path, message };
 }
 
-/** Eager CI story graph via content-truth resolver (parity with story/index). */
-const STORY_NODES = getCiParityStoryNodes();
+/** Eager CI story graph — same merge as `story/index` STORY_NODES.
+ * Safe to import statically here: this validator is only loaded via
+ * dynamic import (QuestTracker dev checks / npm run validate), so the
+ * eager graph never enters the browser boot/gameStart chunks. */
 
 function buildSets() {
   const storyNodeIds = new Set(Object.keys(STORY_NODES));

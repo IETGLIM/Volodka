@@ -77,8 +77,10 @@ describe('expansion narrative content', () => {
 
   it('hub connector scenes have first-visit whispers via content truth', () => {
     for (const hubId of ['street_bench_view', 'pier_explore_mode', 'factory_explore_mode'] as const) {
-      expect(resolveExploreHubIntroText(hubId), hubId).toBeTruthy();
-      expect(resolveExploreHubRevisitText(hubId), hubId).toBeTruthy();
+      // Явно передаём статический граф: runtime-резолвер теперь читает
+      // ленивый кэш narrative-паков (eager-fолбэк убран из бандла).
+      expect(resolveExploreHubIntroText(hubId, STORY_NODES), hubId).toBeTruthy();
+      expect(resolveExploreHubRevisitText(hubId, STORY_NODES), hubId).toBeTruthy();
     }
   });
 

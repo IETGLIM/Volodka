@@ -1,4 +1,4 @@
-import { STORY_NODES } from '@/data/storyNodes';
+import { getStoryNodesCache } from '@/data/narrative/narrativePackRegistry';
 import {
   resolveAmbienceForScene,
   getAmbientSoundDef,
@@ -9,6 +9,11 @@ import { deriveSceneWeather } from '@/shared/weather/deriveSceneWeather';
 import type { SceneId } from '@/config/sceneDefinitions';
 import type { AmbientSoundType } from '@/shared/types/ambientSound';
 import { t } from '@/i18n';
+
+/* Perf (gameStart bundle): этот модуль сидит в цепочке оркестратора и раньше
+ * статически тянул весь story-граф (~2.3 МБ исходников) только ради двух
+ * полей текущей ноды. Читаем ленивый кэш narrative-паков: текущая нода
+ * гарантированно загружена к моменту показа оверлея (её сами показали). */
 
 export interface AmbientPresentationState {
   resolved: ResolvedSceneAmbience | null;
@@ -21,7 +26,7 @@ export function getStoryProceduralAmbientOverride(
   currentNodeId: string | null | undefined,
 ): AmbientSoundType | undefined {
   if (!showStoryOverlay || !currentNodeId) return undefined;
-  return STORY_NODES[currentNodeId]?.proceduralAmbientOverride;
+  return getStoryNodesCache()[currentNodeId]?.proceduralAmbientOverride;
 }
 
 /** Файловый ambient story-ноды ('sounds/ambient/<name>.ogg') — v4.15.
@@ -33,7 +38,7 @@ export function getStoryAmbientAudioFile(
   currentNodeId: string | null | undefined,
 ): string | null {
   if (!showStoryOverlay || !currentNodeId) return null;
-  return STORY_NODES[currentNodeId]?.ambientSound ?? null;
+  return getStoryNodesCache()[currentNodeId]?.ambientSound ?? null;
 }
 
 export function buildAmbienceResolveOptions(

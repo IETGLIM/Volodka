@@ -1,6 +1,14 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
+import { describe, expect, it, vi, beforeEach, afterEach, beforeAll } from 'vitest';
 import { enterSceneFreeExplorationHub } from './freeExplorationHub';
 import { EXPLORATION_HUD_HANDOFF } from '@/shared/constants/transitionTimings';
+import { loadSceneExploreHubs, loadStoryPack } from '@/data/narrative/narrativePackRegistry';
+
+// Резолвер прозы хабов читает ленивый кэш narrative-паков (eager-фолбэк
+// убран из бандла в v4.21) — в bootstrap-порядке act-паки и хабы грузятся
+// до входа в хаб; тест повторяет тот же порядок вместо статического графа.
+beforeAll(async () => {
+  await Promise.all([loadStoryPack('act1'), loadSceneExploreHubs()]);
+});
 
 const dispatchGameAction = vi.fn();
 const closeNarrativeOverlay = vi.fn();
