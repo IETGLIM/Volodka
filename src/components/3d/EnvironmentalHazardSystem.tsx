@@ -30,10 +30,13 @@ import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
 import { useGamePhase } from '@/store/selectors';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
+import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { HazardZoneMarker } from './HazardZoneMarker';
+import { ProximityGodRay } from './ProximityGodRay';
 import {
   getEnabledHazardsForScene,
   getHazardLabel,
+  HAZARD_KIND_COLOR,
   HAZARD_KIND_SFX,
   isInsideHazard,
   pickStrongestHazard,
@@ -63,6 +66,11 @@ export function EnvironmentalHazardSystem({
   const shownToasts = useRef<Set<string>>(new Set());
   const flags = useGameStore((s) => s.playerState.flags);
   const { visualLite } = useMobileVisualPerf();
+  const reducedMotion = useEffectiveReducedMotion();
+  // Steady glow for hazard beams under reduced motion — imperative ref so
+  // toggling the a11y setting never re-mounts the 3D group.
+  const beamStaticHighlightRef = useRef(reducedMotion);
+  beamStaticHighlightRef.current = reducedMotion;
 
   // Включённые зоны текущей сцены (гейт по флагам) — и для рантайм-тика,
   // и для 3D-маркеров. Мемоизируется: фильтрация не выполняется каждый кадр.
@@ -160,10 +168,28 @@ export function EnvironmentalHazardSystem({
 
   // Диегетические маркеры зон: рендерятся всегда, пока зона включена
   // флагами (в т.ч. в кат-сценах — это часть окружения сцены).
+  // Сверху — направленный световой столб (ProximityGodRay) в цвет типа
+  // зоны: опасность читается с другого конца сцены, как подсветка
+  // тревоги. visualLite — только аддитивный конус без реальных источников
+  // света (0 дополнительных light-юнитов), reduced-motion — статичное свечение.
   return (
     <group key={`hazards:${currentSceneId}`}>
       {enabledHazards.map((hazard) => (
         <HazardZoneMarker key={hazard.id} hazard={hazard} pulsate={!visualLite} />
+      ))}
+      {enabledHazards.map((hazard) => (
+        <group key={`beam:${hazard.id}`} position={hazard.position}>
+          <ProximityGodRay
+            active
+            color={HAZARD_KIND_COLOR[hazard.kind]}
+            beamHeight={Math.max(hazard.halfExtents[1] * 2 + 1.2, 2.4)}
+            baseY={Math.max(hazard.halfExtents[1] * 0.5 - 0.2, 0)}
+            coneRadius={Math.min(Math.max(Math.min(hazard.halfExtents[0], hazard.halfExtents[2]) * 0.8, 0.5), 4.2)}
+            spotAngle={Math.min(1.1, Math.max(0.38, Math.min(hazard.halfExtents[0], hazard.halfExtents[2]) * 0.55))}
+            enableLights={!visualLite}
+            staticHighlightRef={beamStaticHighlightRef}
+          />
+        </group>
       ))}
     </group>
   );

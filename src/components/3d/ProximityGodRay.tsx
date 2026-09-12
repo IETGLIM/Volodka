@@ -20,6 +20,12 @@ interface ProximityGodRayProps {
   pulsePhaseRef?: React.RefObject<number>;
   /** Steady glow (no sin pulse) — reduced-motion poem highlights */
   staticHighlightRef?: React.RefObject<boolean>;
+  /** Base radius of the volumetric cone — widen for area-scale zones (hazard zones). */
+  coneRadius?: number;
+  /** Mount spot/fill lights at all — false keeps the additive cone only (visualLite presets). */
+  enableLights?: boolean;
+  /** Spot cone angle in radians — keep in sync with coneRadius for wide beams. */
+  spotAngle?: number;
 }
 
 /** Soft spotlight + volumetric cone for nearby interactables (no floor ring). */
@@ -34,6 +40,9 @@ export function ProximityGodRay({
   flashRef,
   pulsePhaseRef,
   staticHighlightRef,
+  coneRadius = 0.38,
+  enableLights = true,
+  spotAngle = 0.38,
 }: ProximityGodRayProps) {
   const spotRef = useRef<SpotLight>(null);
   const fillRef = useRef<PointLight>(null);
@@ -93,21 +102,23 @@ export function ProximityGodRay({
 
   return (
     <group position={[0, baseY, 0]}>
-      <spotLight
-        ref={spotRef}
-        color={resolvedColor}
-        intensity={0.4}
-        angle={0.38}
-        penumbra={0.94}
-        distance={5}
-        decay={2}
-        position={[0, beamHeight, 0.12]}
-        castShadow={false}
-      >
-        <object3D attach="target" position={[0, 0, 0]} />
-      </spotLight>
+      {enableLights && (
+        <spotLight
+          ref={spotRef}
+          color={resolvedColor}
+          intensity={0.4}
+          angle={spotAngle}
+          penumbra={0.94}
+          distance={Math.max(5, beamHeight * 2.2)}
+          decay={2}
+          position={[0, beamHeight, 0.12]}
+          castShadow={false}
+        >
+          <object3D attach="target" position={[0, 0, 0]} />
+        </spotLight>
+      )}
       <mesh ref={coneMeshRef} position={[0, beamHeight * 0.42, 0]} rotation={[Math.PI, 0, 0]}>
-        <coneGeometry args={[0.38, beamHeight * 0.9, 16, 1, true]} />
+        <coneGeometry args={[coneRadius, beamHeight * 0.9, 16, 1, true]} />
         <meshBasicMaterial
           ref={coneMatRef}
           color={resolvedColor}
@@ -129,7 +140,9 @@ export function ProximityGodRay({
           blending={AdditiveBlending}
         />
       </mesh>
-      <pointLight ref={fillRef} color={color} intensity={0.22} distance={2.8} decay={2} position={[0, 0.25, 0]} />
+      {enableLights && (
+        <pointLight ref={fillRef} color={color} intensity={0.22} distance={2.8} decay={2} position={[0, 0.25, 0]} />
+      )}
     </group>
   );
 }
