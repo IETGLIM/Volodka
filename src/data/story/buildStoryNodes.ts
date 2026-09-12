@@ -37,6 +37,7 @@ import { STORY_NODES_ACT4_SIDE_QUESTS } from './act4SideQuestStory';
 import { AAA_EXPANSION_STORY_NODES } from './aaaExpansionStory';
 import { STREET_LEGENDS_STORY_NODES } from './streetLegendsStory';
 import { PIER_VOICES_STORY_NODES } from './pierVoicesStory';
+import { PIER_ECHO_STORY_NODES } from './pierEchoStory';
 import { FACTION_CONTRACTS_STORY_NODES } from './factionContractsStory';
 import { ACT5_DREAM_WORLD_STORY_NODES } from './act5DreamWorld';
 import { ACT34_CASE_EXPANSION_STORY_NODES } from './act34CaseExpansions';
@@ -84,6 +85,7 @@ export function buildStoryNodes(): Record<string, StoryNode> {
     { name: 'aaaExpansion', nodes: AAA_EXPANSION_STORY_NODES },
     { name: 'streetLegends', nodes: STREET_LEGENDS_STORY_NODES },
     { name: 'pierVoices', nodes: PIER_VOICES_STORY_NODES },
+    { name: 'pierEcho', nodes: PIER_ECHO_STORY_NODES },
     { name: 'factionContracts', nodes: FACTION_CONTRACTS_STORY_NODES },
     { name: 'act34CaseExpansions', nodes: ACT34_CASE_EXPANSION_STORY_NODES },
   ];

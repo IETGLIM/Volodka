@@ -34,6 +34,7 @@ export type StorySatellitePackId =
   | 'aaaExpansion'
   | 'streetLegends'
   | 'pierVoices'
+  | 'pierEcho'
   | 'factionContracts'
   | 'act5DreamWorld'
   | 'act34CaseExpansions';
@@ -181,6 +182,10 @@ const storySatelliteLoaders: Record<
   // lazy loader here so ensureStoryNode() can resolve sl_* nodes at runtime.
   streetLegends: () => import('../story/streetLegendsStory').then((m) => m.STREET_LEGENDS_STORY_NODES),
   pierVoices: () => import('../story/pierVoicesStory').then((m) => m.PIER_VOICES_STORY_NODES),
+  // «Эхо пирса» (v4.25.0) — 7 узлов квеста ep_pier_echo (pierEchoQuest.ts).
+  // Same parity pattern: static merge + lazy loader, иначе ensureStoryNode
+  // бросит «not found» в рантайме (урок v4.8.9).
+  pierEcho: () => import('../story/pierEchoStory').then((m) => m.PIER_ECHO_STORY_NODES),
   // «Фракционные поручения» (v4.18.0) — 28 узлов 5 фракционных квестов
   // (factionContracts.ts). Same parity pattern: static merge + lazy loader,
   // иначе ensureStoryNode бросит «not found» в рантайме (урок v4.8.9).
@@ -220,6 +225,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'aaaExpansion',
   'streetLegends',
   'pierVoices',
+  'pierEcho',
   'factionContracts',
   'act5DreamWorld',
   'act34CaseExpansions',

@@ -1374,6 +1374,16 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         },
       },
       {
+        text: 'Трофим, а что за стук в три секунды задержки?',
+        next: 'ep_pier_echo_start',
+        condition: { requiredAct: 2, missingFlag: 'ep_pier_echo_accepted' },
+      },
+      {
+        text: 'Я за лентой. Тихий маршрут — парком — помню.',
+        next: 'ep_pier_echo_route',
+        condition: { flag: 'ep_pier_echo_accepted', missingFlag: 'ep_echo_listened' },
+      },
+      {
         text: 'Трофим, ленты — это про четвёртый голос?',
         next: 'trofim_fourth_voice_gate',
         condition: {
