@@ -2,9 +2,10 @@
  * Load Poly Haven CC0 PBR map sets with correct color spaces + tiling.
  */
 
-import { useLayoutEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useTexture } from '@react-three/drei';
 import { NoColorSpace, RepeatWrapping, SRGBColorSpace, Texture } from 'three';
+import type { ColorSpace } from 'three';
 import {
   getPolyHavenPbrUrls,
   type PolyHavenMaterialId,
@@ -38,21 +39,33 @@ export function usePolyHavenPbr(
 
   const repeat = urls.repeat * repeatScale;
 
-  useLayoutEffect(() => {
-    maps.map.colorSpace = SRGBColorSpace;
-    maps.map.wrapS = maps.map.wrapT = RepeatWrapping;
-    maps.map.anisotropy = 8;
-    maps.map.repeat.set(repeat, repeat);
-    maps.map.needsUpdate = true;
-
-    for (const t of [maps.normalMap, maps.roughnessMap, maps.aoMap]) {
-      t.colorSpace = NoColorSpace;
+  // v4.33.0 fix (tiling cross-talk): configure CLONES, not the shared cached
+  // textures. `useTexture` returns ONE shared Texture instance per URL — the
+  // old code mutated `repeat/wrap/anisotropy` on it, so among ~60 call sites
+  // with different `repeatScale` for the same material the last layout effect
+  // to run decided the tiling of EVERY floor/wall using that material (it
+  // visibly changed between scenes/quality switches).
+  //
+  // Texture.clone() in three ≥r151 shares the `Source` (single GPU upload —
+  // no extra VRAM), while `repeat` is applied per-material via UV-transform
+  // uniforms, so each consumer gets an independent tiling.
+  const configured = useMemo(() => {
+    const configure = (src: Texture, colorSpace: ColorSpace): Texture => {
+      const t = src.clone();
+      t.colorSpace = colorSpace;
       t.wrapS = t.wrapT = RepeatWrapping;
       t.anisotropy = 8;
       t.repeat.set(repeat, repeat);
-      t.needsUpdate = true;
-    }
+      return t;
+    };
+
+    return {
+      map: configure(maps.map, SRGBColorSpace),
+      normalMap: configure(maps.normalMap, NoColorSpace),
+      roughnessMap: configure(maps.roughnessMap, NoColorSpace),
+      aoMap: configure(maps.aoMap, NoColorSpace),
+    };
   }, [maps, repeat]);
 
-  return { ...maps, repeat };
+  return { ...configured, repeat };
 }
