@@ -18,7 +18,6 @@ import { useRef, useMemo } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useThree } from '@react-three/fiber';
 import { computeTimeOfDayLighting } from '@/engine/graphics/TimeOfDayLighting';
-import { CascadedShadowMaps } from './CascadedShadowMaps';
 import { Color, DirectionalLight, HemisphereLight, PointLight } from 'three';
 
 /** Shadow config constants — tuned to prevent z-fighting/shadow acne */
@@ -215,8 +214,11 @@ export function ExplorationLighting() {
         shadow-normalBias={SHADOW_NORMAL_BIAS}
       />
 
-      {/* Cascaded shadow maps — mid/far range shadow detail for outdoor scenes */}
-      {!isIndoor && <CascadedShadowMaps />}
+      {/* FIX (v4.17.1): CascadedShadowMaps удалены — каскады с intensity=0
+          не давали ни тени (в three.js тень умножает вклад света, а вклад
+          нулевой), но продолжали рендерить 2048+1024 shadow-карты каждый
+          кадр на high/ultra outdoor. Средний/дальний диапазон покрывается
+          основным направленным светом выше. */}
 
       {/* Hemisphere light for ambient fill — reduced for indoor noir */}
       <hemisphereLight
