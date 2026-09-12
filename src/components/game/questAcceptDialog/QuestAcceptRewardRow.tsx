@@ -1,4 +1,4 @@
-import { Star, Zap, Sparkles, Trophy, Package, Flag } from 'lucide-react';
+import { Star, Zap, Sparkles, Trophy, Package, Flag, Heart } from 'lucide-react';
 import type { StoryEffect } from '@/shared/types/game';
 import {
   buildRewardAriaLabel,
@@ -17,6 +17,7 @@ function getRewardLucideIcon(reward: StoryEffect) {
     case 'addCredits': return <Trophy className="size-3.5 text-yellow-400/70" />;
     case 'addItem': return <Package className="size-3.5 text-emerald-400/70" />;
     case 'setFlag': return <Flag className="size-3.5 text-amber-400/70" />;
+    case 'npcChange': return <Heart className="size-3.5 text-rose-400/70" />;
     default: return <Sparkles className="size-3.5 text-slate-400/70" />;
   }
 }

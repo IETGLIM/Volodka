@@ -14,6 +14,8 @@ import {
   getGiftReactionText,
 } from '@/data/gameDataLoader';
 import { scheduleNpcGift, scheduleQuestRewardApplied } from '../storeEffects';
+import { propagateFactionRelationChange } from '@/shared/gameBridge/factionBridge';
+import { resolveCanonicalNpcId } from '@/shared/npcIdAliases';
 import {
   applyXpToProgression,
   formatLevelUpMessage,
@@ -167,6 +169,13 @@ export const createPlayerQuestRewardsSlice: StateCreator<
     const creditsGained = computeQuestCreditReward(questDef);
     const appliedRewards: string[] = [];
     const cross = pickPlayerQuestRewardsCrossActions();
+    // v4.19.1: npcChange-награды (35 вхождений в 5 файлах квестов, включая
+    // все фракционные выплаты «Фракционных поручений») раньше молча
+    // отбрасывались — switch не имел кейса, при этом UI обещал игроку рост
+    // отношений в карточках принятия/завершения. Отношения живут в
+    // world-сторе, поэтому их нельзя мутировать внутри драфта player-батча:
+    // копим сюда и применяем после коммита батча.
+    const pendingNpcChanges: Array<{ npcId: string; delta: number }> = [];
 
     get().applyPlayerRewardBatch((draft, sideEffects) => {
       const rewards = questDef.rewards ?? [];
@@ -237,6 +246,14 @@ export const createPlayerQuestRewardsSlice: StateCreator<
               appliedRewards.push(`Флаг: ${reward.flag}`);
             }
             break;
+          case 'npcChange':
+            if (reward.npcId && reward.npcChange?.relation) {
+              pendingNpcChanges.push({
+                npcId: reward.npcId,
+                delta: reward.npcChange.relation,
+              });
+            }
+            break;
           default:
             break;
         }
@@ -248,6 +265,18 @@ export const createPlayerQuestRewardsSlice: StateCreator<
       batchAddCredits(draft, creditsGained);
       appliedRewards.push(`Кредиты за задание +${creditsGained}`);
     });
+
+    // npcChange-награды: прямой платёж цели + разбавленное распространение
+    // на фракцию (×0.3) — зеркально пути applyEffects, чтобы фракционная
+    // репутация росла одинаково и из выборов, и из наград за задания.
+    for (const { npcId, delta } of pendingNpcChanges) {
+      cross.setNpcRelation(npcId, delta);
+      propagateFactionRelationChange(resolveCanonicalNpcId(npcId), delta);
+      const npcName = findNpcById(npcId)?.name ?? npcId;
+      appliedRewards.push(
+        `Отношения: ${npcName} ${delta > 0 ? '+' : ''}${delta}`,
+      );
+    }
 
     cross.completeQuest(questId);
 

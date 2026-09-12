@@ -22,7 +22,7 @@ import { useMemo } from 'react';
 import type { QuestState } from '@/shared/types/game';
 import type { QuestDefinition } from '@/shared/types/definitions/quest';
 import type { StoryEffect } from '@/shared/types/common/effects';
-import { getQuestDefinitions } from '@/data/gameDataLoader';
+import { getQuestDefinitions, findNpcById } from '@/data/gameDataLoader';
 import { getQuestProgress, useActiveQuests } from '@/store/questStore';
 import type {
   QuestData,
@@ -137,6 +137,18 @@ function mapRewards(
             value: effect.value ?? 0,
             name: 'Карма',
           });
+          break;
+        case 'npcChange':
+          // v4.19.1: отношения как награда за задание — раньше кейс
+          // отсутствовал, карточка целей HUD не показывала фракционные
+          // выплаты «Фракционных поручений».
+          if (effect.npcId && effect.npcChange?.relation) {
+            out.push({
+              type: 'reputation',
+              value: effect.npcChange.relation,
+              name: findNpcById(effect.npcId)?.name ?? effect.npcId,
+            });
+          }
           break;
         default:
           // Non-reward StoryEffect types are intentionally skipped.

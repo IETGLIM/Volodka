@@ -114,6 +114,8 @@ export function getRewardIcon(reward: StoryEffect): string {
       return '🎁';
     case 'setFlag':
       return '⚡';
+    case 'npcChange':
+      return '🤝';
     default:
       return '◆';
   }
@@ -133,6 +135,16 @@ export function buildRewardLabel(reward: StoryEffect): string {
       return QUEST_ACCEPT_DIALOG_LABELS.reward.addItem(reward.itemId ?? 'неизвестно');
     case 'setFlag':
       return QUEST_ACCEPT_DIALOG_LABELS.reward.setFlag(reward.flag ?? 'неизвестно');
+    case 'npcChange': {
+      const npcName =
+        (reward.npcId ? findNpcById(reward.npcId)?.name : undefined) ??
+        reward.npcId ??
+        'неизвестно';
+      return QUEST_ACCEPT_DIALOG_LABELS.reward.npcChange(
+        npcName,
+        reward.npcChange?.relation ?? 0,
+      );
+    }
     default:
       return QUEST_ACCEPT_DIALOG_LABELS.reward.fallback(reward.type);
   }

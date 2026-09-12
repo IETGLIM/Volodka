@@ -521,6 +521,7 @@ function getRewardIcon(type: string): string {
     case 'addCredits': return '💰'
     case 'addItem': return '🎁'
     case 'setFlag': return '⚡'
+    case 'npcChange': return '🤝'
     default: return '◆'
   }
 }
@@ -533,6 +534,11 @@ function getRewardLabel(reward: StoryEffect): string {
     case 'addCredits': return `Кредиты +${reward.value}`
     case 'addItem': return `Предмет: ${reward.itemId}`
     case 'setFlag': return `Флаг: ${reward.flag}`
+    case 'npcChange': {
+      const npcName = (reward.npcId ? findNpcById(reward.npcId)?.name : undefined) ?? reward.npcId ?? 'неизвестно'
+      const delta = reward.npcChange?.relation ?? 0
+      return `Отношения: ${npcName} ${delta > 0 ? '+' : ''}${delta}`
+    }
     default: return reward.type
   }
 }

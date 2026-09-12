@@ -1,4 +1,5 @@
 import type { QuestDefinition, QuestType } from '@/shared/types/game';
+import { findNpcById } from '@/data/gameDataLoader';
 
 const QUEST_TYPE_XP: Record<QuestType, number> = {
   main: 50,
@@ -35,6 +36,11 @@ export function formatQuestCompletionRewards(def: QuestDefinition): string {
     if (r.type === 'addSkill' && r.skill && r.value) parts.push(`+${r.value} ${r.skill}`);
     if (r.type === 'addXp' && r.value) parts.push(`+${r.value} опыта`);
     if (r.type === 'addCredits' && r.value) parts.push(`+${r.value} кредитов`);
+    if (r.type === 'npcChange' && r.npcId && r.npcChange?.relation) {
+      const npcName = findNpcById(r.npcId)?.name ?? r.npcId;
+      const delta = r.npcChange.relation;
+      parts.push(`${delta > 0 ? '+' : ''}${delta} отношения (${npcName})`);
+    }
   }
   parts.push(`Опыт за задание +${getDefaultQuestXp(def.questType)}`);
   parts.push(`Кредиты +${computeQuestCreditReward(def)}`);

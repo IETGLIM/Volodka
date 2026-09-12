@@ -29,8 +29,28 @@ const TEST_QUEST_DEF: QuestDefinition = {
   ],
 };
 
+/** v4.19.1: регрессия npcChange-наград — раньше молча отбрасывались. */
+const NPC_REWARD_QUEST_DEF: QuestDefinition = {
+  id: 'npc_reward_test_quest',
+  title: 'NPC Reward Test',
+  description: 'Test',
+  questType: 'side',
+  objectives: [
+    {
+      id: 'step',
+      description: 'Step',
+      type: 'flag_set',
+      target: 'done',
+      completed: false,
+    },
+  ],
+  rewards: [
+    { type: 'npcChange', npcId: 'quest_reward_npc', npcChange: { relation: 8 } },
+  ],
+};
+
 vi.mock('@/data/gameDataLoader', () => ({
-  getQuestDefinitions: vi.fn(() => [TEST_QUEST_DEF]),
+  getQuestDefinitions: vi.fn(() => [TEST_QUEST_DEF, NPC_REWARD_QUEST_DEF]),
   getItemDefinition: vi.fn(),
   createInventoryItem: vi.fn(),
   findNpcById: vi.fn(),
@@ -48,6 +68,13 @@ vi.mock('./storeEffects', async (importOriginal) => {
 
 const ACTIVE_QUEST: QuestState = {
   questId: 'reward_test_quest',
+  status: 'active',
+  objectives: { step: true },
+  startedAtTime: 12,
+};
+
+const ACTIVE_NPC_QUEST: QuestState = {
+  questId: 'npc_reward_test_quest',
   status: 'active',
   objectives: { step: true },
   startedAtTime: 12,
@@ -107,5 +134,24 @@ describe('quest completion reward invariant', () => {
     expect(afterSecond.progression.xp).toBe(afterFirst.progression.xp);
     expect(afterSecond.karma).toBe(afterFirst.karma);
     expect(afterSecond.credits).toBe(afterFirst.credits);
+  });
+
+  it('v4.19.1: npcChange-награда начисляет отношение NPC (fairmath от 50)', () => {
+    // Раньше кейс npcChange отсутствовал в switch completeQuestAndApplyRewards —
+    // 35 наград (включая все фракционные выплаты) молча отбрасывались,
+    // хотя UI обещал их игроку в карточках принятия/завершения.
+    useGameStore.setState({
+      playerState: createDefaultPlayerState(),
+      quests: [ACTIVE_NPC_QUEST],
+      npcRelations: [],
+    });
+
+    dispatchGameAction({ type: 'quest/complete', questId: 'npc_reward_test_quest' });
+
+    const relation = useGameStore
+      .getState()
+      .npcRelations.find((r) => r.npcId === 'quest_reward_npc');
+    // Fairmath от нейтрального 50: 50 + round(8 × 50 / 100) = 54.
+    expect(relation?.value).toBe(54);
   });
 });

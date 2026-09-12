@@ -41,6 +41,7 @@ export const QUEST_ACCEPT_DIALOG_LABELS = {
     addCredits: (value: number) => `Кредиты +${value}`,
     addItem: (itemId: string) => `Предмет: ${itemId}`,
     setFlag: (flag: string) => `Флаг: ${flag}`,
+    npcChange: (npcName: string, value: number) => `Отношения: ${npcName} ${value > 0 ? '+' : ''}${value}`,
     fallback: (type: string) => type,
   } as const,
 } as const;
