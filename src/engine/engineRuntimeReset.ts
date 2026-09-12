@@ -16,6 +16,7 @@ import { resetPoemRevealSession } from '@/engine/poemReveal/poemRevealOrchestrat
 import { resetPoemReadingSession } from '@/engine/poemReading/poemReadingOrchestrator';
 import { cancelEncounterPresentation } from '@/engine/combat/encounterPresentation';
 import { resetGltfPreloadOverlayGateForTests } from '@/engine/assets/gltfPreloadOverlayGate';
+import { rearmGltfPreloadCombatHook } from '@/engine/assets/gltfPreloadScheduler';
 import { resetSceneTransitionGuard } from '@/engine/core/sceneTransitionGuard';
 import { resetInteractionEndDedupState } from '@/engine/interaction/interactionEndDedup';
 import { resetPendingEntryBeatFromZoneInteraction } from '@/engine/interaction/narrativeOpenHelpers';
@@ -43,6 +44,8 @@ export function resetEngineModuleRuntimeState(): void {
   resetPendingEntryBeatFromZoneInteraction();
   cancelEncounterPresentation();
   resetGltfPreloadOverlayGateForTests();
+  /* FIX (v4.17.1): combat:end-хук прелоадера не переживал teardown EventBus. */
+  rearmGltfPreloadCombatHook();
   resetAchievementTracking();
   invalidateStoryGraphIndex();
   resetKeyboardInputState();

@@ -48,6 +48,20 @@ function hookCombatPreloadLifecycle(): void {
   });
 }
 
+/**
+ * FIX (v4.17.1): disposeEventBus() стирает listener 'combat:end', но
+ * combatLifecycleHooked оставался true — после StrictMode-ремаунта
+ * (revive) повторного hook не происходило, и после первого же боя
+ * manualPauseActive оставался true НАВСЕГДА: очередь прелоада стояла на
+ * паузе, модели не догружались. Сбрасываем хук-флаг и паузу из
+ * resetEngineModuleRuntimeState (полный teardown сессии).
+ */
+export function rearmGltfPreloadCombatHook(): void {
+  combatLifecycleHooked = false;
+  manualPauseActive = false;
+  syncPreloadPaused();
+}
+
 /** Pause idle GLB preloads during encounter beat / combat UI mount (main-thread headroom). */
 export function setGltfPreloadPaused(paused: boolean): void {
   if (manualPauseActive === paused) return;
@@ -156,6 +170,7 @@ export function resetGltfPreloadQueue(): void {
 /** Test-only reset */
 export function resetGltfPreloadSchedulerForTests(): void {
   resetGltfPreloadQueue();
+  combatLifecycleHooked = false;
   manualPauseActive = false;
   uiOverlayPauseCount = 0;
   preloadPaused = false;
