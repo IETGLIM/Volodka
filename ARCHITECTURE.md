@@ -2023,6 +2023,80 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.28.0 — бандлы хотбара/миникарты (этап 100 закрыт), i18n волна 3, HUD-детали
+
+### Точечные подписки: бандлы хотбара и миникарты (этап 100, волна 2 — закрыт)
+- `selectQuickUseHotbarState`/`useQuickUseHotbarState` (hudSelectors) — общий
+  shallow-бандл QuickUseBar и MobileActionButtons: фаза (selectGamePhase —
+  вычисляемая, импорт из uiSelectors без цикла) + inventory + hotbarSlots +
+  онбординг-гейт (level, mainPoemCount = countCollectedMainPoems(s.collectedPoems)
+  — число в селекторе, контракт ссылочной стабильности не нарушает). У каждого
+  из двух виджетов было 6 подписок — стало 1.
+- `selectMinimapHudState`/`useMinimapHudState` — MinimapComponent: 4 подписки →
+  1 (gamePhase + miniMapState + npcRelations + quests). ВАЖНО: селектор возвращает
+  СЫРОЙ quests; фильтр `status === 'active'` — useMemo в компоненте. Фильтр внутри
+  plain-селектора создавал бы новый массив на каждый вызов и нарушил бы контракт
+  ссылочной стабильности (hudSelectors.test.ts).
+- `useMiniMapState` (explorationSelectors): удалено мёртвое playerRotation —
+  поле не деструктурировал никто, но стор пишет его на телепортах/кинематике,
+  зря будя MinimapComponent и SceneContextChip (shallow-сравнение по 4 полям).
+- CompassHUD: raw `useGameStore((s) => s.exploration.currentSceneId)` →
+  `useCurrentSceneId()`; импорт useGameStore убран.
+- Контракт-тест: оба селектора в shallow-списке; мок makeState дополнен
+  срезом фаз (mainMenuOpen/introActive/combatActive/activeCutsceneId) и
+  хотбара — selectGamePhase в моке возвращает 'exploration'.
+
+### i18n волна 3: +109 ключей каталога, дедуп дублированных таблиц
+- Группы: hud.weather.* (13), hud.dayNight.* (7, включая дедуп дубля
+  phaseRuLabel в DayNightCycleIndicator — aria и видимый текст из одного
+  PHASE_CONFIG.labelKey), hud.compass.* (17: буквы направлений + полные
+  названия для aria + шаблон «Компас: направление {dir}»), hud.minimap.* (12,
+  включая {n} м и labelKey уровней масштаба в minimapZoomSetting), hud.quickUse.*
+  (10: шаблоны {slot}/{item}/{effects}; эффекты энергии/стресса/кармы
+  переиспользуют hud.toast.*), hud.mobileActions.* (22), hud.guide.* (31 —
+  все строки INNER_VOICE_LINES; матчер payload-события «осмотр» сознательно
+  остался в коде — это не отображаемый текст).
+- Механика: t(key, fallback, params?) волны 2; фолбэки байт-в-байт — видимый
+  вывод не изменился; репрезентативные byte-проверки в ru.hudCoverage.test.ts.
+- **Fix попутный:** тост хотбара показывал сырой ключ навыка («writing +2»).
+  Теперь `t('hud.skill.name.' + e.skill, e.skill)` — «Письмо +2» (та же схема,
+  что в notificationToastConstants; неизвестный ключ деградирует в сам ключ).
+
+### HUD-детали (стиль/обратная связь)
+- MinimapComponent: для прижатых к ободу квест-маркеров рисуется дистанция
+  (ctx.fillText, monospace 7–8px, цвет маркера, радиус innerR−14) — цель в
+  другой сцене/за краем читается с «далеко ли идти»; кнопкам масштаба и
+  «таблетке» — hover/active/focus-visible отклики (Tailwind-классы поверх
+  inline-стилей).
+- DayNightCycleIndicator: полоса прогресса фазы (aria-hidden, цвет — градиент
+  следующей фазы; progress = 1 − hoursUntil/длительность фазы, длительности
+  зеркалят PHASE_RANGES) + svg-метки 06/12/21 на дуге (fontSize 6, fill
+  slate 0.55).
+- QuickUseBar: янтарная пульс-точка «последний предмет» (quantity === 1);
+  reduced-motion — статичный span.
+- WeatherIndicator: пульс иконки при strong-ветре, дыхание точки при smoggy;
+  reduced-motion — статично.
+- hud-mobile-responsive.css: transform в transition-список .mobile-action-btn
+  (плавное нажатие 0.12s) и первый :focus-visible outline (доступность).
+
+### Этап 98 (persistent EffectComposer): план зафиксирован в ROADMAP
+- Композер в приложении один — ExplorationPostFX (ManagedEffectComposer,
+  ключ `${glInstanceKey}-${pipelineKey}`); stall переходов создаёт pipelineKey
+  (sceneId + lite|ao|full + smaa) — при смене сцены пересобираются все пассы
+  (8–10 шейдерных компиляций, 250–2000мс).
+- Решение (для отдельного раунда): фиксированный суперсед пассов, вариации —
+  императивно (pass.enabled, uniforms, LUT-swap через кэш текстур); ключ →
+  glInstanceKey; профили сцен — чистая resolveScenePostFxProfile + unit-тесты;
+  применение по scene:transition_start (до первой отрисовки новой сцены, под
+  визиром SceneTransitionVeil). Инвариант CanvasGuardSystem сохраняется:
+  postfxActive = «композер смонтирован И tonemap-пасс включён»; при
+  isPostProcessingEnabled=false композер по-прежнему не монтируется вовсе.
+- Риски: prop-churn wrapEffect (пассы — только статичные пропсы на маунте),
+  персистентный GodRays sun mesh (позиция из GODRAYS_SUN_CONFIG по сцене,
+  отсутствие конфига → pass.enabled=false), SMAA-премаунт (сменить SMAAPreset —
+  допустимый единичный ремадаунт), порядок кадров priority=1 → pre_render(500)
+  (1-кадровая латентность униформ — вне скоупа, не менять).
+
 ## v4.27.0 — точечные подписки HUD, ultra→draco, плейсхолдеры i18n, насечки баров
 
 ### Точечные подписки HUD: снос последнего широкого бандла (этап 100, волна 1)

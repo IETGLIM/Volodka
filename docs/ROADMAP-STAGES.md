@@ -118,6 +118,18 @@
 - [x] 96. Погодный множитель скорости: кэш по квантованному ключу вместо расчёта каждый кадр
 - [x] 97. Крипы: LOS/страйк-репорты по дистанционному LOD (расширить npcRenderTier на AI-тик)
 - [ ] 98. Persistent EffectComposer между сценами (убрать stall 250–2000мс на переходах)
+  - ПЛАН ГОТОВ (исследование v4.28.0): композер в приложении один —
+    ExplorationPostFX (ManagedEffectComposer, key = `${glInstanceKey}-${pipelineKey}`);
+    stall создаёт pipelineKey = `${sceneId}-${lite|ao|full}${-smaa}` — смена сцены
+    пересобирает все пассы (8–10 шейдеров, 250–2000мс). Решение: фиксированный
+    суперсед пассов, все вариации — императивно (pass.enabled + uniforms/LUT-swap),
+    ключ сжимается до glInstanceKey (ремаунт только при смене renderer'а/context
+    restore); профили сцен — чистая resolveScenePostFxProfile + unit-тесты,
+    применение по событию scene:transition_start (под визиром SceneTransitionVeil).
+    Риски: tone-mapping инвариант CanvasGuardSystem (postfxActive = mounted AND
+    tonemap enabled), prop-churn wrapEffect (пассы — только статичные пропсы),
+    персистентный GodRays sun mesh, SMAA-премаунт. Полная конверсия — отдельный
+    раунд (высокий регресс-риск без браузерной проверки).
 - [x] 99. Выборочная интерполяция динамических физтел (сейчас interpolate=false глобально)
 - [x] 100. Фасад-стор: точечные подписки HUD вместо useGameStore-фасада
   - v4.27.0 (волна 1): инвентаризация показала — «голых» useGameStore() в HUD
@@ -130,8 +142,13 @@
     AmbientAtmosphereCaption / GameStatsDashboard — по одному shallow-бандлу
     вместо 3/5/6 отдельных; ProximityWhisperOverlay — мёртвые подписки удалены.
     Контракт-тест hudSelectors.test.ts (бандл не вернётся, shallow-стабильность
-    React #185). Волна 2 (при необходимости): ревизия оставшихся
-    многоподписочных виджетов (hudMountSelectors и пр.).
+    React #185). Волна 2 (v4.28.0, закрыта): новые бандлы
+    selectQuickUseHotbarState (QuickUseBar + MobileActionButtons: 6 подписок → 1)
+    и selectMinimapHudState (MinimapComponent: 4 подписки → 1, фильтр активных
+    квестов — useMemo в компоненте по контракту ссылочной стабильности);
+    useMiniMapState без мёртвого playerRotation (ре-рендер SceneContextChip и
+    MinimapComponent на телепортах); CompassHUD — raw useGameStore →
+    useCurrentSceneId. Полный vitest 2666/2666.
 - [x] 101. `useWorldClock`: dirty-check NPC-стейтов перед записью в стор
 - [x] 102. DPR: O(n) среднее → инкрементальная сумма
 - [x] 103. Патрули: `path.shift()` O(n) → индексный курсор
@@ -182,6 +199,13 @@
     ключей hud.* в messages/ru.ts + 46 динамических (ключи-константы вне каталога,
     чтобы не перебивать интерполяцию); 12 постоянных HUD-виджетов + toast-слой +
     karmaTier; контракт-тест ru.hudCoverage.test.ts (каждый hud.*-ключ в каталоге).
+  - v4.27.0 (волна 2): плейсхолдеры {name} в t(key, fallback, params) — 11 динамических
+    ключей (toast-билдеры, aria PlayerStatusFrame) переведены в каталог-шаблоны.
+  - v4.28.0 (волна 3): +109 ключей каталога — WeatherIndicator, DayNightCycleIndicator
+    (дедуп двойной таблицы фаз), CompassHUD (буквы + aria-направления),
+    MinimapComponent (+ labelKey в minimapZoomSetting), QuickUseBar, MobileActionButtons,
+    AaaImmersiveGuide (31 строка внутреннего голоса). Попутный fix: имя навыка в тосте
+    хотбара — из каталога hud.skill.name.* вместо сырого ключа («writing +2» → «Письмо +2»).
 - [x] 116. Вычитка терминологии (карма/репутация/стресс — единообразие)
   - v4.26.0: инвариант подтверждён (игрок — «Карма», фракции — «Репутация фракции»,
     «Стресс» без синонимов); исправлен дефект двойного знака у отрицательной кармы

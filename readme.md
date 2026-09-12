@@ -25,31 +25,46 @@
 - **Физический мир**: Rapier KCC, коллайдеры сцен, дверные ниши, пинаемые банки и ящики с процедурным звуком.
 - **AA visual direction (free stack)**: HDRI/IBL, selective MeshPhysical wet/CRT accents, Poly Haven/Quaternius/Kenney, Bloom, ACES, quality-tier degrade — см. `docs/AA_QUALITY_ROADMAP.md`.
 
-## Текущее состояние (v4.27.0, 2026-09-12)
+## Текущее состояние (v4.28.0, 2026-09-12)
 
-**v4.27.0 — точечные подписки HUD, ultra→draco (−12.85 MiB деплоя), плейсхолдеры i18n (2649+ тестов зелёные):**
-этап 100 (волна 1): инвентаризация показала, что «голых» `useGameStore()` в HUD
-уже 0 — оставшийся бандл, 12-полевой `useHUDControllerState` (7 потребителей),
-удалён; SceneTopBarHud → `useProgressionSummary` (memo-виджет больше не
-ре-рендерится на погоду/энергию), HUDChromaticEdge → `useScreenEffectsVitals`,
-RainScreenEffect/SceneAmbientVignette → `useHUDExploration`, useContextualHints
-→ `useVitalStats` + `useCurrentSceneId`, корень HUD → три узкие подписки
-(мёртвое `collectedPoems` убрано); HudAmbientOverlay /
-AmbientAtmosphereCaption/GameStatsDashboard — по одному shallow-бандлу вместо
-3/5/6 подписок; контракт-тест `hudSelectors.test.ts` не даст «широкому» бандлу
-вернуться. Этап 123 закрыт: пресет ultra переведён на draco (пары есть для
-всех NPC), meshopt-варианты моделей исключены из манифеста → из деплоя уходит
-21 файл = **12.85 MiB** (verify:deploy OK: 114 путей, dist 97.1 MB). Фича
-i18n (волна 2 этапа 115): `t(key, fallback, params)` поддерживает шаблоны
-`{name}` — 8 toast-ключей и 3 aria-ключа PlayerStatusFrame перенесены в
-каталог RU_MESSAGES, видимый вывод не изменился. Стиль: пороговые насечки на
-витальных барах WoW-фрейма (энергия <25, стресс >70 — риска краснеет и
-пульсирует, reduced-motion учтён). Этап 124 (KTX2) зафиксирован как
-блокер-тулинг: энкодер toktx/KTX-Software недоступен в среде. Реестр:
-docs/ROADMAP-STAGES.md — 130/132, очередь: 98 (persistent EffectComposer),
-124 (KTX2 — ждёт тул).
+**v4.28.0 — волна 2 этапа 100 (бандлы хотбара/миникарты), i18n волна 3 (+109
+ключей), HUD-детали (полный vitest 2666/2666 зелёные):** QuickUseBar и
+MobileActionButtons — по одному shallow-бандлу `useQuickUseHotbarState`
+вместо 6 подписок у каждого; MinimapComponent — один `useMinimapHudState`
+вместо 4 подписок (фильтр активных квестов — useMemo в компоненте);
+`useMiniMapState` без мёртвого playerRotation (миникарта и SceneContextChip
+больше не просыпаются на телепортах); CompassHUD — на селекторном фасаде.
+i18n волна 3: WeatherIndicator, DayNightCycleIndicator (дедуп таблицы фаз),
+CompassHUD (буквы + aria-направления), MinimapComponent (+ labelKey уровней
+масштаба), QuickUseBar, MobileActionButtons, AaaImmersiveGuide (31 строка
+внутреннего голоса) — всё в каталоге RU_MESSAGES, вывод байт-в-байт прежний;
+попутный fix — имя навыка в тосте хотбара теперь русское («Письмо +2» вместо
+сырого «writing +2»). HUD-детали: дистанция до квест-цели у обода миникарты
+(GTA-стиль), полоса прогресса фазы + метки 06/12/21 в индикаторе дня,
+пульс-индикатор «последний предмет» в хотбаре, реактивные ветер/смог в
+виджете погоды, focus-visible и плавное нажатие мобильных кнопок. Этап 98
+(persistent EffectComposer) — детальный план готов, реализация в отдельном
+раунде; этап 124 (KTX2) — блокер-тулинг. Реестр: docs/ROADMAP-STAGES.md —
+130/132.
 
 ## Предыдущие версии
+
+### v4.27.0 (2026-09-12)
+
+**v4.27.0 — точечные подписки HUD, ultra→draco (−12.85 MiB деплоя),
+плейсхолдеры i18n (2649+ тестов зелёные):** этап 100 (волна 1): 12-полевой
+`useHUDControllerState` (7 потребителей) удалён — SceneTopBarHud →
+`useProgressionSummary`, HUDChromaticEdge → `useScreenEffectsVitals`,
+RainScreenEffect/SceneAmbientVignette → `useHUDExploration`, useContextualHints
+→ `useVitalStats` + `useCurrentSceneId`, корень HUD → три узкие подписки;
+HudAmbientOverlay/AmbientAtmosphereCaption/GameStatsDashboard — по одному
+shallow-бандлу вместо 3/5/6 подписок; контракт-тест `hudSelectors.test.ts` не
+даст «широкому» бандлу вернуться. Этап 123 закрыт: ultra переведён на draco,
+meshopt-варианты исключены из манифеста → из деплоя уходит 21 файл =
+**12.85 MiB** (verify:deploy OK: 114 путей, dist 97.1 MB). i18n волна 2:
+`t(key, fallback, params)` с шаблонами `{name}` — 8 toast-ключей и 3
+aria-ключа PlayerStatusFrame в каталоге RU_MESSAGES. Стиль: пороговые насечки
+на витальных барах (энергия <25, стресс >70). Этап 124 (KTX2) — блокер-тулинг.
 
 ### v4.26.0 (2026-09-12)
 

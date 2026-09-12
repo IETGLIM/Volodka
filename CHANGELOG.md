@@ -1,3 +1,74 @@
+## v4.28.0 (2026-09-12) — волна 2 этапа 100 (бандлы хотбара/миникарты) + i18n волна 3 + HUD-детали
+
+### Сводка
+Этап 100 закрыт полностью (волны 1+2); этап 115 дополнен волной 3 (+109
+ключей каталога); этап 98 — готов детальный план (сам этап остаётся открытым,
+требует отдельного раунда). Прогресс реестра: 130/132. Верификация — только
+статический анализ: tsc (0), ESLint (0 errors, 60 legacy-warnings), vitest
+ПОЛНЫЙ 2666/2666 (432 файла, +4), validate:content (0),
+validate:act1-extended (0), vite build + budgets:check (OK; новые i18n-строки
+в game-ui/GameOrchestrator-чанках, boot-чанки чистые). Dev-сервер не
+запускался; poems.ts не изменялся.
+
+### perf(hud): бандлы хотбара и миникарты — волна 2 (этап 100 закрыт)
+- Новый `selectQuickUseHotbarState` / `useQuickUseHotbarState` (hudSelectors):
+  фаза + инвентарь + слоты хотбара + онбординг-гейт (уровень/основные стихи).
+  QuickUseBar и MobileActionButtons — по одному shallow-бандлу вместо
+  6 подписок у каждого.
+- Новый `selectMinimapHudState` / `useMinimapHudState`: MinimapComponent —
+  один бандл вместо 4 подписок (gamePhase + useMiniMapState +
+  useNpcRelations + useActiveQuests); фильтр активных квестов — useMemo в
+  компоненте (фильтр внутри plain-селектора нарушил бы контракт ссылочной
+  стабильности).
+- `useMiniMapState`: удалено мёртвое поле playerRotation — ни один
+  потребитель его не деструктурировал, а стор пишет rotation на
+  телепортах/кинематике и зря будил MinimapComponent и SceneContextChip.
+- CompassHUD: raw `useGameStore((s) => s.exploration.currentSceneId)` →
+  `useCurrentSceneId()` (единый селекторный фасад).
+- Контракт-тест расширен: оба новых селектора в списке shallow-проверок;
+  мок состояния дополнен срезом фаз/хотбара. Полный vitest 2666/2666.
+
+### feat(i18n): волна 3 — 109 строк 7 виджетов в каталоге RU_MESSAGES
+- WeatherIndicator (заголовок/Цельсий/типы/ветер/воздух), DayNightCycleIndicator
+  (фазы + дедуп дубля phaseRuLabel — aria и видимый текст теперь из одного
+  источника), CompassHUD (буквы С/СВ/… и 8 полных названий направлений для
+  aria), MinimapComponent (aria/свернуть/развернуть/масштаб/дистанция),
+  QuickUseBar (меню назначения/aria/тултипы/тост), MobileActionButtons
+  (все надписи и aria), AaaImmersiveGuide (31 строка внутреннего голоса).
+- minimapZoomSetting: уровни получили `labelKey` — подпись уровня из каталога,
+  labelRu остаётся фолбэком (вывод байт-в-байт прежний).
+- Шаблоны с плейсхолдерами ({slot}, {item}, {dir}, {n}…) — через
+  t(key, fallback, params) волны 2; репрезентативные byte-проверки добавлены
+  в ru.hudCoverage.test.ts.
+- **fix:** имя навыка в тосте хотбара бралось сырым ключом («writing +2») —
+  видимая не-русская строка. Теперь из каталога hud.skill.name.* («Письмо +2»).
+
+### feat(hud): детали стиля и обратная связь (мандат «more details»)
+- Миникарта: дистанция до цели подписана у обода для прижатых квест-маркеров
+  (GTA-стиль, цвет маркера, шрифт monospace) — «далеко ли идти» читается
+  сразу; кнопкам масштаба — hover-glow/active-масштаб/focus-ring,
+  свёрнутой «таблетке» — hover/active/focus-visible отклик.
+- DayNightCycleIndicator: тонкая полоса прогресса текущей фазы в блоке
+  «Следующий:» (цвет — акцент следующей фазы, reduced-motion — без анимации);
+  метки 06/12/21 на дуге — дуга читается как шкала.
+- QuickUseBar: янтарный пульс-индикатор «последний предмет» (quantity = 1) —
+  видно, что после использования слот опустеет; reduced-motion — статично.
+- WeatherIndicator: при сильном ветре иконка ветра мягко пульсирует, при
+  смоге тревожно дышит точка качества воздуха; reduced-motion — статично.
+- Мобильные кнопки: плавный transform-переход нажатия (0.12s) и первая
+  видимая фокус-рамка :focus-visible (доступность клавиатурой/switch-access).
+
+### docs: этап 98 — план готов, этап открыт
+- Детальное исследование lifecycle единственного EffectComposer
+  (ExplorationPostFX/ManagedEffectComposer): stall переходов создаёт
+  pipelineKey (sceneId + lite/ao/full + smaa) — 8–10 ре-компиляций шейдеров.
+- План: фиксированный суперсед пассов + императивные включения
+  (pass.enabled/uniforms/LUT-swap), ключ → glInstanceKey, профили сцен —
+  чистая resolveScenePostFxProfile с unit-тестами, применение по
+  scene:transition_start под визиром перехода. Риски зафиксированы
+  (tone-mapping инвариант, prop-churn wrapEffect, GodRays sun mesh, SMAA).
+  Реализация — отдельный раунд: высокий регресс-риск без браузерной проверки.
+
 ## v4.27.0 (2026-09-12) — точечные подписки HUD (этап 100) + ultra→draco (этап 123) + плейсхолдеры i18n
 
 ### Сводка
