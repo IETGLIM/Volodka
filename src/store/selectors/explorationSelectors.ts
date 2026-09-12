@@ -58,12 +58,15 @@ export function useWeatherState() {
   }));
 }
 
-/** Mini-map position bundle. */
+/** Mini-map position bundle.
+ * Этап 100 (волна 2): лишнее поле playerRotation удалено — ни MinimapComponent,
+ * ни SceneContextChip его не деструктурируют, а playerRotation в сторе меняется
+ * на телепортах/кинематике и зря будил оба виджета. Живой yaw виджеты читают
+ * из sharedPlayerRotationRef. */
 export function useMiniMapState() {
   return useGameSelector((s) => ({
     currentSceneId: s.exploration.currentSceneId,
     playerPos: s.exploration.playerPosition,
-    playerRotation: s.exploration.playerRotation,
     npcStates: s.exploration.npcStates,
   }));
 }

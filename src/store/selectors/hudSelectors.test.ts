@@ -14,6 +14,8 @@ import { shallow } from 'zustand/vanilla/shallow';
 import {
   selectAmbientOverlayState,
   selectAtmosphereCaptionState,
+  selectMinimapHudState,
+  selectQuickUseHotbarState,
   selectStatsDashboardState,
 } from './hudSelectors';
 import type { GameStoreState } from '../types';
@@ -61,6 +63,12 @@ function makeState(): GameStoreState {
     quests: [],
     npcRelations: [],
     unlockedAchievements: [],
+    // Этап 100 (волна 2): срез фаз + хотбар — поля новых бандлов.
+    mainMenuOpen: false,
+    introActive: false,
+    combatActive: false,
+    activeCutsceneId: null,
+    hotbarSlots: [null, null, null, null],
     playerState: {
       karma: 50,
       stress: 20,
@@ -69,7 +77,12 @@ function makeState(): GameStoreState {
       progression: { currentAct: 1, level: 1, xp: 0, xpToNextLevel: 100 },
       inventory: [],
     },
-    exploration: { timeOfDay: 12, currentSceneId: 'park_day' },
+    exploration: {
+      timeOfDay: 12,
+      currentSceneId: 'park_day',
+      playerPosition: [0, 0, 0],
+      npcStates: {},
+    },
   } as unknown as GameStoreState;
 }
 
@@ -78,6 +91,8 @@ describe('этап 100: новые HUD-селекторы shallow-стабиль
     ['selectAmbientOverlayState', selectAmbientOverlayState],
     ['selectAtmosphereCaptionState', selectAtmosphereCaptionState],
     ['selectStatsDashboardState', selectStatsDashboardState],
+    ['selectQuickUseHotbarState', selectQuickUseHotbarState],
+    ['selectMinimapHudState', selectMinimapHudState],
   ] as const;
 
   it.each(selectors)('%s возвращает shallow-равный снапшот для того же состояния', (_name, select) => {

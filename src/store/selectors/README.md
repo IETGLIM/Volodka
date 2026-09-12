@@ -72,6 +72,13 @@ React/components continue to use hooks and `selectX()` from this folder.
 | `useDialogueContext` | DialogueRenderer |
 | `useStoryContext` | StoryRenderer |
 | `useStatusEffectsContext` | StatusEffectsBar, PlayerStatsPanel |
-| `useMiniMapState` | MiniMap |
+| `useMiniMapState` | SceneContextChip (MinimapComponent — `useMinimapHudState`) |
+| `useQuickUseHotbarState` | QuickUseBar, MobileActionButtons |
+| `useMinimapHudState` | MinimapComponent |
 | `useWeatherEffectsInput` | useWeatherEffects |
 | `useJournalShell` | JournalPanel |
+
+Bundles from `hudSelectors.ts` (`useQuickUseHotbarState`, `useMinimapHudState`) —
+plain-функции + shallow-контракт: не фильтруйте массивы внутри селектора
+(добавляйте `useMemo` в компоненте), контракт-тест `hudSelectors.test.ts`
+проверяет ссылочную стабильность каждого объектного поля.
