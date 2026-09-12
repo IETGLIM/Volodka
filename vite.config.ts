@@ -2,7 +2,8 @@ import path from "path";
 import { fileURLToPath } from "url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, type PluginOption } from "vite";
+import { visualizer } from "rollup-plugin-visualizer";
 import {
   resolveManualChunk,
   validateChunkConfig,
@@ -22,13 +23,29 @@ if (chunkConfigWarnings.length > 0) {
 }
 
 // https://vite.dev/config/
-export default defineConfig({
+// FIX (v4.22): режим --mode analyze был no-op — плагин rollup-plugin-visualizer
+// установлен, но не подключён. Теперь `npm run build:analyze` пишет
+// dist/stats.html (sunburst c gzip/brotli-размерами) для анализа бандла.
+export default defineConfig(({ mode }) => {
+  const analyzePlugins: PluginOption[] =
+    mode === "analyze"
+      ? [
+          visualizer({
+            filename: "dist/stats.html",
+            template: "sunburst",
+            gzipSize: true,
+            brotliSize: true,
+          }) as PluginOption,
+        ]
+      : [];
+
+  return {
   // rapierInitFix pre-expands the ~2 MB single-line rapier.mjs via esbuild
   // (Rollup cannot parse it as-is) and patches the wasm-bindgen init signature
   // (upstream passes a raw Uint8Array where `{ module_or_path }` is expected).
   // Required for ANY bundling build that touches @dimforge/rapier3d-compat —
   // not specific to vite-plugin-singlefile.
-  plugins: [react(), tailwindcss(), rapierInitFix()],
+  plugins: [react(), tailwindcss(), rapierInitFix(), ...analyzePlugins],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "src"),
@@ -103,4 +120,5 @@ export default defineConfig({
       "@react-three/postprocessing",
     ],
   },
+  };
 });
