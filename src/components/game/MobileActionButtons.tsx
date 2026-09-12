@@ -18,7 +18,7 @@ import { useGamePhase, useHotbarSlots } from '@/store/selectors';
 import { useConsumableActions, useInventory } from '@/store/selectors';
 import { usePlayerLevel } from '@/store/selectors/playerSelectors';
 import { useCollectedPoems } from '@/store/selectors/worldSelectors';
-import { areSharedVirtualControlsWritable, useVirtualControlsRef, clearSharedVirtualControls } from '@/engine/VirtualControlsState';
+import { areSharedVirtualControlsWritable, useVirtualControlsRef, clearSharedVirtualControls, subscribeVirtualControlsGate } from '@/engine/VirtualControlsState';
 import { fireInteractPress } from '@/engine/input/fireInteractPress';
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
 import { quickSaveGame, quickLoadGame } from './save/quickSaveLoad';
@@ -40,14 +40,26 @@ export function MobileActionButtons() {
   const bottomHudVisible = useExplorationBottomHudVisible();
   const virtualControlsRef = useVirtualControlsRef();
   const [runToggled, setRunToggled] = useState(false);
+  // FIX (v4.17.1): ref-зеркало для обработчиков — раньше сайд-эффект записи
+  // в shared-оси выполнялся ВНУТРИ setState-апдейтера (двойной вызов в
+  // StrictMode ломал тоггл). Пишем оси после вычисления значения.
+  const runToggledRef = useRef(false);
+  const jumpResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTapAtRef = useRef(0);
 
   /* ── Jump handler — writes to shared virtual controls ── */
   const handleJump = useCallback(() => {
     if (!areSharedVirtualControlsWritable()) return;
+    // FIX (v4.17.1): одноразовый rAF-импульс мог сбрасываться ДО физического
+    // шага (порядок rAF против R3F-кадра не детерминирован) — прыжок терялся.
+    // Держим флаг 120мс: несколько физических кадров гарантированно видят его,
+    // а повторный прыжок исключён кулдауном (playerMainMovement JUMP_COOLDOWN).
     virtualControlsRef.current.jump = 1;
-    // Reset after one frame — engine reads this in the next physics step
-    requestAnimationFrame(() => { virtualControlsRef.current.jump = 0; });
+    if (jumpResetTimerRef.current) clearTimeout(jumpResetTimerRef.current);
+    jumpResetTimerRef.current = setTimeout(() => {
+      virtualControlsRef.current.jump = 0;
+      jumpResetTimerRef.current = null;
+    }, 120);
   }, [virtualControlsRef]);
 
   /* ── Onboarding gate: hide during first minutes ── */
@@ -123,11 +135,12 @@ export function MobileActionButtons() {
   const handleToggleRun = useCallback(() => {
     hapticLight();
     if (!areSharedVirtualControlsWritable()) return;
-    setRunToggled((prev) => {
-      const next = !prev;
-      virtualControlsRef.current.run = next ? 1 : 0;
-      return next;
-    });
+    // FIX (v4.17.1): вычисляем значение из ref-зеркала (не из замыкания state)
+    // и пишем shared-ось ПОСЛЕ setState — без сайд-эффектов внутри апдейтера.
+    const next = !runToggledRef.current;
+    runToggledRef.current = next;
+    setRunToggled(next);
+    virtualControlsRef.current.run = next ? 1 : 0;
   }, [virtualControlsRef]);
 
   /* ── Быстрое сохранение/загрузка (v4.8.6) — прямой вызов движка,
@@ -159,10 +172,26 @@ export function MobileActionButtons() {
   /* ── Reset run on mode change (via useEffect to avoid setState during render) ── */
   useEffect(() => {
     if (mode !== 'exploration') {
+      runToggledRef.current = false;
       setRunToggled(false);
       clearSharedVirtualControls();
     }
   }, [mode]);
+
+  /* ── FIX (v4.17.1): синхронизация тоггла «Бег» с write-гейтом. При закрытии
+   * гейта (диалог/кат-сцена/лок) shared-оси обнуляются, но runToggled
+   * оставался true — кнопка показывала «Бег вкл» без бега до второго тапа. ── */
+  useEffect(() => subscribeVirtualControlsGate((writable) => {
+    if (!writable && runToggledRef.current) {
+      runToggledRef.current = false;
+      setRunToggled(false);
+    }
+  }), []);
+
+  /* ── FIX (v4.17.1): снимаем висящий таймер прыжка при анмаунте ── */
+  useEffect(() => () => {
+    if (jumpResetTimerRef.current) clearTimeout(jumpResetTimerRef.current);
+  }, []);
 
   if (!isVisible) return null;
 

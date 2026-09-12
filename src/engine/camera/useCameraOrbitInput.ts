@@ -351,7 +351,15 @@ export function useCameraOrbitInput(
       // ── PINCH-ZOOM (AAA-мобилки): 2 пальца на canvas → зум камеры.
       // Раньше pinch отсутствовал (только 1-палец орбит) — мобильные игроки
       // не могли приблизить/отдалить камеру. ──
-      if (e.touches.length === 2 && isCanvasAreaTarget(e.target)) {
+      // FIX (v4.17.1): pinch армят только когда ОБА пальца легли на область
+      // канваса. Раньше проверялся только target нового касания: палец на
+      // джойстике + палец на камеру = случайный зум вместо «иду и смотрю».
+      if (
+        e.touches.length === 2
+        && e.touches[0] && e.touches[1]
+        && isCanvasAreaTarget(e.touches[0].target)
+        && isCanvasAreaTarget(e.touches[1].target)
+      ) {
         isDraggingRef.current = false; // орбит одиночным пальцем отключается
         _isPinching = true;
         _pinchLastDist = Math.hypot(

@@ -51,6 +51,19 @@ export const sharedVirtualControlsRef: MutableRefObject<VirtualControls> = {
 /** Closed while locomotion locked — blocks touch / gamepad / mouse writers. */
 let writable = true;
 
+/** FIX (v4.17.1): подписка на переходы write-гейта — UI-тогглы (например,
+ *  «Бег» в MobileActionButtons) синхронизируются с фактическим сбросом осей
+ *  и не рассинхронизируются с физикой после закрытия/открытия гейта. */
+export type VirtualControlsGateListener = (writable: boolean) => void;
+const gateListeners = new Set<VirtualControlsGateListener>();
+
+export function subscribeVirtualControlsGate(listener: VirtualControlsGateListener): () => void {
+  gateListeners.add(listener);
+  return () => {
+    gateListeners.delete(listener);
+  };
+}
+
 function zeroVirtualControls(vc: VirtualControls): void {
   vc.forward = 0;
   vc.backward = 0;
@@ -75,9 +88,13 @@ export function areSharedVirtualControlsWritable(): boolean {
  * Closing also zeros axes so mouse-both-buttons cannot fight gamepad clear mid-lock.
  */
 export function setSharedVirtualControlsWritable(next: boolean): void {
+  const changed = writable !== next;
   writable = next;
   if (!next) {
     zeroVirtualControls(sharedVirtualControlsRef.current);
+  }
+  if (changed) {
+    for (const listener of gateListeners) listener(writable);
   }
 }
 

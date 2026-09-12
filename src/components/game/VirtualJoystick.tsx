@@ -199,6 +199,9 @@ export function VirtualJoystick({ floating = true }: VirtualJoystickProps) {
   const handlePointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (e.button !== 0) return;
+      // FIX (v4.17.1): на тач-ноутбуках невидимый слой не должен ловить мышь —
+      // иначе ЛКМ-взаимодействие и драг камеры мертвы в зоне джойстика.
+      if (e.pointerType && e.pointerType !== 'touch') return;
       // Multi-touch safety: only track one pointer
       if (activePointerId.current !== null) return;
 
@@ -265,6 +268,10 @@ export function VirtualJoystick({ floating = true }: VirtualJoystickProps) {
   // ── Defensive check: should this pointerdown activate the joystick? ──
   const shouldAcceptFloatingTouch = useCallback((e: React.PointerEvent): boolean => {
     if (e.button !== 0) return false;
+    // FIX (v4.17.1): принимаем ТОЛЬКО палец. На touch-ноутбуках невидимый
+    // слой левой половины экрана перехватывал mouse-клики (preventDefault
+    // убивал mousedown) — взаимодействие и орбита камеры слева не работали.
+    if (e.pointerType && e.pointerType !== 'touch') return false;
     // Multi-touch safety
     if (activePointerId.current !== null) return false;
     // Only the left half of the viewport
@@ -428,6 +435,10 @@ export function VirtualJoystick({ floating = true }: VirtualJoystickProps) {
             background: 'transparent',
           }}
           data-testid="virtual-joystick-floating-layer"
+          // FIX (v4.17.1): слой помечен как exploration-UI — иначе
+          // isCanvasAreaTarget() считал его «областью канваса», и драг
+          // джойстика вращал камеру (window touchstart в орбит-инпуте).
+          data-exploration-ui=""
           aria-hidden="true"
           onPointerDown={handleFloatingPointerDown}
           onPointerMove={handleFloatingPointerMove}
@@ -446,6 +457,7 @@ export function VirtualJoystick({ floating = true }: VirtualJoystickProps) {
         onLostPointerCapture={isFloating ? undefined : handleLostPointerCapture}
         role="slider"
         aria-label="Виртуальный джойстик — управление перемещением"
+        data-exploration-ui=""
         aria-valuetext={active
           ? `Направление: X ${joystickStore.getState().x.toFixed(1)}, Y ${joystickStore.getState().y.toFixed(1)}`
           : 'Центр'

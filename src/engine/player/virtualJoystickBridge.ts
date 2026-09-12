@@ -20,11 +20,14 @@ import type { JoystickState } from '@/hooks/useVirtualJoystick';
 import {
   sharedVirtualControlsRef,
   areSharedVirtualControlsWritable,
+  subscribeVirtualControlsGate,
 } from '@/engine/VirtualControlsState';
 import type { VirtualControls } from '@/hooks/useGamePhysics';
 
 /** Subscription cleanup handle */
 let unsubscribe: (() => void) | null = null;
+/** FIX (v4.17.1): отписка от гейта (см. startVirtualJoystickBridge). */
+let unsubscribeGate: (() => void) | null = null;
 
 /**
  * Write joystick state to the shared virtual controls ref.
@@ -80,6 +83,17 @@ export function startVirtualJoystickBridge(): void {
   unsubscribe = joystickStore.subscribe(() => {
     applyJoystickToVirtualControls(joystickStore.getState());
   });
+
+  // FIX (v4.17.1): повторно применяем оси джойстика при открытии write-гейта.
+  // Пока гейт был закрыт, subscriber молчал (applyJoystickToVirtualControls
+  // выходит ранним return) — если палец не шевелился, игрок стоял на месте,
+  // хотя джойстик всё ещё отклонён. Теперь открытие гейта восстанавливает оси
+  // из актуального состояния джойстика.
+  unsubscribeGate = subscribeVirtualControlsGate((writable) => {
+    if (writable) {
+      applyJoystickToVirtualControls(joystickStore.getState());
+    }
+  });
 }
 
 /**
@@ -90,6 +104,10 @@ export function stopVirtualJoystickBridge(): void {
   if (unsubscribe) {
     unsubscribe();
     unsubscribe = null;
+  }
+  if (unsubscribeGate) {
+    unsubscribeGate();
+    unsubscribeGate = null;
   }
   // FIX: читаем последнее состояние джойстика и зануляем оси ТОЛЬКО если
   // их писал джойстик (был активен). Раньше stop() безусловно затирал все
