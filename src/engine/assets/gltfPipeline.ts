@@ -117,6 +117,16 @@ export function configureGltfPipeline(renderer: WebGLRenderer): void {
   if (typeof window !== 'undefined') {
     (window as unknown as { __VOLODKA_GLTF_METRICS__?: typeof pipelineMetrics }).__VOLODKA_GLTF_METRICS__ = pipelineMetrics;
   }
+
+  // v4.33.0: kick the KTX2Loader dynamic import immediately — the renderer is
+  // cached by now, so the Basis transcoder is being prepared long before the
+  // first KTX2-bearing GLB parses. Previously the import only fired from
+  // extendGltfLoader (first useGLTF call), which for module-scope preloads
+  // ran BEFORE configureGltfPipeline (cachedRenderer === null → ensure
+  // returned null) and left a race where a basisu GLB parsed before the
+  // import resolved would throw "setKTX2Loader must be called before loading
+  // KTX2 textures".
+  void ensureKtx2Loader();
 }
 
 /** Lazily import and create KTX2Loader via dynamic import().
@@ -161,11 +171,12 @@ async function ensureKtx2Loader(): Promise<unknown | null> {
 }
 
 /** Pass to useGLTF(url, true, true, extendLoader)
- *  Synchronous — wires Draco + Meshopt immediately, defers KTX2 to first use.
- *  KTX2Loader is attached asynchronously after dynamic import completes;
- *  GLTFLoader checks for KTX2Loader per-parse, so any GLB loaded after the
- *  import resolves will get KTX2 support. For preloaded GLBs that arrive
- *  before the import resolves, textures fall back to PNG/JPEG.
+ *  Synchronous — wires Draco + Meshopt immediately. KTX2Loader is prepared
+ *  eagerly by configureGltfPipeline (dynamic import started at Canvas init)
+ *  and attached here as soon as it is ready. NOTE: GLTFLoader THROWS when it
+ *  parses a basisu-carrying GLB before setKTX2Loader was called — it does
+ *  NOT silently fall back to PNG/JPEG; that is why the import is kicked in
+ *  configureGltfPipeline instead of waiting for the first KTX2 asset.
  */
 export function extendGltfLoader(loader: GltfLoaderLike): void {
   if (sharedDraco) loader.setDRACOLoader(sharedDraco);
