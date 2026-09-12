@@ -4,7 +4,9 @@
    Левый верхний угол: портрет игрока с уровнем + три анимированных бара:
      • Энергия  — зелёный (аналог HP в этом сюжете)
      • Стресс   — розово-красный (риск срыва)
-     • Карма    — синяя (моральный градиент, диапазон −100…+100 → 0…100%)
+     • Карма    — синяя (моральный градиент, диапазон 0…100 — как в сторе;
+       FIX v4.17.1: раньше шкала ошибочно считалась как −100…+100, из-за чего
+       бар при старте показывал 75%, а ниже 25% не опускался никогда)
    Числовые значения справа от баров. Плавная анимация ширины (300мс),
    flash-эффект при изменении кармы. Скрыт на мобильных (тач-HUD компактнее),
    скрыт в бою/кат-сценах через quiet-style родительского топ-бара.
@@ -16,10 +18,8 @@ import { memo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { usePlayerKarma, usePlayerEnergy, usePlayerStress, usePlayerLevel } from '@/store/selectors/playerSelectors';
 import { getKarmaTierLabel } from '@/shared/utils/karmaTier';
+import { KARMA_HIGH_THRESHOLD, KARMA_LOW_THRESHOLD } from '@/data/constants';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
-
-const KARMA_MIN = -100;
-const KARMA_MAX = 100;
 
 interface BarRowProps {
   label: string;
@@ -103,9 +103,17 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
     return () => clearTimeout(t);
   }, [karma, reducedMotion]);
 
-  const karmaPct = ((karma - KARMA_MIN) / (KARMA_MAX - KARMA_MIN)) * 100;
+  // FIX (v4.17.1): карма в сторе клампится в 0…100 (INITIAL_KARMA = 50),
+  // поэтому процент = само значение. Пороги цвета берём из единого
+  // источника истины (data/constants) — раньше хардкод 60/40 расходился
+  // с KARMA_HIGH_THRESHOLD/KARMA_LOW_THRESHOLD из karmaTier.
+  const karmaPct = karma;
   const tierLabel = getKarmaTierLabel(karma);
-  const karmaColor = karma >= 60 ? '#22d3ee' : karma <= 40 ? '#fb7185' : '#fbbf24';
+  const karmaColor = karma >= KARMA_HIGH_THRESHOLD
+    ? '#22d3ee'
+    : karma <= KARMA_LOW_THRESHOLD
+      ? '#fb7185'
+      : '#fbbf24';
 
   return (
     <div
