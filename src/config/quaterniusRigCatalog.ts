@@ -67,3 +67,27 @@ export function resolveQuaterniusRigFallbackUrl(rigRef: QuaterniusRigRef): strin
 export function resolveQuaterniusStagedRigUrl(rigRef: QuaterniusRigRef): string {
   return QUATERNIUS_STAGED_RIG_URLS[rigRef];
 }
+
+/**
+ * Near-band ambient crowd rigs (v4.33.0). Canonical home of the pool that
+ * `AmbientSkinnedMidLod` mounts — prune-deploy-assets / verify-deploy-assets
+ * import this so the staged rig GLBs are KEPT in dist/ instead of being
+ * pruned away (the old hardcode in npcModelRegistry covered only 6 of the
+ * 8 pool rigs → male_03/male_05/female_03 404'd on prod high/ultra quality
+ * and black-screened the canvas).
+ */
+export const AMBIENT_SKINNED_RIG_POOL: readonly QuaterniusRigRef[] = [
+  'male_01',
+  'male_02',
+  'female_01',
+  'male_04',
+  'female_02',
+  'male_03',
+  'male_05',
+  'female_03',
+];
+
+/** Staged rig URLs required by the ambient crowd at runtime. */
+export function getAmbientSkinnedRigUrls(): string[] {
+  return AMBIENT_SKINNED_RIG_POOL.map((rig) => resolveQuaterniusStagedRigUrl(rig));
+}

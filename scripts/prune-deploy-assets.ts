@@ -16,6 +16,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ASSET_MANIFEST } from '../src/config/assetManifest';
 import { getNpcModelUrls } from '../src/config/npcModelRegistry';
+import { getAmbientSkinnedRigUrls } from '../src/config/quaterniusRigCatalog';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
 import {
@@ -79,6 +80,9 @@ function collectRuntimePublicPaths(): Set<string> {
   }
 
   for (const url of getNpcModelUrls()) addUrl(keep, url);
+  // v4.33.0: staged ambient-crowd rigs (male_03/male_05/female_03 ранее
+  // выпиливались из dist → 404 и чёрный экран на high/ultra).
+  for (const url of getAmbientSkinnedRigUrls()) addUrl(keep, url);
   for (const url of getPropModelUrls()) addUrl(keep, url);
   for (const url of Object.values(MODEL_URLS)) addUrl(keep, url);
   for (const url of Object.values(POLYHAVEN_MODELS)) addUrl(keep, url);

@@ -8,7 +8,8 @@ import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUti
 import { AnimationAction, AnimationClip, AnimationMixer, Color, Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Vector3 } from 'three';
 import type { QuaterniusRigRef } from '@/config/npcComposer/types';
 import { NPC_GLTF_TARGET_HEIGHT_M } from '@/config/metricScaleCoherence';
-import { resolveQuaterniusStagedRigUrl } from '@/config/quaterniusRigCatalog';
+import { AMBIENT_SKINNED_RIG_POOL, resolveQuaterniusStagedRigUrl } from '@/config/quaterniusRigCatalog';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
@@ -23,17 +24,14 @@ const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeo
 
 export const MAX_AMBIENT_SKINNED = 8;
 
-/** Distinct staged rigs so near-band crowd is not N× the same mesh. */
-const AMBIENT_RIG_POOL: readonly QuaterniusRigRef[] = [
-  'male_01',
-  'male_02',
-  'female_01',
-  'male_04',
-  'female_02',
-  'male_03',
-  'male_05',
-  'female_03',
-];
+/**
+ * Wander speed of the ambient crowd (AmbientNPCs.tsx). Single source of
+ * truth lives here (AmbientNPCs imports it) so the gait-matched walk clip
+ * rate below stays in sync with the actual mover.
+ */
+export const AMBIENT_WANDER_MPS = 0.5;
+/** Gait match: wander speed ÷ natural Quaternius Walk speed (0.66 m/s) — feet track the ground. */
+const AMBIENT_WALK_CLIP_TIME_SCALE = AMBIENT_WANDER_MPS / 0.66;
 
 export interface AmbientCrowdLiveSlot {
   px: number;
@@ -156,6 +154,10 @@ function AmbientSkinnedFigure({
       const walk = nextMixer.clipAction(walkClip);
       walk.enabled = true;
       walk.setEffectiveWeight(0);
+      // Gait-matched playback (v4.33.0): the walk clip naturally covers
+      // 0.66 m/s while the wander AI moves at 0.5 m/s — without this the
+      // crowd moonwalks.
+      walk.setEffectiveTimeScale(AMBIENT_WALK_CLIP_TIME_SCALE);
       walk.play();
       walk.time = (slotIndex * 0.41) % Math.max(0.1, walkClip.duration);
       nextActions.walk = walk;
@@ -216,20 +218,25 @@ function AmbientSkinnedMidLodInner({
     () => scaleNpcLodThresholds(DEFAULT_NPC_LOD, preset.lodBias).cullOut,
     [preset.lodBias],
   );
-  const rigs = AMBIENT_RIG_POOL.slice(0, Math.max(0, Math.min(MAX_AMBIENT_SKINNED, maxSkinned)));
+  const rigs = AMBIENT_SKINNED_RIG_POOL.slice(0, Math.max(0, Math.min(MAX_AMBIENT_SKINNED, maxSkinned)));
 
   return (
     <group>
       {rigs.map((rig, i) => (
-        <AmbientSkinnedFigure
-          key={rig}
-          rig={rig}
-          slotIndex={i}
-          slotsRef={slotsRef}
-          livePlayerPositionRef={livePlayerPositionRef}
-          tintHex={tintHex}
-          nearDistance={nearDistance}
-        />
+        // v4.33.0: per-figure error boundary — if a single staged rig GLB
+        // fails to load (404 on a pruned deploy, corrupted cache entry),
+        // degrade to one missing passer-by instead of rejecting the whole
+        // Suspense boundary and black-screening the canvas.
+        <ErrorBoundary key={rig} name={`AmbientFigure:${rig}`} fallback={null}>
+          <AmbientSkinnedFigure
+            rig={rig}
+            slotIndex={i}
+            slotsRef={slotsRef}
+            livePlayerPositionRef={livePlayerPositionRef}
+            tintHex={tintHex}
+            nearDistance={nearDistance}
+          />
+        </ErrorBoundary>
       ))}
     </group>
   );
@@ -250,7 +257,7 @@ export function AmbientSkinnedMidLod(props: AmbientSkinnedMidLodProps) {
 // mount (still on the menu) competes with the bedroom / Cesium boot path and
 // has contributed to WebGL context loss → solid black after New Game.
 // Session 9 perf: routed through gltfPreloadScheduler to stagger the sync parses.
-for (const rig of AMBIENT_RIG_POOL.slice(0, 3)) {
+for (const rig of AMBIENT_SKINNED_RIG_POOL.slice(0, 3)) {
   const url = resolveQuaterniusStagedRigUrl(rig);
   scheduleGltfPreload(
     url,

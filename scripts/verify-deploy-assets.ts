@@ -7,6 +7,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { ASSET_MANIFEST } from '../src/config/assetManifest';
 import { getNpcModelUrls } from '../src/config/npcModelRegistry';
+import { getAmbientSkinnedRigUrls } from '../src/config/quaterniusRigCatalog';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
 
@@ -48,6 +49,9 @@ function loadRequiredPublicPaths(): string[] {
   }
 
   for (const url of getNpcModelUrls()) paths.add(url.replace(/^\//, ''));
+  // v4.33.0: ambient crowd rigs must survive the deploy prune — verify them
+  // so a registry/keep-set drift fails the build instead of 404ing at runtime.
+  for (const url of getAmbientSkinnedRigUrls()) paths.add(url.replace(/^\//, ''));
   for (const url of getPropModelUrls()) paths.add(url.replace(/^\//, ''));
   for (const url of Object.values(MODEL_URLS)) paths.add(url.replace(/^\//, ''));
 

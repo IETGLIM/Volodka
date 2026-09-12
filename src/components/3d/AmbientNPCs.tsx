@@ -22,6 +22,7 @@ import {
   resolveAmbientNpcOpacity,
 } from '@/engine/world/resolveAmbientNpcBudget';
 import {
+  AMBIENT_WANDER_MPS,
   AmbientSkinnedMidLod,
   MAX_AMBIENT_SKINNED,
   type AmbientCrowdLiveSlot,
@@ -161,7 +162,7 @@ const MAX_INSTANCES = MAX_AMBIENT_NPC_INSTANCES;
 const NPC_HEIGHT = 1.72;
 const NPC_WIDTH = 0.72;
 const BODY_OPACITY = 0.78;
-const WALK_SPEED = 0.5;
+const WALK_SPEED = AMBIENT_WANDER_MPS; // single source of truth in AmbientSkinnedMidLod (gait match)
 const IDLE_CHANCE = 0.3;
 const IDLE_DURATION_MIN = 2;
 const IDLE_DURATION_MAX = 6;

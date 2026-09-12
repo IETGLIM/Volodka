@@ -13,7 +13,7 @@
  */
 
 const CACHE_NAME = 'volodka-shell-v3';
-const MEDIA_CACHE_NAME = 'volodka-media-v3';
+const MEDIA_CACHE_NAME = 'volodka-media-v4'; // v4.33.0: bump — deploy keep-set changed (ambient rigs re-added), bust stale cache-first entries
 
 /**
  * Assets to pre-cache on install.
