@@ -74,5 +74,15 @@ describe('i18n: покрытие HUD-строк (этап 115)', () => {
     expect(RU_MESSAGES['hud.save.toast']).toBe('Запись сохранена');
     expect(RU_MESSAGES['hud.stamina.initialAria']).toBe('Выносливость: 100%');
     expect(RU_MESSAGES['hud.emergency.more']).toBe('…и другие');
+    /* Волна 3 (v4.28.0): WeatherIndicator / DayNight / Compass / Minimap /
+     * QuickUse / MobileActions / AaaImmersiveGuide */
+    expect(RU_MESSAGES['hud.weather.title']).toBe('Погода');
+    expect(RU_MESSAGES['hud.dayNight.aria']).toBe('Время суток: {phase}, {time}');
+    expect(RU_MESSAGES['hud.compass.heading.north']).toBe('Север');
+    expect(RU_MESSAGES['hud.minimap.expand']).toBe('Развернуть миникарту');
+    expect(RU_MESSAGES['hud.quickUse.useAria']).toBe('Использовать {item} [{slot}] (ПКМ — назначить)');
+    expect(RU_MESSAGES['hud.mobileActions.noStamina']).toBe('Не хватает выносливости для удара');
+    expect(RU_MESSAGES['hud.guide.firstInteract']).toBe('Руки помнят — нажми, потяни, послушай, что ответит.');
+    expect(RU_MESSAGES['hud.minimap.distance']).toBe('{n} м');
   });
 });

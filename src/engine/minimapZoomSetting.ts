@@ -16,7 +16,9 @@ const LS_KEY = 'volodka_minimap_zoom_index';
 export interface MinimapZoomLevel {
   /** Стабильный id (для тестов и отладки). */
   readonly id: 'far' | 'normal' | 'close';
-  /** Русская подпись уровня (aria-label / подсказка). */
+  /** Ключ каталога локализации (RU_MESSAGES) для подписи уровня. */
+  readonly labelKey: 'hud.minimap.zoom.far' | 'hud.minimap.zoom.normal' | 'hud.minimap.zoom.close';
+  /** Русская подпись уровня (fallback t()); вывод байт-в-байт прежний. */
   readonly labelRu: string;
   /** Множитель радиуса обзора: <1 — приближение, >1 — обзор. */
   readonly radiusMultiplier: number;
@@ -24,9 +26,9 @@ export interface MinimapZoomLevel {
 
 /** От дальнего обзора к крупному плану. */
 export const MINIMAP_ZOOM_LEVELS: readonly MinimapZoomLevel[] = [
-  { id: 'far', labelRu: 'Обзор', radiusMultiplier: 1.35 },
-  { id: 'normal', labelRu: 'Обычный', radiusMultiplier: 1 },
-  { id: 'close', labelRu: 'Крупный', radiusMultiplier: 0.7 },
+  { id: 'far', labelKey: 'hud.minimap.zoom.far', labelRu: 'Обзор', radiusMultiplier: 1.35 },
+  { id: 'normal', labelKey: 'hud.minimap.zoom.normal', labelRu: 'Обычный', radiusMultiplier: 1 },
+  { id: 'close', labelKey: 'hud.minimap.zoom.close', labelRu: 'Крупный', radiusMultiplier: 0.7 },
 ];
 
 export const MINIMAP_ZOOM_DEFAULT_INDEX = 1;
