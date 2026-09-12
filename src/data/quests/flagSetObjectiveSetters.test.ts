@@ -31,23 +31,12 @@ const ENGINE_SET_FLAGS: ReadonlySet<string> = new Set([
 
 /**
  * Задолженность контента: объективы, чьи флаги пока никто не ставит.
- * Владельцы: expansion stubs (10), chkTolpa acts 4–5 (2). Чинить паково —
- * не построчно: квест должен получить полноценные биты с setFlag.
+ * FIX (v4.17.1): долг закрыт полностью — 12 мёртвых флагов получили
+ * сеттеры (диалоги milestoneDialogues + 10 триггер-зон «DEAD-FLAG REPAIR»
+ * в triggerZones.ts). Список оставлен ПУСТЫМ как инвариант: новые
+ * flag_set-объективы обязаны приносить сеттер с собой.
  */
-const KNOWN_DEAD_FLAG_OBJECTIVES: ReadonlySet<string> = new Set([
-  'marat_archive_unlock:enter_marat_archive',
-  'marat_archive_unlock:read_marat_poems',
-  'zarema_heritage:receive_grandmother_book',
-  'zarema_heritage:verify_book_authenticity',
-  'zarema_heritage:decide_book_fate',
-  'eye_blueprint_shutdown:upload_eye_code',
-  'eye_blueprint_shutdown:confirm_shutdown',
-  'solnysh_mother_archive:receive_mother_notebook',
-  'solnysh_mother_archive:find_witness',
-  'solnysh_mother_archive:hand_over_notebook',
-  'tolpa_legendary_fire:accept_honor',
-  'tolpa_act4_server_heist:disable_guild_server',
-]);
+const KNOWN_DEAD_FLAG_OBJECTIVES: ReadonlySet<string> = new Set([]);
 
 interface EffectLike {
   readonly type?: string;

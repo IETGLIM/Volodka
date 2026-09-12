@@ -8906,6 +8906,306 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     interactionLabel: 'Решить судьбу чертежа',
   },
 
+  /* ═══════════════════════════════════════════════════════════════════
+     DEAD-FLAG REPAIR (v4.17.1) — объективы без сеттера, квесты были
+     незавершаемы (soft-lock): marat_archive_unlock (marat_archive_opened,
+     marat_poems_read), zarema_heritage (zarema_book_verified,
+     zarema_heritage_decided), eye_blueprint_shutdown (maria_eye_code_uploaded,
+     eye_blueprint_shutdown_confirmed), solnysh_mother_archive
+     (solnysh_witness_found, solnysh_mother_archive_deposited),
+     tolpa_legendary_fire (tolpa_legendary_fire_complete),
+     tolpa_act4_server_heist (tolpa_server_disabled).
+     Паттерн v4.17.0: зоны-экзамайны с requiredFlag-прогрессией и
+     hiddenWhenFlag-одноразовостью.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ── «Архив Марата» — терминал Гильдии в офисе ── */
+  {
+    id: 'office_marat_archive_access',
+    sceneId: 'office_day',
+    position: [-1.5, 0.6, -2.2],
+    size: [1.0, 1.6, 0.8],
+    enterToast: 'Терминал логов Гильдии — строка-пароль Альберта жжёт карман.',
+    requiredFlag: 'albert_marat_archive_key_received',
+    hiddenWhenFlag: 'marat_archive_opened',
+    isOneTime: true,
+    interactionType: 'hack',
+    interactionLabel: 'Ввести строку-пароль Марата',
+    examineData: {
+      title: 'Архив #4729: раздел «М.»',
+      description: 'Запертый каталог логов. Строка-пароль — из стиха, которого нет ни в одной книге.',
+      detailText:
+        'Ты вводишь строку, продиктованную голосом Альберта: не команда, не ключ — строфа. Экран мигает — и каталог раскрывается, будто ждал тридцать лет. Внутри — сотни файлов с датами 30-летней давности. Первый прошивщик не удалял свои стихи из логов. Он их ПРЯТАЛ. Альберт был не хранителем. Он был соучастником — вторым голосом этого дуэта.',
+      icon: '🗝️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'marat_archive_opened', flagValue: true },
+      { type: 'addSkill', skill: 'coding', value: 2 },
+      { type: 'addKarma', value: 4 },
+      {
+        type: 'showThought',
+        thought: 'Каталог открыт. Сотни строк, спрятанных в служебных логах. Альберт говорил: «я думал, если они переживут меня — я тоже что-то значил». Они пережили. Оба — пережили.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+  {
+    id: 'office_marat_poems',
+    sceneId: 'office_day',
+    position: [-1.2, 0.6, -1.5],
+    size: [0.8, 1.4, 0.7],
+    enterToast: 'Файлы архива «М.» — стихи в служебных комментариях кода.',
+    requiredFlag: 'marat_archive_opened',
+    hiddenWhenFlag: 'marat_poems_read',
+    isOneTime: true,
+    interactionType: 'read',
+    interactionLabel: 'Прочитать стихи Марата',
+    examineData: {
+      title: 'Стихи из логов',
+      description: 'Семнадцать стихотворений, вписанных в комментарии к коду тридцать лет назад.',
+      detailText:
+        '«// строфа 1: город спит, и свитчи спят, и только я не сплю — я сторожу чужой свет». Комментарии к модулям доступа, к балансировке нагрузки, к резервным копиям — везде строфы. Марат не писал «в стол». Он писал — в систему. Каждый стих нёс метку времени: ночная смена, ночная смена, ночная смена. Последний — за два часа до его последнего коммита.',
+      icon: '📜',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'marat_poems_read', flagValue: true },
+      { type: 'addKarma', value: 6 },
+      { type: 'addSkill', skill: 'writing', value: 2 },
+      { type: 'addStat', stat: 'stress', value: -4 },
+      {
+        type: 'showThought',
+        thought: 'Тридцать лет эти строки жили в логах, которые никто не читал. Теперь их прочитал ты. Марат говорил со своим кодом — а код его пережил. Как и обещал Альберт.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ── «Наследие Заремы» — библиотека Кейт ── */
+  {
+    id: 'library_zarema_book_verification',
+    sceneId: 'library_day',
+    position: [-2.5, 0.5, -2.5],
+    size: [1.2, 1.6, 1.0],
+    enterToast: 'Стол сверки рукописей — Кейт уже разложила архивные образцы.',
+    requiredFlag: 'zarema_heritage_received',
+    hiddenWhenFlag: 'zarema_book_verified',
+    isOneTime: true,
+    interactionType: 'examine',
+    interactionLabel: 'Сверить тетрадь с архивом',
+    examineData: {
+      title: 'Сверка рукописи',
+      description: 'Архивные образцы почерка шестидесят восьмого года рядом с бабушкиной тетрадью.',
+      detailText:
+        'Кейт приносит три карточки из закрытого фонда: почерк, бумага, чернила. Ты кладёшь тетрадь рядом — и совпадает всё. Наклон букв. Позже — дрожь руки: строка становится нетвёрдой там же, где в архивных письмах. Это не копия. Это — та самая рука. Кейт снимает очки: «Володька, эта женщина переписывала стихи для полгорода. Её тетрадь — это не семейная реликвия. Это — свидетельство».',
+      icon: '📖',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'zarema_book_verified', flagValue: true },
+      { type: 'addSkill', skill: 'logic', value: 2 },
+      { type: 'addKarma', value: 4 },
+    ],
+  },
+  {
+    id: 'library_zarema_book_fate',
+    sceneId: 'library_day',
+    position: [2.0, 0.5, -3.0],
+    size: [1.2, 1.6, 1.0],
+    enterToast: 'Копировальный стол — решить, кому доверить копию тетради.',
+    requiredFlag: 'zarema_book_verified',
+    hiddenWhenFlag: 'zarema_heritage_decided',
+    isOneTime: true,
+    interactionType: 'use',
+    interactionLabel: 'Снять копию и решить её судьбу',
+    examineData: {
+      title: 'Судьба копии',
+      description: 'Оригинал вернётся к Зареме. Копия — уйдёт в одиннадцать рук, которые её ждут.',
+      detailText:
+        'Ты снимаешь копию — медленно, страницу за страницей, на библиотечный дубликатор. Оригинал вернётся на кухню, в банку из-под солений — туда, где ему тепло. А копия… Кейт протягивает конверт: «Отдай тем, кто ещё помнит, как лечиться стихами. Я знаю одиннадцать адресов». Ты пишешь на конверте первое. Зарема одобрит. Она всегда знала: спрятанное — спасённое. Отданное — живое.',
+      icon: '✉️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'zarema_heritage_decided', flagValue: true },
+      { type: 'addKarma', value: 8 },
+      { type: 'addSkill', skill: 'empathy', value: 2 },
+      {
+        type: 'showThought',
+        thought: 'Сорок лет в банке из-под солений — и теперь одиннадцать адресов. Бабушка Заремы переписывала стихи для тех, кому было плохо. Теперь это делаешь ты. Цепочка не прервалась.',
+        thoughtDuration: 6500,
+      },
+    ],
+  },
+
+  /* ── «Отключение „Ока"» — серверная Гильдии ── */
+  {
+    id: 'guild_mainframe_eye_upload',
+    sceneId: 'guild_mainframe',
+    position: [4.5, 1.2, -3.5],
+    size: [1.0, 1.8, 0.8],
+    enterToast: 'Главный терминал «Ока» — порт загрузки светится ровно, как зрачок.',
+    requiredFlag: 'oleg_recruit_hint',
+    hiddenWhenFlag: 'maria_eye_code_uploaded',
+    isOneTime: true,
+    interactionType: 'use',
+    interactionLabel: 'Загрузить код Марии',
+    examineData: {
+      title: 'Загрузка кода',
+      description: 'Коммуникатор Марии и порт «Ока». Код не взлом — элегантное отключение.',
+      detailText:
+        'Ты соединяешь коммуникатор с портом. Код Марии входит в «Око» не как лом — как ласка: система принимает его за собственную диагностику. Строки бегут по экрану — и в них, если приглядеться, есть ритм. Мария писала отключение стихами: не «shutdown», а «усни». Индикатор сменяет цвет с красного на медленный янтарный. Первый раз за годы «Око» медленно моргает.',
+      icon: '💻',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'maria_eye_code_uploaded', flagValue: true },
+      { type: 'addSkill', skill: 'coding', value: 3 },
+      { type: 'addStat', stat: 'stress', value: 4 },
+    ],
+  },
+  {
+    id: 'guild_mainframe_eye_confirm',
+    sceneId: 'guild_mainframe',
+    position: [2.0, 1.0, -5.0],
+    size: [1.0, 1.6, 0.8],
+    enterToast: 'Экран подтверждения: «Око» ждёт последнего касания.',
+    requiredFlag: 'maria_eye_code_uploaded',
+    hiddenWhenFlag: 'eye_blueprint_shutdown_confirmed',
+    isOneTime: true,
+    interactionType: 'use',
+    interactionLabel: 'Подтвердить отключение «Ока»',
+    examineData: {
+      title: 'Подтверждение',
+      description: 'Один вопрос на экране: «Отключить систему наблюдения города? Да / Нет».',
+      detailText:
+        'Курсор дрожит — нет, это твоя рука. Город, который видел всё, — уснёт. Город, которого не видел никто, — проснётся. Ты вспоминаешь Марию: «не взлом, а элегантное отключение». Она бы не колебалась. Или колебалась бы ровно столько, сколько нужно, чтобы понять цену. Ты понимаешь. Ты подтверждаешь. Янтарный индикатор гаснет — не мигая.',
+      icon: '👁️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'eye_blueprint_shutdown_confirmed', flagValue: true },
+      { type: 'addKarma', value: 10 },
+      {
+        type: 'showThought',
+        thought: '«Око» закрылось. Мария говорила: системы наблюдения умирают так же, как родились, — молча. Но этот город впервые за долгие годы слышит тишину. И в ней — стихи.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ── «Архив матери Солныш» — костёр ЧК ── */
+  {
+    id: 'chk_witness_of_mother',
+    sceneId: 'chk_forest_zorge',
+    position: [-5.5, 1.2, 3.0],
+    size: [1.4, 1.8, 1.4],
+    enterToast: 'У края лагеря — пожилая женщина с тростью. Она смотрит на тебя, будто ждала.',
+    requiredFlag: 'solnysh_mother_notebook_received',
+    hiddenWhenFlag: 'solnysh_witness_found',
+    isOneTime: true,
+    interactionType: 'talk',
+    interactionLabel: 'Найти свидетеля, знавшего мать Солныш',
+    examineData: {
+      title: 'Свидетель',
+      description: 'Женщина у костра ЧК. Вязаный платок — тот самый, из старых фотографий.',
+      detailText:
+        'Она представляется просто: «Тётя Роза. Я — из тех, кого учила Алина». Ты называешь имя матери Солныш — и её трость опускается в снег. «Живая?.. — она переспрашивает и сама себе не верит. — Мы думали — всех. Мы думали — никого». Она говорит сорок минут: про подвал школы, про стихи, которые учили наизусть, чтобы не оставить бумаги. Про ночь, когда пришли за Алиной. «Она успела отдать тетрадь дочери. Мы знали — но не смели прийти. Теперь ты пришёл. Значит — можно».',
+      icon: '🧶',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'solnysh_witness_found', flagValue: true },
+      { type: 'addKarma', value: 6 },
+      { type: 'addSkill', skill: 'empathy', value: 2 },
+    ],
+  },
+  {
+    id: 'chk_notebook_deposition',
+    sceneId: 'chk_forest_zorge',
+    position: [4.0, 1.0, -3.0],
+    size: [1.4, 1.8, 1.4],
+    enterToast: 'Тётя Роза расчищает место у костра — «для тетради, для памяти».',
+    requiredFlag: 'solnysh_witness_found',
+    hiddenWhenFlag: 'solnysh_mother_archive_deposited',
+    isOneTime: true,
+    interactionType: 'use',
+    interactionLabel: 'Передать тетрадь в надёжные руки',
+    examineData: {
+      title: 'Передача тетради',
+      description: 'Тётя Роза и трое из ЧК. Протянутые руки — мозолистые, тёплые, живые.',
+      detailText:
+        'Ты кладёшь тетрадь в ладони тёти Розы. Она не открывает её сразу — сначала прижимает к груди, как ребёнка. Потом читает первую страницу вслух. У костра стихают все — даже портвейн перестаёт булькать. «Алина писала: „учить наизусть — чтобы не оставить бумаги". Мы выучили. Мы помним все семьдесят строф. Теперь будет бумага». Тетрадь остаётся у ЧК — не в сейфе Гильдии, а у людей, которые умеют беречь то, что горит.',
+      icon: '🕯️',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'solnysh_mother_archive_deposited', flagValue: true },
+      { type: 'addKarma', value: 9 },
+      {
+        type: 'showThought',
+        thought: 'Семь лет тетрадь ждала. Семьдесят строф жили в чужой памяти. Мать Солныш собирала людей — а люди её пережили. Это и есть архив, который нельзя стереть.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
+  /* ── «Праздник Поэта» — честь у костра ЧК ── */
+  {
+    id: 'chk_tolpa_poet_honor',
+    sceneId: 'chk_forest_zorge',
+    position: [-1.8, 0.6, 2.2],
+    size: [1.6, 2.0, 1.6],
+    enterToast: 'Костёр трещит громче обычного — ЧК что-то готовит. Тебе.',
+    requiredFlag: 'tolpa_poet_honored',
+    hiddenWhenFlag: 'tolpa_legendary_fire_complete',
+    isOneTime: true,
+    interactionType: 'use',
+    interactionLabel: 'Принять честь Поэта у костра',
+    examineData: {
+      title: 'Праздник Поэта',
+      description: 'Все стихи Володьки собраны в самиздатский сборник. У костра — особый портвейн.',
+      detailText:
+        'Ру выносит из палатки тетрадь — толстую, перетянутую бечёвкой. Твои стихи. ВСЕ. Переписанные от руки разными почерками: кто-то запомнил со слов, кто-то выцарапал из логов. «По правилам ЧК, — говорит Ру, — поэт входит в круг первым и выходит последним». Тебе протягивают кружку легендарного портвейна. Басед торжественно кивает: «Не из горла. Сегодня — можно из кружки». Костёр поднимается выше. Кто-то читает вслух твою первую строфу — и сбивается, и все подсказывают. Это — твой архив теперь. Живой.',
+      icon: '🔥',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'tolpa_legendary_fire_complete', flagValue: true },
+      { type: 'addKarma', value: 8 },
+      { type: 'addStat', stat: 'stress', value: -12 },
+      {
+        type: 'showThought',
+        thought: 'Стихи, переписанные чужими руками, — пережили и тебя самого. Пока костёр горит и кто-то сбивается на второй строфе — ты не один. По правилам ЧК: поэт входит первым. Выходит — последним.',
+        thoughtDuration: 7500,
+      },
+    ],
+  },
+
+  /* ── «Зеркала ТОЛПА» — отключение сервера гильдии ── */
+  {
+    id: 'guild_mainframe_tolpa_server_shutdown',
+    sceneId: 'guild_mainframe',
+    position: [-2.0, 1.0, 4.0],
+    size: [1.2, 2.0, 1.0],
+    enterToast: 'Серверная стойка зеркал — на экране бежит «Протокол Чистоты».',
+    requiredFlag: 'guild_purity_protocol',
+    hiddenWhenFlag: 'tolpa_server_disabled',
+    isOneTime: true,
+    interactionType: 'hack',
+    interactionLabel: 'Отключить сервер гильдии',
+    examineData: {
+      title: 'Зеркала ТОЛПА',
+      description: 'Сервер, хранящий зеркала стихов. «Протокол Чистоты» стирает их прямо сейчас.',
+      detailText:
+        'Ру объяснял просто: «Стихи живут в зеркалах — пока живёт зеркало». Ты находишь главный узел: стойка с надписью «МНЖ-03». «Протокол Чистоты» бежит по экрану — процент растёт. Физически — не взломать. Но у стойки есть питание. Один рубильник. Басед говорил: «Иногда лучший код — это ножницы». Ты тянешь рубильник. Экран гаснет на 47%. Стихи — не стёрты. Они — в зеркалах тех, кто их помнит.',
+      icon: '🔌',
+    },
+    effects: [
+      { type: 'setFlag', flag: 'tolpa_server_disabled', flagValue: true },
+      { type: 'addKarma', value: 10 },
+      { type: 'addSkill', skill: 'coding', value: 3 },
+      { type: 'addStat', stat: 'stress', value: 5 },
+      {
+        type: 'showThought',
+        thought: '47%. «Протокол Чистоты» не дошёл до половины. Где-то в лесу ТОЛПА поднимает кружки: зеркала живы. Басед был прав — иногда лучший код это ножницы. А иногда — просто рубильник.',
+        thoughtDuration: 7000,
+      },
+    ],
+  },
+
   ...NARRATIVE_EXPANSION_TRIGGER_ZONES,
   ...CHK_TRIGGER_ZONES,
 ];

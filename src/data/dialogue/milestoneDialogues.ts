@@ -383,6 +383,9 @@ export const MILESTONE_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 12 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 10 } },
           { type: 'setFlag', flag: 'zarema_heritage_received', flagValue: true },
+          // FIX (v4.17.1): объектив receive_grandmother_book не имел сеттера —
+          // квест zarema_heritage был незавершаем (soft-lock).
+          { type: 'setFlag', flag: 'zarema_grandmother_book_received', flagValue: true },
           { type: 'discoverLore', loreId: 'zarema_grandmother_book' },
           { type: 'triggerQuest', questId: 'zarema_heritage' },
           {
@@ -416,6 +419,8 @@ export const MILESTONE_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 10 },
           { type: 'npcChange', npcId: 'zarema', npcChange: { relation: 8 } },
           { type: 'setFlag', flag: 'zarema_heritage_received', flagValue: true },
+          // FIX (v4.17.1): сеттер объектива receive_grandmother_book.
+          { type: 'setFlag', flag: 'zarema_grandmother_book_received', flagValue: true },
           { type: 'discoverLore', loreId: 'zarema_grandmother_book' },
           { type: 'triggerQuest', questId: 'zarema_heritage' },
         ],
@@ -729,6 +734,9 @@ export const MILESTONE_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 12 },
           { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 8 } },
           { type: 'setFlag', flag: 'solnysh_mother_legacy_received', flagValue: true },
+          // FIX (v4.17.1): сеттер объектива receive_mother_notebook —
+          // квест solnysh_mother_archive был незавершаем (soft-lock).
+          { type: 'setFlag', flag: 'solnysh_mother_notebook_received', flagValue: true },
           { type: 'triggerQuest', questId: 'solnysh_mother_archive' },
         ],
       },
@@ -749,6 +757,8 @@ export const MILESTONE_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 15 },
           { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 10 } },
           { type: 'setFlag', flag: 'solnysh_mother_legacy_received', flagValue: true },
+          // FIX (v4.17.1): сеттер объектива receive_mother_notebook.
+          { type: 'setFlag', flag: 'solnysh_mother_notebook_received', flagValue: true },
           { type: 'triggerQuest', questId: 'solnysh_mother_archive' },
           { type: 'discoverLore', loreId: 'solnysh_mother_notebook' },
           {
@@ -783,6 +793,8 @@ export const MILESTONE_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'addKarma', value: 12 },
           { type: 'npcChange', npcId: 'solnysh', npcChange: { relation: 8 } },
           { type: 'setFlag', flag: 'solnysh_mother_legacy_received', flagValue: true },
+          // FIX (v4.17.1): сеттер объектива receive_mother_notebook.
+          { type: 'setFlag', flag: 'solnysh_mother_notebook_received', flagValue: true },
           { type: 'triggerQuest', questId: 'solnysh_mother_archive' },
         ],
       },
