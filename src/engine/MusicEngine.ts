@@ -954,18 +954,29 @@ class MusicEngine {
       return;
     }
 
-    // Increment generation to invalidate any pending callbacks from previous scene
-    const myGeneration = ++this.sceneGeneration;
+    // FIX (критический, v4.17.1): фиксируем наличие активного бэда ДО
+    // stopMusic() — stopMusic() обнуляет currentScene, поэтому старый код
+    // всегда читал здесь null и кроссфейд (startDelay=900) никогда не
+    // срабатывал.
+    const hadActiveBed = this.currentScene !== null;
 
-    // Stop current music (with fade out)
+    // Stop current music (with fade out). Также инкрементирует
+    // sceneGeneration, инвалидируя незавершённые колбэки прошлой сцены.
     this.stopMusic(1);
+
+    // FIX (критический, v4.17.1): токен поколения берём ПОСЛЕ stopMusic().
+    // Раньше `++this.sceneGeneration` выполнялся ДО stopMusic(), который
+    // сам делал sceneGeneration++, из-за чего guard в setTimeout ниже был
+    // истинен ВСЕГДА → startMusicForScene был недостижим и музыка сцен
+    // не играла вовсе.
+    const myGeneration = this.sceneGeneration;
 
     // Small delay to let fade-out complete, then start new.
     // D5 (S12-D): startDelay = fadeOutMs - 100 = 1000 - 100 = 900ms. The new
     // bed starts fading in 100ms BEFORE the old bed's 1s fade-out reaches zero,
     // creating a true 100ms crossfade overlap instead of a 100ms silence gap
     // (previous value was 1100ms = 100ms AFTER fade-out completed).
-    const startDelay = this.currentScene !== null ? 900 : 0;
+    const startDelay = hadActiveBed ? 900 : 0;
 
     setTimeout(() => {
       // Guard: if another scene change happened since we started, abort
@@ -1002,12 +1013,16 @@ class MusicEngine {
       return;
     }
 
-    const myGeneration = ++this.sceneGeneration;
+    // FIX (v4.17.1): см. playSceneMusic — токен поколения после stopMusic(),
+    // наличие бэда — до (иначе кроссфейд мёртв, а guard убивал старт).
+    const hadActiveBed = this.currentScene !== null;
 
     // Stop current music (with fade out)
     this.stopMusic(1);
 
-    const startDelay = this.currentScene !== null ? 900 : 0;
+    const myGeneration = this.sceneGeneration;
+
+    const startDelay = hadActiveBed ? 900 : 0;
 
     setTimeout(() => {
       if (this.disposed || this.sceneGeneration !== myGeneration) return;
@@ -1139,6 +1154,16 @@ class MusicEngine {
     const ctx = this.ctx;
     const dest = this.masterGainNode;
     if (!ctx || !dest) return;
+
+    // FIX (v4.17.1): отложенная очистка старого бэда (pendingStopCleanupTimer
+    // из stopMusic(1)) сработала бы через ~1.5s ПОСЛЕ старта нового бэда —
+    // уже на новых узлах — и заглушила бы только что начавшуюся музыку.
+    // Отменяем таймер и синхронно завершаем старый бэд до построения графа.
+    if (this.pendingStopCleanupTimer) {
+      clearTimeout(this.pendingStopCleanupTimer);
+      this.pendingStopCleanupTimer = null;
+    }
+    this.cleanupAllNodes();
 
     this.currentConfig = config;
     this.currentChordDegree = Math.floor(Math.random() * config.scale.intervals.length);
