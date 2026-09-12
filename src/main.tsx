@@ -4,6 +4,7 @@ import { AppBootRoot } from '@/app/AppBootRoot';
 import '@/app/globals.css';
 import { bindApplicationLayers } from '@/bootstrap/bindApplicationLayers';
 import { markAppStart } from '@/engine/performance/LoadingTimeline';
+import { initLcpProfiler } from '@/engine/performance/lcpProfiler';
 import { applyGameSettings } from '@/engine/settings/SettingsFacade';
 import { initAccessibilitySettings } from '@/engine/accessibility/accessibilitySettings';
 import { initVoiceLineRegistry } from '@/engine/audio/VoiceLineRegistry';
@@ -25,6 +26,9 @@ applyGameSettings();
 initAccessibilitySettings();
 initVoiceLineRegistry();
 installSceneLoadDebugTap();
+// v4.25 (этап 106): LCP-наблюдатель стартует как можно раньше, buffered: true
+// всё равно доберёт отрисовки, случившиеся до подписки.
+initLcpProfiler();
 
 // PWA: register the service worker (production only, after first paint).
 // The SW (public/sw.js) caches the app shell, physics WASM and game media

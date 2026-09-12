@@ -3,6 +3,7 @@
  */
 
 import { settleGpuResourceBaseline } from '@/engine/performance/GpuResourceBudgetTracker';
+import { getLcpElementTag, getLcpMs } from '@/engine/performance/lcpProfiler';
 
 import { devInfo } from '@/shared/utils/devLog';
 export const LOADING_MARKS = {
@@ -98,6 +99,14 @@ function tryCompleteFirstScenePlayable(): void {
     const snap = getLoadingTimelineSnapshot();
     devInfo(
       `[perf] First scene playable: ${snap.firstScenePlayableMs?.toFixed(0) ?? '?'} ms`,
+    );
+    // v4.25 (этап 106): сопоставляем LCP стартового экрана с играбельной сценой.
+    // Если LCP заметно позже first-scene-playable — крупнейший элемент (обычно
+    // постер меню/шрифт) «красился» дольше, чем грузилась игра.
+    const lcpMs = getLcpMs();
+    const lcpTag = getLcpElementTag();
+    devInfo(
+      `[perf] LCP: ${lcpMs !== null ? `${lcpMs.toFixed(0)} ms${lcpTag ? ` (${lcpTag})` : ''}` : 'не поддерживается этой средой'}`,
     );
   }
 
