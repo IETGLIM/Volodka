@@ -6,14 +6,9 @@ import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/s
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических подписей слотов. Они сознательно НЕ добавлены
- * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
- * и статичная запись перебила бы интерполяцию значений внутри fallback (видимый
- * текст менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний литерал. */
-const HUD_DYNAMIC_KEYS = {
-  slotAria: 'hud.toolbar.slotAria',
-  slotTitle: 'hud.toolbar.slotTitle',
-} as const;
+/* i18n (этап 115): с волны 4 подписи слотов — шаблоны каталога с плейсхолдерами
+ * {name} и параметрами t(key, fallback, params); ключи литеральные, фолбэки
+ * байт-в-байт повторяют прежние литералы. */
 
 /* ══════════════════════════════════════════════════════════════
    Types
@@ -172,8 +167,8 @@ export function QuickAccessToolbar({
                 onClick={() => handleSlotAction(slot)}
                 onMouseEnter={() => setHoveredSlot(slot.id)}
                 onMouseLeave={() => setHoveredSlot(null)}
-                aria-label={t(HUD_DYNAMIC_KEYS.slotAria, `${slot.label} (${slot.shortcut})`)}
-                title={t(HUD_DYNAMIC_KEYS.slotTitle, `${slot.label} [${slot.shortcut}]`)}
+                aria-label={t('hud.toolbar.slotAria', `${slot.label} (${slot.shortcut})`, { label: slot.label, shortcut: slot.shortcut })}
+                title={t('hud.toolbar.slotTitle', `${slot.label} [${slot.shortcut}]`, { label: slot.label, shortcut: slot.shortcut })}
               >
                 <span className="quick-access-slot-icon" aria-hidden="true">{slot.icon}</span>
                 <span className="quick-access-slot-label">{slot.label}</span>

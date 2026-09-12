@@ -46,10 +46,11 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   /* HUD — строки HUD-виджетов (этап 115, волна 1).
    * Значения байт-в-байт совпадают с fallback-литералами в потребителях:
    * t(key, fallback) возвращает RU_MESSAGES[key] ?? fallback, поэтому вывод
-   * на экран не меняется. Динамические (составные) строки HUD передают ключ
-   * через константы и СОЗНАТЕЛЬНО не добавлены сюда: статичная запись
-   * каталога перебила бы интерполяцию значений внутри fallback
-   * (t() вернул бы шаблон вместо подставленных чисел/названий). */
+   * на экран не меняется. Составные строки оформлены шаблонами с
+   * плейсхолдерами {name} и параметрами (t(key, fallback, params)); с волны 4
+   * все динамические HUD-вызовы переведены на литеральные ключи в каталоге —
+   * остаточные ключи-переменные (карты вида hud.minimap.zoom.* из
+   * типизированных union'ов) контрактом покрытия не проверяются. */
 
   /* PlayerStatusFrame.tsx */
   'hud.playerStatus.aria': 'Состояние героя: энергия, стресс, карма',
@@ -70,6 +71,13 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   /* TopBarDataTicker.tsx */
   'hud.ticker.datastream': 'ВОЛОДКА://DATASTREAM',
   'hud.ticker.badge.onAir': 'ЭФИР',
+  /* Шаблоны строки тикера (этап 115, волна 4) */
+  'hud.ticker.quests': 'ЗАДАНИЯ: {n}',
+  'hud.ticker.locations': 'ЛОКАЦИИ: {n}',
+  'hud.ticker.poems': 'СТИХИ: {done}/{total}',
+  'hud.ticker.scene': 'СЦЕНА: {name}',
+  'hud.ticker.time': 'ВРЕМЯ: {time}',
+  'hud.ticker.system': 'СИСТЕМА: v{version}',
 
   /* SceneContextChip.tsx */
   'hud.sceneContext.street': 'Улица',
@@ -78,6 +86,8 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.sceneContext.dream': 'Сон',
   'hud.sceneContext.npcPrefix': 'NPC:',
   'hud.sceneContext.exitsPrefix': 'EX:',
+  /* Шаблон aria-строки (этап 115, волна 4) */
+  'hud.sceneContext.aria': '{scene} — NPC: {npc}, Выходов: {exits}',
 
   /* EnvironmentMoodIndicator.tsx */
   'hud.mood.storm': 'ШТОРМ',
@@ -89,6 +99,8 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.mood.calm': 'ТИШИНА',
   'hud.mood.underground': 'ПОДЗЕМЬЕ',
   'hud.mood.neutral': 'НЕЙТРАЛЬ',
+  /* Шаблон aria-строки (этап 115, волна 4) */
+  'hud.mood.aria': 'Настроение: {label}',
 
   /* QuestObjectiveCard.tsx */
   'hud.questCard.type.main': 'ОСНОВНОЙ',
@@ -116,6 +128,15 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.questCard.expand': 'Развернуть ▼',
   'hud.questCard.collapseAria': 'Свернуть',
   'hud.questCard.expandAria': 'Развернуть',
+  /* Шаблоны таймера/aria/уровня (этап 115, волна 4) */
+  'hud.questCard.timeHoursMinutes': '{hours}ч {minutes}м',
+  'hud.questCard.timeMinutesSeconds': '{minutes}:{seconds}',
+  'hud.questCard.timeSeconds': '{seconds}с',
+  'hud.questCard.objectiveAria': '{description}: {current}/{target}',
+  'hud.questCard.compactAria': '{title} — прогресс {progress}%',
+  'hud.questCard.fullAria': 'Квест: {title}, статус: {status}, прогресс: {progress}%',
+  'hud.questCard.recommendedLevel': 'рек. ур. {level}',
+  'hud.questCard.objectivesAria': 'Цели квеста: {n}',
 
   /* ActiveQuestMiniTracker.tsx */
   'hud.questTracker.allDone': 'Все цели выполнены',
@@ -135,13 +156,29 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.questTracker.journalAria': 'Открыть журнал',
   'hud.questTracker.map': 'Карта',
   'hud.questTracker.mapAria': 'Показать цель на карте',
+  /* Шаблоны aria/счётчика стихов (этап 115, волна 4) */
+  'hud.questTracker.progressAria': '{title}: {line}',
+  'hud.questTracker.doneAria': '{title}: все цели выполнены',
+  'hud.questTracker.poemsCollected': 'Собрано {word}: {done} из {total}',
 
   /* HUDNotificationFeed.tsx */
   'hud.feed.aria': 'Лента уведомлений',
+  /* Шаблоны сообщений ленты (этап 115, волна 4) */
+  'hud.feed.xp': '+{n} XP',
+  'hud.feed.skillLevel': '{skill} → ур. {level}',
+  'hud.feed.questAccepted': 'Задание: {title}',
+  'hud.feed.questCompleted': 'Выполнено: {id}',
+  'hud.feed.karmaGain': 'Карма +{n}',
+  'hud.feed.karmaDrop': 'Карма {n}',
+  'hud.feed.poem': 'Стих: {id}',
+  'hud.feed.lore': 'Лор: {title}',
 
   /* StaminaBar.tsx */
   'hud.stamina.label': 'Выносливость',
   'hud.stamina.initialAria': 'Выносливость: 100%',
+  /* Шаблоны aria-строк DOM-лейбла (этап 115, волна 4) */
+  'hud.stamina.aria': 'Выносливость: {n}%',
+  'hud.stamina.exhaustedAria': 'Выносливость: {n}% — дыхание сбито, бег временно недоступен',
 
   /* EmergencyHelpButton.tsx */
   'hud.emergency.aria': 'Что делать?',
@@ -152,9 +189,15 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.emergency.more': '…и другие',
   'hud.emergency.reset': 'Сбросить взаимодействие',
   'hud.emergency.lastResort': 'Если ничего не помогает — сохраните и загрузите игру',
+  /* Шаблон заголовка списка зон (этап 115, волна 4) */
+  'hud.emergency.nearby': 'Что рядом ({n})',
 
   /* ExplorationHUD.tsx (индикатор сохранения) */
   'hud.save.toast': 'Запись сохранена',
+  /* Шаблоны критических шёпотов (этап 115, волна 4) */
+  'hud.critical.energyAndStress': 'Силы на исходе · стресс {n}%',
+  'hud.critical.energyLow': 'Силы на исходе · {n}%',
+  'hud.critical.stressHigh': 'Дыхание сбито · стресс {n}%',
 
   /* SceneTopBarHud.tsx */
   'hud.topBar.aria': 'Верхняя панель интерфейса: сцена, уровень, опыт, компас и время',
@@ -167,6 +210,9 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.toolbar.codex': 'Кодекс',
   'hud.toolbar.journal': 'Журнал',
   'hud.toolbar.poems': 'Стихи',
+  /* Шаблоны aria/title слотов (этап 115, волна 4) */
+  'hud.toolbar.slotAria': '{label} ({shortcut})',
+  'hud.toolbar.slotTitle': '{label} [{shortcut}]',
 
   /* notificationToastConstants.ts — отображаемые имена навыков */
   'hud.skill.name.logic': 'Логика',

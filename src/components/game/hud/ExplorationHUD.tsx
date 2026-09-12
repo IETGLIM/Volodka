@@ -50,16 +50,9 @@ import { useActiveQuestCardData } from '@/components/game/hud/parts/questObjecti
 import { useGamePhase } from '@/store/selectors/uiSelectors';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических строк шёпота статуса. Они сознательно НЕ
- * добавлены в статический каталог RU_MESSAGES: t() возвращает
- * RU_MESSAGES[key] ?? fallback, и статичная запись перебила бы интерполяцию
- * значений внутри fallback (видимый текст менялся бы). Фолбэк внутри t()
- * байт-в-байт повторяет прежний литерал — вывод не меняется. */
-const HUD_CRITICAL_KEYS = {
-  energyAndStress: 'hud.critical.energyAndStress',
-  energyLow: 'hud.critical.energyLow',
-  stressHigh: 'hud.critical.stressHigh',
-} as const;
+/* i18n (этап 115): с волны 4 составные строки шёпота — шаблоны каталога
+ * с плейсхолдерами {name} и параметрами t(key, fallback, params); ключи
+ * литеральные, фолбэки байт-в-байт повторяют прежние литералы — вывод не меняется. */
 
 export type { HUDProps } from '@/components/game/hud/hudTypes';
 
@@ -79,10 +72,10 @@ function CriticalStatusWhisper({
   if (!isLowEnergy && !isHighStress) return null;
 
   const line = isLowEnergy && isHighStress
-    ? t(HUD_CRITICAL_KEYS.energyAndStress, `Силы на исходе · стресс ${stress}%`)
+    ? t('hud.critical.energyAndStress', `Силы на исходе · стресс ${stress}%`, { n: stress })
     : isLowEnergy
-      ? t(HUD_CRITICAL_KEYS.energyLow, `Силы на исходе · ${energy}%`)
-      : t(HUD_CRITICAL_KEYS.stressHigh, `Дыхание сбито · стресс ${stress}%`);
+      ? t('hud.critical.energyLow', `Силы на исходе · ${energy}%`, { n: energy })
+      : t('hud.critical.stressHigh', `Дыхание сбито · стресс ${stress}%`, { n: stress });
 
   return (
     <motion.div

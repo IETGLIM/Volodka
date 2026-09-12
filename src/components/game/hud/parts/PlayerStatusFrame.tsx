@@ -27,14 +27,9 @@ import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { t } from '@/i18n';
 
 /* i18n (этап 115, волна 2): динамические aria-ключи перенесены в каталог
- * RU_MESSAGES как шаблоны с плейсхолдерами ({n}, {karma}, {tier}) —
- * t(key, fallback, params) интерполирует их. Фолбэк внутри t() байт-в-байт
- * повторяет прежний литерал — вывод не меняется. */
-const HUD_DYNAMIC_KEYS = {
-  energyAria: 'hud.playerStatus.energyAria',
-  stressAria: 'hud.playerStatus.stressAria',
-  karmaAria: 'hud.playerStatus.karmaAria',
-} as const;
+ * RU_MESSAGES как шаблоны с плейсхолдерами ({n}, {karma}, {tier}); с волны 4
+ * вызовы используют литеральные ключи hud.playerStatus.* в t(key, fallback, params).
+ * Фолбэк внутри t() повторяет прежний литерал — вывод не меняется. */
 
 interface BarRowProps {
   label: string;
@@ -201,7 +196,7 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           flash={energy <= 25}
           threshold={HUD_ENERGY_LOW_THRESHOLD}
           thresholdActive={energy < HUD_ENERGY_LOW_THRESHOLD}
-          ariaValue={t(HUD_DYNAMIC_KEYS.energyAria, `Энергия: ${Math.round(energy)} из 100`, {
+          ariaValue={t('hud.playerStatus.energyAria', `Энергия: ${Math.round(energy)} из 100`, {
             n: Math.round(energy),
           })}
           reducedMotion={reducedMotion}
@@ -215,7 +210,7 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           flash={stress >= 85}
           threshold={HUD_STRESS_HIGH_THRESHOLD}
           thresholdActive={stress > HUD_STRESS_HIGH_THRESHOLD}
-          ariaValue={t(HUD_DYNAMIC_KEYS.stressAria, `Стресс: ${Math.round(stress)} из 100`, {
+          ariaValue={t('hud.playerStatus.stressAria', `Стресс: ${Math.round(stress)} из 100`, {
             n: Math.round(stress),
           })}
           reducedMotion={reducedMotion}
@@ -227,7 +222,7 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           fill="linear-gradient(90deg, #3b82f6, #6366f1)"
           glow="0 0 6px rgba(99, 102, 241, 0.4)"
           flash={karmaDrop}
-          ariaValue={t(HUD_DYNAMIC_KEYS.karmaAria, `Карма: ${karma}, ${tierLabel}`, {
+          ariaValue={t('hud.playerStatus.karmaAria', `Карма: ${karma}, ${tierLabel}`, {
             karma,
             tier: tierLabel,
           })}

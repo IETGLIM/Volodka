@@ -21,16 +21,9 @@ import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических строк трекера. Они сознательно НЕ добавлены
- * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
- * и статичная запись перебила бы интерполяцию значений внутри fallback
- * (t() вернул бы шаблон вместо подставленных значений — видимый текст менялся бы).
- * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
-const HUD_DYNAMIC_KEYS = {
-  progressAria: 'hud.questTracker.progressAria',
-  doneAria: 'hud.questTracker.doneAria',
-  poemsCollected: 'hud.questTracker.poemsCollected',
-} as const;
+/* i18n (этап 115): с волны 4 составные строки трекера — шаблоны каталога
+ * с плейсхолдерами {name} и параметрами t(key, fallback, params); ключи
+ * литеральные, фолбэки байт-в-байт повторяют прежние литералы — вывод не меняется. */
 
 const CYCLE_INTERVAL_MS = 10_000;
 
@@ -256,8 +249,13 @@ export function ActiveQuestMiniTracker() {
           }}
           aria-label={
             liveHint || nextObjective
-              ? t(HUD_DYNAMIC_KEYS.progressAria, `${questDef.title}: ${trackerLine}`)
-              : t(HUD_DYNAMIC_KEYS.doneAria, `${questDef.title}: все цели выполнены`)
+              ? t('hud.questTracker.progressAria', `${questDef.title}: ${trackerLine}`, {
+                  title: questDef.title,
+                  line: trackerLine,
+                })
+              : t('hud.questTracker.doneAria', `${questDef.title}: все цели выполнены`, {
+                  title: questDef.title,
+                })
           }
         >
           {/* Quest type icon */}
@@ -360,7 +358,11 @@ export function ActiveQuestMiniTracker() {
                     <div className="flex items-center gap-1.5 px-1 py-0.5">
                       <BookOpen className="size-2.5 text-stone-500 shrink-0" />
                       <span className="hud-filmic-kicker" style={{ letterSpacing: '0.08em' }}>
-                        {t(HUD_DYNAMIC_KEYS.poemsCollected, `Собрано ${poemWord}: ${completedObjs} из ${totalObjs}`)}
+                        {t('hud.questTracker.poemsCollected', `Собрано ${poemWord}: ${completedObjs} из ${totalObjs}`, {
+                          word: poemWord,
+                          done: completedObjs,
+                          total: totalObjs,
+                        })}
                       </span>
                     </div>
                   );

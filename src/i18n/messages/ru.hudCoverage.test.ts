@@ -10,11 +10,12 @@ import { RU_MESSAGES } from './ru';
  * каждый первый строковый аргумент t('...')-вызовов, фильтруем ключи hud.* и
  * проверяем, что каждый из них присутствует в RU_MESSAGES с непустым значением.
  *
- * Примечание: ключи ДИНАМИЧЕСКИХ (составных) HUD-строк передаются в t() через
- * константы и сознательно не лежат в каталоге — статичная запись
- * RU_MESSAGES[key] перебила бы интерполяцию значений внутри fallback
- * (t() вернул бы шаблон вместо подставленных чисел). Такой вызов вида
- * t(SOME_KEY, `шаблон ${x}`) регэксп не собирает — контракт на них не распространяется.
+ * С волны 4 (v4.30.0) все составные HUD-строки — шаблоны каталога с
+ * параметрами (первый аргумент t() — строковый литерал, фолбэк-шаблон,
+ * третий — params); контракт покрывает их автоматически. Остаточные
+ * ключи-ПЕРЕМЕННЫЕ (карты вида hud.minimap.zoom.* из типизированных
+ * union'ов, ambient.* из data-слоя) регэксп не собирает — контракт на них
+ * не распространяется.
  */
 
 const SRC_ROOT = fileURLToPath(new URL('../..', import.meta.url));
@@ -50,8 +51,8 @@ function collectHudKeys(): string[] {
 describe('i18n: покрытие HUD-строк (этап 115)', () => {
   const hudKeys = collectHudKeys();
 
-  it('находит не менее 60 hud.* ключей в t()-вызовах по src/', () => {
-    expect(hudKeys.length).toBeGreaterThanOrEqual(60);
+  it('находит не менее 220 hud.* ключей в t()-вызовах по src/', () => {
+    expect(hudKeys.length).toBeGreaterThanOrEqual(220);
   });
 
   it('каждый найденный hud.* ключ есть в RU_MESSAGES с непустым значением', () => {
@@ -84,5 +85,19 @@ describe('i18n: покрытие HUD-строк (этап 115)', () => {
     expect(RU_MESSAGES['hud.mobileActions.noStamina']).toBe('Не хватает выносливости для удара');
     expect(RU_MESSAGES['hud.guide.firstInteract']).toBe('Руки помнят — нажми, потяни, послушай, что ответит.');
     expect(RU_MESSAGES['hud.minimap.distance']).toBe('{n} м');
+    /* Волна 4 (v4.30.0): шаблоны динамических HUD-строк 10 файлов */
+    expect(RU_MESSAGES['hud.questCard.timeHoursMinutes']).toBe('{hours}ч {minutes}м');
+    expect(RU_MESSAGES['hud.questCard.fullAria']).toBe('Квест: {title}, статус: {status}, прогресс: {progress}%');
+    expect(RU_MESSAGES['hud.questTracker.poemsCollected']).toBe('Собрано {word}: {done} из {total}');
+    expect(RU_MESSAGES['hud.feed.questAccepted']).toBe('Задание: {title}');
+    expect(RU_MESSAGES['hud.feed.karmaGain']).toBe('Карма +{n}');
+    expect(RU_MESSAGES['hud.ticker.poems']).toBe('СТИХИ: {done}/{total}');
+    expect(RU_MESSAGES['hud.ticker.system']).toBe('СИСТЕМА: v{version}');
+    expect(RU_MESSAGES['hud.critical.energyAndStress']).toBe('Силы на исходе · стресс {n}%');
+    expect(RU_MESSAGES['hud.stamina.exhaustedAria']).toBe('Выносливость: {n}% — дыхание сбито, бег временно недоступен');
+    expect(RU_MESSAGES['hud.toolbar.slotAria']).toBe('{label} ({shortcut})');
+    expect(RU_MESSAGES['hud.sceneContext.aria']).toBe('{scene} — NPC: {npc}, Выходов: {exits}');
+    expect(RU_MESSAGES['hud.mood.aria']).toBe('Настроение: {label}');
+    expect(RU_MESSAGES['hud.emergency.nearby']).toBe('Что рядом ({n})');
   });
 });

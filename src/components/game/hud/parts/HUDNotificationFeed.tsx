@@ -14,21 +14,9 @@ import { explorationLootTopPx } from '@/shared/constants/hudLayout';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических строк ленты. Они сознательно НЕ добавлены
- * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
- * и статичная запись перебила бы интерполяцию значений внутри fallback
- * (t() вернул бы шаблон вместо подставленных значений — видимый текст менялся бы).
- * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
-const HUD_DYNAMIC_KEYS = {
-  xp: 'hud.feed.xp',
-  skillLevel: 'hud.feed.skillLevel',
-  questAccepted: 'hud.feed.questAccepted',
-  questCompleted: 'hud.feed.questCompleted',
-  karmaGain: 'hud.feed.karmaGain',
-  karmaDrop: 'hud.feed.karmaDrop',
-  poem: 'hud.feed.poem',
-  lore: 'hud.feed.lore',
-} as const;
+/* i18n (этап 115): с волны 4 составные строки ленты — шаблоны каталога
+ * с плейсхолдерами {name} и параметрами t(key, fallback, params); ключи
+ * литеральные, фолбэки байт-в-байт повторяют прежние литералы — вывод не меняется. */
 
 interface NotificationFeedItem {
   id: string;
@@ -58,19 +46,19 @@ export function HUDNotificationFeed() {
   // Listen for typed events
   useEffect(() => {
     const unsubXp = eventBus.on('fx:xp_gain', (payload) => {
-      addItem('⬆', t(HUD_DYNAMIC_KEYS.xp, `+${payload.amount} XP`), 'rgb(var(--cyber-cyan-rgb))');
+      addItem('⬆', t('hud.feed.xp', `+${payload.amount} XP`, { n: payload.amount }), 'rgb(var(--cyber-cyan-rgb))');
     });
 
     const unsubLevelUp = eventBus.on('skill:level_up', (payload) => {
-      addItem('⭐', t(HUD_DYNAMIC_KEYS.skillLevel, `${payload.skill} → ур. ${payload.level}`), '#fbbf24');
+      addItem('⭐', t('hud.feed.skillLevel', `${payload.skill} → ур. ${payload.level}`, { skill: payload.skill, level: payload.level }), '#fbbf24');
     });
 
     const unsubQuestAccepted = eventBus.on('quest:accepted', (payload) => {
-      addItem('📜', t(HUD_DYNAMIC_KEYS.questAccepted, `Задание: ${payload.questTitle ?? 'Новое'}`), '#00d4e0');
+      addItem('📜', t('hud.feed.questAccepted', `Задание: ${payload.questTitle ?? 'Новое'}`, { title: payload.questTitle ?? 'Новое' }), '#00d4e0');
     });
 
     const unsubQuestCompleted = eventBus.on('quest:completed', (payload) => {
-      addItem('✓', t(HUD_DYNAMIC_KEYS.questCompleted, `Выполнено: ${payload.questId}`), '#34d399');
+      addItem('✓', t('hud.feed.questCompleted', `Выполнено: ${payload.questId}`, { id: payload.questId }), '#34d399');
     });
 
     const unsubChoice = eventBus.on('choice:made', (payload) => {
@@ -78,14 +66,14 @@ export function HUDNotificationFeed() {
         const d = payload.karmaChange;
         addItem(
           d > 0 ? '🕊' : '⚠',
-          d > 0 ? t(HUD_DYNAMIC_KEYS.karmaGain, `Карма +${d}`) : t(HUD_DYNAMIC_KEYS.karmaDrop, `Карма ${d}`),
+          d > 0 ? t('hud.feed.karmaGain', `Карма +${d}`, { n: d }) : t('hud.feed.karmaDrop', `Карма ${d}`, { n: d }),
           d > 0 ? '#34d399' : '#fb7185',
         );
       }
     });
 
     const unsubPoem = eventBus.on('poem:collected', (payload) => {
-      addItem('📖', t(HUD_DYNAMIC_KEYS.poem, `Стих: ${payload.poemId ?? 'Новый'}`), '#a78bfa');
+      addItem('📖', t('hud.feed.poem', `Стих: ${payload.poemId ?? 'Новый'}`, { id: payload.poemId ?? 'Новый' }), '#a78bfa');
     });
 
     // thought:acquired is not a typed event — skip
@@ -97,7 +85,7 @@ export function HUDNotificationFeed() {
     });
 
     const unsubLore = eventBus.on('lore:discovered', (payload) => {
-      addItem('📜', t(HUD_DYNAMIC_KEYS.lore, `Лор: ${payload.title ?? 'Запись'}`), '#2dd4bf');
+      addItem('📜', t('hud.feed.lore', `Лор: ${payload.title ?? 'Запись'}`, { title: payload.title ?? 'Запись' }), '#2dd4bf');
     });
 
     return () => {
@@ -150,7 +138,7 @@ export function HUDNotificationFeed() {
             className={`overflow-hidden mb-1.5 notification-feed-slide${reducedMotion ? '' : ' hud-filmic-notification-slide-in'}`}
           >
             <div
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md tooltip-glass-enhanced toast-scanline"
+              className="relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-md border backdrop-blur-md tooltip-glass-enhanced toast-scanline"
               style={{
                 background: 'linear-gradient(135deg, rgba(2, 6, 23, 0.9) 0%, rgba(15, 23, 42, 0.85) 100%)',
                 borderColor: `${item.color}40`,
@@ -164,6 +152,14 @@ export function HUDNotificationFeed() {
               >
                 {item.text}
               </span>
+              {/* TTL-полоса (v4.30): hairline времени жизни карточки — прямой
+               * аналог bottom-progress AutoSaveIndicator. absolute-слой,
+               * layout не трогает; reduced-motion — статичная полоска. */}
+              <span
+                aria-hidden="true"
+                className={`hud-filmic-feed-ttl pointer-events-none${reducedMotion ? ' hud-filmic-feed-ttl--static' : ''}`}
+                style={{ backgroundColor: `${item.color}55` }}
+              />
             </div>
           </motion.div>
         ))}

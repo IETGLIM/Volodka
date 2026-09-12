@@ -43,21 +43,9 @@ import {
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических строк карточки. Они сознательно НЕ добавлены
- * в статический каталог RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
- * и статичная запись перебила бы интерполяцию значений внутри fallback
- * (t() вернул бы шаблон вместо подставленных значений — видимый текст менялся бы).
- * Фолбэк внутри t() байт-в-байт повторяет прежний литерал — вывод не меняется. */
-const HUD_DYNAMIC_KEYS = {
-  timeHoursMinutes: 'hud.questCard.timeHoursMinutes',
-  timeMinutesSeconds: 'hud.questCard.timeMinutesSeconds',
-  timeSeconds: 'hud.questCard.timeSeconds',
-  compactAria: 'hud.questCard.compactAria',
-  fullAria: 'hud.questCard.fullAria',
-  recommendedLevel: 'hud.questCard.recommendedLevel',
-  objectivesAria: 'hud.questCard.objectivesAria',
-  objectiveAria: 'hud.questCard.objectiveAria',
-} as const;
+/* i18n (этап 115): с волны 4 все составные строки карточки — шаблоны каталога
+ * с плейсхолдерами {name} и параметрами t(key, fallback, params); ключи
+ * литеральные, фолбэки байт-в-байт повторяют прежние литералы — вывод не меняется. */
 
 /* ─── Type Definitions ─── */
 
@@ -270,12 +258,18 @@ function formatTimeRemaining(ms: number): string {
   const seconds = totalSeconds % 60;
   
   if (hours > 0) {
-    return t(HUD_DYNAMIC_KEYS.timeHoursMinutes, `${hours}ч ${minutes.toString().padStart(2, '0')}м`);
+    return t('hud.questCard.timeHoursMinutes', `${hours}ч ${minutes.toString().padStart(2, '0')}м`, {
+      hours: String(hours),
+      minutes: minutes.toString().padStart(2, '0'),
+    });
   }
   if (minutes > 0) {
-    return t(HUD_DYNAMIC_KEYS.timeMinutesSeconds, `${minutes}:${seconds.toString().padStart(2, '0')}`);
+    return t('hud.questCard.timeMinutesSeconds', `${minutes}:${seconds.toString().padStart(2, '0')}`, {
+      minutes: String(minutes),
+      seconds: seconds.toString().padStart(2, '0'),
+    });
   }
-  return t(HUD_DYNAMIC_KEYS.timeSeconds, `${seconds}с`);
+  return t('hud.questCard.timeSeconds', `${seconds}с`, { seconds: String(seconds) });
 }
 
 /**
@@ -343,7 +337,11 @@ const ObjectiveItem = memo(function ObjectiveItem({
         opacity: objective.isOptional ? 0.75 : 1,
       }}
       role="listitem"
-      aria-label={t(HUD_DYNAMIC_KEYS.objectiveAria, `${objective.description}: ${objective.current}/${objective.target}`)}
+      aria-label={t('hud.questCard.objectiveAria', `${objective.description}: ${objective.current}/${objective.target}`, {
+        description: objective.description,
+        current: objective.current,
+        target: objective.target,
+      })}
     >
       {/* Галочка или кружок / Check or circle */}
       <motion.div
@@ -575,7 +573,10 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
         }}
         role="button"
         tabIndex={0}
-        aria-label={t(HUD_DYNAMIC_KEYS.compactAria, `${quest.title} — прогресс ${quest.progress}%`)}
+        aria-label={t('hud.questCard.compactAria', `${quest.title} — прогресс ${quest.progress}%`, {
+          title: quest.title,
+          progress: quest.progress,
+        })}
       >
         {/* FIX (v4.22): заголовок больше не обрезается до «Первое чте…» —
          * раньше в одну строку с truncate умещалось ~135px (maxWidth 300 минус
@@ -662,7 +663,11 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
         ['--quest-color' as string]: typeConfig.color,
       } as React.CSSProperties}
       role="article"
-      aria-label={t(HUD_DYNAMIC_KEYS.fullAria, `Квест: ${quest.title}, статус: ${quest.status}, прогресс: ${quest.progress}%`)}
+      aria-label={t('hud.questCard.fullAria', `Квест: ${quest.title}, статус: ${quest.status}, прогресс: ${quest.progress}%`, {
+        title: quest.title,
+        status: quest.status,
+        progress: quest.progress,
+      })}
     >
       {/* ── Оверлей статуса / Status overlay ── */}
       {isFailed && (
@@ -766,7 +771,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
               className="text-[9px] font-mono ml-auto"
               style={{ color: 'rgba(180,190,200,0.6)' }}
             >
-              {t(HUD_DYNAMIC_KEYS.recommendedLevel, `рек. ур. ${quest.recommendedLevel}`)}
+              {t('hud.questCard.recommendedLevel', `рек. ур. ${quest.recommendedLevel}`, { level: quest.recommendedLevel })}
             </span>
           )}
         </div>
@@ -881,7 +886,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
             <div
               className="px-2 pb-2 space-y-0.5 max-h-40 overflow-y-auto"
               role="list"
-              aria-label={t(HUD_DYNAMIC_KEYS.objectivesAria, `Цели квеста: ${quest.objectives.length}`)}
+              aria-label={t('hud.questCard.objectivesAria', `Цели квеста: ${quest.objectives.length}`, { n: quest.objectives.length })}
               style={{ scrollbarWidth: 'thin', scrollbarColor: `${typeConfig.color}33 transparent` }}
             >
               {quest.objectives.map((obj, i) => (

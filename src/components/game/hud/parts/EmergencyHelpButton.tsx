@@ -19,11 +19,9 @@ import { bottomStatusEffectsPx } from '@/shared/constants/hudLayout';
 import { eventBus } from '@/engine/EventBus';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключ динамической строки «Что рядом (N)» — сознательно НЕ в
- * статическом каталоге RU_MESSAGES: t() возвращает RU_MESSAGES[key] ?? fallback,
- * и статичная запись перебила бы интерполяцию значения внутри fallback (видимый
- * текст менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний литерал. */
-const HUD_NEARBY_KEY = 'hud.emergency.nearby';
+/* i18n (этап 115): с волны 4 строка «Что рядом (N)» — шаблон каталога с
+ * плейсхолдером {name} и параметром t(key, fallback, params); ключ литеральный,
+ * фолбэк байт-в-байт повторяет прежний литерал. */
 
 const IDLE_PULSE_THRESHOLD_MS = 15_000;
 
@@ -216,7 +214,7 @@ export function EmergencyHelpButton() {
               <div>
                 <p className="hud-filmic-kicker mb-1">
                   <Eye className="size-2.5 inline-block mr-1 -mt-px" />
-                  {t(HUD_NEARBY_KEY, `Что рядом (${helpContent.sceneZones.length})`)}
+                  {t('hud.emergency.nearby', `Что рядом (${helpContent.sceneZones.length})`, { n: helpContent.sceneZones.length })}
                 </p>
                 <div className="space-y-0.5">
                   {helpContent.sceneZones.map((zone) => (
