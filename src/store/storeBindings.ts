@@ -66,24 +66,44 @@ type SliceRefs = readonly [
   DifficultySlice,
 ];
 
-let cachedCombined: GameStoreState | null = null;
-let cachedSliceRefs: SliceRefs | null = null;
+/** Мутабельный кортеж для переиспользуемых буферов ссылок (этап 108). */
+type SliceRefsBuffer = [
+  PlayerSlice | null,
+  ExplorationSlice | null,
+  WorldSlice | null,
+  UISlice | null,
+  CutsceneSlice | null,
+  SaveSlice | null,
+  DialogueHistorySlice | null,
+  AchievementSlice | null,
+  DifficultySlice | null,
+];
 
-function readSliceRefs(): SliceRefs {
-  return [
-    getPlayerStore(),
-    getExplorationStore(),
-    getWorldStore(),
-    getUIStore(),
-    getCutsceneStore(),
-    getSaveStore(),
-    getDialogueHistoryStore(),
-    getAchievementStore(),
-    getDifficultyStore(),
-  ];
+let cachedCombined: GameStoreState | null = null;
+// perf (v4.25, этап 108): ссылки слайсов хранятся в ПЕРЕИСПОЛЬЗУЕМЫХ буферах.
+// Раньше каждый вызов getCombinedGameState() аллоцировал массив из 9 слайсов
+// только для того, чтобы сравнить его с кэшем — а вызовов сотни за кадр
+// (все useGameStore.getState() в движке). Теперь collectSliceRefs заполняет
+// постоянный буфер по месту, сравнение — поэлементное, без аллокаций.
+// cachedSliceRefs — копия ссылок, на которых построен cachedCombined.
+const EMPTY_SLICE_REFS: SliceRefsBuffer = [null, null, null, null, null, null, null, null, null];
+const refsBuffer: SliceRefsBuffer = [...EMPTY_SLICE_REFS] as SliceRefsBuffer;
+const cachedSliceRefs: SliceRefsBuffer = [...EMPTY_SLICE_REFS] as SliceRefsBuffer;
+let cachedSliceRefsFilled = false;
+
+function collectSliceRefs(buffer: SliceRefsBuffer): void {
+  buffer[0] = getPlayerStore();
+  buffer[1] = getExplorationStore();
+  buffer[2] = getWorldStore();
+  buffer[3] = getUIStore();
+  buffer[4] = getCutsceneStore();
+  buffer[5] = getSaveStore();
+  buffer[6] = getDialogueHistoryStore();
+  buffer[7] = getAchievementStore();
+  buffer[8] = getDifficultyStore();
 }
 
-function sliceRefsEqual(a: SliceRefs, b: SliceRefs): boolean {
+function sliceRefsEqual(a: SliceRefs | SliceRefsBuffer, b: SliceRefs | SliceRefsBuffer): boolean {
   return (
     a[0] === b[0] &&
     a[1] === b[1] &&
@@ -99,12 +119,16 @@ function sliceRefsEqual(a: SliceRefs, b: SliceRefs): boolean {
 
 /** Rebuild combined facade state only when a slice store reference changes. */
 export function getCombinedGameState(): GameStoreState {
-  const refs = readSliceRefs();
-  if (cachedCombined && cachedSliceRefs && sliceRefsEqual(cachedSliceRefs, refs)) {
+  collectSliceRefs(refsBuffer);
+  if (cachedCombined && cachedSliceRefsFilled && sliceRefsEqual(cachedSliceRefs, refsBuffer)) {
     return cachedCombined;
   }
 
-  cachedSliceRefs = refs;
+  // Кэш ссылок обновляется ПОЭЛЕМЕНТНО в постоянный буфер — без аллокаций.
+  for (let i = 0; i < refsBuffer.length; i++) {
+    cachedSliceRefs[i] = refsBuffer[i];
+  }
+  cachedSliceRefsFilled = true;
   // Shallow-merge all 9 Zustand slice stores into the facade state.
   //
   // IMPORTANT: we keep BOTH data AND action functions. The previous
@@ -128,15 +152,15 @@ export function getCombinedGameState(): GameStoreState {
   // call-site, not papered over with deep cloning.
   const combined = Object.assign(
     {} as GameStoreState,
-    refs[0],
-    refs[1],
-    refs[2],
-    refs[3],
-    refs[4],
-    refs[5],
-    refs[6],
-    refs[7],
-    refs[8],
+    refsBuffer[0],
+    refsBuffer[1],
+    refsBuffer[2],
+    refsBuffer[3],
+    refsBuffer[4],
+    refsBuffer[5],
+    refsBuffer[6],
+    refsBuffer[7],
+    refsBuffer[8],
   );
   cachedCombined = combined;
   return combined;
@@ -145,7 +169,7 @@ export function getCombinedGameState(): GameStoreState {
 /** Drop cached combined object when slice stores change. */
 export function invalidateCombinedGameStateCache(): void {
   cachedCombined = null;
-  cachedSliceRefs = null;
+  cachedSliceRefsFilled = false;
 }
 
 /**
@@ -156,11 +180,11 @@ export function invalidateCombinedGameStateCache(): void {
  * happens when the `subscribeAllStores` microtask fires after a sync flush.
  */
 export function invalidateCombinedGameStateCacheIfStale(): void {
-  if (!cachedCombined || !cachedSliceRefs) return; // already invalidated
-  const refs = readSliceRefs();
-  if (sliceRefsEqual(cachedSliceRefs, refs)) return; // cache still fresh
+  if (!cachedCombined || !cachedSliceRefsFilled) return; // already invalidated
+  collectSliceRefs(refsBuffer);
+  if (sliceRefsEqual(cachedSliceRefs, refsBuffer)) return; // cache still fresh
   cachedCombined = null;
-  cachedSliceRefs = null;
+  cachedSliceRefsFilled = false;
 }
 
 /** Test harness — drop cached combined object between cases. */
