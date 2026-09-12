@@ -23,6 +23,7 @@ import type { WorldEvents } from './worldEvents';
 import type { StoryEvents } from './storyEvents';
 import type { AccessibilityEvents } from './accessibilityEvents';
 import type { CinematicTimelineEvents } from './cinematicTimelineEvents';
+import type { QteEvents } from './qteEvents';
 
 export type { MergeEventMaps, DomainEventKeys } from './merge';
 export type { AudioEvents } from './audioEvents';
@@ -50,6 +51,7 @@ export type { WorldEvents } from './worldEvents';
 export type { StoryEvents } from './storyEvents';
 export type { AccessibilityEvents } from './accessibilityEvents';
 export type { CinematicTimelineEvents } from './cinematicTimelineEvents';
+export type { QteEvents, QteStartPayload, QteResolvePayload } from './qteEvents';
 
 export { PHOTO_EVENTS, PHOTO_EMPTY_PAYLOAD } from './photoEvents';
 export type { EmptyEventPayload } from './emptyPayload';
@@ -81,7 +83,8 @@ export type EventMap =
   WorldEvents &
   StoryEvents &
   AccessibilityEvents &
-  CinematicTimelineEvents;
+  CinematicTimelineEvents &
+  QteEvents;
 
 /** All registered event names on the singleton bus. */
 export type EventName = keyof EventMap;
@@ -116,6 +119,7 @@ export const EVENT_DOMAINS = {
   story: 'story',
   accessibility: 'accessibility',
   cinematic: 'cinematic',
+  qte: 'qte',
   loot: 'loot',
   skill: 'skill',
   choice: 'choice',
