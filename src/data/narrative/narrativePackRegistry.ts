@@ -34,6 +34,7 @@ export type StorySatellitePackId =
   | 'aaaExpansion'
   | 'streetLegends'
   | 'pierVoices'
+  | 'factionContracts'
   | 'act5DreamWorld'
   | 'act34CaseExpansions';
 export type DialoguePackId =
@@ -180,6 +181,11 @@ const storySatelliteLoaders: Record<
   // lazy loader here so ensureStoryNode() can resolve sl_* nodes at runtime.
   streetLegends: () => import('../story/streetLegendsStory').then((m) => m.STREET_LEGENDS_STORY_NODES),
   pierVoices: () => import('../story/pierVoicesStory').then((m) => m.PIER_VOICES_STORY_NODES),
+  // «Фракционные поручения» (v4.18.0) — 28 узлов 5 фракционных квестов
+  // (factionContracts.ts). Same parity pattern: static merge + lazy loader,
+  // иначе ensureStoryNode бросит «not found» в рантайме (урок v4.8.9).
+  factionContracts: () =>
+    import('../story/factionContractsStory').then((m) => m.FACTION_CONTRACTS_STORY_NODES),
   // «Мир Снов» (v4.10.0) — 11 узлов сна/пустоты для dreamworld_lost_child и
   // void_echo_poem. Same parity pattern: static merge + lazy loader, иначе
   // ensureStoryNode бросит «not found» в рантайме (урок v4.8.9).
@@ -214,6 +220,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'aaaExpansion',
   'streetLegends',
   'pierVoices',
+  'factionContracts',
   'act5DreamWorld',
   'act34CaseExpansions',
 ] as const;

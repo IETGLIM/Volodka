@@ -22,6 +22,12 @@ export const CHK_DIALOGUE_NODES: Record<string, DialogueNode> = {
         next: 'chk_ru_about_tolpa',
       },
       {
+        // «Фракционные поручения»: Толпа доверяет чужаку свои письма.
+        text: 'Письма из огня кто-то выносит. Разобраться?',
+        next: 'fc_embers_start',
+        condition: { requiredAct: 3, missingFlag: 'fc_embers_accepted' },
+      },
+      {
         text: 'Гильдия бьёт по Хранилищу — нужен тыл.',
         next: 'chk_ru_act3_sanctuary',
         condition: { flag: 'tolpa_sanctuary_offered' },

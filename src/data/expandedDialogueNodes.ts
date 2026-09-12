@@ -296,6 +296,12 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           { type: 'npcChange', npcId: 'oleg', npcChange: { relation: -15 } },
         ],
       },
+      {
+        // «Фракционные поручения»: Гильдия доверяет вынос списка наблюдений.
+        text: 'Три года ты готовился камерам не верить. Я готов пронести',
+        next: 'fc_blindspot_start',
+        condition: { requiredAct: 4, missingFlag: 'fc_blindspot_accepted' },
+      },
     ],
   },
 
@@ -1092,6 +1098,12 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
     text: 'Не бойся, Володька. Я Жека — старый рабочий, старый хакер. Знаю «Надзор» изнутри: точки входа, ключи, слабые места. Александр когда-то был человеком. А потом стал идеей. Я помню оба.',
     choices: [
       { text: 'Что ты знаешь о «Надзоре»?', next: null, effects: [{ type: 'addSkill', skill: 'coding', value: 2 }, { type: 'setFlag', flag: 'zeka_trusted', flagValue: true }] },
+      {
+        // «Фракционные поручения»: Сопротивление доверяет подъём «Зари-М».
+        text: '«Заря-М» — поднимем её вместе?',
+        next: 'fc_zarya_start',
+        condition: { requiredAct: 4, missingFlag: 'fc_zarya_accepted' },
+      },
       { text: 'Поможешь с проникновением?', next: null, effects: [{ type: 'addSkill', skill: 'logic', value: 1 }] },
       {
         text: 'План похищения данных — схемы.',
@@ -1547,6 +1559,16 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
         effects: [{ type: 'triggerQuest', questId: 'factory_zarya_memory' }],
       },
       {
+        // «Фракционные поручения»: три доставки для трёх фракций.
+        text: 'Что готово у верстака? Небольшой чужой почтамт?',
+        next: 'fc_hands_start',
+        condition: {
+          requiredAct: 4,
+          flag: 'factory_zarya_memory_done',
+          missingFlag: 'fc_hands_accepted',
+        },
+      },
+      {
         text: 'Снежинка на крыше — продолжим.',
         next: 'factory_zarya_snow',
         condition: {
@@ -1797,6 +1819,12 @@ export const EXPANDED_DIALOGUE_NODES: Record<string, DialogueNode> = {
           flag: 'pv_three_voices_done',
           missingFlag: 'pv_drowned_server_accepted',
         },
+      },
+      {
+        // «Фракционные поручения»: Сеть доверяет сбор цифрового следа Марата.
+        text: 'Ты рассыпаешься? Скажи, где тебя собрать',
+        next: 'fc_echo_start',
+        condition: { requiredAct: 3, missingFlag: 'fc_echo_accepted' },
       },
       {
         text: 'Ответить строкой из тетради',
