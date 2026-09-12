@@ -11,6 +11,7 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 import { useSkinnedGltfClone } from '@/hooks/useSkinnedGltfClone';
 import { measureGltfBounds } from '@/engine/assets/gltfScale';
+import { subscribeLodUrlTick } from '@/engine/lod/lodActiveUrlTicker';
 import { LodSwitcher } from './LodSwitcher';
 
 /** drei GLTFLoader types (three-stdlib) vs three/jm decoders — cast at boundary */
@@ -149,15 +150,17 @@ function GltfLodBranches({
   useEffect(() => {
     // Sync ref → state on LOD changes. Only fires setState when the URL
     // actually changes, so no per-frame re-renders.
+    // FIX (v4.17.1): общий 5Hz-тикер вместо setInterval на каждый ассет —
+    // N ассетов больше не создают N интервалов (INP).
     let lastUrl = activeUrlRef.current;
     setActiveUrl(lastUrl);
-    const checkInterval = setInterval(() => {
+    const unsubscribe = subscribeLodUrlTick(() => {
       if (activeUrlRef.current !== lastUrl) {
         lastUrl = activeUrlRef.current;
         setActiveUrl(lastUrl);
       }
-    }, 200); // 5Hz — LOD switches are not latency-critical; fewer timers help INP
-    return () => clearInterval(checkInterval);
+    });
+    return unsubscribe;
   }, [activeUrlRef]);
 
   const activeUrlSafe = activeUrl && urls.includes(activeUrl) ? activeUrl : urls[0];

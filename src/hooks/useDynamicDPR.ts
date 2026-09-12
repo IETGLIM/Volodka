@@ -58,9 +58,11 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
   // Ring buffer for O(1) push/trim (replaces Array.shift O(n) pruning)
   const bufferCapacityRef = useRef(Math.max(120, Math.ceil(120 * windowMs / 1000)));
   bufferCapacityRef.current = Math.max(120, Math.ceil(120 * windowMs / 1000));
-  const frameBuffer = useRef<Array<{ time: number; fps: number }>>(
-    new Array(bufferCapacityRef.current),
-  );
+  // FIX (v4.17.1): два Float64Array вместо Array<{time, fps}> — нулевая
+  // аллокация в rAF-цикле (раньше объект аллоцировался каждый кадр,
+  // включая demand-фреймлоуп меню).
+  const frameTimes = useRef<Float64Array>(new Float64Array(bufferCapacityRef.current));
+  const frameFps = useRef<Float64Array>(new Float64Array(bufferCapacityRef.current));
   const writeIndex = useRef(0);
   const readIndex = useRef(0);
   const bufferCount = useRef(0);
@@ -73,7 +75,8 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
   // Continuously measure FPS
   useEffect(() => {
     const capacity = bufferCapacityRef.current;
-    frameBuffer.current = new Array(capacity);
+    frameTimes.current = new Float64Array(capacity);
+    frameFps.current = new Float64Array(capacity);
     writeIndex.current = 0;
     readIndex.current = 0;
     bufferCount.current = 0;
@@ -85,9 +88,9 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
       lastTime.current = now;
       const fps = delta > 0 ? 1000 / delta : 60;
 
-      const buf = frameBuffer.current;
       const cap = bufferCapacityRef.current;
-      buf[writeIndex.current] = { time: now, fps };
+      frameTimes.current[writeIndex.current] = now;
+      frameFps.current[writeIndex.current] = fps;
       writeIndex.current = (writeIndex.current + 1) % cap;
       if (bufferCount.current < cap) {
         bufferCount.current++;
@@ -99,7 +102,7 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
       const cutoff = now - windowMs;
       while (
         bufferCount.current > 0 &&
-        buf[readIndex.current].time < cutoff
+        frameTimes.current[readIndex.current] < cutoff
       ) {
         readIndex.current = (readIndex.current + 1) % cap;
         bufferCount.current--;
@@ -114,7 +117,6 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
   // Adjust DPR periodically with stabilization
   useEffect(() => {
     const interval = setInterval(() => {
-      const buf = frameBuffer.current;
       const count = bufferCount.current;
       if (count < 20) return; // Not enough data yet
 
@@ -122,7 +124,7 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
       const cap = bufferCapacityRef.current;
       for (let i = 0; i < count; i++) {
         const idx = (readIndex.current + i) % cap;
-        sum += buf[idx].fps;
+        sum += frameFps.current[idx];
       }
       const avgFps = sum / count;
 
