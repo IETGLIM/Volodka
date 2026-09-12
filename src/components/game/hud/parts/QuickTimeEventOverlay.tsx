@@ -34,6 +34,7 @@ import {
   Volume2,
 } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useMobileDetection } from '@/components/game/orchestrator/useMobileDetection';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 /* ─── Type Definitions ─── */
@@ -155,6 +156,17 @@ const SIZES = {
   ringInner: 120,
   keyDisplay: 80,
   trailItem: 48,
+  flashDuration: 200,
+};
+
+/** Размеры для тач-устройств (v4.31): кольцо/клавиша/трейл меньше на ~22%,
+ * чтобы QTE гарантированно влезал в узкие экраны и не перекрывал мобильный
+ * HUD; flash-длительность не меняется. */
+const TOUCH_SIZES = {
+  ringOuter: 124,
+  ringInner: 92,
+  keyDisplay: 64,
+  trailItem: 40,
   flashDuration: 200,
 };
 
@@ -554,6 +566,9 @@ export function QuickTimeEventOverlay({
   const [showResult, setShowResult] = useState(false);
   const [showFlash, setShowFlash] = useState(false);
   const reducedMotion = useEffectiveReducedMotion();
+  // v4.31: тач-адаптация — компактные размеры и экранная кнопка отмены.
+  const isTouch = useMobileDetection();
+  const sizes = isTouch ? TOUCH_SIZES : SIZES;
 
   /* ── Refs-зеркала (v4.30) ──
    * Таймер и слушатели ввода регистрируются ОДИН раз на сессию (deps [isActive])
@@ -860,6 +875,9 @@ export function QuickTimeEventOverlay({
               zIndex: UI_LAYERS.MINIGAME,
               background: 'radial-gradient(circle at center, rgba(0,0,0,0.85), rgba(0,0,0,0.95))',
               backdropFilter: 'blur(8px)',
+              /* v4.31: safe-area — на нотч-устройствах контент не уходит под вырез. */
+              padding:
+                'env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)',
               /* FIX (v4.30): корень принимает ввод — иначе внутри
                * pointer-events-none-родителя (HUD) тач-кнопки мертвы. */
               pointerEvents: 'auto',
@@ -873,6 +891,34 @@ export function QuickTimeEventOverlay({
             aria-label={`Быстрое событие: ${eventType}`}
             onClick={(e) => e.stopPropagation()}
           >
+            {/* ── Экранная отмена для тача (v4.31) ──
+             * На тач-устройствах Escape недоступен: даём явный крестик
+             * (44px тач-таргет, safe-area-отступ от выреза). */}
+            {isTouch && !showResult && (
+              <button
+                type="button"
+                className="absolute flex items-center justify-center rounded-full transition-transform active:scale-90"
+                style={{
+                  top: 'calc(env(safe-area-inset-top) + 16px)',
+                  right: 'calc(env(safe-area-inset-right) + 16px)',
+                  width: 44,
+                  height: 44,
+                  color: 'rgba(200,210,220,0.75)',
+                  backgroundColor: 'rgba(20,24,28,0.6)',
+                  border: '1px solid rgba(200,210,220,0.25)',
+                  boxShadow: '0 0 12px rgba(0,0,0,0.4)',
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  cancelRef.current();
+                }}
+                aria-label="Отменить событие"
+              >
+                <X size={20} />
+              </button>
+            )}
+
             {/* ── Вспышка near-miss / Near-miss flash ── */}
             <AnimatePresence>
               {showFlash && (
@@ -930,8 +976,8 @@ export function QuickTimeEventOverlay({
               <TimerRing
                 progress={ringProgress}
                 eventType={eventType}
-                outerSize={SIZES.ringOuter}
-                innerSize={SIZES.ringInner}
+                outerSize={sizes.ringOuter}
+                innerSize={sizes.ringInner}
                 accentColor={diffConfig.color}
                 glowColor={diffConfig.glowColor}
                 isWarning={isWarning && !showResult}
@@ -942,13 +988,13 @@ export function QuickTimeEventOverlay({
               <div
                 className="absolute flex items-center justify-center"
                 style={{
-                  width: SIZES.ringOuter,
-                  height: SIZES.ringOuter,
+                  width: sizes.ringOuter,
+                  height: sizes.ringOuter,
                 }}
               >
                 <KeyDisplay
                   binding={currentBinding ?? keyBindings[0] ?? { display: '?', code: '' }}
-                  size={SIZES.keyDisplay}
+                  size={sizes.keyDisplay}
                   isActive={!showResult}
                   isSuccess={isSuccess}
                   isFailure={isFailure}
@@ -1026,7 +1072,10 @@ export function QuickTimeEventOverlay({
 
                   {/* Прогресс для hold / Progress for hold */}
                   {eventType === 'hold' && (
-                    <div className="w-40 h-2 rounded-full overflow-hidden mx-auto" style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}>
+                    <div
+                      className={`h-2 rounded-full overflow-hidden mx-auto ${isTouch ? 'w-32' : 'w-40'}`}
+                      style={{ backgroundColor: 'rgba(255,255,255,0.1)' }}
+                    >
                       <motion.div
                         className="h-full rounded-full"
                         style={{
@@ -1045,12 +1094,12 @@ export function QuickTimeEventOverlay({
                     </p>
                   )}
 
-                  {/* Подсказка отмены / Cancel hint (v4.30) */}
+                  {/* Подсказка отмены / Cancel hint (v4.30; v4.31 — тач-вариант) */}
                   <p
                     className="text-[10px] font-mono uppercase tracking-widest"
                     style={{ color: 'rgba(160,170,180,0.4)' }}
                   >
-                    Esc — отмена
+                    {isTouch ? 'Крестик — отмена' : 'Esc — отмена'}
                   </p>
                 </motion.div>
               )}
@@ -1130,7 +1179,7 @@ export function QuickTimeEventOverlay({
                 <SequenceTrail
                   bindings={keyBindings}
                   currentIndex={state.currentIndex}
-                  itemSize={SIZES.trailItem}
+                  itemSize={sizes.trailItem}
                   accentColor={diffConfig.color}
                   glowColor={diffConfig.glowColor}
                   reducedMotion={reducedMotion}
