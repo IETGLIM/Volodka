@@ -256,7 +256,7 @@
     Проверено: build:vercel + verify:deploy OK (114 путей, dist 97.1 MB),
     budgets OK. «None»-GLB содержат EXT_meshopt — MeshoptDecoder остаётся
     подключенным (не трогать).
-- [ ] 124. Текстуры → KTX2 (инфраструктура basis/ уже в деплое) — БЛОКЕР-ТУЛИНГ
+- [x] 124. Текстуры → KTX2 (инфраструктура basis/ уже в деплое)
   - v4.27.0, вердикт: клиентская инфраструктура готова заранее (KTX2Loader +
     setTranscoderPath('/basis/') + detectSupport в gltfPipeline.ts,
     basis_transcoder в деплое), НО энкодер (toktx/KTX-Software) недоступен:
@@ -265,6 +265,25 @@
     KTX2-ассетов возможно только в среде с KTX-Software; этап остаётся открытым
     до появления тула. Повторная проверка: при появлении toktx запустить
     gltf-process и расширить манифест.
+  - v4.32.0 (ЗАКРЫТ): тулчейн установлен и верифицирован — KTX-Software 4.4.2,
+    унифицированный `ktx` CLI; новый синтаксис `ktx create --format <VkFormat>
+    --encode basis-lz --generate-mipmap in.png out.ktx2` заменил legacy
+    `toktx --t2 --bcmp out.ktx2 in.png` (@gltf-transform/cli 4.4.1 спавнит
+    `ktx create` внутри и требует >= 4.3.0 — зонд `command -v ktx` корректен).
+    Найден и исправлен латентный баг пайплайна: команда `etc1s` ДЕКОДИРУЕТ
+    KHR_draco_mesh_compression при чтении — прежний порядок (ETC1S поверх
+    draco-варианта) молча лишил бы варианты сжатия геометрии (замер:
+    13.9 → 19.2 KB). Новый порядок: copy → optimize → etc1s (по оптимизированной
+    базовой копии lod0) → draco → meshopt → LOD; end-to-end проверено: с ktx draco-вариант
+    несёт KHR_draco_mesh_compression + KHR_texture_basisu (image/ktx2), без ktx —
+    прежнее поведение + подсказка установки 4.3+. Регенерация shipped-ассетов
+    НЕ проводилась (обоснованное решение, инвентаризация): все 31 draco-вариант
+    содержат ~0.1 MB текстур (NPC/герой/пропсы — изображение-заглушка без
+    bufferView; интерьеры — 12K палитровые PNG, на которых ETC1S РАСТЁТ:
+    11.8 → 16.4 KB из-за mip-цепочки), а интерьеры в манифесте шипят lod0
+    `.glb`, не draco-варианты. Реальная цель KTX2 — внешние текстуры PolyHaven
+    (14 MB) / HDRI (13 MB) → новый этап 133 (требует браузерной QA качества
+    транскодинга).
 - [x] 125. `menu/cinematic_night_plate.png` (1.2MB) → WebP
   - v4.26.0: PNG 1 218 655 B → WebP q90 170 576 B (−86%, −1.05 MB деплоя);
     POLYHAVEN_MENU_PLATE → .webp; tsc/build/budgets/verify:deploy — OK.
@@ -279,11 +298,23 @@
 - [x] 131. Атомарные коммиты (fix/feat/perf/chore/docs) + push в origin/main
 - [x] 132. Финальная сверка Vercel-конфигурации и бюджетов
 
+## Фаза 10. Пост-реестровые follow-up (133+)
+- [ ] 133. Внешние текстуры → KTX2: карты PolyHaven (public/textures, 14 MB;
+  diff/nor/rough/ao × 3 масштаба × 5 материалов) и кандидаты из HDRI (13 MB)
+  — требует подмены загрузчика (TextureLoader → KTX2Loader для .ktx2-путей),
+  политики кодирования по типу карты (diff → basis-lz sRGB; nor/rough/ao →
+  UNORM-квиваленты, для нормал-карт рассмотреть UASTC — ETC1S даёт артефакты
+  на нормалях), расширения манифеста (getPolyHavenMapUrl — .ktx2-варианты) и
+  ОБЯЗАТЕЛЬНОЙ браузерной проверки качества транскодинга (в текущей среде
+  браузерные проверки запрещены мандатом — выполнять в среде с browser QA).
+
 ---
 
 ## Правила продолжения (для следующих сессий)
 1. Не дублировать выполненные этапы — statuses выше источник истины.
-2. Приоритет очереди: 85–92 (UI-слоты) → 97–104 (перф) → 111–118 (контент) → 122–126 (сборка).
+2. Реестр закрыт (132/132, v4.32.0). Очередь: этап 133 (внешние текстуры → KTX2,
+   нужна среда с браузерной QA) + приоритеты worklog (пер-сценная экспозиция
+   ToneMapping, CoherentNoiseEffect, check-asset-manifest, вторая волна QTE-эмиттеров).
 3. Перед контентом: `npm run validate:content && npm run validate:act1-extended`.
 4. После каждого этапа: атомарный коммит (русский, `feat:/fix:/perf:/docs:/chore:`), периодический push.
 5. Ограничения неизменны: без dev-сервера; poems.ts:1–18 не трогать; всё видимое — на русском.
