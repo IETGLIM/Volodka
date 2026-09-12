@@ -197,4 +197,16 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
 
   /* notificationToastPresentation.ts (статичный фрагмент билдера награды) */
   'hud.toast.noRewards': 'нет',
+
+  /* notificationToastPresentation.ts (этап 115, волна 2): шаблоны билдеров
+   * с плейсхолдерами {name} — интерполяция в t(key, fallback, params).
+   * Значения байт-в-байт повторяют прежние литералы-фолбэки. */
+  'hud.toast.accessibleLabel': '{type}: {message}',
+  'hud.toast.power': 'Способность: {name}',
+  'hud.toast.combatDefeat': 'Поражение: -{n} энергии',
+  'hud.toast.questReward': 'Награда за «{title}»: {rewards}',
+  'hud.toast.karma': 'Карма {delta}',
+  'hud.toast.energy': 'Энергия {delta}',
+  'hud.toast.stress': 'Стресс {delta}',
+  'hud.toast.skill': 'Навык: {name} {delta}',
 };

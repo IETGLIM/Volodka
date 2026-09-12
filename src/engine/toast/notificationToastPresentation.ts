@@ -12,12 +12,10 @@ import type { GameNotification, NotificationType } from '@/shared/types/notifica
 import type { TrainablePlayerSkill } from '@/shared/types/game';
 import { t } from '@/i18n';
 
-/* i18n (этап 115): ключи динамических сообщений билдеров. Они сознательно НЕ
- * добавлены в статический каталог RU_MESSAGES: t() возвращает
- * RU_MESSAGES[key] ?? fallback, и статичная запись перебила бы интерполяцию
- * значений внутри fallback (t() вернул бы шаблон вместо подставленных чисел —
- * видимый текст менялся бы). Фолбэк внутри t() байт-в-байт повторяет прежний
- * литерал — вывод не меняется. */
+/* i18n (этап 115, волна 2): динамические ключи перенесены в каталог RU_MESSAGES
+ * как шаблоны с плейсхолдерами ({name}) — t(key, fallback, params) интерполирует
+ * их. Фолбэк внутри каждого t() байт-в-байт повторяет прежний литерал — вывод
+ * не меняется ни при попадании в каталог, ни при промахе. */
 const HUD_DYNAMIC_KEYS = {
   accessibleLabel: 'hud.toast.accessibleLabel',
   power: 'hud.toast.power',
@@ -134,41 +132,52 @@ export function formatToastDelta(delta: number | undefined): string | null {
 
 export function buildToastAccessibleLabel(type: ToastType, message: string): string {
   const typeLabel = TOAST_TYPE_LABELS[type];
-  return t(HUD_DYNAMIC_KEYS.accessibleLabel, `${typeLabel}: ${message}`);
+  return t(HUD_DYNAMIC_KEYS.accessibleLabel, `${typeLabel}: ${message}`, {
+    type: typeLabel,
+    message,
+  });
 }
 
 export function buildPoemPowerToastMessage(powerName: string): string {
-  return t(HUD_DYNAMIC_KEYS.power, `Способность: ${powerName}`);
+  return t(HUD_DYNAMIC_KEYS.power, `Способность: ${powerName}`, { name: powerName });
 }
 
 export function buildCombatDefeatToastMessage(energyLost: number): string {
-  return t(HUD_DYNAMIC_KEYS.combatDefeat, `Поражение: -${energyLost} энергии`);
+  return t(HUD_DYNAMIC_KEYS.combatDefeat, `Поражение: -${energyLost} энергии`, {
+    n: energyLost,
+  });
 }
 
 export function buildQuestRewardToastMessage(questTitle: string, rewards: string[]): string {
   const rewardText = rewards.length > 0 ? rewards.join(', ') : t('hud.toast.noRewards', 'нет');
-  return t(HUD_DYNAMIC_KEYS.questReward, `Награда за «${questTitle}»: ${rewardText}`);
+  return t(HUD_DYNAMIC_KEYS.questReward, `Награда за «${questTitle}»: ${rewardText}`, {
+    title: questTitle,
+    rewards: rewardText,
+  });
 }
 
 export function buildKarmaToastMessage(delta: number): string {
   const sign = delta > 0 ? '+' : '';
-  return t(HUD_DYNAMIC_KEYS.karma, `Карма ${sign}${delta}`);
+  return t(HUD_DYNAMIC_KEYS.karma, `Карма ${sign}${delta}`, { delta: `${sign}${delta}` });
 }
 
 export function buildEnergyToastMessage(delta: number): string {
   const sign = delta > 0 ? '+' : '';
-  return t(HUD_DYNAMIC_KEYS.energy, `Энергия ${sign}${delta}`);
+  return t(HUD_DYNAMIC_KEYS.energy, `Энергия ${sign}${delta}`, { delta: `${sign}${delta}` });
 }
 
 export function buildStressToastMessage(delta: number): string {
   const sign = delta > 0 ? '+' : '';
-  return t(HUD_DYNAMIC_KEYS.stress, `Стресс ${sign}${delta}`);
+  return t(HUD_DYNAMIC_KEYS.stress, `Стресс ${sign}${delta}`, { delta: `${sign}${delta}` });
 }
 
 export function buildSkillToastMessage(skill: TrainablePlayerSkill, delta: number): string {
   const name = SKILL_DISPLAY_NAMES[skill] ?? skill;
   const sign = delta > 0 ? '+' : '';
-  return t(HUD_DYNAMIC_KEYS.skill, `Навык: ${name} ${sign}${delta}`);
+  return t(HUD_DYNAMIC_KEYS.skill, `Навык: ${name} ${sign}${delta}`, {
+    name,
+    delta: `${sign}${delta}`,
+  });
 }
 
 export { buildPoemCollectedToastMessage } from '@/shared/notifications/poemCollectedMessage';
