@@ -524,13 +524,17 @@ export function CinematicTimelineRunner() {
 
     const overlay = result.overlay;
     if (overlay && overlay.letterboxStyle !== 'none') {
+      // FIX (v4.17.1): длительность overlay = остаток таймлайна (от текущей
+      // фазы до конца), а не длительность одной фазы. Раньше текст кат-сцены,
+      // закреплённый на фазе, гас по её окончании — раньше конца полёта камеры.
+      const remainingMs = state.def.phases
+        .slice(state.phaseIndex)
+        .reduce((sum, p) => sum + Math.max(0, p.duration), 0) * 1000;
       eventBus.emit('cutscene:overlay', {
         text: overlay.text ?? '',
         subtitle: overlay.subtitle,
         accentColor: overlay.accentColor ?? '#44ffff',
-        durationMs: state.def.phases[state.phaseIndex]?.duration
-          ? state.def.phases[state.phaseIndex].duration * 1000
-          : 2000,
+        durationMs: remainingMs > 0 ? remainingMs : 2000,
         type: overlay.text ? 'character_intro' : 'story_moment',
         letterboxStyle: overlay.letterboxStyle ?? 'thin',
         showEmbers: overlay.showEmbers ?? false,

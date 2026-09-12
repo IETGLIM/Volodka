@@ -36,6 +36,9 @@ export function cutsceneDefToTimeline(cutscene: CutsceneDef): CinematicTimelineD
     id: `cutscene_${cutscene.id}`,
     phases: waypointsToTimelinePhases(cutscene.waypoints, overlayFromCutscene(cutscene), {
       phaseIdPrefix: 'cutscene',
+      // FIX (v4.17.1): текст кат-сцены крепится к первой фазе — заголовок акта
+      // виден весь пролёт камеры, а не последние 1.5–2 секунды.
+      overlayOnFirstPhase: true,
     }),
     fallbackMs: displayMs + 2500,
   };

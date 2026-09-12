@@ -52,7 +52,15 @@ describe('cutsceneToTimeline', () => {
     const def = cutsceneDefToTimeline(cutscene);
     expect(def.id).toBe('cutscene_act1_prologue');
     expect(def.phases.length).toBe(cutscene.waypoints.length - 1);
-    expect(def.phases.at(-1)?.overlay?.text).toBe(cutscene.textOverlay);
     expect(def.phases.every((p) => p.actor.mode === 'none')).toBe(true);
+  });
+
+  it('FIX (v4.17.1): overlay закреплён на ПЕРВОЙ фазе — текст виден весь полёт камеры', () => {
+    const cutscene = CUTSCENES.act1_prologue;
+    const def = cutsceneDefToTimeline(cutscene);
+    expect(def.phases[0]?.overlay?.text).toBe(cutscene.textOverlay);
+    expect(def.phases[0]?.overlay?.subtitle).toBe(cutscene.subtitle);
+    // Остальные фазы overlay не несут (эмится однократно).
+    expect(def.phases.slice(1).every((p) => p.overlay === undefined)).toBe(true);
   });
 });
