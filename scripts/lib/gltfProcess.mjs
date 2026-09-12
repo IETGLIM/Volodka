@@ -5,12 +5,14 @@
  * Best practices applied:
  * - Uses locally-installed @gltf-transform/cli (pinned version) instead of `npx -y`
  *   to prevent supply-chain breakage on major version bumps.
- * - KTX2/Basis ETC1S texture compression applied to Draco variant via separate
- *   `etc1s` pass, significantly reducing texture sizes for low/medium/high quality
- *   tiers (60-75% smaller textures with minimal visual quality loss).
+ * - KTX2/Basis ETC1S texture compression applied to the optimized baseline via
+ *   separate `etc1s` pass BEFORE Draco (60-75% smaller textures with minimal
+ *   visual quality loss for photo-like textures). Running etc1s over an
+ *   already-Draco GLB silently DROPS geometry compression — the etc1s command
+ *   decodes KHR_draco_mesh_compression on read (found 2026-09, see Step 3a).
  * - Meshopt variants keep original textures (meshopt decompresses geometry only;
  *   KTX2 transcoding overhead not justified when GPU is already strong enough for ultra).
- * - Pipeline order: copy → optimize → draco → etc1s → meshopt → LOD generation.
+ * - Pipeline order: copy → optimize → etc1s → draco → meshopt → LOD generation.
  *
  * LOD Strategy (v2 — asset-aware):
  * - Static meshes (suffix-lod): weld + simplify with relaxed error thresholds.
@@ -44,6 +46,11 @@ let ktxSkipWarned = false;
  * gltf-transform's etc1s path shells out to `command -v ktx` without a try/catch on
  * Linux — when absent that surfaces as a hard-looking `error: Command failed`.
  * We probe first and skip etc1s entirely so CI without KTX-Software stays green.
+ *
+ * KTX-Software 4.3+ ships the unified `ktx` CLI (subcommand `ktx create`, e.g.
+ * `ktx create --format R8G8B8A8_SRGB --encode basis-lz --generate-mipmap in.png out.ktx2`).
+ * The legacy `toktx --t2 --bcmp out.ktx2 in.png` form is superseded; @gltf-transform/cli
+ * 4.4.x spawns `ktx create` internally and requires KTX-Software >= 4.3.0.
  */
 export function isKtxCliAvailable() {
   if (ktxCliAvailableCache !== null) return ktxCliAvailableCache;
@@ -200,46 +207,59 @@ export function processGltfAsset({
   }
 
   if (!skipCompression) {
-    // Step 3a: Draco variant — compress geometry only.
-    // KTX2 texture compression is applied separately via `etc1s` pass below.
-    runGltfTransform(root, ['draco', paths.lod0, paths.draco], `draco → ${rel(paths.draco)}`, { exitOnFail });
-
-    // Step 3b: KTX2/Basis ETC1S texture compression on the Draco variant.
-    // ETC1S offers 60-75% texture size reduction with minimal visual quality loss.
-    // GPU-native transcoding avoids runtime decompression overhead on all modern GPUs.
+    // Step 3a: KTX2/Basis ETC1S texture compression on the optimized baseline.
+    // MUST run BEFORE the Draco pass: gltf-transform's `etc1s` command decodes
+    // KHR_draco_mesh_compression when reading (in-memory geometry is always
+    // uncompressed), so compressing an already-Draco GLB would silently ship the
+    // variant WITHOUT geometry compression — geometry re-inflates (measured
+    // 13.9 KB → 19.2 KB on a texture-light interior, 2026-09).
+    // ETC1S offers 60-75% texture size reduction with minimal visual quality loss
+    // for photo-like textures; tiny palette PNGs may even grow (mipmap chain +
+    // block overhead — see ROADMAP stage 124 verdict), which is fine: the pass is
+    // non-fatal and callers can skipTextureCompress to keep original textures.
+    // GPU-native transcoding avoids runtime decompression overhead on modern GPUs.
     // This targets low/medium/high quality tiers where bandwidth savings matter most.
-    // Requires KTX-Software (`ktx` CLI). When missing, skip with a clear warn and
-    // keep Draco-only — meshopt/LOD still run.
+    // Requires KTX-Software 4.3+ (unified `ktx` CLI; `ktx create` syntax — the
+    // legacy `toktx --t2 --bcmp` form is superseded). When missing, skip with a
+    // clear warn and keep PNG textures — meshopt/LOD still run.
+    let dracoSource = paths.lod0;
+    let lod0Ktx2Tmp = null;
     if (!skipTextureCompress) {
       if (!isKtxCliAvailable()) {
         if (!ktxSkipWarned) {
           console.warn(
             '⚠ KTX-Software CLI (`ktx`) not found — skipping KTX2/ETC1S texture compression. ' +
-              'Draco/meshopt/LOD continue with original textures. Install KTX-Software to enable.',
+              'Draco/meshopt/LOD continue with original textures. Install KTX-Software 4.3+ ' +
+              '(unified `ktx` CLI, `ktx create` syntax) to enable.',
           );
           ktxSkipWarned = true;
         }
       } else {
-        const dracoKtx2Tmp = `${paths.draco}.ktx2.tmp.glb`;
+        lod0Ktx2Tmp = `${paths.lod0}.ktx2.tmp.glb`;
         const etc1sOk = runGltfTransform(
           root,
-          ['etc1s', paths.draco, dracoKtx2Tmp, '--quality', '192', '--compression', '1', '--jobs', '4'],
-          `ktx2 etc1s → ${rel(paths.draco)}`,
+          ['etc1s', paths.lod0, lod0Ktx2Tmp, '--quality', '192', '--compression', '1', '--jobs', '4'],
+          `ktx2 etc1s → ${rel(paths.draco)} (texture pass on baseline)`,
           { exitOnFail: false }, // non-fatal even if ktx probe raced / etc1s fails
         );
-        if (etc1sOk && existsSync(dracoKtx2Tmp)) {
-          try {
-            if (existsSync(paths.draco)) unlinkSync(paths.draco);
-            renameSync(dracoKtx2Tmp, paths.draco);
-          } catch (err) {
-            console.warn(`⚠ Failed to finalize KTX2 Draco: ${err.message}`);
-            // Keep the Draco-only file as fallback
-            if (existsSync(dracoKtx2Tmp)) unlinkSync(dracoKtx2Tmp);
-          }
-        } else if (existsSync(dracoKtx2Tmp)) {
-          unlinkSync(dracoKtx2Tmp);
+        if (etc1sOk && existsSync(lod0Ktx2Tmp)) {
+          dracoSource = lod0Ktx2Tmp;
+        } else {
+          if (existsSync(lod0Ktx2Tmp)) unlinkSync(lod0Ktx2Tmp);
+          lod0Ktx2Tmp = null;
         }
       }
+    }
+
+    // Step 3b: Draco variant — geometry compression (from the ETC1S'd baseline
+    // when available, so the shipped Draco variant carries BOTH KTX2 textures
+    // (KHR_texture_basisu) AND Draco geometry compression).
+    runGltfTransform(root, ['draco', dracoSource, paths.draco], `draco → ${rel(paths.draco)}`, { exitOnFail });
+
+    if (lod0Ktx2Tmp) {
+      try {
+        unlinkSync(lod0Ktx2Tmp);
+      } catch {}
     }
 
     // Step 3c: Meshopt variant — geometry-only compression for ultra tier.
