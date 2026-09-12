@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { useHUDControllerState } from '@/store/selectors';
+import { useHUDExploration } from '@/store/selectors';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -64,7 +64,7 @@ function getVignetteStyle(hour: number, weather: WeatherType): React.CSSProperti
 
 export function SceneAmbientVignette() {
   const reducedMotion = useEffectiveReducedMotion();
-  const { timeOfDay, weatherEnabled, rainIntensity, currentSceneId } = useHUDControllerState();
+  const { timeOfDay, weatherEnabled, rainIntensity, currentSceneId } = useHUDExploration();
 
   const [snowActive, setSnowActive] = useState(false);
   useEffect(() => {

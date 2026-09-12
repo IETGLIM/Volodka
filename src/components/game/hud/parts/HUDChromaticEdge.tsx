@@ -6,7 +6,7 @@
  */
 
 import { motion } from 'framer-motion';
-import { useHUDControllerState } from '@/store/selectors';
+import { useScreenEffectsVitals } from '@/store/selectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { resolveScreenFxBudget } from '@/engine/fx/screenFxBudget';
@@ -17,7 +17,7 @@ import {
 
 export function HUDChromaticEdge() {
   const reducedMotion = useEffectiveReducedMotion();
-  const { energy, stress } = useHUDControllerState();
+  const { energy, stress } = useScreenEffectsVitals();
   // Этап 32: на low-тире edge-полосы отключены (бюджет экранных FX).
   const { preset } = useGraphicsQuality();
   const budget = resolveScreenFxBudget(preset);

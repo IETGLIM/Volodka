@@ -8,7 +8,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
-import { useHUDControllerState } from '@/store/selectors';
+import { useHUDExploration } from '@/store/selectors';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
@@ -38,7 +38,7 @@ export function RainScreenEffect() {
   const dropsRef = useRef<RainDrop[]>([]);
   const snowRef = useRef<SnowFlake[]>([]);
   const reducedMotion = useEffectiveReducedMotion();
-  const { weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useHUDControllerState();
+  const { weatherEnabled, rainIntensity, currentSceneId, timeOfDay } = useHUDExploration();
   const [snowActive, setSnowActive] = useState(false);
 
   useEffect(() => {

@@ -4,22 +4,57 @@ import { selectScheduleContext } from '@/shared/scheduleContext';
 import { useGameSelector } from './hooks';
 import type { GameStoreState } from '../types';
 
-/** useHUDController — single shallow subscription for exploration + vitals + poems. */
-export function useHUDControllerState() {
-  return useGameSelector((s) => ({
-    currentSceneId: s.exploration.currentSceneId,
+/* Этап 100 (волна 1): прежний широкий 12-полевой бандл HUD-состояния удалён —
+ * потребители переведены на узкие подписки (useHUDExploration /
+ * useVitalStats / useProgressionSummary / useScreenEffectsVitals или
+ * собственные бандлы ниже). Контракт-тест hudSelectors.test.ts следит,
+ * чтобы «широкий» бандл не вернулся. */
+
+/** Ambient overlay tint inputs (plain selector — keep shallow-stable). */
+export function selectAmbientOverlayState(s: GameStoreState) {
+  return {
     timeOfDay: s.exploration.timeOfDay,
-    weatherEnabled: s.weatherEnabled,
-    rainIntensity: s.rainIntensity,
-    karma: s.playerState.karma,
-    energy: s.playerState.energy,
+    currentSceneId: s.exploration.currentSceneId,
     stress: s.playerState.stress,
-    level: s.playerState.progression.level,
-    xp: s.playerState.progression.xp,
-    xpToNextLevel: s.playerState.progression.xpToNextLevel,
-    unlockedPerks: s.playerState.progression.unlockedPerks,
+  };
+}
+
+/** HudAmbientOverlay — scene/time/stress tints only. */
+export function useAmbientOverlayState() {
+  return useGameSelector(selectAmbientOverlayState);
+}
+
+/** Ambient caption inputs (plain selector — keep shallow-stable). */
+export function selectAtmosphereCaptionState(s: GameStoreState) {
+  return {
+    sceneId: s.exploration.currentSceneId,
+    timeOfDay: s.exploration.timeOfDay,
+    showStoryOverlay: s.showStoryOverlay,
+    currentNodeId: s.currentNodeId,
+    diegeticNarrative: s.diegeticNarrative,
+  };
+}
+
+/** AmbientAtmosphereCaption — one shallow subscription instead of five. */
+export function useAtmosphereCaptionState() {
+  return useGameSelector(selectAtmosphereCaptionState);
+}
+
+/** Stats dashboard inputs (plain selector — keep shallow-stable). */
+export function selectStatsDashboardState(s: GameStoreState) {
+  return {
+    karma: s.playerState.karma,
     collectedPoems: s.collectedPoems,
-  }));
+    quests: s.quests,
+    npcRelations: s.npcRelations,
+    visitedNodes: s.playerState.visitedNodes,
+    unlockedAchievements: s.unlockedAchievements,
+  };
+}
+
+/** GameStatsDashboard — one shallow subscription instead of six. */
+export function useStatsDashboardState() {
+  return useGameSelector(selectStatsDashboardState);
 }
 
 /** WeatherIndicator — scene + clock. */

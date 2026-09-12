@@ -7,7 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { eventBus } from '@/engine/EventBus';
-import { useHUDControllerState } from '@/store/selectors/hudSelectors';
+import { useVitalStats, useCurrentSceneId } from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 
 /* ── Hint types ── */
@@ -47,7 +47,10 @@ function hintDedupKey(hint: ContextualHintData): string {
 }
 
 export function useContextualHints() {
-  const { energy, stress, currentSceneId } = useHUDControllerState();
+  /* Этап 100: узкие подписки вместо 12-полевого бандла — хук ре-рендерится
+   * только при изменении самих порогов подсказок. */
+  const { energy, stress } = useVitalStats();
+  const currentSceneId = useCurrentSceneId();
   const [currentHint, setCurrentHint] = useState<ContextualHintData | null>(null);
   const queueRef = useRef<QueuedHint[]>([]);
   const shownMapRef = useRef<Map<string, number>>(new Map()); // key → timestamp

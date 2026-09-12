@@ -33,7 +33,7 @@ import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { usePlayerKarma } from '@/store/selectors/playerSelectors';
 import { usePlayerEnergy, usePlayerStress } from '@/store/selectors/playerSelectors';
-import { useHUDControllerState } from '@/store/selectors';
+import { useProgressionSummary } from '@/store/selectors';
 import {
   HUD_ENERGY_WARN_THRESHOLD,
   HUD_STRESS_HIGH_THRESHOLD,
@@ -49,10 +49,11 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
   // Порог из hudThresholds: WARN (иконка) — раннее предупреждение, LOW (25) — эффекты.
   const isLowEnergy = energy <= HUD_ENERGY_WARN_THRESHOLD;
   const isHighStress = stress >= HUD_STRESS_HIGH_THRESHOLD;
-  // Compact-widget data: level + XP + perk count from the shared HUD controller state.
+  // Compact-widget data: level + XP + perk count — узкая подписка (этап 100):
+  // memo-виджет больше не ре-рендерится на смену погоды/энергии/кармы.
   // (justLeveled is left false here — the LevelBadge internally animates the XP bar
   //  width on every prop change, so the pulse is purely a bonus, not a correctness gap.)
-  const { level, xp, xpToNextLevel: xpToNext, unlockedPerks } = useHUDControllerState();
+  const { level, xp, xpToNextLevel: xpToNext, unlockedPerks } = useProgressionSummary();
   const perkCount = unlockedPerks?.length ?? 0;
 
   return (

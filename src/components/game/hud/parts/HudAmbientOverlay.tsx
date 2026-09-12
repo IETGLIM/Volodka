@@ -9,7 +9,7 @@
 */
 
 import { useMemo } from 'react';
-import { useHUDControllerState } from '@/store/selectors/hudSelectors';
+import { useAmbientOverlayState } from '@/store/selectors/hudSelectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 /* ── Location color map ── */
@@ -122,7 +122,7 @@ function buildOverlayStyle(
 
 export function HudAmbientOverlay() {
   const reducedMotion = useEffectiveReducedMotion();
-  const { timeOfDay, currentSceneId, stress } = useHUDControllerState();
+  const { timeOfDay, currentSceneId, stress } = useAmbientOverlayState();
 
   const locationColor = useMemo(() => getLocationColor(currentSceneId), [currentSceneId]);
   const timeColor = useMemo(() => getTimeColor(timeOfDay), [timeOfDay]);

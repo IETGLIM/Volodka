@@ -6,8 +6,8 @@ import {
   Swords, Wrench, Award, TrendingUp,
   Trophy, ChevronRight, BarChart3, Zap, Heart,
 } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
+import { useStatsDashboardState } from '@/store/selectors';
 
 /* ─── Types ─── */
 
@@ -163,13 +163,15 @@ export function GameStatsDashboard({ open, onClose }: GameStatsDashboardProps) {
   const [sessionStart] = useState(() => Date.now());
   const [, setTick] = useState(0);
 
-  // Read live game state
-  const playerKarma = useGameStore((s) => s.playerState.karma);
-  const collectedPoems = useGameStore((s) => s.collectedPoems);
-  const quests = useGameStore((s) => s.quests);
-  const npcRelations = useGameStore((s) => s.npcRelations);
-  const visitedNodes = useGameStore((s) => s.playerState.visitedNodes);
-  const unlockedAchievements = useGameStore((s) => s.unlockedAchievements);
+  // Read live game state — одна shallow-подписка вместо шести (этап 100)
+  const {
+    karma: playerKarma,
+    collectedPoems,
+    quests,
+    npcRelations,
+    visitedNodes,
+    unlockedAchievements,
+  } = useStatsDashboardState();
 
   // Session tracking
   const sessionPlayTimeMs = Date.now() - sessionStart;

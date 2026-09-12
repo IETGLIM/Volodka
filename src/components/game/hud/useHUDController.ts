@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useSaveGame, useHUDControllerState } from '@/store/selectors';
+import {
+  useSaveGame,
+  useHUDExploration,
+  useVitalStats,
+  useProgressionSummary,
+} from '@/store/selectors';
 import { SCENE_CONFIG } from '@/config/scenes';
 import { useActiveQuests } from '@/store/questStore';
 import { eventBus } from '@/engine/EventBus';
@@ -82,20 +87,18 @@ export function useHUDController(props: HUDProps) {
     onOpenStats,
   } = props;
 
+  /* Этап 100: вместо одного 12-полевого бандла — три узкие подписки.
+   * Корень всё равно должен перерисовываться при смене любого из этих полей
+   * (пульсы/флоаты считаются здесь), но мёртвое collectedPoems больше не
+   * тянет ре-рендер корня на каждое собранное стихотворение. */
+  const { currentSceneId, timeOfDay, weatherEnabled, rainIntensity } = useHUDExploration();
+  const { karma, energy, stress } = useVitalStats();
   const {
-    currentSceneId,
-    timeOfDay,
-    weatherEnabled,
-    rainIntensity,
-    karma,
-    energy,
-    stress,
     level,
     xp,
     xpToNextLevel: xpToNext,
     unlockedPerks,
-    collectedPoems,
-  } = useHUDControllerState();
+  } = useProgressionSummary();
   const saveGame = useSaveGame();
 
   const [snowActive, setSnowActive] = useState(false);
@@ -301,7 +304,6 @@ export function useHUDController(props: HUDProps) {
     timeOfDay,
     sceneName,
     currentWeather,
-    collectedPoems,
     questNotificationCount,
     questBadgePulse,
     poemBadgePulse,

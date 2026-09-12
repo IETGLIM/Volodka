@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 import { Waves } from 'lucide-react';
-import { useGameStore } from '@/store/gameStore';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   isExplorationHudProfile,
@@ -8,24 +7,29 @@ import {
 } from '@/hooks/useGameplayPresentationProfile';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { resolveAmbientPresentation } from '@/engine/audio/ambientPlayContext';
+import { useAtmosphereCaptionState } from '@/store/selectors';
 import type { SceneId } from '@/config/sceneDefinitions';
 
 /** Visual + screen-reader caption for the active procedural ambient bed (exploration only). */
 export function AmbientAtmosphereCaption() {
   const profile = useGameplayPresentationProfile();
   const reducedMotion = useEffectiveReducedMotion();
-  const sceneId = useGameStore((s) => s.exploration.currentSceneId as SceneId);
-  const timeOfDay = useGameStore((s) => s.exploration.timeOfDay);
-  const showStoryOverlay = useGameStore((s) => s.showStoryOverlay);
-  const currentNodeId = useGameStore((s) => s.currentNodeId);
+  /* Этап 100: одна shallow-подписка вместо пяти отдельных. */
+  const {
+    sceneId,
+    timeOfDay,
+    showStoryOverlay,
+    currentNodeId,
+    diegeticNarrative,
+  } = useAtmosphereCaptionState();
+  const typedSceneId = sceneId as SceneId;
 
   const presentation = useMemo(
-    () => resolveAmbientPresentation(sceneId, timeOfDay, showStoryOverlay, currentNodeId),
-    [sceneId, timeOfDay, showStoryOverlay, currentNodeId],
+    () => resolveAmbientPresentation(typedSceneId, timeOfDay, showStoryOverlay, currentNodeId),
+    [typedSceneId, timeOfDay, showStoryOverlay, currentNodeId],
   );
   // Hide the ambient caption while a diegetic dialogue plate is open — it sits at
   // bottom-left and would overlap the dialogue plate. Pure visibility guard.
-  const diegeticNarrative = useGameStore((s) => s.diegeticNarrative);
 
   if (!isExplorationHudProfile(profile) || !presentation.resolved) return null;
   if (diegeticNarrative != null) return null;

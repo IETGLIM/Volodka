@@ -1,6 +1,6 @@
 import { memo, useEffect, useRef, useState, useCallback } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { useGameStore, getGameStore } from '@/store/gameStore';
+import { getGameStore } from '@/store/gameStore';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
@@ -143,10 +143,8 @@ const WHISPER_TEXT_STYLE: React.CSSProperties = {
 
 export const ProximityWhisperOverlay = memo(function ProximityWhisperOverlay() {
   const reducedMotion = useEffectiveReducedMotion();
-  const _sceneId = useGameStore((s) => s.exploration.currentSceneId);
-  const _playerPos = useGameStore((s) => s.exploration.playerPosition);
-  const _flags = useGameStore((s) => s.playerState.flags);
-  void _sceneId; void _playerPos; void _flags;
+  /* Этап 100: мёртвые подписки _sceneId/_playerPos/_flags удалены —
+   * компонент читает живое состояние через getGameStore() в тике. */
 
   const [visibleWhispers, setVisibleWhispers] = useState<WhisperPoint[]>([]);
   const rafRef = useRef<number | null>(null);
