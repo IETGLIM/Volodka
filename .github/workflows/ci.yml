@@ -29,3 +29,12 @@ jobs:
       - run: npm run typecheck
 
       - run: npm run build
+
+      # Этап 122: контроль бюджетов бандла и состава деплой-ассетов в CI.
+      # Оба шага рассчитаны на запуск сразу после `npm run build` (без prune):
+      # verify:deploy проверяет наличие обязательных путей в dist/ и размер деплоя.
+      - name: Bundle budgets
+        run: npm run budgets:check
+
+      - name: Verify deploy assets
+        run: npm run verify:deploy
