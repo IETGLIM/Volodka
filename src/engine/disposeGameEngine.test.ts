@@ -191,7 +191,8 @@ describe('disposeGameEngine', () => {
       code: 'KeyW',
       target: null,
       repeat: false,
-    } as KeyboardEvent);
+      preventDefault: vi.fn(),
+    } as unknown as KeyboardEvent);
     expect(sampleKeyboardMovement().forward).toBe(true);
 
     disposeGameEngine();
@@ -201,7 +202,8 @@ describe('disposeGameEngine', () => {
       code: 'KeyW',
       target: null,
       repeat: false,
-    } as KeyboardEvent);
+      preventDefault: vi.fn(),
+    } as unknown as KeyboardEvent);
     expect(sampleKeyboardMovement().forward).toBe(false);
 
     vi.unstubAllGlobals();

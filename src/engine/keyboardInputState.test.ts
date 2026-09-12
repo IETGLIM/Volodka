@@ -31,7 +31,10 @@ describe('keyboardInputState', () => {
       code,
       target: null,
       repeat: false,
-    } as KeyboardEvent);
+      // FIX (v4.17.1): осевые клавиши теперь гасят дефолт (стрелки не
+      // скроллят документ) — мок обязан быть как настоящий KeyboardEvent.
+      preventDefault: vi.fn(),
+    } as unknown as KeyboardEvent);
   }
 
   it('attachListeners is idempotent — bindKeyboardInput does not double-register', () => {
