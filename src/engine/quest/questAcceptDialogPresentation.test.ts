@@ -18,6 +18,12 @@ describe('questAcceptDialogPresentation', () => {
     expect(buildRewardLabel({ type: 'addXp', value: 10 })).toBe('Опыт +10');
   });
 
+  it('форматирует отрицательную карму без двойного знака (этап 116)', () => {
+    // Регрессия: «Карма +-15» → «Карма -15» (награда sideQuests.ts, id 'factory_secret_blueprint')
+    expect(buildRewardLabel({ type: 'addKarma', value: -15 })).toBe('Карма -15');
+    expect(buildRewardLabel({ type: 'addKarma', value: 0 })).toBe('Карма 0');
+  });
+
   it('detects main quests', () => {
     expect(
       isMainQuest({

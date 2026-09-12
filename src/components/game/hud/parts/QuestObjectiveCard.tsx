@@ -483,7 +483,7 @@ const RewardItem = memo(function RewardItem({ reward, index }: RewardItemProps) 
           className="text-[11px] font-mono"
           style={{ color: rarityColor }}
         >
-          +{reward.value.toLocaleString()}
+          {reward.value > 0 ? '+' : ''}{reward.value.toLocaleString()}
         </span>
       )}
     </motion.div>

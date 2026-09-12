@@ -36,7 +36,7 @@ export const QUEST_ACCEPT_DIALOG_LABELS = {
   } as const,
   reward: {
     addSkill: (skill: string, value: number) => `${skill} +${value}`,
-    addKarma: (value: number) => `Карма +${value}`,
+    addKarma: (value: number) => `Карма ${value > 0 ? '+' : ''}${value}`,
     addXp: (value: number) => `Опыт +${value}`,
     addCredits: (value: number) => `Кредиты +${value}`,
     addItem: (itemId: string) => `Предмет: ${itemId}`,

@@ -262,7 +262,7 @@ function humanizeRewardLabel(reward: StoryEffect): string {
     const name = JOURNAL_SKILL_LABELS[skill]?.name ?? reward.skill;
     return `${name} +${reward.value ?? 0}`;
   }
-  if (reward.type === 'addKarma') return `Карма +${reward.value ?? 0}`;
+  if (reward.type === 'addKarma') return `Карма ${(reward.value ?? 0) > 0 ? '+' : ''}${reward.value ?? 0}`;
   if (reward.type === 'addCredits') return `Кредиты +${reward.value ?? 0}`;
   if (reward.type === 'addXp') return `Опыт +${reward.value ?? 0}`;
   if (reward.type === 'addItem' && reward.itemId) {
