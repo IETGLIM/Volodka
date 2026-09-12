@@ -28,6 +28,7 @@ import { ProceduralNPCModel } from '@/components/3d/ProceduralNPCModels';
 import { resolveNpcComposeRigRef } from '@/config/npcComposer';
 import { devWarn } from '@/shared/utils/devLog';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
+import { cloneSceneMaterials } from '@/engine/graphics/materials/cloneSceneMaterials';
 import { deplasticizeCharacterMaterials } from '@/engine/graphics/materials/deplasticizeCharacterMaterials';
 import { resolveNpcAppearance } from '@/engine/portrait/npcPortraitPresentation';
 import { composeNpcFitScale } from '@/engine/npc/npcSilhouetteVariance';
@@ -138,6 +139,16 @@ function GltfNPCModelInner({
     setFit({ scale, rotX, y: footY });
     onReadyRef.current?.();
   }, [scene, modelScale, targetHeightFactor]);
+
+  // FIX (критический, v4.17.1): клонируем материалы один раз на клон сцены —
+  // ДО любых мутаций. Раньше deplasticize + tint мутировали SHARED-материалы
+  // кэша useGLTF: NPC на общих ригах (17 ригов на 30+ NPC) заражали друг
+  // друга tint'ом/glow, а roughnessMul накапливался на каждом маунте.
+  // Клоны диспозятся при unmount (skip-сет в useSkinnedGltfClone защищает
+  // кэш), поэтому утечки нет.
+  useLayoutEffect(() => {
+    cloneSceneMaterials(scene);
+  }, [scene]);
 
   // De-plastic + seeded tints — silhouette/accessories handle residual twin reads.
   useLayoutEffect(() => {
