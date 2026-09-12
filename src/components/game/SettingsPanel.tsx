@@ -657,10 +657,11 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                     ['Shift', 'Бег'],
                     ['Space', 'Прыжок'],
                     ['E', 'Взаимодействие'],
-                    ['I / Tab', 'Инвентарь'],
+                    ['I', 'Инвентарь'],
                     ['J', 'Журнал'],
                     ['Q', 'Задания'],
                     ['P', 'Стихи'],
+                    ['Tab / M', 'Карта мира'],
                     ['Esc', 'Пауза'],
                     ['F1', 'Справка'],
                   ].map(([key, desc]) => (
@@ -734,7 +735,9 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors font-mono text-sm"
+            /* FIX (v4.17.1): тач-таргет ≥44px (было 28×28 — меньше минимума
+             * для сенсорных экранов). */
+            className="w-11 h-11 -mr-2 -mt-2 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors font-mono text-base"
             aria-label="Закрыть настройки"
           >
             ✕

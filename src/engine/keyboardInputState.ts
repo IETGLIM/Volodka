@@ -104,6 +104,10 @@ function onKeyDown(e: KeyboardEvent): void {
   const axis = axisFromCode(e.code);
   if (axis) {
     setAxis(axis, true);
+    // FIX (v4.17.1): стрелки/WASD — осевые клавиши движения: как Space и
+    // Ctrl, гасим дефолт (стрелки скроллили документ, если он оказался
+    // прокручиваемым — например, при переполнении по высоте).
+    e.preventDefault();
     return;
   }
 

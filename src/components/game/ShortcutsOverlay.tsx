@@ -44,7 +44,9 @@ const KEYBOARD_GROUPS: ShortcutGroup[] = [
       { keys: ['Shift', 'P'], desc: 'Фото-режим' },
       { keys: ['M'], desc: 'Карта мира' },
       { keys: ['Esc'], desc: 'Меню паузы / закрыть' },
-      { keys: ['Tab'], desc: 'Инвентарь' },
+      /* FIX (v4.17.1): Tab открывает карту мира, а не инвентарь
+       * (useKeyboardShortcutManager: case 'Tab' → worldMap). */
+      { keys: ['Tab'], desc: 'Карта мира' },
     ],
   },
   {
@@ -58,9 +60,12 @@ const KEYBOARD_GROUPS: ShortcutGroup[] = [
       { keys: ['G'], desc: 'Крафт' },
       { keys: ['V'], desc: 'Черты (перки)' },
       { keys: ['B'], desc: 'Доска заданий' },
-      { keys: ['Y'], desc: 'Отношения с NPC' },
+      /* FIX (v4.17.1): Y открывает панель кармы и стихов (karmaPoem),
+       * отношения с NPC — это N (npcRelation). */
+      { keys: ['Y'], desc: 'Карма и стихи' },
       { keys: ['C'], desc: 'Профиль персонажа' },
       { keys: ['N'], desc: 'Отношения (NPC)' },
+      { keys: ['F'], desc: 'Быстрый переход' },
       { keys: ['K'], desc: 'Кодекс' },
       { keys: ['L'], desc: 'История диалогов' },
       { keys: ['Shift', 'T'], desc: 'Торговля' },
