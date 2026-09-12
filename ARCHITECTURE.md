@@ -2023,6 +2023,70 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.27.0 — точечные подписки HUD, ultra→draco, плейсхолдеры i18n, насечки баров
+
+### Точечные подписки HUD: снос последнего широкого бандла (этап 100, волна 1)
+- Инвентаризация уточнила постановку: «голых» `useGameStore()` без селектора
+  в src/ — 0 (миграция шла волнами v4.24–v4.26); последним широким бандлом
+  оставался 12-полевой `useHUDControllerState` (hudSelectors) — shallow-объект
+  «погода + виталы + прогресс + collectedPoems», из-за которого memo-виджеты
+  (SceneTopBarHud) и лёгкие оверлеи перерисовывались на нерелевантные поля.
+- Бандл удалён; каждый потребитель получает свой срез через существующие
+  доменные хуки: SceneTopBarHud → `useProgressionSummary`, HUDChromaticEdge →
+  `useScreenEffectsVitals`, RainScreenEffect/SceneAmbientVignette →
+  `useHUDExploration`, useContextualHints → `useVitalStats` +
+  `useCurrentSceneId`; корень useHUDController → три узкие подписки (все
+  нужные ему поля сохранены, мёртвое `collectedPoems` исключено).
+- Локальные shallow-бандлы: `useAmbientOverlayState` (HudAmbientOverlay),
+  `useAtmosphereCaptionState` (AmbientAtmosphereCaption, 5 подписок → 1),
+  `useStatsDashboardState` (GameStatsDashboard, 6 → 1) — все с plain-селекторами
+  (экспорт select* для тестов), объектные поля приходят из стора ссылками.
+- Контракт-тест `hudSelectors.test.ts`: (1) скан src/ — имя удалённого бандла
+  не встречается; (2) shallow-стабильность и ссылочная стабильность объектных
+  полей новых селекторов (регрессия React #185).
+
+### Ассеты: ultra→draco, meshopt-варианты вне манифеста (этап 123)
+- Схема выбора compression: пресет → `resolveAssetUrl`/`resolveNpcAssetUrl` →
+  `asset.variants[compression]`. Пока ultra выбирал 'meshopt', 19 NPC-вариантов
+  `.meshopt.glb` (11.47 MiB) гарантированно попадали в keep-set prune.
+- Решение: ultra → `'draco'`. Draco-пары есть на диске для всех 19 NPC,
+  героя (volodka_lod0.draco.glb) и кафе-пропсов; LOD1/LOD2 NPC уже draco
+  (v4.7.1), декодер `/draco/gltf/` в PRESERVED_PREFIXES — клиентских правок нет.
+- Из `npcCharacterAsset`/`player_volodka`/`env_cafe_props` удалён ключ
+  `meshopt` (тип `Partial<Record<CompressionPreference,…>>` допускает) →
+  prune (build:vercel) больше не кладёт 21 файл (12.85 MiB) в дист;
+  verify:deploy не требует их (манифест без ключей). Итог: dist 97.1 MB.
+- Инвариант: «none»-GLB содержат EXT_meshopt — MeshoptDecoder подключается
+  безусловно (gltfPipeline.extendGltfLoader), не удалять.
+- Риск задокументирован: per-variant disk-гарда нет — если draco-файл удалить
+  с диска, не убрав из манифеста, verify:deploy поймает только при сборке.
+
+### i18n: плейсхолдеры в t() (этап 115, волна 2)
+- Сигнатура: `t(key, fallback, params?)`; шаблон = каталог ?? фолбэк;
+  интерполяция `\{([A-Za-z_][A-Za-z0-9_]*)\}` → String(params[name]);
+  неизвестные параметры остаются литералом; без params поведение прежнее
+  (волна 1) — одиночные/некорректные скобки не трогаются.
+- Волна 1 workaround («динамические ключи вне каталога») больше не нужен
+  для переведённых мест: 8 toast-ключей + 3 aria-ключа PlayerStatusFrame —
+  шаблоны в RU_MESSAGES (`{delta}`, `{name}`, `{n}`, `{title}`, `{rewards}`,
+  `{type}`, `{message}`, `{karma}`, `{tier}`); фолбэки байт-в-байт —
+  видимый вывод не изменился. Остальные динамические ключи (12 файлов) могут
+  мигрировать той же механикой в следующих волнах.
+- Тесты: index.test.ts (+6: каталог/фолбэк/числа/неизвестные/совместимость/
+  скобки).
+
+### HUD-детали: пороговые насечки витальных баров
+- BarRow (PlayerStatusFrame) получил `threshold`/`thresholdActive`:
+  риска 2px на позиции порога (`HUD_ENERGY_LOW_THRESHOLD`/`HUD_STRESS_HIGH_THRESHOLD`
+  — единый источник hudThresholds), бледно-белая при запасе; при пересечении —
+  красная + мягкая пульсация (framer-motion opacity), reduced-motion — без
+  пульсации. Анимации не вмешиваются в layout бара (absolute, pointer-events-none).
+
+### Этап 124 (KTX2): блокер-тулинг
+- Клиент готов (KTX2Loader + `/basis/` + detectSupport, PRESERVED_PREFIXES),
+  ассетов нет: энкодер toktx/KTX-Software недоступен в среде; gltfProcess.mjs
+  зондирует `ktx` и пропускает ETC1S-пасс. Этап остаётся открытым до тула.
+
 ## v4.26.0 — фаза 7 закрыта: диалоги, i18n HUD, терминология, CI-бюджеты, WebP
 
 ### Возвратные реплики новых NPC (этап 114)

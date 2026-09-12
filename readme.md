@@ -25,7 +25,33 @@
 - **Физический мир**: Rapier KCC, коллайдеры сцен, дверные ниши, пинаемые банки и ящики с процедурным звуком.
 - **AA visual direction (free stack)**: HDRI/IBL, selective MeshPhysical wet/CRT accents, Poly Haven/Quaternius/Kenney, Bloom, ACES, quality-tier degrade — см. `docs/AA_QUALITY_ROADMAP.md`.
 
-## Текущее состояние (v4.26.0, 2026-09-12)
+## Текущее состояние (v4.27.0, 2026-09-12)
+
+**v4.27.0 — точечные подписки HUD, ultra→draco (−12.85 MiB деплоя), плейсхолдеры i18n (2649+ тестов зелёные):**
+этап 100 (волна 1): инвентаризация показала, что «голых» `useGameStore()` в HUD
+уже 0 — оставшийся бандл, 12-полевой `useHUDControllerState` (7 потребителей),
+удалён; SceneTopBarHud → `useProgressionSummary` (memo-виджет больше не
+ре-рендерится на погоду/энергию), HUDChromaticEdge → `useScreenEffectsVitals`,
+RainScreenEffect/SceneAmbientVignette → `useHUDExploration`, useContextualHints
+→ `useVitalStats` + `useCurrentSceneId`, корень HUD → три узкие подписки
+(мёртвое `collectedPoems` убрано); HudAmbientOverlay /
+AmbientAtmosphereCaption/GameStatsDashboard — по одному shallow-бандлу вместо
+3/5/6 подписок; контракт-тест `hudSelectors.test.ts` не даст «широкому» бандлу
+вернуться. Этап 123 закрыт: пресет ultra переведён на draco (пары есть для
+всех NPC), meshopt-варианты моделей исключены из манифеста → из деплоя уходит
+21 файл = **12.85 MiB** (verify:deploy OK: 114 путей, dist 97.1 MB). Фича
+i18n (волна 2 этапа 115): `t(key, fallback, params)` поддерживает шаблоны
+`{name}` — 8 toast-ключей и 3 aria-ключа PlayerStatusFrame перенесены в
+каталог RU_MESSAGES, видимый вывод не изменился. Стиль: пороговые насечки на
+витальных барах WoW-фрейма (энергия <25, стресс >70 — риска краснеет и
+пульсирует, reduced-motion учтён). Этап 124 (KTX2) зафиксирован как
+блокер-тулинг: энкодер toktx/KTX-Software недоступен в среде. Реестр:
+docs/ROADMAP-STAGES.md — 130/132, очередь: 98 (persistent EffectComposer),
+124 (KTX2 — ждёт тул).
+
+## Предыдущие версии
+
+### v4.26.0 (2026-09-12)
 
 **v4.26.0 — фаза 7 закрыта: диалоги/i18n/терминология + CI-бюджеты + WebP (2649/2649 тестов зелёные):**
 возвратные реплики для всех новых NPC паков «Голоса пирса» и «Эха пирса»
@@ -44,8 +70,6 @@ PNG → WebP q90, −1.05 MB (−86%). Находка по этапу 123: пр�
 выбирает meshopt — простое исключение из keep-set невозможно, нужен
 отдельный перевод ultra на draco. Реестр: docs/ROADMAP-STAGES.md — 128/132,
 очередь: 98, 100 (крупная архитектура), 123 (решение по ultra), 124 (KTX2).
-
-## Предыдущие версии
 
 ### v4.25.0 (2026-09-12)
 

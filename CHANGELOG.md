@@ -1,3 +1,64 @@
+## v4.27.0 (2026-09-12) — точечные подписки HUD (этап 100) + ultra→draco (этап 123) + плейсхолдеры i18n
+
+### Сводка
+Закрыты этапы 100 (волна 1) и 123; этап 124 зафиксирован как блокер-тулинг.
+Прогресс реестра: 130/132. Верификация — только статический анализ:
+tsc (0), ESLint (0 errors, 60 legacy-warnings), vitest точечный 119/119 +
+i18n/toast 19/19 + selectors/graphics 135/135, validate:content (0),
+validate:act1-extended (0), vite build + build:vercel/prune + verify:deploy
+(OK, 114 путей, dist 97.1 MB) + budgets (OK). Dev-сервер не запускался;
+poems.ts не изменялся.
+
+### perf(hud): точечные подписки вместо широкого HUD-бандла — волна 1 (этап 100)
+- Инвентаризация: «голых» `useGameStore()` без селектора в HUD — 0; последний
+  широкий бандл — 12-полевой `useHUDControllerState` (7 потребителей).
+- Бандл удалён: SceneTopBarHud → `useProgressionSummary` (memo-виджет больше
+  не ре-рендерится на смену погоды/энергии/кармы), HUDChromaticEdge →
+  `useScreenEffectsVitals`, RainScreenEffect/SceneAmbientVignette →
+  `useHUDExploration`, useContextualHints → `useVitalStats` +
+  `useCurrentSceneId`, корень useHUDController → три узкие подписки
+  (мёртвое `collectedPoems` больше не тянет ре-рендер корня).
+- HudAmbientOverlay / AmbientAtmosphereCaption / GameStatsDashboard — по
+  одному shallow-бандлу (`useAmbientOverlayState`, `useAtmosphereCaptionState`,
+  `useStatsDashboardState`) вместо 3/5/6 отдельных подписок.
+- ProximityWhisperOverlay: удалены мёртвые подписки `_sceneId/_playerPos/_flags`.
+- Новый контракт-тест `hudSelectors.test.ts`: широкий бандл не вернётся;
+  новые plain-селекторы shallow-стабильны (React #185).
+
+### perf(assets): ultra переведён на draco, meshopt-варианты исключены из деплоя (этап 123)
+- qualityPresets: ultra.compression `'meshopt'` → `'draco'` (draco-пары есть
+  для всех 19 NPC, героя и пропсов кафе; декодер `draco/` уже в
+  PRESERVED_PREFIXES; LOD1/LOD2 NPC и так draco — клиентских изменений нет).
+- assetManifest: удалены meshopt-варианты npcCharacterAsset, player_volodka,
+  env_cafe_props → из keep-set prune уходит 21 файл = **12.85 MiB деплоя**
+  (19 NPC = 11.47 MiB + герой/кафе = 1.38 MiB).
+- Авто-подпись пресета: «Draco/Meshopt» → «Draco».
+- Проверено end-to-end: `build:vercel` (prune: stripped 61 файл / 24.6 MB),
+  `verify:deploy` OK (114 путей, dist 97.1 MB), `budgets:check` OK.
+- «None»-GLB содержат EXT_meshopt — MeshoptDecoder остаётся подключенным.
+
+### feat(i18n): плейсхолдеры {name} в t(key, fallback, params) — волна 2 этапа 115
+- `t()` получил необязательный третий аргумент `params`: шаблоны каталога
+  интерполируются ({delta} → значение), неизвестные параметры остаются
+  литералом, вызовы без params не меняют поведение волны 1.
+- 8 динамических toast-ключей (notificationToastPresentation) и 3 aria-ключа
+  PlayerStatusFrame перенесены в каталог RU_MESSAGES как шаблоны — фолбэки
+  байт-в-байт повторяют прежние литералы, видимый вывод не изменился.
+- Тесты i18n: +6 кейсов (каталог/фолбэк/числа/неизвестные параметры/
+  совместимость/скобки).
+
+### feat(hud): пороговые насечки на витальных барах
+- PlayerStatusFrame: у баров ЭН/СТР появилась риска опасной зоны — бледная
+  при запасе; при пересечении порога (энергия <25 / стресс >70, единый
+  источник hudThresholds) краснеет и мягко пульсирует; reduced-motion —
+  без пульсации.
+
+### docs: этап 124 (KTX2) — блокер-тулинг
+- Клиентская инфраструктура готова заранее (KTX2Loader + basis_transcoder
+  в деплое), но энкодер toktx/KTX-Software недоступен: gltfProcess.mjs
+  молча пропускает ETC1S-пасс, .ktx2-файлов в репо 0. Этап остаётся
+  открытым до появления тула в среде сборки.
+
 ## v4.26.0 (2026-09-12) — фаза 7 закрыта: диалоги/i18n/терминология + CI-бюджеты + WebP
 
 ### Сводка

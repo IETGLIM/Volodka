@@ -119,7 +119,19 @@
 - [x] 97. Крипы: LOS/страйк-репорты по дистанционному LOD (расширить npcRenderTier на AI-тик)
 - [ ] 98. Persistent EffectComposer между сценами (убрать stall 250–2000мс на переходах)
 - [x] 99. Выборочная интерполяция динамических физтел (сейчас interpolate=false глобально)
-- [ ] 100. Фасад-стор: точечные подписки HUD вместо useGameStore-фасада
+- [x] 100. Фасад-стор: точечные подписки HUD вместо useGameStore-фасада
+  - v4.27.0 (волна 1): инвентаризация показала — «голых» useGameStore() в HUD
+    уже 0; оставшийся бандл — 12-полевой useHUDControllerState (7 потребителей).
+    Удалён: SceneTopBarHud → useProgressionSummary (memo-виджет больше не
+    ре-рендерится на погоду/энергию), HUDChromaticEdge → useScreenEffectsVitals,
+    RainScreenEffect/SceneAmbientVignette → useHUDExploration, useContextualHints
+    → useVitalStats + useCurrentSceneId, корень useHUDController → 3 узкие
+    подписки (мёртвое collectedPoems убрано). HudAmbientOverlay /
+    AmbientAtmosphereCaption / GameStatsDashboard — по одному shallow-бандлу
+    вместо 3/5/6 отдельных; ProximityWhisperOverlay — мёртвые подписки удалены.
+    Контракт-тест hudSelectors.test.ts (бандл не вернётся, shallow-стабильность
+    React #185). Волна 2 (при необходимости): ревизия оставшихся
+    многоподписочных виджетов (hudMountSelectors и пр.).
 - [x] 101. `useWorldClock`: dirty-check NPC-стейтов перед записью в стор
 - [x] 102. DPR: O(n) среднее → инкрементальная сумма
 - [x] 103. Патрули: `path.shift()` O(n) → индексный курсор
@@ -190,12 +202,26 @@
 - [x] 122. CI: добавить `budgets:check` + `verify:deploy` после build
   - v4.26.0: оба шага добавлены в .github/workflows/ci.yml после build
     (без prune — контракт verify:deploy это позволяет); локально проверено.
-- [ ] 123. NPC-варианты: исключить `.meshopt.glb` из keep-set, если не выбран пресетами (−15–20 MB)
+- [x] 123. NPC-варианты: исключить `.meshopt.glb` из keep-set, если не выбран пресетами (−15–20 MB)
   - v4.26.0, находка: посылка этапа частично неверна — пресет «ultra» выбирает
     compression: 'meshopt' (qualityPresets.ts), значит NPC-варианты meshopt
     ВЫБИРАЮТСЯ пресетом. Фактический объём 19 файлов ≈ 12.0 MB (не 15–20).
-    Исключение потребует перевода ultra на draco — отдельное решение.
-- [ ] 124. Текстуры → KTX2 (инфраструктура basis/ уже в деплое)
+  - v4.27.0 (закрыт): ultra переведён на draco (draco-пары есть для всех 19 NPC,
+    героя и пропсов кафе; декодер draco/ уже в PRESERVED_PREFIXES); из
+    assetManifest удалены meshopt-варианты npcCharacterAsset/player_volodka/
+    env_cafe_props → из keep-set prune уходит 21 файл = 12.85 MiB деплоя.
+    Проверено: build:vercel + verify:deploy OK (114 путей, dist 97.1 MB),
+    budgets OK. «None»-GLB содержат EXT_meshopt — MeshoptDecoder остаётся
+    подключенным (не трогать).
+- [ ] 124. Текстуры → KTX2 (инфраструктура basis/ уже в деплое) — БЛОКЕР-ТУЛИНГ
+  - v4.27.0, вердикт: клиентская инфраструктура готова заранее (KTX2Loader +
+    setTranscoderPath('/basis/') + detectSupport в gltfPipeline.ts,
+    basis_transcoder в деплое), НО энкодер (toktx/KTX-Software) недоступен:
+    gltfProcess.mjs зондирует `ktx` и молча пропускает ETC1S-пасс, поэтому в
+    GLB нет KHR_texture_basisu, а .ktx2-файлов в репо 0. Производство
+    KTX2-ассетов возможно только в среде с KTX-Software; этап остаётся открытым
+    до появления тула. Повторная проверка: при появлении toktx запустить
+    gltf-process и расширить манифест.
 - [x] 125. `menu/cinematic_night_plate.png` (1.2MB) → WebP
   - v4.26.0: PNG 1 218 655 B → WebP q90 170 576 B (−86%, −1.05 MB деплоя);
     POLYHAVEN_MENU_PLATE → .webp; tsc/build/budgets/verify:deploy — OK.
