@@ -1,3 +1,71 @@
+## v4.29.0 (2026-09-12) — этап 98: персистентный EffectComposer (нулевые ремaунты на смене сцен)
+
+### Сводка
+Последний крупный перф-этап реестра закрыт. Смена сцены больше НЕ пересобирает
+EffectComposer: раньше pipelineKey = `${sceneId}-${lite|ao|full}${-smaa}`
+ремaунтил композер → 8–10 перекомпиляций шейдеров = 250–2000 мс stall на
+каждом переходе. Теперь дети композера — фиксированный суперсед пассов с
+константными props (мемо по структурному ключу тира/настроек), все
+пер-сценные вариации — императивные (uniform-запись, pass.enabled, LUT-swap),
+композер ремaунтится только при смене renderer'а (glInstanceKey). Прогресс
+реестра: 131/132. Верификация — только статический анализ: tsc (0), ESLint
+(0 errors, 60 legacy-warnings), vitest ПОЛНЫЙ 2693/2693 (434 файла, +27),
+validate:content (0), validate:act1-extended (0), vite build + budgets:check
+(OK; boot/game-start — документированное состояние в hard-max). Dev-сервер
+не запускался; poems.ts не изменялся.
+
+### perf(postfx): персистентный композер — этап 98 закрыт
+- Новые модули: `scenePostFxProfiles.ts` — чистые SCENE_*-таблицы (переехали
+  из ExplorationPostFX) + `resolveScenePostFxProfile(sceneId)` (замороженный
+  профиль: grade/vignette/bloom/chromatic/aoColor/toneExposure/noise/
+  scanlines/hero/lutKind/godRaysSun; фолбэки derived-сцен — байт-в-байт);
+  `applyScenePostFx.ts` — императивный аплаер + чистые рантайм-хелперы
+  (bloom/vignette/chromatic/grade формулы) с узкими структурными типами.
+- `ExplorationPostFX` переписан: дети — useMemo по structuralKey
+  (lite/full, тир пресета, selectedPreset, visualLite, coarsePointer,
+  reducedMotion, AgX, godrays-ready, vignetteEnabled) — смена сцены не
+  входит; props всех пассов — константы (любое изменение props обёртки
+  @react-three/postprocessing пересоздаёт инстанс эффекта через args-мемо).
+- Императивные сеттеры postprocessing 6.39: Bloom (intensity +
+  luminanceMaterial.threshold/smoothing), Vignette (offset/darkness/eskil),
+  HueSaturation (hue/saturation), BrightnessContrast (brightness/contrast),
+  ChromaticAberration (uniform offset мутируется на месте — без аллокаций),
+  ToneMapping (mode для AgX↔ACES).
+- N8AO: пасс смонтирован всегда на full-структуре; пер-сценное вкл/выкл —
+  pass.enabled + Proxy-конфигурация n8ao (aoRadius/aoIntensity/color) —
+  без реконструкции тяжёлых шейдеров SSAO. Scanline/Noise — вкл/выкл через
+  blendMode.opacity (density/premultiply константы).
+- LUT: пасс живёт постоянно; сцены без LUT получают нейтральную identity-
+  текстуру (новый `getNeutralProceduralLut3DTexture`, 16³ RGBA UnsignedByte —
+  тот же формат, что и процедурные), пер-сценная подмена — `effect.lut = tex`
+  (чистый uniform-swap: define'ы не меняются, перекомпиляции нет).
+- GodRays: персистентный sun mesh (GodRaysSunMesh) вынесен из детей
+  композера и живёт между сценами; позиция/цвет/visible — императивно по
+  sceneId (конфиг GODRAYS_SUN_CONFIG переехал в scenePostFxProfiles).
+  Пер-сценное вкл/выкл — точечный pass.enabled (эффект-пасс находится по
+  инстансу GodRaysEffect; слитые пассы защитно не трогаются); opacity
+  0↔0.55 анимируется тиком, гаснет в диалогах/кат-сценах.
+- Применение профиля: монтирование + `scene:transition_start`
+  (targetSceneId — событие приходит ДО записи сцены в стор, применение
+  происходит под визиром SceneTransitionVeil, мгновенно и без ре-рендеров) +
+  смена настроек (idempotent). Стресс/энергия/поэм-буст — покадровый тик
+  через getState() (ноль store-подписок на рендер у пайплайна); soft-budget
+  гейты N8AO/GodRays — в тике, переключение только при изменении.
+- MotionBlurEffect: без пропов — cutscene/dialogue-гейт читается из стора
+  в собственном тике (isSoftWorkAffordable перечитывается в тике).
+- pipelineKey удалён; ManagedEffectComposer: key = glInstanceKey (ремaунт
+  только при смене renderer'а/context restore), dispose — на unmount.
+- Найден и задокументирован исторический no-op: ToneMappingEffect в
+  postprocessing 6.39 НЕ имеет exposure — проп `exposure` у <ToneMapping>
+  ничего не делал (r3f клал мёртвое свойство). Поведение сохранено
+  байт-в-байт; SCENE_TONE_EXPOSURE живёт в профиле документации ради
+  будущего включения.
+- Тесты +27: scenePostFxProfiles.test.ts (9 — точные значения таблиц,
+  фолбэки наследников, фриз, согласованность godRays/LUT-реестров) и
+  applyScenePostFx.test.ts (18 — рантайм-хелперы с формулами, lite-parity,
+  гашение сканлайнов/зерна, LUT-swap identity↔kind, pass.enabled GodRays,
+  защита слитых пассов). Полный vitest 2693/2693 (434 файла).
+
 ## v4.28.0 (2026-09-12) — волна 2 этапа 100 (бандлы хотбара/миникарты) + i18n волна 3 + HUD-детали
 
 ### Сводка

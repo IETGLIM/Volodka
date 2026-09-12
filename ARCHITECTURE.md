@@ -2023,6 +2023,65 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.29.0 — этап 98: персистентный EffectComposer (нулевые ремaунты на смене сцен)
+
+### Механика (ExplorationPostFX, этап 98 — закрыт)
+- **Дети композера** — useMemo по structuralKey (`lite|full : preset.id :
+  selectedPreset : visualLite : coarsePointer : reducedMotion : agx :
+  godrays-ready : vignetteEnabled`). Смена сцены в ключ не входит → React
+  memo бандл EffectComposer'а не перерисовывается вообще, EffectPass'ы не
+  пересоздаются, шейдеры не перекомпилируются. Props всех пассов —
+  константы: обёртки @react-three/postprocessing мемоизируют args через
+  JSON.stringify — любое изменение props пересоздало бы инстанс эффекта.
+- **Аплаер** (`engine/graphics/applyScenePostFx.ts`, без React): на
+  монтировании + на `scene:transition_start` (targetSceneId — событие идёт
+  ДО записи сцены в стор, т.е. под визиром SceneTransitionVeil) + на смену
+  настроек. Пишет сеттеры postprocessing 6.39: Bloom.intensity +
+  luminanceMaterial.threshold/smoothing, Vignette.offset/darkness/eskil,
+  HueSaturation.hue/saturation, BrightnessContrast.brightness/contrast,
+  ChromaticAberration (uniform offset мутируется на месте), ToneMapping.mode.
+- **Профили** (`engine/graphics/scenePostFxProfiles.ts`): SCENE_*-таблицы
+  переехали из ExplorationPostFX; `resolveScenePostFxProfile` — чистый,
+  замороженный результат; фолбэки derived-сцен (resolveDerivedSceneId)
+  байт-в-байт прежние. GODRAYS_SUN_CONFIG/GODRAYS_POST_SCENES тоже здесь
+  (компонент → engine, циклов нет).
+- **N8AO** — пасс смонтирован всегда на full-структуре; пер-сценное
+  вкл/выкл — pass.enabled + Proxy-конфигурация n8ao
+  (configuration.aoRadius/intensity/color) — реконструкция тяжёлых SSAO-
+  шейдеров исключена. **Scanline/Noise** — blendMode.opacity (константы
+  density/premultiply). **SMAA** — structural mount + защитный pass.enabled
+  (если пасс слит с соседями — не трогается, эквивалент прежнего поведения).
+- **LUT** — пасс живёт постоянно; нейтральная identity-текстура
+  (`getNeutralProceduralLut3DTexture`, 16³ RGBA UnsignedByte — формат
+  процедурных LUT) для сцен без LUT; пер-сценная подмена — `effect.lut =
+  tex`: сеттер только ставит uniform (+ define лишь для float-типов) —
+  перекомпиляции нет.
+- **GodRays** — персистентный sun mesh вне детей композера
+  (GodRaysSunMesh): позиция/цвет/visible — императивно по sceneId в
+  layout-эффекте (GodRaysEffect переносит меш в свой lightScene, JSX-props
+  позиции убраны). Пер-сценное вкл/выкл — точечный pass.enabled
+  (`setEffectPassEnabled` находит EffectPass по инстансу эффекта; пассы с
+  2+ эффектами защитно пропускаются). Гейт godRaysSunReady (защита от
+  null-sun в конструкторе GodRaysEffect) сохранён.
+- **Покадровый тик** (один useFrameTick('postfx')): DOF bokehScale 0↔target
+  (диалог/кат-сцена), GodRays opacity 0↔0.55, стресс/энергия/поэм-буст для
+  bloom.intensity и виньетки, хроматика (база + стресс-рампа на high).
+  Виталы читаются `useGameStore.getState()` — ноль store-подписок на рендер
+  у пайплайна (у/postfx перестаёт ре-рендериться на виталах). Soft-budget
+  (isSoftWorkAffordable) — гейты N8AO/GodRays/хроматики, переключение
+  только при изменении.
+- **Композер**: pipelineKey удалён; key = glInstanceKey (ремaунт только при
+  смене renderer'а/context restore); dispose — на unmount и webglcontextlost.
+  Инвариант postfxActive (CanvasGuardSystem) не тронут. MotionBlurEffect —
+  без пропов: cutscene/dialogue-гейт читается из стора в тике.
+- **Задокументированный no-op**: ToneMappingEffect (postprocessing 6.39) не
+  имеет exposure — проп `exposure` у <ToneMapping> исторически ничего не
+  делал; поведение сохранено, SCENE_TONE_EXPOSURE — в профиле документации.
+- **Тесты** (+27): scenePostFxProfiles.test.ts (точные значения таблиц,
+  дефолты, фолбэки наследников, фриз, godRays/LUT-реестры);
+  applyScenePostFx.test.ts (формулы хелперов, lite-parity, гашение
+  сканлайнов/зерна, LUT-swap, pass.enabled, защита слитых пассов).
+
 ## v4.28.0 — бандлы хотбара/миникарты (этап 100 закрыт), i18n волна 3, HUD-детали
 
 ### Точечные подписки: бандлы хотбара и миникарты (этап 100, волна 2 — закрыт)

@@ -117,19 +117,33 @@
 - [x] 95. `useDynamicDPR`: замер suspend'ится в demand-режиме (меню/оверлеи) через опцию `enabled`
 - [x] 96. Погодный множитель скорости: кэш по квантованному ключу вместо расчёта каждый кадр
 - [x] 97. Крипы: LOS/страйк-репорты по дистанционному LOD (расширить npcRenderTier на AI-тик)
-- [ ] 98. Persistent EffectComposer между сценами (убрать stall 250–2000мс на переходах)
-  - ПЛАН ГОТОВ (исследование v4.28.0): композер в приложении один —
-    ExplorationPostFX (ManagedEffectComposer, key = `${glInstanceKey}-${pipelineKey}`);
-    stall создаёт pipelineKey = `${sceneId}-${lite|ao|full}${-smaa}` — смена сцены
-    пересобирает все пассы (8–10 шейдеров, 250–2000мс). Решение: фиксированный
-    суперсед пассов, все вариации — императивно (pass.enabled + uniforms/LUT-swap),
-    ключ сжимается до glInstanceKey (ремаунт только при смене renderer'а/context
-    restore); профили сцен — чистая resolveScenePostFxProfile + unit-тесты,
-    применение по событию scene:transition_start (под визиром SceneTransitionVeil).
-    Риски: tone-mapping инвариант CanvasGuardSystem (postfxActive = mounted AND
-    tonemap enabled), prop-churn wrapEffect (пассы — только статичные пропсы),
-    персистентный GodRays sun mesh, SMAA-премаунт. Полная конверсия — отдельный
-    раунд (высокий регресс-риск без браузерной проверки).
+- [x] 98. Persistent EffectComposer между сценами (убрать stall 250–2000мс на переходах) — ЗАКРЫТ v4.29.0
+  - v4.28.0 дал план; v4.29.0 реализовал: дети композера — фиксированный
+    суперсед пассов с КОНСТАНТНЫМИ props (args-мемо обёрток пересоздаёт эффект
+    при любом изменении props), дети — useMemo по структурному ключу
+    (lite/full, тир, reduced-motion, godrays-ready, agx, vignette) — смена
+    сцены НЕ пересобирает детей; композер ремaунтится только при смене
+    renderer'а (key = glInstanceKey). Все пер-сценные вариации — императивно:
+    новый чистый resolveScenePostFxProfile (SCENE_*-таблицы переехали из
+    ExplorationPostFX; фолбэки derived-сцен сохранены байт-в-байт) +
+    applyScenePostFx (сеттеры Bloom/Vignette/HueSaturation/BrightnessContrast/
+    ChromaticAberration/ToneMapping, pass.enabled N8AO/SMAA/GodRays, LUT-swap:
+    LUT-пасс живёт постоянно на нейтральной identity-текстуре, пер-сценные
+    kind'и — effect.lut = texture, без redefine — все LUT 16³ UnsignedByte).
+    Применение: на монтировании + на scene:transition_start (targetSceneId,
+    под визиром SceneTransitionVeil, до записи сцены в стор) + на смену
+    настроек. Стресс/энергия/поэм-буст — покадровый тик (getState — ноль
+    store-подписок на рендер), soft-budget гейты N8AO/GodRays — в тике при
+    изменении. GodRays: персистентный sun mesh вне детей композера, позиция/
+    цвет/visible — императивно по sceneId (GODRAYS_SUN_CONFIG переехал в
+    профили). MotionBlurEffect: cutscene-гейт читается из стора в тике
+    (без пропа). pipelineKey удалён. Unit-тесты: scenePostFxProfiles (9,
+    точные значения таблиц/фолбэки/фриз) + applyScenePostFx (18: хелперы,
+    lite-parity, pass.enabled, слитые пассы не трогаются). Найден и
+    задокументирован исторический no-op: ToneMappingEffect в postprocessing
+    6.39 не имеет exposure — проп exposure ничего не делал; поведение
+    сохранено, значения SCENE_TONE_EXPOSURE живут в профиле ради будущего
+    включения.
 - [x] 99. Выборочная интерполяция динамических физтел (сейчас interpolate=false глобально)
 - [x] 100. Фасад-стор: точечные подписки HUD вместо useGameStore-фасада
   - v4.27.0 (волна 1): инвентаризация показала — «голых» useGameStore() в HUD

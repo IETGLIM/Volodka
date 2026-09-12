@@ -25,7 +25,29 @@
 - **Физический мир**: Rapier KCC, коллайдеры сцен, дверные ниши, пинаемые банки и ящики с процедурным звуком.
 - **AA visual direction (free stack)**: HDRI/IBL, selective MeshPhysical wet/CRT accents, Poly Haven/Quaternius/Kenney, Bloom, ACES, quality-tier degrade — см. `docs/AA_QUALITY_ROADMAP.md`.
 
-## Текущее состояние (v4.28.0, 2026-09-12)
+## Текущее состояние (v4.29.0, 2026-09-12)
+
+**v4.29.0 — этап 98 закрыт: персистентный EffectComposer (полный vitest
+2693/2693 зелёные):** смена сцены больше не пересобирает пост-обработку —
+устранён stall 250–2000 мс на каждом переходе (раньше pipelineKey
+ремaунтил композер с 8–10 перекомпиляциями шейдеров). Дети композера —
+фиксированный суперсед пассов с константными props (мемо по структурному
+ключу тира/настроек), все пер-сценные вариации — императивные: новые чистые
+`resolveScenePostFxProfile` (SCENE_*-таблицы + фолбэки наследников) и
+`applyScenePostFx` (сеттеры Bloom/Vignette/HueSaturation/BrightnessContrast/
+ChromaticAberration/ToneMapping, pass.enabled N8AO/SMAA/GodRays, LUT-swap на
+нейтральной identity-текстуре). Применение профиля — на
+scene:transition_start (под визиром SceneTransitionVeil), стресс/энергия/
+поэм-буст — покадровый тик без store-подписок. GodRays — персистентный sun
+mesh; MotionBlur — гейт из стора в тике. Композер ремaунтится только при
+смене renderer'а. Попутно задокументирован исторический no-op: проп
+exposure у <ToneMapping> ничего не делал (ToneMappingEffect в
+postprocessing 6.39 без exposure) — поведение сохранено. +27 unit-тестов.
+Этап 124 (KTX2) — блокер-тулинг. Реестр: docs/ROADMAP-STAGES.md — 131/132.
+
+## Предыдущие версии
+
+### v4.28.0 (2026-09-12)
 
 **v4.28.0 — волна 2 этапа 100 (бандлы хотбара/миникарты), i18n волна 3 (+109
 ключей), HUD-детали (полный vitest 2666/2666 зелёные):** QuickUseBar и
