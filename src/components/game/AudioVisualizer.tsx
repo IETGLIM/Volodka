@@ -40,10 +40,35 @@ const MODE_LABELS: Record<VizMode, string> = {
 
 /* ─── Config ─── */
 
-const CANVAS_W_DESKTOP = 280;
-const CANVAS_H_DESKTOP = 80;
-const CANVAS_W_MOBILE = 200;
-const CANVAS_H_MOBILE = 60;
+/* FIX (v4.22): компактнее — раньше 280×80 занимали заметную часть правого
+ * нижнего угла и визуально спорили с миксером звука и кнопкой помощи. */
+const CANVAS_W_DESKTOP = 216;
+const CANVAS_H_DESKTOP = 52;
+const CANVAS_W_MOBILE = 156;
+const CANVAS_H_MOBILE = 40;
+
+/** localStorage-ключи persist'а состояния панели (раньше сбрасывались при
+ *  каждом ремонте/ремонте — пользователь скрывал панель заново после каждого
+ *  обновления). */
+const VISIBLE_STORAGE_KEY = 'volodka.audioViz.visible';
+const MODE_STORAGE_KEY = 'volodka.audioViz.mode';
+
+function loadPersistedVisible(): boolean {
+  try {
+    return localStorage.getItem(VISIBLE_STORAGE_KEY) !== '0';
+  } catch {
+    return true;
+  }
+}
+
+function loadPersistedMode(): VizMode {
+  try {
+    const stored = localStorage.getItem(MODE_STORAGE_KEY) as VizMode | null;
+    return stored && MODE_LIST.includes(stored) ? stored : 'bars';
+  } catch {
+    return 'bars';
+  }
+}
 
 /** Lerp factor for bar smoothing */
 const SMOOTH = 0.18;
@@ -75,46 +100,33 @@ function lerpColor(
   return `rgb(${r},${g},${b})`;
 }
 
-/** Generate fake reactive data when no AnalyserNode is available. */
-function fakeFrequencyData(length: number, time: number): Uint8Array {
-  const data = new Uint8Array(length);
-  for (let i = 0; i < length; i++) {
-    const freq = i / length;
-    const base = Math.max(0, 1 - freq * 1.5) * 120;
-    const wave1 = Math.sin(time * 2.3 + i * 0.4) * 30;
-    const wave2 = Math.sin(time * 3.7 + i * 0.7) * 20;
-    const wave3 = Math.cos(time * 1.1 + i * 0.15) * 15;
-    data[i] = Math.min(255, Math.max(0, base + wave1 + wave2 + wave3));
-  }
-  return data;
-}
-
-function fakeWaveformData(length: number, time: number): Float32Array {
-  const data = new Float32Array(length);
-  for (let i = 0; i < length; i++) {
-    const t = i / length;
-    data[i] = Math.sin(t * Math.PI * 4 + time * 3) * 0.3
-      + Math.sin(t * Math.PI * 7 + time * 5.3) * 0.15
-      + Math.sin(t * Math.PI * 11 + time * 2.1) * 0.08;
-  }
-  return data;
-}
-
 /* ─── Component ─── */
 
 export function AudioVisualizer() {
   const musicEnabled = useGameStore((s) => s.musicEnabled);
 
-  const [visible, setVisible] = useState(true);
-  const [mode, setMode] = useState<VizMode>('bars');
+  /* FIX (v4.22): видимость/режим persist'ятся в localStorage. */
+  const [visible, setVisible] = useState<boolean>(loadPersistedVisible);
+  const [mode, setMode] = useState<VizMode>(loadPersistedMode);
   const [hovered, setHovered] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  /* Тик «догоняет» появление analyser (AudioContext создаётся по первому
+   * жесту пользователя), пока панель ждёт реальные аудио-данные. */
+  const [analyserProbe, setAnalyserProbe] = useState(0);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rafRef = useRef<number>(0);
   const smoothedRef = useRef<Float64Array>(new Float64Array(BAR_COUNT));
   const analyserRef = useRef<AnalyserNode | null>(null);
-  const startTimeRef = useRef(performance.now());
+
+  const hide = useCallback(() => {
+    setVisible(false);
+    try {
+      localStorage.setItem(VISIBLE_STORAGE_KEY, '0');
+    } catch {
+      /* storage недоступен */
+    }
+  }, []);
 
   /* ─── Detect mobile ─── */
   useEffect(() => {
@@ -133,11 +145,32 @@ export function AudioVisualizer() {
     }
   }, [musicEnabled]);
 
+  /* ─── FIX (v4.22): пока analyser недоступен — опрашиваем раз в секунду
+   *  (дёшево), чтобы подхватить его после первого пользовательского жеста. */
+  useEffect(() => {
+    if (!visible || !musicEnabled) return;
+    if (analyserRef.current) return;
+    const iv = window.setInterval(() => {
+      analyserRef.current = getAnalyserNode();
+      setAnalyserProbe((t) => t + 1);
+      if (analyserRef.current) {
+        window.clearInterval(iv);
+      }
+    }, 1000);
+    return () => window.clearInterval(iv);
+  }, [visible, musicEnabled, analyserProbe]);
+
   /* ─── Cycle mode ─── */
   const cycleMode = useCallback(() => {
     setMode((prev) => {
       const idx = MODE_LIST.indexOf(prev);
-      return MODE_LIST[(idx + 1) % MODE_LIST.length];
+      const next = MODE_LIST[(idx + 1) % MODE_LIST.length];
+      try {
+        localStorage.setItem(MODE_STORAGE_KEY, next);
+      } catch {
+        /* storage недоступен */
+      }
+      return next;
     });
     // Reset smoothed data on mode switch for clean transition.
     smoothedRef.current = new Float64Array(BAR_COUNT);
@@ -147,6 +180,8 @@ export function AudioVisualizer() {
   // Only run rAF when: visible AND music is enabled. When music is off, the
   // analyser is null and the loop would just render fake data at 60fps for
   // nothing — a pure waste of CPU/GPU. This is the #1 rAF optimization.
+  // FIX (v4.22): без analyser рисуем ЧЕСТНЫЙ статичный idle один раз —
+  // фейковые «танцующие» бары обманывали игрока (выглядели как играющая музыка).
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || !visible || !musicEnabled) return;
@@ -163,22 +198,25 @@ export function AudioVisualizer() {
     canvas.style.height = `${h}px`;
     ctx.scale(dpr, dpr);
 
+    const analyser = analyserRef.current;
+    if (!analyser) {
+      drawIdle(ctx, w, h);
+      return;
+    }
+
     let running = true;
 
     const draw = () => {
       if (!running || !ctx) return;
 
-      const now = (performance.now() - startTimeRef.current) / 1000;
-      const analyser = analyserRef.current;
-
       ctx.clearRect(0, 0, w, h);
 
       if (mode === 'waveform') {
-        drawWaveform(ctx, w, h, analyser, now);
+        drawWaveform(ctx, w, h, analyser);
       } else if (mode === 'bars') {
-        drawBars(ctx, w, h, analyser, now, smoothedRef.current);
+        drawBars(ctx, w, h, analyser, smoothedRef.current);
       } else {
-        drawRadial(ctx, w, h, analyser, now);
+        drawRadial(ctx, w, h, analyser);
       }
 
       rafRef.current = requestAnimationFrame(draw);
@@ -189,7 +227,7 @@ export function AudioVisualizer() {
       running = false;
       cancelAnimationFrame(rafRef.current);
     };
-  }, [visible, mode, isMobile, musicEnabled]);
+  }, [visible, mode, isMobile, musicEnabled, analyserProbe]);
 
   if (!visible) return null;
 
@@ -198,14 +236,17 @@ export function AudioVisualizer() {
 
   return (
     <div
-      className={`fixed bottom-4 right-4 z-[${UI_LAYERS.HUD}] ${panelClass}`}
+      /* FIX (v4.22): убран нерабочий динамический класс `z-[${...}]` (Tailwind
+       * не может сгенерировать класс из шаблонной строки) — zIndex и так
+       * выставлен инлайном. */
+      className={`fixed bottom-4 right-4 ${panelClass}`}
       style={{ zIndex: UI_LAYERS.HUD }}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       role="region"
       aria-label="Аудиовизуализатор"
     >
-      <div className="bg-black/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-2.5 flex flex-col gap-1.5 select-none">
+      <div className="bg-black/60 backdrop-blur-xl border border-cyan-500/20 rounded-xl p-2 flex flex-col gap-1 select-none">
         {/* Header row: icon + label + mode toggle + visibility toggle */}
         <div className="flex items-center gap-2">
           <Music size={12} className="text-cyan-400/70 flex-shrink-0" />
@@ -223,9 +264,9 @@ export function AudioVisualizer() {
             </button>
             <button
               className="av-vis-btn"
-              onClick={() => setVisible(false)}
+              onClick={hide}
               aria-label="Скрыть визуализатор"
-              title="Скрыть"
+              title="Скрыть (запомнится)"
             >
               <EyeOff size={12} />
             </button>
@@ -234,7 +275,7 @@ export function AudioVisualizer() {
 
         {/* Canvas */}
         <div className="av-canvas-wrap">
-          <canvas ref={canvasRef} />
+          <canvas ref={canvasRef} aria-hidden="true" />
         </div>
       </div>
     </div>
@@ -243,20 +284,32 @@ export function AudioVisualizer() {
 
 /* ─── Drawing functions ─── */
 
+/** FIX (v4.22): честный idle — тонкая базовая линия и подпись «нет данных»
+ *  вместо фейковой анимации, изображающей играющую музыку. */
+function drawIdle(ctx: CanvasRenderingContext2D, w: number, h: number) {
+  ctx.clearRect(0, 0, w, h);
+  const midY = h / 2;
+  ctx.beginPath();
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.18)';
+  ctx.lineWidth = 1;
+  ctx.moveTo(4, midY);
+  ctx.lineTo(w - 4, midY);
+  ctx.stroke();
+  ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+  ctx.font = '9px "Geist Mono", monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('нет данных', w / 2, midY - 8);
+}
+
 function drawWaveform(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
-  analyser: AnalyserNode | null,
-  time: number,
+  analyser: AnalyserNode,
 ) {
-  let data: Float32Array;
-  if (analyser) {
-    const raw = getAudioData(analyser, 'waveform');
-    data = raw instanceof Float32Array ? raw : new Float32Array(raw.length);
-  } else {
-    data = fakeWaveformData(256, time);
-  }
+  const raw = getAudioData(analyser, 'waveform');
+  const data = raw instanceof Float32Array ? raw : new Float32Array(raw.length);
 
   const midY = h / 2;
   const step = w / data.length;
@@ -288,17 +341,11 @@ function drawBars(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
-  analyser: AnalyserNode | null,
-  time: number,
+  analyser: AnalyserNode,
   smoothed: Float64Array,
 ) {
-  let freqData: Uint8Array;
-  if (analyser) {
-    const raw = getAudioData(analyser, 'bars');
-    freqData = raw instanceof Uint8Array ? raw : new Uint8Array(raw.length);
-  } else {
-    freqData = fakeFrequencyData(128, time);
-  }
+  const raw = getAudioData(analyser, 'bars');
+  const freqData = raw instanceof Uint8Array ? raw : new Uint8Array(raw.length);
 
   const binStep = Math.max(1, Math.floor(freqData.length / BAR_COUNT));
   const gap = 2;
@@ -329,16 +376,10 @@ function drawRadial(
   ctx: CanvasRenderingContext2D,
   w: number,
   h: number,
-  analyser: AnalyserNode | null,
-  time: number,
+  analyser: AnalyserNode,
 ) {
-  let freqData: Uint8Array;
-  if (analyser) {
-    const raw = getAudioData(analyser, 'radial');
-    freqData = raw instanceof Uint8Array ? raw : new Uint8Array(raw.length);
-  } else {
-    freqData = fakeFrequencyData(128, time);
-  }
+  const raw = getAudioData(analyser, 'radial');
+  const freqData = raw instanceof Uint8Array ? raw : new Uint8Array(raw.length);
 
   const cx = w / 2;
   const cy = h / 2;
