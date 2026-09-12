@@ -2023,6 +2023,108 @@ reset в engineRuntimeReset), **ноль React**:
 - WebGL2-гейт в main.tsx до createRoot: без WebGL2 (three 0.172 / R3F v9
   минимум) рендерится русский экран требований вместо чёрного канваса.
 
+## v4.34.0 — этап 133 закрыт: внешние карты PolyHaven → KTX2 (политика кодирования измерена, не выбрана)
+
+Этап 133 из ROADMAP (открыт с v4.31): внешние PBR-карты PolyHaven
+(public/textures, 14 MB WebP) переводятся на KTX2/Basis там, где это
+одобрено ИЗМЕРЕНИЯМИ. Ключевой принцип волны — каждое решение о формате
+подтверждено числами (ktx --compare-psnr/--compare-ssim, KTX-Software 4.4.2,
+источник asphalt_02 2k), а не вкусовщиной; два «очевидных» варианта
+ОТБРАКОВЫНЫ измерениями.
+
+### Политика кодирования — доказательная
+- **diff → basis-lz (ETC1S), sRGB transfer, qlevel 200, clevel 2**: PSNR
+  49.4 dB на базовом mip — визуально прозрачно; 1k-набор всех 5 материалов
+  ~2.9 MB против ~4.8 MB WebP. 4 bpp в VRAM против 32 bpp RGBA8 (×8 меньше
+  видеопамяти), встроенные mip-цепочки (WebP их не имела — GPU генерировала
+  на лету).
+- **rough/ao → basis-lz (ETC1S), линейный UNORM, qlevel 191**: низкочастотные
+  grayscale-данные, качество аналогично diff.
+- **nor_gl → ОСТАЮТСЯ WebP** — оба KTX2-варианта отбракованы числами:
+  (a) ETC1S q255: PSNR 30.1 dB / SSIM 0.81 на базовом mip — блочность,
+  изламывающая зеркальные блики (подтверждено опасение ROADMAP «ETC1S даёт
+  артефакты на нормалях»);
+  (b) UASTC q2 + RDO(lambda 1.0) + zstd 12: PSNR 100 dB (качество идеальное),
+  но физический пол UASTC 8 bpp даёт 5.1 MB на ОДНУ 2k-нормаль (весь набор
+  нормалей 18.2 MB против 4.0 MB WebP) — отбраковка по размеру. RDO без
+  альфы-софткора помогал слабо (20.2→18.2 MB): шумные нормали имеют высокую
+  энтропию.
+- 2-канальное ETC1S-кодирование нормалей (--normal-mode, реконструкция Z в
+  шейдере) НЕ применимо: стандартные материалы three ожидают RGB-нормали.
+- HDRI (13 MB .hdr) сознательно НЕ тронут: basis-кодеки — 8-битный LDR, HDR
+  данные теряют динамику; raw-путь (three r172 KTX2Loader умеет non-basis
+  через createRawTexture при vkFormat ≠ UNDEFINED) для RGB16F эквирект 2k
+  даёт 12–16 MB сырых + zstd ≈ no-gain против 7 MB RGBE. Оставлено на
+  будущий PMREM-bake-пайплайн.
+
+### Генерация (scripts/generate-polyhaven-ktx2.mjs, npm run assets:polyhaven-ktx2)
+- Источники на диске — WebP (ktx create читает PNG/JPG), поэтому перед
+  кодированием делается байт-точный WebP→PNG раунд-трип (sharp, добавлена
+  в devDependencies — раньше была только транзитивной).
+- Синтаксис KTX-Software 4.x: `ktx create --format <VkFormat> --encode
+  basis-lz|uastc ... --generate-mipmap in.png out.ktx2` (старый
+  `toktx --t2 --bcmp` в 4.x удалён). Опция называется `--uastc-quality`
+  (а не `--uastc-level`, как в basisu CLI).
+- Скрипт ИДЕМПОТЕНТЕН (пропускает свежие выходы, --force для полной
+  регенерации) и верифицирует каждый выход по заголовку KTX2 (магия,
+  квадратность 1024/2048, levelCount ≥ 4 — mip-цепочка,
+  supercompressionScheme: 1 для basis-lz; нормали не кодируются). Частичный
+  набор = exit 1.
+- В CI/Vercel ktx CLI отсутствует — скрипт там не выполняется (как etc1s-пасс
+  gltf-transform); KTX2-файлы коммитятся в репозиторий (21 файл, 7.22 MB).
+
+### Runtime (src/engine/assets/ktx2Textures.ts + usePolyHavenPbr)
+- Новый standalone KTX2Loader (два НЕ сливаются: gltfPipeline обслуживает
+  GLB-встроенные текстуры через GLTFLoader, этот — standalone-файлы):
+  динамический import (транскодер ~571KB вне основного бандла),
+  setTranscoderPath('/basis/'), detectSupport(renderer); при смене renderer'а
+  detectSupport перепроверяется; dispose в resetKtx2TextureLoader.
+- Роутинг ПО РАСШИРЕНИЮ URL: `.ktx2` → KTX2Loader, `.webp` → TextureLoader.
+  Какой тип карты какой формат получает — решает getPolyHavenMapUrl
+  (POLYHAVEN_KTX2_MAP_KINDS = {diff, rough, ao}), так что смена политики —
+  правка одного множества.
+- usePolyHavenPbr: drei useTexture заменён на React 19 `use()` над
+  модульным кэшем промисов (стабильная ссылка между рендерами — требование
+  use()); Suspense-семантика прежняя. Конфигурация клонов v4.33.0 (tiling
+  cross-talk) сохранена без изменений — клон CompressedTexture шарит Source
+  так же, как клон обычной Texture.
+- Фолбэк «всё или ничего»: любой сбой KTX2-ветки (инициализация транскодера,
+  воркеры, 404) перестраивает ВЕСЬ набор по WebP (событие в diagnostics,
+  kind='texture'); нормали при этом дедуплицируются кэшем (их URL совпадает
+  с основным). Ошибка доходит до ErrorBoundary только при провале обеих
+  веток — эквивалент прежнего поведения useTexture при 404. Транскодер
+  легален CSP-ом прода (worker-src 'self' blob:; wasm-unsafe-eval —
+  vercel.json).
+- Сброс в gpuResourceLifecycle (HMR/teardown): воркеры транскодера убиваются,
+  кэш промисов чистится — parity с Cache.clear() прежнего useTexture.
+
+### Keep-set и гарды деплоя (staged rollout)
+- WebP-фолбэк цветовых карт ОСТАЁТСЯ в deploy keep-set до первой браузерной
+  QA KTX2-пути (транскодер в проде раньше почти не exercised: модели сейчас
+  Draco-only — KTX-Software в CI недоступен). После подтверждения убрать
+  второй addUrl в prune-deploy-assets.ts — минус ~11 MB из деплоя.
+- prune-deploy-assets.ts: локальные копии списков материалов/карт/масштабов
+  заменены каноническими экспортами polyhavenAssets (POLYHAVEN_MATERIAL_IDS /
+  POLYHAVEN_MAP_KINDS / POLYHAVEN_TEXTURE_SCALES) — источник дрейфа keep-set
+  устранён. Итог prune: 182 пути (было 161, +21 KTX2).
+- verify-deploy-assets.ts закрыл дыру: внешние карты PolyHaven (KTX2+WebP) и
+  все 4 HDRI раньше вообще не проверялись в dist; теперь обязательны (170
+  путей, было 117). Дрейф манифеста/keep-set отныне валит build, а не 404ит
+  в рантайме.
+- SW media-кэш (volodka-media-v4): regex MEDIA_RE уже пропускал ktx2; бамп
+  версии НЕ требуется — старые webp-URL остаются валидными ключами, новые
+  ktx2-URL это новые ключи, инвалидов нет.
+
+### Верификация волны
+tsc (0), ESLint (0 errors, 58 legacy — базлайн), vitest ПОЛНЫЙ 2730/2730
+(438 файлов; +polyhavenAssets.test.ts — контракт KTX2-роутинга URL,
+расширен gpuResourceLifecycle.test.ts), validate:content (0),
+validate:act1-extended (0), vite build + budgets (OK, boot/game-start в
+hard-max — документированное состояние), prune 182 пути, verify:deploy 170
+путей OK. KTX2-путь в браузере в этой среде НЕ проверялся (мандат) — первое,
+что должен увидеть человек: тайлинг диффов в интерьерах, блики по WebP-
+нормалям, консоль diagnostics при принудительном 404 ktx2.
+
 ## v4.33.0 — волна стабилизации видимых дефектов: анимации, модели, текстуры
 
 Реакция на фидбек игрока «текстуры, модели, движения корректно не работают».

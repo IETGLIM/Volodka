@@ -1,3 +1,71 @@
+## v4.34.0 (2026-09-13) — этап 133 закрыт: внешние карты PolyHaven → KTX2, политика кодирования по измерениям
+
+### Сводка
+Этап 133 (внешние текстуры → KTX2, открыт с v4.31) закрыт. Принцип волны —
+доказательность: каждое решение о формате подтверждено измерениями
+(ktx --compare-psnr/--compare-ssim), два «очевидных» варианта отбракованы
+числами. Итог: diff/rough/ao всех 5 материалов PolyHaven — KTX2/Basis
+(basis-lz, встроенные mip-цепочки, 4 bpp в VRAM против 32 bpp RGBA8), нормали
+осознанно остаются WebP. Генератор идемпотентен и верифицирует выходы по
+заголовкам KTX2; runtime — новый standalone KTX2Loader с роутингом по
+расширению URL, WebP-фолбэком «всё или ничего» и сбросом в GPU-жизненном
+цикле; keep-set переведён на канонические списки, verify-deploy закрыл дыру
+(PolyHaven/HDRI раньше не проверялись). Верификация: tsc (0), ESLint
+(0 errors, 58 legacy — базлайн), vitest ПОЛНЫЙ 2730/2730 (438 файлов),
+validate:content (0), validate:act1-extended (0), vite build + budgets (OK),
+prune 182 пути, verify:deploy 170 путей. poems.ts не тронут.
+
+### feat(pipeline): генератор KTX2 с доказательной политикой
+- `scripts/generate-polyhaven-ktx2.mjs` (npm run assets:polyhaven-ktx2):
+  WebP→PNG раунд-трип (sharp, теперь прямая devDependency) → `ktx create`
+  (синтаксис KTX-Software 4.x; старый `toktx --t2 --bcmp` удалён из 4.x;
+  опция — `--uastc-quality`, не `--uastc-level`).
+- Политика по типу карты ИЗМЕРЕНА (asphalt_02 2k, ktx 4.4.2):
+  diff → basis-lz sRGB q200 (PSNR 49.4 dB, визуально прозрачно);
+  rough/ao → basis-lz UNORM q191;
+  nor_gl → WebP: ETC1S q255 даёт PSNR 30.1 dB / SSIM 0.81 (блочность бликов —
+  отбраковка по качеству, подтверждено опасение ROADMAP), UASTC q2+RDO+zstd
+  даёт PSNR 100 dB, но 5.1 MB на одну 2k (18.2 MB на 7 нормалей против
+  4.0 MB WebP — отбраковка по размеру; RDO помогал слабо: 20.2→18.2 MB).
+- 2-канальные нормали (--normal-mode) неприменимы — three-материалы ждут RGB.
+- HDRI (13 MB) сознательно не тронут: basis — 8-битный LDR (потеря динамики),
+  raw RGB16F KTX2 ≈ 12–16 MB против 7 MB RGBE (no-gain) — обоснование в
+  ARCHITECTURE.
+- Идемпотентность (skip свежих выходов, --force) + верификация каждого
+  выхода по заголовку (магия KTX2, 1024/2048, mips ≥ 4,
+  supercompressionScheme). Частичный набор = exit 1. 21 файл / 7.22 MB
+  закоммичены (в CI/Vercel ktx CLI отсутствует — там скрипт не выполняется).
+
+### feat(textures): standalone KTX2-путь в рантайме
+- `src/engine/assets/ktx2Textures.ts`: собственный KTX2Loader (не делится с
+  gltfPipeline — тот обслуживает GLB-встроенные текстуры): динамический
+  import (транскодер ~571KB вне основного бандла), '/basis/',
+  detectSupport(renderer) с перепроверкой при смене renderer'а; кэш промисов
+  по URL (стабильные ссылки для React 19 use()).
+- `usePolyHavenPbr`: drei useTexture → React 19 `use()`; роутинг по
+  расширению (`.ktx2` → KTX2Loader, `.webp` → TextureLoader); конфигурация
+  клонов v4.33.0 (независимый тайлинг, общий Source) сохранена — клон
+  CompressedTexture шарит Source так же. Фолбэк «всё или ничего»: сбой
+  KTX2-ветки перестраивает весь набор по WebP (событие в diagnostics),
+  ошибка доходит до ErrorBoundary только при провале обеих веток.
+- `gpuResourceLifecycle`: resetKtx2TextureLoader в teardown/HMR (воркеры
+  транскодера, кэш промисов).
+- `polyhavenAssets.ts`: канонические списки (POLYHAVEN_MATERIAL_IDS/MAP_KINDS/
+  TEXTURE_SCALES) + POLYHAVEN_KTX2_MAP_KINDS = {diff, rough, ao} — смена
+  политики = правка одного множества; getPolyHavenFallbackMapUrl (WebP) для
+  фолбэка и keep-set. Тесты-контракт URL-роутинга (5 тестов).
+
+### fix(assets): keep-set без дрейфа, verify-deploy без дыр
+- prune-deploy-assets.ts: локальные копии списков заменены каноническими
+  экспортами; WebP-фолбэк цветовых карт остаётся в деплое до первой
+  браузерной QA KTX2-пути (staged rollout, после — −11 MB из деплоя).
+  Prune: 182 пути (было 161, +21 KTX2).
+- verify-deploy-assets.ts: внешние карты PolyHaven (KTX2+WebP) и 4 HDRI
+  раньше вообще не проверялись в dist — теперь обязательны (170 путей,
+  было 117); дрейф валит build, а не 404ит в рантайме.
+- SW media-кэш не бампается (regex уже пропускал ktx2; webp-ключи остаются
+  валидными, ktx2 — новые ключи).
+
 ## v4.33.0 (2026-09-13) — волна стабилизации видимых дефектов: анимации, модели, текстуры
 
 ### Сводка
