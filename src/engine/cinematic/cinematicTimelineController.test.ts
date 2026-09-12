@@ -63,4 +63,22 @@ describe('cutsceneToTimeline', () => {
     // Остальные фазы overlay не несут (эмится однократно).
     expect(def.phases.slice(1).every((p) => p.overlay === undefined)).toBe(true);
   });
+
+  it('FIX (v4.20): type кат-сцены пробрасывается в overlay — типографика актов/откровений', () => {
+    // Раньше runner хардкодил 'character_intro': стили act_transition
+    // (FilmGrain, ярлык «volodka rpg», 8xl-типографика) и revelation
+    // никогда не срабатывали.
+    expect(cutsceneDefToTimeline(CUTSCENES.act1_prologue).phases[0]?.overlay?.type)
+      .toBe('act_transition');
+    expect(cutsceneDefToTimeline(CUTSCENES.poem_revelation).phases[0]?.overlay?.type)
+      .toBe('revelation');
+    expect(cutsceneDefToTimeline(CUTSCENES.act1_corridor_solnysh).phases[0]?.overlay?.type)
+      .toBe('character_intro');
+    expect(cutsceneDefToTimeline(CUTSCENES.solnysh_roof_toast).phases[0]?.overlay?.type)
+      .toBe('story_moment');
+    // Данные v4.20: у всех 14 кат-сцен type указан явно.
+    for (const cutscene of Object.values(CUTSCENES)) {
+      expect(cutsceneDefToTimeline(cutscene).phases[0]?.overlay?.type).toBe(cutscene.type);
+    }
+  });
 });

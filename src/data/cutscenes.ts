@@ -30,7 +30,11 @@ export interface CutsceneDef {
   triggerStoryNode: string;
   /** Alternative: flag that triggers this cutscene */
   triggerFlag?: string;
-  /** Total duration of the cutscene in ms (for the text display) */
+  /** Минимальная длительность показа текста (мс). Рантайм-показ управляется
+   *  таймлайном (текст живёт весь остаток пролёта камеры, гаснет по
+   *  cutscene:overlay_end); поле задаёт нижнюю границу fallback-оценки
+   *  (estimateCutsceneDisplayDurationMs) и страховочные таймеры.
+   *  Инвариант данных: textDurationMs ≥ Σ длительностей waypoints. */
   textDurationMs: number;
   /** Color tint for the text overlay */
   textAccentColor: string;
@@ -61,7 +65,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     triggerStoryNode: 'start',
     anchorSceneId: 'volodka_room',
     waypointSpace: 'spawn_offset',
-    textDurationMs: 4500,
+    textDurationMs: 6000,
     textAccentColor: '#00ff66', // green — monitor glow
     type: 'act_transition',
     oneShot: true,
@@ -106,7 +110,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     triggerStoryNode: 'corridor_door',
     anchorSceneId: 'volodka_corridor',
     waypointSpace: 'spawn_offset',
-    textDurationMs: 5000,
+    textDurationMs: 5500,
     textAccentColor: '#ffb8d0',
     type: 'character_intro',
     oneShot: true,
@@ -149,7 +153,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Алина',
     subtitle: '«Спасибо, что ты есть, солнце!»',
     triggerStoryNode: 'solnysh_roof_arrival',
-    textDurationMs: 5500,
+    textDurationMs: 6000,
     textAccentColor: '#ffd0a8',
     type: 'story_moment',
     oneShot: true,
@@ -195,7 +199,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Зарема',
     subtitle: '«Садись. Я налью тебе суп.»',
     triggerStoryNode: 'kitchen_table',
-    textDurationMs: 4000,
+    textDurationMs: 5000,
     textAccentColor: '#ffaa44', // warm amber
     type: 'character_intro',
     oneShot: true,
@@ -245,7 +249,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Виктория',
     subtitle: '«Я видела твой код в архивах.»',
     triggerStoryNode: 'maria_curious',
-    textDurationMs: 4500,
+    textDurationMs: 5500,
     textAccentColor: '#c084fc', // purple — mysterious
     type: 'character_intro',
     oneShot: true,
@@ -295,7 +299,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Стихи в коде...',
     subtitle: '«Не код. Стихи. Настоящие, живые стихи.»',
     triggerStoryNode: 'fix_success',
-    textDurationMs: 5000,
+    textDurationMs: 6000,
     textAccentColor: '#34d399', // emerald — revelation
     type: 'revelation',
     oneShot: true,
@@ -345,7 +349,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Сеть пробуждается...',
     subtitle: 'Под поверхностью города пульсирует что-то иное',
     triggerStoryNode: 'act2_transition',
-    textDurationMs: 4000,
+    textDurationMs: 6500,
     textAccentColor: '#22d3ee', // cyan (hex — var() не парсится THREE.Color/canvas)
     type: 'act_transition',
     oneShot: true,
@@ -395,8 +399,12 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Тени сгущаются...',
     subtitle: 'Гильдия закрывает кольцо',
     triggerStoryNode: 'act3_transition',
-    textDurationMs: 4000,
+    textDurationMs: 6500,
     textAccentColor: '#a78bfa', // violet
+    type: 'act_transition',
+    oneShot: true,
+    letterboxStyle: 'full',
+    glitchIntensity: 0.25,
     waypoints: [
       // Start: Medium shot of the safehouse
       {
@@ -440,8 +448,12 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Революция начинается...',
     subtitle: 'Время выбирать сторону',
     triggerStoryNode: 'act4_transition',
-    textDurationMs: 4000,
+    textDurationMs: 6500,
     textAccentColor: '#f97316', // orange
+    type: 'act_transition',
+    oneShot: true,
+    letterboxStyle: 'full',
+    glitchIntensity: 0.2,
     waypoints: [
       // Start: Low angle, looking up
       {
@@ -485,8 +497,12 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Финал...',
     subtitle: 'Каждое слово вело сюда',
     triggerStoryNode: 'act4_final_choice',
-    textDurationMs: 5000,
+    textDurationMs: 8000,
     textAccentColor: '#fbbf24', // amber/gold
+    type: 'act_transition',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
     waypoints: [
       // Start: Close and personal
       {
@@ -530,7 +546,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Тени возвращаются...',
     subtitle: 'За примирением последует расплата',
     triggerStoryNode: 'act5_ending_epilogue',
-    textDurationMs: 4000,
+    textDurationMs: 6000,
     textAccentColor: '#6366f1', // indigo — foreboding
     type: 'act_transition',
     oneShot: true,
@@ -580,7 +596,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Рассвет...',
     subtitle: 'Последний акт начинается',
     triggerStoryNode: 'act6_final_confrontation',
-    textDurationMs: 4000,
+    textDurationMs: 5500,
     textAccentColor: '#fbbf24', // gold — resolution
     type: 'act_transition',
     oneShot: true,
@@ -630,8 +646,13 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Стихи — это код. Код — это свобода.',
     subtitle: 'Феномен не аномалия. Феномен — ответ.',
     triggerStoryNode: 'poem_virus_truth',
-    textDurationMs: 5000,
+    textDurationMs: 8000,
     textAccentColor: '#34d399', // emerald
+    type: 'revelation',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.5,
     waypoints: [
       // Start: Disoriented, inside the glitch
       {
@@ -675,8 +696,12 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     textOverlay: 'Чёрная Чернильница пробуждается...',
     subtitle: 'Каждое слово — удар. Каждый стих — щит.',
     triggerStoryNode: 'join_resistance',
-    textDurationMs: 5500,
+    textDurationMs: 8000,
     textAccentColor: '#f43f5e', // rose
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
     waypoints: [
       // Start: Underground, enclosed
       {

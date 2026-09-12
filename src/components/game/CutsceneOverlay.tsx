@@ -356,7 +356,8 @@ export function CutsceneOverlay() {
       setOverlayKey((k) => k + 1);
       // Track whether this overlay is managed by a cinematic timeline.
       // If so, the auto-dismiss timer must NOT clear activeCutsceneId.
-      managedByTimelineRef.current = payload.managedByTimeline === true;
+      const isManaged = payload.managedByTimeline === true;
+      managedByTimelineRef.current = isManaged;
       setActive(true);
       setShowSkip(true);
       skippedRef.current = false;
@@ -374,7 +375,16 @@ export function CutsceneOverlay() {
         }, 1000);
       }
 
-      // Auto-dismiss after the specified duration
+      // Auto-dismiss after the specified duration.
+      // Managed overlays: реальный момент скрытия — завершение таймлайна
+      // (cutscene:overlay_end из completeCinematicTimeline, см. эффект ниже).
+      // Wall-clock таймер здесь — только страховка: таймлайн кадровый
+      // (dt клампится 0.05с), и при <20 FPS / свёрнутой вкладке он тянется
+      // дольше номинала — без grace-запаса текст гас бы среди полёта камеры
+      // (остаточная форма аудита «камера летит в тишине»).
+      const safetyMs = isManaged && !reducedMotion
+        ? displayDurationMs + 4000
+        : displayDurationMs;
       timerRef.current = setTimeout(() => {
         setActive(false);
         setShowSkip(false);
@@ -398,7 +408,7 @@ export function CutsceneOverlay() {
         }
 
         timerRef.current = null;
-      }, displayDurationMs);
+      }, safetyMs);
     });
 
     return () => {
@@ -407,6 +417,25 @@ export function CutsceneOverlay() {
       clearSkipDelayTimer();
     };
   }, [clearTimer, clearSkipDelayTimer, reducedMotion]);
+
+  // FIX (v4.20): managed-оверлеи скрываются ровно в момент завершения
+  // таймлайна — orchestrator эмитит cutscene:overlay_end из
+  // completeCinematicTimeline (естественное завершение, скип и orphan-
+  // watchdog). Раньше скрытие жило только на wall-clock setTimeout, который
+  // расходился с кадровым таймлайном на низком FPS — текст гас раньше
+  // камеры. Для НЕ-managed оверлеев (прямые сплэши) это событие эмитит
+  // сам компонент ПОСЛЕ скрытия — реакция не нужна.
+  useEffect(() => {
+    const unsub = eventBus.on('cutscene:overlay_end', () => {
+      if (!managedByTimelineRef.current) return;
+      clearTimer();
+      clearSkipDelayTimer();
+      setActive(false);
+      setShowSkip(false);
+      setAriaAnnouncement('');
+    });
+    return unsub;
+  }, [clearTimer, clearSkipDelayTimer]);
 
   // ESC key listener
   useEffect(() => {

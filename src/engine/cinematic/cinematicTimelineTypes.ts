@@ -59,6 +59,11 @@ export interface CinematicOverlayConfig {
   text?: string;
   subtitle?: string;
   accentColor?: string;
+  /** Presentation type — drives CutsceneOverlay typography / film grain /
+   *  «volodka rpg» label. Story cutscenes carry it from CutsceneDef.type;
+   *  до v4.20 runner хардкодил 'character_intro' и act_transition/revelation-
+   *  стили никогда не срабатывали. */
+  type?: 'act_transition' | 'character_intro' | 'story_moment' | 'revelation';
   letterboxStyle?: 'full' | 'thin' | 'none';
   showEmbers?: boolean;
   glitchIntensity?: number;

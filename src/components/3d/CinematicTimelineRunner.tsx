@@ -535,7 +535,11 @@ export function CinematicTimelineRunner() {
         subtitle: overlay.subtitle,
         accentColor: overlay.accentColor ?? '#44ffff',
         durationMs: remainingMs > 0 ? remainingMs : 2000,
-        type: overlay.text ? 'character_intro' : 'story_moment',
+        // FIX (v4.20): type берётся из overlay-конфига таймлайна (CutsceneDef.type
+        // через cutsceneDefToTimeline). Раньше хардкод 'character_intro' означал,
+        // что стили act_transition/revelation (FilmGrain, ярлык «volodka rpg»,
+        // крупная типографика актов) никогда не срабатывали.
+        type: overlay.type ?? (overlay.text ? 'character_intro' : 'story_moment'),
         letterboxStyle: overlay.letterboxStyle ?? 'thin',
         showEmbers: overlay.showEmbers ?? false,
         glitchIntensity: overlay.glitchIntensity ?? 0,

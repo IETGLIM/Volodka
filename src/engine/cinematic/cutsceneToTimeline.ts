@@ -15,6 +15,10 @@ function overlayFromCutscene(cutscene: CutsceneDef) {
     text: cutscene.textOverlay,
     subtitle: cutscene.subtitle,
     accentColor: cutscene.textAccentColor,
+    // FIX (v4.20): type пробрасывается в overlay — раньше runner хардкодил
+    // 'character_intro', и стили act_transition/revelation (FilmGrain, ярлык
+    // «volodka rpg», крупная типографика) никогда не срабатывали.
+    type: cutscene.type,
     letterboxStyle: cutscene.letterboxStyle ?? 'full',
     showEmbers: cutscene.showEmbers,
     glitchIntensity: cutscene.glitchIntensity,
