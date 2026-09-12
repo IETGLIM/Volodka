@@ -71,6 +71,11 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
   const writeIndex = useRef(0);
   const readIndex = useRef(0);
   const bufferCount = useRef(0);
+  // perf (v4.24, этап 102): инкрементальная сумма FPS — среднее за окно
+  // считается O(1) вместо O(n)-обхода кольцевого буфера каждые windowMs.
+  // Каждое значение входит в сумму один раз (push) и выходит один раз
+  // (вытеснение/протухание) — накопления ошибки нет: окно скользящее.
+  const frameFpsSum = useRef(0);
   const lastTime = useRef(performance.now());
 
   // FIX: Stabilization counters to prevent rapid DPR oscillation
@@ -86,6 +91,7 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
     writeIndex.current = 0;
     readIndex.current = 0;
     bufferCount.current = 0;
+    frameFpsSum.current = 0;
 
     let rafId: number;
     const measure = () => {
@@ -95,8 +101,14 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
       const fps = delta > 0 ? 1000 / delta : 60;
 
       const cap = bufferCapacityRef.current;
+      if (bufferCount.current === cap) {
+        // Кольцо заполнено: запись перезапишет самый старый слот (readIndex
+        // совпадает с writeIndex) — сначала убираем его значение из суммы.
+        frameFpsSum.current -= frameFps.current[readIndex.current];
+      }
       frameTimes.current[writeIndex.current] = now;
       frameFps.current[writeIndex.current] = fps;
+      frameFpsSum.current += fps;
       writeIndex.current = (writeIndex.current + 1) % cap;
       if (bufferCount.current < cap) {
         bufferCount.current++;
@@ -110,6 +122,7 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
         bufferCount.current > 0 &&
         frameTimes.current[readIndex.current] < cutoff
       ) {
+        frameFpsSum.current -= frameFps.current[readIndex.current];
         readIndex.current = (readIndex.current + 1) % cap;
         bufferCount.current--;
       }
@@ -127,13 +140,9 @@ export function useDynamicDPR(options: DynamicDPROptions): [number, number] {
       const count = bufferCount.current;
       if (count < 20) return; // Not enough data yet
 
-      let sum = 0;
-      const cap = bufferCapacityRef.current;
-      for (let i = 0; i < count; i++) {
-        const idx = (readIndex.current + i) % cap;
-        sum += frameFps.current[idx];
-      }
-      const avgFps = sum / count;
+      // perf (v4.24, этап 102): среднее из инкрементальной суммы — O(1)
+      // вместо O(n)-обхода буфера в каждом окне оценки.
+      const avgFps = frameFpsSum.current / count;
 
       // FIX: Track consecutive windows before adjusting DPR
       if (avgFps < lowFpsThreshold) {
