@@ -57,6 +57,36 @@ import {
 } from '@/engine/player/playerLocomotionPresentation';
 import { syncResolvedMovementScratch } from '@/engine/player/playerScratchSync';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
+
+/* FIX (perf v4.22): погодный множитель скорости кэшируется по квантованному
+ * ключу (флаг/сцена/час/интенсивность дождя). Раньше determineWeatherType +
+ * getWeatherEffect вычислялись КАЖДЫЙ кадр на улице — стабильный расход в
+ * горячем пути движения при почти неизменных входах (погода меняется редко,
+ * час — раз в игровой час). */
+let weatherSpeedCacheKey = '';
+let weatherSpeedCacheValue = 1;
+
+function resolveWeatherSpeedMultiplier(
+  weatherEnabled: boolean,
+  rainIntensity: number,
+  sceneId: string,
+  timeOfDay: number | undefined,
+): number {
+  const hourKey = Math.floor(timeOfDay ?? 12);
+  const rainKey = Math.round(rainIntensity * 10);
+  const key = `${weatherEnabled ? 1 : 0}|${sceneId}|${hourKey}|${rainKey}`;
+  if (key === weatherSpeedCacheKey) return weatherSpeedCacheValue;
+  weatherSpeedCacheKey = key;
+  try {
+    const wt = determineWeatherType(weatherEnabled, rainIntensity, false, sceneId, timeOfDay ?? 12);
+    weatherSpeedCacheValue = getWeatherEffect(wt).movementSpeed;
+  } catch {
+    /* store not ready */
+    weatherSpeedCacheValue = 1;
+  }
+  return weatherSpeedCacheValue;
+}
+
 function applyDegradedMovement(deps: PlayerMovementDeps, onFlatGround: boolean): void {
   const scratch = deps.frameScratchRef.current;
   const rb = scratch.rb!;
@@ -208,14 +238,12 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   if (isOutdoor) {
     try {
       if (frameSnap.weatherEnabled) {
-        const wt = determineWeatherType(
+        weatherSpeedMult = resolveWeatherSpeedMultiplier(
           frameSnap.weatherEnabled,
           frameSnap.rainIntensity ?? 0,
-          false,
           frameSnap.exploration.currentSceneId,
-          frameSnap.exploration.timeOfDay ?? 12,
+          frameSnap.exploration.timeOfDay,
         );
-        weatherSpeedMult = getWeatherEffect(wt).movementSpeed;
       }
     } catch {
       /* store not ready */
