@@ -93,6 +93,7 @@ import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
 import { PoemRevealHost } from '@/components/game/poemReveal/PoemRevealHost';
 import { QuickTimeEventHost } from '@/components/game/hud/parts/QuickTimeEventHost';
+import { QuickTimeEventTriggers } from '@/components/game/hud/parts/QuickTimeEventTriggers';
 import { DirectionalDamageIndicator } from '@/components/game/DirectionalDamageIndicator';
 import { DamageNumberFloat } from '@/components/game/DamageNumberFloat';
 import { LevelUpSummary } from '../LevelUpSummary';
@@ -431,6 +432,9 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       {/* QTE (v4.30): быстрое событие как кросс-режимный оверлей — гейт занятости
           экрана и локомоция-гейт внутри хоста (паттерн PoemRevealHost). */}
       <QuickTimeEventHost />
+      {/* QTE-триггеры (v4.31): контентный слой — хак-гейт терминалов
+          (linkedQte) и финишер-усилитель; слушатели EventBus, null-рендер. */}
+      <QuickTimeEventTriggers />
       <GameplayCutsceneOverlay />
       <GameplayPoemReveal />
       <GameplaySceneTransitionFx />

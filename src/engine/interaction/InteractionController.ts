@@ -35,6 +35,7 @@ import {
   getInteractionEndCycleId,
 } from '@/engine/interaction/interactionEndDedup';
 import { consumeEKey } from '@/engine/input/eKeyConsumption';
+import { startQteMinigameGate } from '@/engine/qte/qteTriggers';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { devWarn } from '@/shared/utils/devLog';
@@ -78,7 +79,11 @@ export interface InteractionControllerDeps {
 
 async function triggerLinkedContent(zone: TriggerZone): Promise<void> {
   if (zone.linkedMinigame) {
-    eventBus.emit('minigame:open', { gameType: zone.linkedMinigame });
+    // v4.31: декларативный QTE-гейт (linkedQte) — QTE «стабилизация канала»
+    // перед терминалом; без поля/при занятом экране — миниигра сразу
+    // (поведение идентично прежнему прямому emit). Экран результата QTE
+    // уже ушёл к моменту открытия — цепочку оркестрирует qte:closed.
+    startQteMinigameGate(zone);
     return;
   }
 

@@ -3,6 +3,7 @@
 import type { SceneId, StoryEffect, InteractionType, ExamineData, TrainablePlayerSkill } from '@/shared/types/game';
 import type { ActiveTTLFlagMap } from '@/shared/activeTTLFlags';
 import { isActiveTTLFlagLive } from '@/shared/activeTTLFlags';
+import type { QTEDifficulty, QTEEventType } from '@/engine/qte/qteTypes';
 import { CHK_TRIGGER_ZONES } from './chkTolpa/triggerZones';
 import { NARRATIVE_EXPANSION_TRIGGER_ZONES } from './narrativeExpansionTriggerZones';
 
@@ -28,6 +29,14 @@ export interface TriggerZone {
   examineData?: ExamineData;
   /** Linked mini-game type (replaces hardcoded ID checks in useInteractionOrchestrator) */
   linkedMinigame?: 'codebreaker' | 'openstack_terminal' | 'bash_terminal' | 'poetry';
+  /** v4.31 QTE-гейт перед открытием миниигры (см. engine/qte/qteTriggers.ts):
+   *  «стабилизация канала» — успех даёт бонус XP, провал НЕ блокирует взлом
+   *  (терминал открывается с помехами). Без поля миниигра открывается сразу. */
+  linkedQte?: {
+    eventType: QTEEventType;
+    duration: number;
+    difficulty: QTEDifficulty;
+  };
   /** Optional GLB prop id from propModelRegistry — rendered at zone position */
   propModelId?: string;
   /** Per-zone prop placement: offset from zone position (metres) */
@@ -258,6 +267,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     size: [0.38, 0.9, 0.32],
     enterToast: 'Терминал — мерцает приглашение командной строки.',
     linkedMinigame: 'codebreaker',
+    // Обучающий терминал — мягкий QTE-гейт: успеть просто, провал не блокирует.
+    linkedQte: { eventType: 'press', duration: 3000, difficulty: 'easy' },
     interactionType: 'hack',
     examineData: {
       title: 'Терминал',
@@ -2799,6 +2810,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Терминал OpenStack — серверы в критическом состоянии!',
     linkedQuestId: 'openstack_crisis',
     linkedMinigame: 'openstack_terminal',
+    // Серверы падают каскадом — нормальный гейт перед диагностикой.
+    linkedQte: { eventType: 'press', duration: 2400, difficulty: 'normal' },
     hiddenWhenFlag: 'openstack_terminal_solved',
     interactionType: 'hack',
     interactionLabel: 'Открыть OpenStack',
@@ -3082,6 +3095,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Задняя комната — старый терминал с доступом к OpenStack.',
     requiredFlag: 'secure_channel_tested',
     linkedMinigame: 'openstack_terminal',
+    // Безопасное подключение — удержание канала вместо одиночного нажатия.
+    linkedQte: { eventType: 'hold', duration: 3200, difficulty: 'normal' },
     interactionType: 'hack',
     interactionLabel: 'Подключиться к OpenStack',
     examineData: {
@@ -3294,6 +3309,8 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Пультовая у входа. Экран жив — кто-то платит за это электричество тридцать лет.',
     linkedQuestId: 'basement_hum',
     linkedMinigame: 'codebreaker',
+    // Пультовая «Прогресс-7» — жёсткий гейт: окно почти вдвое короче.
+    linkedQte: { eventType: 'press', duration: 1900, difficulty: 'hard' },
     interactionType: 'hack',
     interactionLabel: 'Взломать пульт',
     examineData: {
