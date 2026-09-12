@@ -23,7 +23,9 @@ import { useGameSelector } from '@/store/gameStore';
 import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import { triggerPoemCinematicVfx } from '@/engine/poemWorld/aaaPoemCinematicVfx';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomCenterGuidancePx } from '@/shared/constants/hudLayout';
 import { MorningSyncUrgency } from './MorningSyncUrgency';
 
 function useFirstReadingState() {
@@ -54,6 +56,7 @@ function useMorningSyncUrgency() {
 
 export function FirstMinutesDirector() {
   const reducedMotion = useEffectiveReducedMotion();
+  const isMobile = useIsMobileVisual();
   const { active, deskDone, hasPoem2 } = useFirstReadingState();
   const urgency = useMorningSyncUrgency();
   const hint = useMemo(() => getFirstReadingHint(), [active, deskDone, hasPoem2]);
@@ -75,6 +78,9 @@ export function FirstMinutesDirector() {
     <>
       <MorningSyncUrgency />
       {/* Diegetic hint — typewriter, с ротацией, как в Disco Elysium */}
+      {/* FIX (v4.23): был хардкод bottom-[14vh] — наезжал на поэзию/
+          [E]-промпт на низких вьюпортах. Теперь слот режиссуры (над
+          поэзией, под [E]-промптом, с учётом safe-area). */}
       <AnimatePresence>
         {hint && (
           <motion.div
@@ -83,8 +89,11 @@ export function FirstMinutesDirector() {
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             exit={{ opacity: 0, y: -6, filter: 'blur(4px)' }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="fixed left-1/2 -translate-x-1/2 bottom-[14vh] z-30 max-w-[28rem] px-4 pointer-events-none"
-            style={{ zIndex: UI_LAYERS.HUD }}
+            className="fixed left-1/2 -translate-x-1/2 z-30 max-w-[28rem] px-4 pointer-events-none"
+            style={{
+              zIndex: UI_LAYERS.HUD,
+              bottom: `calc(${bottomCenterGuidancePx(isMobile)}px + env(safe-area-inset-bottom, 0px))`,
+            }}
             aria-live="polite"
           >
             <div className="relative overflow-hidden rounded-[10px] bg-black/55 backdrop-blur-[14px] border border-white/10 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.45)]">

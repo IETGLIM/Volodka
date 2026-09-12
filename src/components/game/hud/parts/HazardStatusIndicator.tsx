@@ -34,6 +34,8 @@ import {
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGamePhase } from '@/store/selectors/uiSelectors';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
+import { bottomCenterAlertPx } from '@/shared/constants/hudLayout';
 import { HAZARD_KIND_COLOR, type HazardKind } from '@/data/environmentalHazards';
 import {
   getHazardStatus,
@@ -62,6 +64,7 @@ export function HazardStatusIndicator() {
   const [status, setStatus] = useState<HazardStatusSnapshot | null>(() => getHazardStatus());
   const gamePhase = useGamePhase();
   const reducedMotion = useEffectiveReducedMotion();
+  const isMobile = useIsMobileVisual();
   const fillRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<HTMLSpanElement>(null);
 
@@ -111,7 +114,13 @@ export function HazardStatusIndicator() {
             exit={{ opacity: 0, y: reducedMotion ? 0 : 6, scale: reducedMotion ? 1 : 0.98 }}
             transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
             className="absolute left-1/2 -translate-x-1/2 pointer-events-none"
-            style={{ bottom: 'clamp(184px, 24vh, 248px)', zIndex: UI_LAYERS.HUD + 1 }}
+            style={{
+              // FIX (v4.23): был хардкод clamp(184px, 24vh, 248px) — нижний край
+              // диапазона наезжал на слот [E]-промпта (234px). Теперь вершина
+              // нижне-центральной цепочки: тревога читается всегда.
+              bottom: bottomCenterAlertPx(isMobile),
+              zIndex: UI_LAYERS.HUD + 1,
+            }}
           >
             <div
               aria-hidden="true"

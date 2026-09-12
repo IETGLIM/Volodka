@@ -7,8 +7,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { bottomCenterGuidePx } from '@/shared/constants/hudLayout';
 
 interface GuideEntry {
   id: string;
@@ -62,6 +64,7 @@ function toneStyle(tone: GuideEntry['tone']): React.CSSProperties {
 }
 
 export function AaaImmersiveGuide() {
+  const isMobile = useIsMobileVisual();
   const [entry, setEntry] = useState<GuideEntry | null>(null);
   const reducedMotion = useEffectiveReducedMotion();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -149,10 +152,16 @@ export function AaaImmersiveGuide() {
     };
   }, []);
 
+  // FIX (v4.23): был хардкод bottom-[22vh] — плавал относительно нижнего
+  // стека и наезжал на него при коротких вьюпортах. Теперь верх
+  // нижне-центральной цепочки (см. bottomCenterGuidePx).
   return (
     <div
-      className="pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-[22vh] max-w-[28rem] w-[86vw] md:w-[32rem] flex justify-center"
-      style={{ zIndex: UI_LAYERS.HUD + 1 }}
+      className="pointer-events-none absolute left-1/2 -translate-x-1/2 max-w-[28rem] w-[86vw] md:w-[32rem] flex justify-center"
+      style={{
+        zIndex: UI_LAYERS.HUD + 1,
+        bottom: bottomCenterGuidePx(isMobile),
+      }}
       aria-live="polite"
     >
       <AnimatePresence>

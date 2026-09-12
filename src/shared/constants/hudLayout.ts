@@ -179,23 +179,83 @@ export function bottomInteractPromptPx(isMobile = false): number {
     + EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY_HEIGHT
     + EXPLORATION_HUD_LAYOUT.SLOT_GAP
     + 48
+    /* FIX (v4.23): на desktop ещё +48 — над слотом режиссуры первых минут
+     * (высокая карточка ~90px: текст + прогресс-точки, bottom 186, верх
+     * ≈276). Раньше промпт на 234 наезжал на её верх. На мобильном резерв
+     * контролов и так поднимает промпт выше всей цепочки. */
+    + (isMobile ? 0 : 48)
     + mobileBottomReserve(isMobile)
   );
 }
 
-/** FIX (overlap, v4.22): нижне-центральные тосты-подсказки.
- *  Раньше PlayerLostHintToast (bottom-24 = 96px) и ContextualHint
- *  (clamp(72px, 11vh, 128px)) висели ВНУТРИ вертикального диапазона нижнего
- *  стека (тулбар 60–112px, quick-use 68–116px, поэзия 124–180px) и наезжали
- *  на кнопки. Оба слота теперь строго НАД слотом [E]-промпта. */
+/** FIX (overlap, v4.22/v4.23): нижне-центральные тосты-подсказки.
+ *  Desktop-цепочка (строго возрастает, шаг 58px): режиссура (186, высокая
+ *  карточка) → [E]-промпт (282) → primary (340) → secondary (398) →
+ *  tertiary (456) → guide (514) → alert (572).
+ *  Мобильный бюджет высоты жёсткий (поэзия поднята CSS до 292, промпт
+ *  на 402–450): primary (352, верх ≈396) — единственный ряд под промптом;
+ *  все остальные кратковременные тосты (guidance/secondary/tertiary/
+ *  guide/alert) делят ОДИН слот 460 над промптом — детерминированного
+ *  конфликта с интерактивом нет, взаимные наложения редких транзиентов —
+ *  сознательный компромисс (вместо башни до середины экрана). */
 export function bottomCenterHintPx(isMobile = false): number {
-  if (isMobile) return EXPLORATION_HUD_LAYOUT.MOBILE_BOTTOM_CONTROLS_RESERVE + 84;
-  return bottomInteractPromptPx() + 52;
+  if (isMobile) return EXPLORATION_HUD_LAYOUT.MOBILE_BOTTOM_CONTROLS_RESERVE + 184;
+  return bottomInteractPromptPx() + 58;
 }
 
-/** Второй ряд нижне-центральных подсказок (ContextualHint) — над первым. */
+/** Второй ряд (ContextualHint). */
 export function bottomCenterHintSecondaryPx(isMobile = false): number {
+  if (isMobile) return EXPLORATION_HUD_LAYOUT.MOBILE_BOTTOM_CONTROLS_RESERVE + 292;
   return bottomCenterHintPx(isMobile) + 58;
+}
+
+/** Третий ряд (CriticalStatusWhisper — «Силы на исходе»).
+ *  FIX (v4.23): раньше делил secondary-слот с ContextualHint — при
+ *  одновременном показе наезжали друг на друга. На мобильном — общий
+ *  слот вторичных тостов (см. модель в начале блока). */
+export function bottomCenterHintTertiaryPx(isMobile = false): number {
+  if (isMobile) return bottomCenterHintSecondaryPx(true);
+  return bottomCenterHintSecondaryPx(isMobile) + 58;
+}
+
+/** Слот режиссуры первых минут (FirstMinutesDirector).
+ *  FIX (v4.23): был хардкод bottom-[14vh] — на низких вьюпортах
+ *  наезжал на поэзию/[E]-промпт. Desktop — между поэзией и промптом
+ *  (высокая карточка ~90px вписана в зазор). Мобильный — общий слот
+ *  вторичных тостов над промптом (между поэзией 292 и промптом 402
+ *  высокую карточку не вписать). */
+export function bottomCenterGuidancePx(isMobile = false): number {
+  if (isMobile) return bottomCenterHintSecondaryPx(true);
+  return (
+    EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY
+    + EXPLORATION_HUD_LAYOUT.BOTTOM_POETRY_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+  );
+}
+
+/** Слот «внутреннего голоса» (AaaImmersiveGuide — диегетический шёпот).
+ *  FIX (v4.23): был хардкод bottom-[22vh] — плавал относительно нижнего
+ *  стека. На мобильном — общий слот вторичных тостов. */
+export function bottomCenterGuidePx(isMobile = false): number {
+  if (isMobile) return bottomCenterHintSecondaryPx(true);
+  return bottomCenterHintTertiaryPx(isMobile) + 58;
+}
+
+/** Слот тревоги об опасной зоне (HazardStatusIndicator).
+ *  FIX (v4.23): был хардкод clamp(184px, 24vh, 248px) — нижний край
+ *  диапазона наезжал на слот [E]-промпта. Теперь вершина desktop-цепочки;
+ *  на мобильном — общий слот вторичных тостов. */
+export function bottomCenterAlertPx(isMobile = false): number {
+  if (isMobile) return bottomCenterHintSecondaryPx(true);
+  return bottomCenterGuidePx(isMobile) + 58;
+}
+
+/** FIX (v4.23): аудио-визуализатор был на bottom-4/right-4 — налегал на
+ *  миксер звука (тот же угол: bottom 16 / right 16). Теперь четвёртый ряд
+ *  правой нижней колонки: миксер (16) → статусы (72) → помощь (116) →
+ *  визуализатор (168). */
+export function bottomAudioVisualizerPx(): number {
+  return EXPLORATION_HUD_LAYOUT.BOTTOM_STATUS_EFFECTS + 96;
 }
 
 /** Diegetic dialogue panel — lift above mobile D-pad / action column + home indicator. */
