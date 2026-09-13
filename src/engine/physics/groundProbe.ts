@@ -10,8 +10,15 @@ const GROUND_PROBE_MAX_DISTANCE = 10;
 const GROUND_PROBE_ORIGIN_LIFT = 0.1;
 const DOWN = { x: 0, y: -1, z: 0 } as const;
 
-/** Collision group bitmask: only static environment (group 1). */
-const ENVIRONMENT_COLLISION_GROUP = 0b0000_0000_0000_0001;
+/** Interaction groups луча в семантике Rapier: СТАРШИЕ 16 бит — membership,
+ *  младшие — filter. Прежняя константа 0b…0001 задавала membership = 0x0000,
+ *  из-за чего условие взаимодействия (ray.membership & collider.filter) ≠ 0
+ *  было всегда ложным (дефолт коллайдеров 0xFFFF_FFFF) → рейкаст никогда не
+ *  попадал, probeGroundY всегда возвращал fallbackFloorY, и весь ground-probe
+ *  / rescue работал по плоской модели пола. 0x0001_0001: луч принадлежит
+ *  группе 1 и фильтруется по группе 1 — взаимодействие с дефолтными
+ *  коллайдерами разрешено в обе стороны. */
+const ENVIRONMENT_COLLISION_GROUP = 0b0000_0000_0000_0001_0000_0000_0000_0001;
 
 /** Minimal Rapier world surface for downward ground raycasts. */
 export type GroundProbeWorld = {
