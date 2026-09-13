@@ -271,6 +271,11 @@ export function useCameraOrbitInput(
         && (e.movementX !== 0 || e.movementY !== 0)
       ) {
         if (firstPersonRef?.current || rmbDown) {
+          // FIX: гейт только на ВХОДЕ (mousedown) недостаточен — уже идущий
+          // drag/лок продолжал мутировать yaw/pitch после старта диалога/
+          // кат-сцены/боя до mouseup, и мутации протекали в пост-катсценную
+          // позу. Гейтим каждую мутацию, а не только начало жеста.
+          if (shouldBlockOrbit()) return;
           applyOrbitDelta(e.movementX, e.movementY, 1, true);
           isDraggingRef.current = true;
           return;
@@ -279,6 +284,7 @@ export function useCameraOrbitInput(
 
       if (lmbDown) {
         if (!lmbLookActive) {
+          if (shouldBlockOrbit()) return;
           const dx0 = e.clientX - lmbStart.x;
           const dy0 = e.clientY - lmbStart.y;
           if (dx0 * dx0 + dy0 * dy0 < LMB_LOOK_DRAG_THRESHOLD_PX * LMB_LOOK_DRAG_THRESHOLD_PX) {
@@ -300,6 +306,9 @@ export function useCameraOrbitInput(
       }
 
       if (!isDraggingRef.current) return;
+      // FIX: продолжающийся drag-орбит после открытия диалога/кат-сцены —
+      // гейт на каждую мутацию (см. комментарий выше).
+      if (shouldBlockOrbit()) return;
       const dx = e.clientX - lastMouseRef.current.x;
       const dy = e.clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.clientX, y: e.clientY };
@@ -407,6 +416,9 @@ export function useCameraOrbitInput(
       }
 
       if (!isDraggingRef.current || e.touches.length !== 1) return;
+      // FIX: одиночный палец продолжал вращать камеру во время диалога/
+      // кат-сцены, если касание началось до блокировки — гейт на мутацию.
+      if (shouldBlockOrbit()) return;
       const dx = e.touches[0].clientX - lastMouseRef.current.x;
       const dy = e.touches[0].clientY - lastMouseRef.current.y;
       lastMouseRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
