@@ -10,6 +10,7 @@
 
 import { eventBus } from '@/engine/EventBus';
 import { readVoiceOverEnabled } from './voiceOverSettings';
+import { AUDIO_SETTINGS_CHANGED, readAudioSettings } from './AudioSettings';
 import {
   getVoiceLine,
   registerVoiceLine,
@@ -25,6 +26,24 @@ export interface VoiceLinePlayOptions {
 
 let activeAudio: HTMLAudioElement | null = null;
 let activeNodeId: string | null = null;
+
+/** FIX v4.35.0: VO обходил мастер-мьют и ползунки громкости (audio.volume = 0.9
+ *  и utterance.volume жёстко) — «Без звука» не глушал голос. Теперь:
+ *  мьют → 0; иначе — доля от SFX-громкости (отдельного VO-слайдера нет).
+ *  Живая громкость активного <audio> обновляется подпиской ниже; для уже
+ *  играющего utterance (Web Speech API не позволяет менять volume после
+ *  старта) настройка применяется с новой реплики. */
+function resolveVoiceGain(): number {
+  const s = readAudioSettings();
+  if (s.muted) return 0;
+  return Math.max(0, Math.min(1, s.sfxVolume));
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener(AUDIO_SETTINGS_CHANGED, () => {
+    if (activeAudio) activeAudio.volume = resolveVoiceGain();
+  });
+}
 
 /* ─── Web Speech API state ─── */
 
@@ -90,7 +109,8 @@ function speakWithSpeechSynthesis(nodeId: string, text: string, emotion: VoiceLi
     if (voice) utterance.voice = voice;
     utterance.rate = emotion === 'angry' ? 1.05 : emotion === 'whisper' ? 0.9 : 1;
     utterance.pitch = emotion === 'angry' ? 0.85 : emotion === 'happy' ? 1.1 : emotion === 'sad' ? 0.9 : 1;
-    utterance.volume = emotion === 'whisper' ? 0.55 : 0.95;
+    // FIX v4.35.0: подчинение мастер-мьюту/SFX-громкости (см. resolveVoiceGain).
+    utterance.volume = (emotion === 'whisper' ? 0.55 : 0.95) * resolveVoiceGain();
     utterance.onend = () => {
       if (activeUtterance === utterance) activeUtterance = null;
       emitVoiceLineEnd(nodeId);
@@ -211,7 +231,8 @@ export async function playVoiceLineForNode(nodeId: string, options?: VoiceLinePl
   const audio = new Audio(url);
   activeAudio = audio;
   activeNodeId = nodeId;
-  audio.volume = 0.9;
+  // FIX v4.35.0: мастер-мьют/SFX-громкость вместо жёстких 0.9 (см. resolveVoiceGain).
+  audio.volume = 0.9 * resolveVoiceGain();
   /* Субтитр — на старт воспроизведения (реальный VO может грузиться). */
   emitVoiceLineStart(nodeId, speaker, text);
   audio.onended = () => {
