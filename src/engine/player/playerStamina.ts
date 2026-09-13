@@ -74,7 +74,7 @@ function snapshotOf(state: StaminaState): StaminaTickResult {
 
 /**
  * Pure per-frame tick (mutates `state`, returns a snapshot for callers).
- * dt is already clamped by the frame pipeline (SIM_DELTA_MAX) — defensive
+ * dt is already clamped by the frame pipeline (PLAYER_SIM_DELTA_MAX) — defensive
  * clamping here only guards direct unit-test usage.
  */
 export function tickStaminaState(

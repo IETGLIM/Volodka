@@ -4,7 +4,7 @@
 import { Suspense, lazy, useRef, useEffect, useState, memo, Component, Fragment, type ComponentProps, type ReactNode, type ErrorInfo } from 'react';
 import { Canvas, useThree } from '@react-three/fiber';
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
-import { ACESFilmicToneMapping, NoToneMapping, PCFSoftShadowMap, SRGBColorSpace, Vector3, WebGLRenderer } from 'three';
+import { ACESFilmicToneMapping, Box3, Euler, NoToneMapping, PCFSoftShadowMap, Quaternion, SRGBColorSpace, SkinnedMesh, Vector3, WebGLRenderer } from 'three';
 import { devLog, devWarn } from '@/shared/utils/devLog';
 import { SimplePlayer } from './SimplePlayer';
 import { FollowCamera } from './FollowCamera';
@@ -610,6 +610,9 @@ function RPGGameCanvasScene({
       <GltfPipelineInit />
       <CanvasFrameloopController idle={idle} />
       <CanvasViewportSync />
+      {import.meta.env.DEV && (
+        <RuntimeDebugBridge livePlayerPositionRef={livePlayerPositionRef} livePlayerRotationRef={livePlayerRotationRef} />
+      )}
       <VisualizationLayers livePlayerPositionRef={livePlayerPositionRef}>
         <Suspense
           fallback={
@@ -776,6 +779,80 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
     });
     return () => burst.dispose();
   }, [invalidate]);
+
+  return null;
+}
+
+/**
+ * DEV-only мост диагностики доменов «масштабы/позиционирование/камера».
+ * Экспонирует window.__volodkaDebug.snapshot(): живые позиция/поворот камеры,
+ * позицию игрока, счётчики сцены и bbox модели игрока. Только import.meta.env.DEV.
+ */
+function RuntimeDebugBridge({ livePlayerPositionRef, livePlayerRotationRef }: Pick<RPGGameCanvasShellProps, 'livePlayerPositionRef' | 'livePlayerRotationRef'>) {
+  const get = useThree((state) => state.get);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const w = window as unknown as { __volodkaDebug?: { snapshot: () => Record<string, unknown>; r3f: () => unknown } };
+    const deg = (rad: number): number => Math.round((rad * 180) / Math.PI * 10) / 10;
+    const round3 = (v: number): number => Math.round(v * 1000) / 1000;
+    const camPos = new Vector3();
+    const camQuat = new Quaternion();
+    const camEuler = new Euler(0, 0, 0, 'YXZ');
+    const probeBox = new Box3();
+    const probeSize = new Vector3();
+
+    w.__volodkaDebug = {
+      r3f: () => get(),
+      snapshot: () => {
+        const { camera, scene, gl } = get();
+        camera.updateMatrixWorld(true);
+        camera.getWorldPosition(camPos);
+        camera.getWorldQuaternion(camQuat);
+        camEuler.setFromQuaternion(camQuat, 'YXZ');
+        let meshes = 0;
+        let lights = 0;
+        let skinned: { size: [number, number, number]; minY: number; maxY: number } | null = null;
+        scene.traverse((obj) => {
+          if ((obj as { isMesh?: boolean }).isMesh) meshes += 1;
+          if ((obj as { isLight?: boolean }).isLight) lights += 1;
+          if (!skinned && (obj as { isSkinnedMesh?: boolean }).isSkinnedMesh) {
+            const m = obj as SkinnedMesh;
+            probeBox.setFromObject(m);
+            probeBox.getSize(probeSize);
+            skinned = {
+              size: [round3(probeSize.x), round3(probeSize.y), round3(probeSize.z)],
+              minY: round3(probeBox.min.y),
+              maxY: round3(probeBox.max.y),
+            };
+          }
+        });
+        const playerPos = livePlayerPositionRef.current;
+        const playerRotY = livePlayerRotationRef.current ?? null;
+        const persp = camera as import('three').PerspectiveCamera;
+        return {
+          sceneId: scene.userData?.sceneId ?? null,
+          camera: {
+            pos: [round3(camPos.x), round3(camPos.y), round3(camPos.z)],
+            yawDeg: deg(camEuler.y), pitchDeg: deg(camEuler.x),
+            fov: persp.fov ?? null,
+            near: persp.near ?? null,
+            far: persp.far ?? null,
+          },
+          player: {
+            pos: [round3(playerPos.x), round3(playerPos.y), round3(playerPos.z)],
+            rotYDeg: playerRotY == null ? null : deg(playerRotY),
+          },
+          camDistanceToPlayer: round3(camPos.distanceTo(playerPos)),
+          counts: { meshes, lights, drawcalls: gl.info.render.calls, triangles: gl.info.render.triangles },
+          playerSkinnedBBox: skinned,
+        };
+      },
+    };
+    return () => {
+      delete w.__volodkaDebug;
+    };
+  }, [get, livePlayerPositionRef, livePlayerRotationRef]);
 
   return null;
 }

@@ -7,8 +7,11 @@ export const MAX_PHYSICS_DT = 1 / 30;
 /** Rapier world step in PhysicsSceneInner — keep in sync. */
 export const RAPIER_PHYSICS_TIMESTEP = 1 / 60;
 
-/** Cap sub-steps to avoid spiral-of-death on long freezes. */
-export const MAX_PHYSICS_STEPS = 4;
+/** Cap sub-steps to avoid spiral-of-death on long freezes.
+ *  6 × MAX_PHYSICS_DT (1/30) = 0.2 с — покрывает PLAYER_SIM_DELTA_MAX:
+ *  на слабом железе (FPS<20) игрок догоняет реальное время без туннелирования
+ *  (каждый субшаг ≤1/30 с проходит shape-cast KCC). */
+export const MAX_PHYSICS_STEPS = 6;
 
 export interface Vec3Displacement {
   x: number;

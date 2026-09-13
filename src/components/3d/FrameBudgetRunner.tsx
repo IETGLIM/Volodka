@@ -44,6 +44,11 @@ export function FrameBudgetRunner() {
     frameCtxRef.current.delta = Math.min(delta, 0.05);
     frameCtxRef.current.game = createFrameGameSnapshot(getGameSnapshot());
     setLatestFrameGameSnapshot(frameCtxRef.current.game);
+    // ВРЕМЕННАЯ DEV-диагностика (домен «медленное движение»): живые дельты кадра.
+    if (import.meta.env.DEV) {
+      const w = window as unknown as { __volodkaFrame?: { rawDelta: number; dt: number; t: number; index: number } };
+      w.__volodkaFrame = { rawDelta: delta, dt: frameCtxRef.current.delta, t: performance.now(), index: frameIndexRef.current };
+    }
     runFrameBudgetForPhase(frameCtxRef.current, 'pre_physics');
   }, FRAME_PHASE_R3F_PRIORITY.pre_physics);
 

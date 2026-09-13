@@ -8,7 +8,7 @@ import { WARMUP_DURATION_S } from '@/engine/player/playerConstants';
 import { setSharedVirtualControlsWritable } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import { isMovementEpochStale } from '@/engine/player/playerMovementSceneSync';
-import { SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
+import { PLAYER_SIM_DELTA_MAX } from '@/engine/player/playerOwnership';
 import { addPlayerMovementLockReasons } from '@/engine/player/playerMovementContract';
 import type { FrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
@@ -52,9 +52,15 @@ export function preparePlayerFrame(
   const vel = scratch.vel;
   const fallbackFloorY = scratch.floorY;
 
-  // Same cap as FollowCamera / InteractionSystemBridge — hitch frames must not
-  // advance player farther than camera/interaction assume.
-  const dt = Math.min(delta, SIM_DELTA_MAX);
+  // Потолок дельты игрока — PLAYER_SIM_DELTA_MAX (0.2 с): на слабом железе
+  // (FPS<20) прежний кламп 0.05 с запускал игру в слоу-мо (при 10 FPS игровое
+  // время шло вдвое медленнее реального). Интеграция KCC субшаговая
+  // (computeKccMovementSubstepped, ≤6×1/30 с) покрывает 0.2 с без
+  // туннелирования коллайдеров. Таймеры/стамина/фиксация тоже живут на
+  // реальном времени — это корректно (см. playerOwnership.ts).
+  // Same cap context: FollowCamera / InteractionSystemBridge остаются на
+  // SIM_DELTA_MAX — их экспоненциальные пружины догоняют игрока за кадр.
+  const dt = Math.min(delta, PLAYER_SIM_DELTA_MAX);
   scratch.dt = dt;
 
   const phase = game.gamePhase;
