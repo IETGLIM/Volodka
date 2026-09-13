@@ -1,3 +1,75 @@
+## v4.37.0 (2026-09-13) — этап 138: первая настоящая браузерная QA + два прод-фикса
+
+### Сводка
+Впервые за историю проекта геймплейный прогон выполнен В РЕАЛЬНОМ БРАУЗЕРЕ
+(headless Chrome по собранному прод-артефакту dist, статический сервер с
+продовым CSP). Одновременно владелец прислал консоль своего браузера со
+свежего Vercel-деплоя (rkwo7b703). Совокупно получены и закрыты два
+прод-дефекта, невидимых статическим конвейером:
+
+1) React #185 «Maximum update depth exceeded» — краш ВЕСЬ игрового HUD при
+   входе в геймплей (воспроизведён: 53 рендера DiegeticDialogueHUD → краш).
+2) Физика (Rapier) не инициализируется на проде — 4× EvalError CSP
+   `__embind_register_function` (доказательство — консоль владельца).
+
+Дополнительно ЗАКРЫТ follow-up этапа 133: KTX2-путь проверен в рантайме —
+все .ktx2 (diff/rough/ao) и basis-транскодер грузятся (200), WebP-фолбэк
+цветовых карт НЕ срабатывает. И подтверждено по консоли владельца: текстуры
+и GLB-модели на свежем деплое грузятся корректно.
+
+### fix(selectors): краш React #185 — useFactionReputation стабильный снапшот
+- Корень (найден браузерной биекцией + инструментацией useShallow):
+  `useGameSelector((s) => buildFactionReputationMap(...))` — функция строит
+  НОВЫЙ объект `{network:{…},guild:{…},…}` с новыми вложенными entry при
+  КАЖДОМ вызове. useShallow сравнивает только верхний уровень → снапшот
+  useSyncExternalStore нестабилен → бесконечный синхронный цикл ре-рендеров
+  → #185 на 50-м вложенном обновлении. Комментарий «shallow equality keeps
+  the map stable» был ошибочен: shallow не спасает от пересоздания вложенных
+  объектов.
+- Цепь монтирования: DiegeticDialogueHUD (V2, рендерится H5 безусловно)
+  → useNpcFactionAttitude (pm) → useFactionReputation (Au) → цикл без
+  открытого диалога. Та же яма у TradingPanel/FactionReputationPanel.
+- Фикс: мемоизация по source-ref (паттерн getRelationsByFaction): один кэш
+  на npcRelations + ручная инвалидация по refs флагов; новый экспорт
+  `selectFactionReputationMap` (plain-селектор для snapshot-тестов).
+- Регресс-тесты (4): Object.is-стабильность на том же стейте; пересчёт по
+  смене npcRelations; инвалидация по смене flags; чередование стейтов.
+- Диагностическая методика (для истории): SW-кэш origin'а подсовывал старые
+  чанки — первый «фикс-прогон» шёл на нетронутом коде; надёжный прогон
+  только на чистом origin + init-script-ловушка + node --check каждого
+  патченного чанка.
+
+### fix(deploy): CSP — 'unsafe-eval' для embind Rapier (+ manifest-src)
+- Консоль владельца (деплой rkwo7b703): 4× `Uncaught EvalError: Evaluating
+  a string as JavaScript violates CSP … script-src 'self'
+  'wasm-unsafe-eval'` — стек `__embind_register_function →
+  craftInvokerFunction → newFunc → new Function` (emscripten embind в
+  физическом воркере Rapier). 'wasm-unsafe-eval' покрывает ТОЛЬКО компиляцию
+  WASM; embind-обёртки требуют динамического eval → физика в проде
+  не инициализировалась вовсе.
+- vercel.json: script-src += 'unsafe-eval' (строгий CSP сохранён: всё
+  остальное — 'self'-only, без внешних скриптов); manifest-src 'self'
+  (манифест в превью блокировался default-src через SSO-прокси).
+- Проверить после деплоя: в консоли нет EvalError, персонаж ходит по рельефу
+  (ground-probe жив).
+
+### Проверено в рантайме (браузерный QA, headless Chrome, прод-артефакт)
+- Меню → «Новая игра» → пролог → скип: 3D-сцена квартиры рендерится,
+  canvas жив.
+- KTX2: 6× .ktx2 Fetch 200 (wood_floor 2k, metal_plate 1k — diff/rough/ao),
+  basis_transcoder.js+wasm 200, WebP-фолбэк цветовых карт НЕ triggered —
+  follow-up этапа 133 закрыт; вопрос снятия WebP из keep-set (−11 MB) —
+  в очередь.
+- #185: после фикса — 0 ошибок на полном прогоне (раньше — стабильный краш).
+- CSP Rapier: headless-браузер среды не применяет eval-блокировки —
+  воспроизведение локально невозможно; доказательная база — консоль
+  владельца.
+
+### Верификация
+tsc 0; ESLint изменённых 0; vitest ПОЛНЫЙ 2735/2735 (438 файлов, +4
+регресс-теста #185); validate:content 0; validate:act1-extended 0;
+build + budgets OK. poems.ts — без изменений.
+
 ## v4.36.1 (2026-09-13) — прозрачность деплоя: прод обнаружен на 132 коммита позади
 
 ### Сводка
