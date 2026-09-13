@@ -159,7 +159,10 @@ function buildConcrete(size: number): SurfaceDetailMaps {
     map: makeDataTexture(albedo, size, SRGBColorSpace),
     normalMap: makeDataTexture(heightToNormal(height, size, 0.4), size, NoColorSpace),
     roughnessMap: makeDataTexture(rough, size, NoColorSpace),
-    repeat: 6,
+    // FIX v4.36.0 (тайлинг-прыжок): было 6 — при смене процедурного фолбэка на
+    // PBR-набор concrete_floor_painted (DEFAULT_REPEAT 5) плотность тайлов
+    // прыгала на 20%. Выравнено на PBR-значение.
+    repeat: 5,
   };
 }
 

@@ -108,6 +108,17 @@ const DEFAULT_REPEAT: Record<PolyHavenMaterialId, number> = {
   metal_plate: 4,
 };
 
+/** FIX v4.36.0 (тайлинг-прыжок PBR↔процедурный): мировая UV-плотность PBR-набора
+ *  как единый источник для процедурных фолбэков. Фолбэк той же поверхности обязан
+ *  использовать этот repeat — иначе при загрузке KTX2/WebP плотность тайлов
+ *  прыгает (тротуар: 5.5 uniform против 1.75×11; бетон: 5 против 6). */
+export function getPolyHavenRepeat(
+  materialId: PolyHavenMaterialId,
+  repeatScale: number = 1,
+): number {
+  return DEFAULT_REPEAT[materialId] * repeatScale;
+}
+
 export function getPolyHavenPbrUrls(
   materialId: PolyHavenMaterialId,
   textureScale: 0.25 | 0.5 | 1 = 1,

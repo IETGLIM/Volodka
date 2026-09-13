@@ -31,7 +31,7 @@ import {
 } from '@/engine/graphics/wetStreetScenes';
 import { HeroStreetFacadesWithAssets } from './PolyHavenStreetDressing';
 import { PolyHavenStandardMaterial } from './PolyHavenStandardMaterial';
-import { usesPhotographicHdriBackground } from '@/config/polyhavenAssets';
+import { getPolyHavenRepeat, usesPhotographicHdriBackground } from '@/config/polyhavenAssets';
 import { isProceduralAaaFlagActive } from '@/proceduralAaa/params';
 import { ProceduralAaaHybridOverlay } from '@/proceduralAaa/ProceduralAaaHybridOverlay';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
@@ -278,14 +278,19 @@ function StreetSidewalkProcedural({ isWinter, rainIntensity }: { isWinter: boole
     () => getCachedSurfaceDetailMaps('sidewalk', preset.textureScale),
     [preset.textureScale],
   );
+  // FIX v4.36.0 (тайлинг-прыжок): было (repeat×0.35, repeat×2.2) = (1.75, 11) —
+  // при загрузке PBR-набора (5×1.1 = 5.5 uniform) плотность тайлов прыгала ~3×.
+  // Фолбэк теперь повторяет UV-плотность PBR-пути (единый источник —
+  // getPolyHavenRepeat); зима — тот же repeatScale 0.9, что и у PBR-ветки.
+  const pbrRepeat = getPolyHavenRepeat('concrete_floor_painted', isWinter ? 0.9 : 1.1);
   const map = useMemo(() => {
     const t = maps.map.clone();
     t.wrapS = RepeatWrapping;
     t.wrapT = RepeatWrapping;
-    t.repeat.set(maps.repeat * 0.35, maps.repeat * 2.2);
+    t.repeat.set(pbrRepeat, pbrRepeat);
     t.needsUpdate = true;
     return t;
-  }, [maps]);
+  }, [maps, pbrRepeat]);
   const normalMap = useMemo(() => {
     const t = maps.normalMap.clone();
     t.wrapS = RepeatWrapping;
