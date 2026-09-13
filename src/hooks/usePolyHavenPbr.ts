@@ -44,11 +44,19 @@ export function usePolyHavenPbr(
     [materialId, preset.textureScale],
   );
 
-  // React 19 use(): suspends on first mount (как useTexture ранее), затем
-  // мгновенный результат из модульного кэша промисов (стабильная ссылка).
+  // React 19 use(): промис ОБЯЗАН быть стабильной ссылкой между рендерами.
+  // Регрессия этапа 133: use() вызывался с промисом, созданным В ТЕЛЕ рендера
+  // (Promise.all-обёртка) — каждая повторная попытка после разрешения получала
+  // свежий pending-промис → вечная Suspense-петля, материалы не появлялись
+  // вовсе («текстуры не грузятся»). useMemo фиксирует один инстанс промиса на
+  // [urls, fallbackUrls, gl]; дедупликация URL-промисов — в ktx2Textures.
   // Фолбэк на WebP зашит внутрь промиса — rejection доходит до ErrorBoundary
   // только при провале ОБЕИХ веток (эквивалент прежнего 404 в useTexture).
-  const maps = use(loadPolyHavenPbrTextureSet(urls, fallbackUrls, gl));
+  const setPromise = useMemo(
+    () => loadPolyHavenPbrTextureSet(urls, fallbackUrls, gl),
+    [urls, fallbackUrls, gl],
+  );
+  const maps = use(setPromise);
 
   const repeat = urls.repeat * repeatScale;
 
