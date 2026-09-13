@@ -4,6 +4,7 @@ import {
   FACTION_ALIASES,
   FACTION_IDS,
   normalizeFactionId,
+  selectFactionReputationMap,
 } from './factionReputationSelectors';
 import { buildAllFactionMembers } from './factionGrouping';
 import type { NPCRelation } from '@/shared/types/game';
@@ -103,5 +104,86 @@ describe('buildAllFactionMembers (ростер знакомых для пане�
     const relationsSorted = metMembers.map((m) => m.relation);
 
     expect(relationsSorted).toEqual([...relationsSorted].sort((a, b) => b - a));
+  });
+});
+
+/* ─── Этап 138: регресс-тест прод-краша React #185 ───
+ *
+ * Прежний useFactionReputation-селектор вызывал buildFactionReputationMap
+ * напрямую: НОВЫЙ объект с новыми вложенными entry при каждом вызове →
+ * нестабильный getSnapshot useSyncExternalStore → бесконечный синхронный
+ * цикл ре-рендеров → «Maximum update depth exceeded» в геймплей-слое
+ * (воспроизведено в браузере: 53 рендера DiegeticDialogueHUD → краш;
+ * useNpcFactionAttitude монтирует хук безусловно).
+ *
+ * Контракт: повторные вызовы selectFactionReputationMap на ТОМ ЖЕ стейте
+ * обязаны возвращать ОДНУ И ТУ ЖЕ ссылку (Object.is), а при смене любого
+ * из двух входов (npcRelations ИЛИ playerState.flags) — новый результат.
+ */
+describe('selectFactionReputationMap (стабильность снапшота — краш React #185)', () => {
+  // Реальные NPC из реестра (как в тестах buildAllFactionMembers выше):
+  // один network-фракции (по флагу), один guild-фракции (по строке).
+  const networkNpc = ALL_NPC_DEFINITIONS.find((n) => n.faction === 'network');
+  const guildNpc = ALL_NPC_DEFINITIONS.find(
+    (n) => n.faction === 'guild' && n.id !== networkNpc?.id,
+  );
+  if (!networkNpc || !guildNpc) throw new Error('нет NPC network/guild для теста');
+
+  const baseState = () => ({
+    npcRelations: [{ npcId: guildNpc.id, value: 62 }] as NPCRelation[],
+    playerState: { flags: { [`met_${networkNpc.id}`]: true } as Record<string, boolean> },
+  });
+
+  it('повторный вызов на том же стейте возвращает ту же ссылку (Object.is)', () => {
+    const state = baseState();
+    const first = selectFactionReputationMap(state);
+    const second = selectFactionReputationMap(state);
+    expect(second).toBe(first);
+  });
+
+  it('новая ссылка npcRelations → пересчёт (новая ссылка результата)', () => {
+    const state = baseState();
+    const before = selectFactionReputationMap(state);
+    const changedRelations = {
+      ...state,
+      npcRelations: [{ npcId: guildNpc.id, value: 88 } as NPCRelation],
+    };
+    const after = selectFactionReputationMap(changedRelations);
+    expect(after).not.toBe(before);
+    expect(after.guild.avgRelation).not.toBe(before.guild.avgRelation);
+  });
+
+  it('новая ссылка flags → пересчёт (инвалидация по второму входу)', () => {
+    // Второй guild-NPC БЕЗ строки в npcRelations: знакомство только через
+    // флаг — metCount гильдии обязан вырасти при его появлении.
+    const guildNpc2 = ALL_NPC_DEFINITIONS.find(
+      (n) => n.faction === 'guild' && n.id !== networkNpc.id && n.id !== guildNpc.id,
+    );
+    if (!guildNpc2) throw new Error('нет второго guild-NPC для теста');
+    const state = baseState();
+    const before = selectFactionReputationMap(state);
+    const changedFlags = {
+      ...state,
+      playerState: { flags: { [`met_${networkNpc.id}`]: true, [`met_${guildNpc2.id}`]: true } },
+    };
+    const after = selectFactionReputationMap(changedFlags);
+    expect(after).not.toBe(before);
+    expect(after.guild.metCount).toBeGreaterThan(before.guild.metCount);
+  });
+
+  it('чередование двух стейтов не ломает кэш (каждый вызов стабилен паре refs)', () => {
+    // Симуляция реального цикла React: getSnapshot вызывается многократно,
+    // стор между вызовами мог переключиться туда-обратно.
+    const a = baseState();
+    const b = {
+      ...a,
+      npcRelations: [{ npcId: guildNpc.id, value: 90 } as NPCRelation],
+    };
+    const a1 = selectFactionReputationMap(a);
+    const b1 = selectFactionReputationMap(b);
+    const a2 = selectFactionReputationMap(a);
+    const b2 = selectFactionReputationMap(b);
+    expect(a2).not.toBe(a1); // refs сменились — пересчёт обязателен
+    expect(b2).not.toBe(b1);
   });
 });

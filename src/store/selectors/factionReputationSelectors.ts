@@ -95,12 +95,51 @@ export function getFactionReputationMap(): FactionReputationMap {
 }
 
 /* ──────────────────────────────────────────────────────────────
-   React hook (shallow equality — keeps the returned map stable when
-   the underlying avgRelation / metCount numbers don't change).
+   React hook
+   ──────────────────────────────────────────────────────────────
+
+   FIX (этап 138, прод-краш React #185 «Maximum update depth exceeded»):
+   прежний селектор вызывал buildFactionReputationMap НАПРЯМУЮ — функция
+   строит НОВЫЙ объект {network:{…}, guild:{…}, …} с новыми вложенными
+   entry при КАЖДОМ вызове. useShallow сравнивает только верхний уровень,
+   поэтому prev.network !== next.network всегда → нестабильный getSnapshot
+   useSyncExternalStore → бесконечный синхронный цикл ре-рендеров →
+   #185 на 50-м вложенном обновлении (воспроизведено в браузере: 53
+   рендера DiegeticDialogueHUD → краш; useNpcFactionAttitude монтирует
+   хук безусловно в игровом HUD).
+
+   Комментарий «shallow equality keeps the map stable» был ошибочен:
+   shallow не спасает от пересоздания вложенных объектов.
+
+   Решение — мемоизация по source-ref (тот же паттерн, что
+   getRelationsByFaction выше): один кэш на npcRelations + ручная
+   инвалидация по refs флагов. Пока оба входа не изменились по ссылке,
+   селектор возвращает ОДИН и тот же объект — снапшот стабилен,
+   React не перерисовывается, вложенные потребители (useMemo по
+   reputation) не пересчитываются.
    ────────────────────────────────────────────────────────────── */
 
-export function useFactionReputation(): FactionReputationMap {
-  return useGameSelector((s) =>
-    buildFactionReputationMap(s.npcRelations, s.playerState.flags),
+const reputationCache = createSourceRefCache<NPCRelation[], FactionReputationMap>();
+let reputationFlagsRef: Record<string, boolean> | null = null;
+
+/** Plain selector with stable snapshot — экспортирован для
+ *  snapshot-stability тестов (см. compositeSelectors.note). */
+export function selectFactionReputationMap(s: {
+  npcRelations: NPCRelation[];
+  playerState: { flags: Record<string, boolean> };
+}): FactionReputationMap {
+  const flags = s.playerState.flags;
+  // Кэш отслеживает только npcRelations — второй вход (flags) инвалидирует
+  // его вручную при смене ссылки (createSourceRefCache хранит один ref).
+  if (reputationFlagsRef !== flags) {
+    reputationFlagsRef = flags;
+    reputationCache.hit = false;
+  }
+  return memoizeBySourceRef(s.npcRelations, reputationCache, (rels) =>
+    buildFactionReputationMap(rels, flags),
   );
+}
+
+export function useFactionReputation(): FactionReputationMap {
+  return useGameSelector(selectFactionReputationMap);
 }
