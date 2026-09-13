@@ -42,6 +42,15 @@ let rapierStatus: RapierStatus = 'pending';
 
 const listeners = new Set<() => void>();
 
+/**
+ * v4.39.0 ФИКС «Maximum update depth exceeded» (чёрный HUD в геймплее):
+ * getRuntimeDiagnosticsSnapshot создавал НОВЫЙ объект при каждом вызове,
+ * а useSyncExternalStore сравнивает снапшоты через Object.is — «store
+ * изменился» на каждой проверке → вечный перерендер → падение дерева HUD.
+ * Теперь снапшот кэшируется и инвалидируется ТОЛЬКО в notify() (все
+ * мутаторы вызывают notify) — стабильная ссылка между мутациями.
+ */
+
 function classify(url: string): AssetFailureKind {
   const clean = url.split(/[?#]/)[0] ?? url;
   if (/\.(glb|gltf)$/i.test(clean)) return 'gltf';
@@ -51,6 +60,7 @@ function classify(url: string): AssetFailureKind {
 }
 
 function notify(): void {
+  snapshotCache = null; // инвалидация кэша ДО уведомления подписчиков
   for (const cb of listeners) {
     try {
       cb();
@@ -94,13 +104,18 @@ export function markRapierStatus(status: RapierStatus): void {
   notify();
 }
 
-/** Снимок диагностики для HUD. */
+/** Снимок диагностики для HUD. Кэшируется — стабильная ссылка между мутациями. */
+let snapshotCache: RuntimeDiagnosticsSnapshot | null = null;
+
 export function getRuntimeDiagnosticsSnapshot(): RuntimeDiagnosticsSnapshot {
-  return {
-    totalFailures,
-    failures: [...failureByKey.values()],
-    rapier: rapierStatus,
-  };
+  if (!snapshotCache) {
+    snapshotCache = {
+      totalFailures,
+      failures: [...failureByKey.values()],
+      rapier: rapierStatus,
+    };
+  }
+  return snapshotCache;
 }
 
 /** Сбросить накопленные отказы (кнопка «Очистить» в панели). */
