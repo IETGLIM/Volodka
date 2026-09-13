@@ -2,6 +2,7 @@ name: CI
 
 on:
   push:
+    # FIX v4.36.1: trigger vosstanovlen (byl povrezhden literal branches) - CI ne zapuskalsya na push/PR.
     branches: [main]
   pull_request:
     branches: [main]
