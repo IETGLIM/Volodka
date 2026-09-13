@@ -60,7 +60,20 @@ subscribeAllStores(() => {
 });
 
 useGameStore.getState = () => {
-  if (facadeDirty) flushFacadeState();
+  // FIX: чтение состояния не должно ПИСАТЬ в стор. Прежний вариант
+  // синхронно вызывал flushFacadeState() → facadeSetState() при facadeDirty.
+  // Flush планировался на rAF (scheduleAfterSliceStoresSettle), поэтому окно
+  // «грязного» фасада длилось до конца кадра — любое чтение в render-фазе
+  // (селекторы QuestWaypoints/квестов и т.п.) вызывало setState во время
+  // рендера: React падал предупреждением «Cannot update a component
+  // (NPCSystem/PhysicsPlayer) while rendering a different component
+  // (QuestWaypoints)».
+  // Теперь читатель получает свежий комбинированный снапшот напрямую:
+  //   - императивные читатели сохраняют read-your-writes (getCombinedGameState
+  //     всегда считается по актуальным слайсам и мемоизирован по их ссылкам);
+  //   - подписчики React уведомляет плановый flush после rAF — уведомления
+  //     не теряются (flush подтвердит ту же ссылку через setState).
+  if (facadeDirty) return getCombinedGameState();
   return baseGetState();
 };
 useGameStore.setState = ((partial, _replace) => {
