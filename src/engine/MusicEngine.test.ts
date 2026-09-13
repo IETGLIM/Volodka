@@ -80,7 +80,7 @@ import {
 /* ─── v4.38.0: инструментированный мок — регресс-тесты слышимости шины ───
  * Фон: «музыка отсутствует» — padGain создавался в 0 и никогда не взводился
  * (пэд молчал с v3.1.0), а бас/мелодия лежали на −42…−48 дБ.
- * Фикс: ramp padGain 0→1, makeup ×6, лимитер master→compressor→destination. */
+ * Фикс: ramp padGain 0→1, makeup ×30, бусты слоёв (бас ×12, мелодия ×10/×3), лимитер master→compressor→destination. */
 function buildInstrumentedAudioContext() {
   const gainNodes: Array<{
     gain: {
@@ -283,14 +283,15 @@ describe('MusicEngine audible bus (v4.38.0)', () => {
     vi.advanceTimersByTime(10);
 
     // Единственный узел, чей ramp целится в ~1 — padGain (голоса ≤ 0.5,
-    // мастер-фейд = config.masterGain × makeup × volume < 1).
+    // мастер-фейд = config.masterGain × makeup × volume; при громкости 100%
+    // может превышать 1 — выбросы гасит лимитер (−6 дБ, 12:1).
     const rampsToOne = gainNodes.flatMap((n) =>
       n.gain.linearRampToValueAtTime.mock.calls,
     ).filter((args) => (args[0] as number) >= 0.99);
     expect(rampsToOne.length).toBeGreaterThan(0);
   });
 
-  it('master fade-in target includes ×6 makeup (volodka_room: 0.04×6×0.5 = 0.12)', () => {
+  it('master fade-in target includes ×30 makeup (volodka_room: 0.04×30×0.5 = 0.6)', () => {
     const { ctx, gainNodes } = buildInstrumentedAudioContext();
     mockGetSharedAudioContext.mockReturnValue(ctx);
 
@@ -301,7 +302,7 @@ describe('MusicEngine audible bus (v4.38.0)', () => {
     const master = gainNodes[0];
     const rampCalls = master.gain.linearRampToValueAtTime.mock.calls;
     expect(rampCalls.length).toBeGreaterThan(0);
-    expect(rampCalls[0][0]).toBeCloseTo(0.12, 5);
+    expect(rampCalls[0][0]).toBeCloseTo(0.6, 5);
   });
 
   it('limiter sits between master gain and destination (threshold −6 dB, ratio 12)', () => {

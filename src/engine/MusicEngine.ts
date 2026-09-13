@@ -120,8 +120,21 @@ const PRESENTATION_DUCK_GAIN: Record<PresentationDuckProfile, number> = {
  * (+15.6 дБ) в обоих местах расчёта effectiveGain; (в) лимитер перед
  * destination (threshold −6 дБ, ratio 12) — сумма слоёв не клиппует. */
 
-/** Makeup-усиление музыкальной шины (линейно; ×6 ≈ +15.6 дБ). */
-const MUSIC_BUS_MAKEUP_GAIN = 6;
+/** Makeup-усиление музыкальной шины (линейно; ×30 ≈ +29.5 дБ).
+ *
+ * v4.39.0 НОРМАЛИЗАЦИЯ СЛЫШИМОСТИ (runtime-замер, audio-tap мастер-шины):
+ * при ×6 (v4.38.0) пики пэда = −23 дБFS, бас −41 дБ, мелодия −47 дБ —
+ * «музыка отсутствует» на слух. ×30 даёт пики пэда ≈ −9 дБFS (слышимый
+ * эмбиент-бэд); выбросы сверх −6 дБ гасит лимитер шины (12:1). */
+const MUSIC_BUS_MAKEUP_GAIN = 30;
+
+/** v4.39.0: бусты слоёв против измеренной тишины. Бас 0.012×0.7 = −41 дБ
+ * (ниже порога слышимости) → ×12 ≈ −20 дБFS (осязаемый пульс). Мелодия
+ * 0.006×0.7 = −47 дБ → ×10 ≈ −27 дБFS (далёкий лид). Шанс ноты 0.02–0.06
+ * (нота раз в ~1 мин) → ×3 (нота каждые ~10–30 с). */
+const BASS_GAIN_BOOST = 12;
+const MELODY_GAIN_BOOST = 10;
+const MELODY_CHANCE_BOOST = 3;
 
 const INTENSITY_TEMPO_MULTIPLIER: Record<MusicIntensityLayer, number> = {
   exploration: 1,
@@ -1540,7 +1553,7 @@ class MusicEngine {
     while (this.nextMelodyTime < now + ahead && guard++ < SCHEDULE_LOOP_GUARD_BEATS) {
       // Решение о ноте принимается в момент планирования — то же распределение,
       // что раньше, но огибающая стартует точно на сетке.
-      if (this.masterGainNode && Math.random() <= config.melodyChance) {
+      if (this.masterGainNode && Math.random() <= config.melodyChance * MELODY_CHANCE_BOOST) {
         this.playMelodyNote(config, this.nextMelodyTime);
       }
       this.nextMelodyTime += this.melodyStepSec(config);
@@ -1564,7 +1577,7 @@ class MusicEngine {
     if (beatInBar !== 0 && beatInBar !== 2) return;
 
     const beatDur = this.beatDurationSec(config);
-    const bassLevel = config.bassGain * this.musicVolume;
+    const bassLevel = config.bassGain * this.musicVolume * BASS_GAIN_BOOST;
     try {
       bassGain.gain.setValueAtTime(0.001, t);
       bassGain.gain.linearRampToValueAtTime(bassLevel, t + 0.1);
@@ -1687,7 +1700,7 @@ class MusicEngine {
 
     // Melody envelope: slow attack, sustain, slow release
     const noteDuration = 1.5 + Math.random() * 2; // 1.5 - 3.5 seconds
-    const melodyLevel = config.melodyGain * this.musicVolume;
+    const melodyLevel = config.melodyGain * this.musicVolume * MELODY_GAIN_BOOST;
 
     const envGain = ctx.createGain();
     envGain.gain.setValueAtTime(0.001, now);
