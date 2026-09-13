@@ -13,7 +13,7 @@ import { ProloguePerfectionOverlay } from '@/components/game/prologue/ProloguePe
 import { useMenuSavePreview } from '@/components/game/menu/useMenuSavePreview';
 import { useMenuScreen } from '@/components/game/menu/useMenuScreen';
 import {
-  APP_VERSION,
+  APP_BUILD,
   MENU_DEDICATION,
   MENU_POET_CREDIT,
   MENU_SUBTITLE,
@@ -302,7 +302,8 @@ function MenuScreenPanelInner() {
         className="absolute bottom-8 left-6 z-30 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-stone-800/30"
         aria-hidden="true"
       >
-        <span className="font-serif text-[10px] tracking-[0.18em] text-stone-500/70">v{APP_VERSION}</span>
+        {/* v4.36.1: билд-метка «версия · sha» — видно, какой коммит играет. */}
+        <span className="font-serif text-[10px] tracking-[0.18em] text-stone-500/70">v{APP_BUILD}</span>
       </motion.div>
 
       <AnimatePresence>{menu.showAbout ? <MenuAboutPanel onClose={menu.closeAbout} /> : null}</AnimatePresence>

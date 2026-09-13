@@ -1,6 +1,6 @@
-import { APP_VERSION } from '@/shared/constants/appVersion';
+import { APP_BUILD, APP_VERSION } from '@/shared/constants/appVersion';
 
-export { APP_VERSION };
+export { APP_BUILD, APP_VERSION };
 
 export const MENU_TITLE = 'ВОЛОДЬКА';
 export const MENU_SUBTITLE = 'сказка между сменами';

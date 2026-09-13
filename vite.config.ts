@@ -1,4 +1,5 @@
 import path from "path";
+import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
@@ -13,6 +14,22 @@ import { rapierInitFix } from "./vite/rapierInitFix";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// v4.36.1: SHA коммита вшивается в бандл (define __BUILD_SHA__). Чип версии в
+// меню показывает «версия · sha» — позволяет мгновенно определить, какой коммит
+// реально играет у пользователя (прод застревал на 132 коммита позади, а
+// заметили это только по «не заметно разницы»).
+const BUILD_SHA = (() => {
+  try {
+    return (
+      execSync("git rev-parse --short HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+        .toString()
+        .trim() || "dev"
+    );
+  } catch {
+    return "dev";
+  }
+})();
 
 // Fail-fast guard: emit warnings if a module id is listed in more than one
 // DATA_* bucket in vite/chunks.ts (would cause non-deterministic chunking).
@@ -40,6 +57,10 @@ export default defineConfig(({ mode }) => {
       : [];
 
   return {
+  // v4.36.1: SHA текущего коммита как глобальная константа бандла.
+  define: {
+    __BUILD_SHA__: JSON.stringify(BUILD_SHA),
+  },
   // rapierInitFix pre-expands the ~2 MB single-line rapier.mjs via esbuild
   // (Rollup cannot parse it as-is) and patches the wasm-bindgen init signature
   // (upstream passes a raw Uint8Array where `{ module_or_path }` is expected).
