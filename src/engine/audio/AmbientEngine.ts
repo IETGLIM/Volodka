@@ -78,6 +78,17 @@ const AMBIENT_DUCK_GAIN: Record<AmbientDuckProfile, number> = {
   cinematic: 0.38,
 };
 
+/* ── v4.38.0: Восстановление слышимости процедурного эмбиента ──
+ * Слои конфигов заданы на 0.012–0.04 (ambientConfigs.ts); при дефолтных 60%
+ * громкости суммарный уровень лежал на −38…−32 дБ — процедурный эмбиент
+ * фактически неслышим (файловые .ogg-лупы при этом слышны: 0.42 линейно).
+ * Makeup-усиление шины ×4 (+12 дБ) выводит дроны на слышимый уровень
+ * −26…−20 дБ — под музыкой (−22…−18 дБ) и SFX (−17…−13 дБ).
+ * Попутный фикс: destination-шина настраивалась ОДИН раз в initContext и
+ * не реагировала на setVolume (stale-гейн со старым baseVolume). */
+/** Makeup-усиление шины эмбиента (линейно; ×4 ≈ +12 дБ). */
+const AMBIENT_BUS_MAKEUP_GAIN = 4;
+
 /* ── FIX (perf): кэш noise-буферов по sampleRate. Раньше 4-секундный буфер
    (~192k сэмплов Math.random) синтезировался синхронно при КАЖДОМ кроссфейде
    амбиента (смена сцены, reduced-motion) — 1–2 мс мейн-треда + GC-мусор.
@@ -135,7 +146,8 @@ export class AmbientSoundPlayer {
     this.ctx = getSharedAudioContext();
     if (this.ctx) {
       this.destination = this.ctx.createGain();
-      this.destination.gain.value = this.baseVolume;
+      // v4.38.0: makeup ×4 — процедурные дроны на 0.012–0.04 были неслышимы
+      this.destination.gain.value = this.baseVolume * AMBIENT_BUS_MAKEUP_GAIN;
       this.destination.connect(this.ctx.destination);
     }
   }
@@ -682,6 +694,18 @@ export class AmbientSoundPlayer {
   setVolume(vol: number): void {
     if (this.disposed) return;
     this.baseVolume = Math.max(0, Math.min(1, vol));
+    // v4.38.0 FIX: destination-шина раньше настраивалась один раз в initContext
+    // и не реагировала на смену громкости (stale-гейн × старый baseVolume).
+    if (this.ctx && this.destination) {
+      try {
+        this.destination.gain.setValueAtTime(
+          this.baseVolume * AMBIENT_BUS_MAKEUP_GAIN,
+          this.ctx.currentTime,
+        );
+      } catch {
+        /* узел уже освобождён — игнорируем */
+      }
+    }
     this.applyVolume();
   }
 

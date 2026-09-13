@@ -103,6 +103,26 @@ const PRESENTATION_DUCK_GAIN: Record<PresentationDuckProfile, number> = {
   cinematic: 0.58,
 };
 
+/* ──────────────────── v4.38.0: Восстановление слышимости музыкальной шины ────────────────────
+ * Дефект №1 (критический, с v3.1.0): padGain создавался в 0 и никогда не
+ * поднимался — пэд-слой (аккорды, основная масса музыки) выдавал тишину.
+ * git log -S «padGain.gain.linearRampToValueAtTime» — ни одного совпадения
+ * за всю историю файла: ramp не существовал никогда.
+ *
+ * Дефект №2: уровни шины — на −30…−48 дБ. Даже «живые» слои при дефолтных
+ * 70% громкости: бас = bassGain 0.012–0.025 × 0.7 (−42…−35 дБ), мелодия =
+ * melodyGain 0.004–0.008 × 0.7 (−48…−41 дБ). Для сравнения SFX-пресеты
+ * 0.15–0.22 × 0.8 (−17…−13 дБ) — в 20–30 раз громче по амплитуде.
+ * Итог для игрока: «музыка отсутствует» — слышны только SFX.
+ *
+ * Фикс: (а) padGain взводится ramp 0→1 за 2 с (атаки голосов и мастер-фейд
+ * той же длительности дают плавный вход); (б) makeup-усиление шины ×6
+ * (+15.6 дБ) в обоих местах расчёта effectiveGain; (в) лимитер перед
+ * destination (threshold −6 дБ, ratio 12) — сумма слоёв не клиппует. */
+
+/** Makeup-усиление музыкальной шины (линейно; ×6 ≈ +15.6 дБ). */
+const MUSIC_BUS_MAKEUP_GAIN = 6;
+
 const INTENSITY_TEMPO_MULTIPLIER: Record<MusicIntensityLayer, number> = {
   exploration: 1,
   tension: 1.14,
@@ -721,6 +741,8 @@ function buildChord(
 class MusicEngine {
   private ctx: AudioContext | null = null;
   private masterGainNode: GainNode | null = null;
+  /** v4.38.0: лимитер музыкальной шины (master → limiter → destination). */
+  private busLimiter: DynamicsCompressorNode | null = null;
   private musicVolume = 0.5; // 0-1 user-facing volume
   private presentationDuckProfile: PresentationDuckProfile = 'none';
   /** Additional duck factor from cinematic timelines (1 = no duck, 0.3 = ducked to 30%). */
@@ -816,13 +838,33 @@ class MusicEngine {
     if (this.ctx && this.ctx.state === 'closed') {
       this.ctx = null;
       this.masterGainNode = null;
+      // v4.38.0: лимитер мёртвого контекста тоже рвём (иначе узел течёт)
+      if (this.busLimiter) {
+        try { this.busLimiter.disconnect(); } catch { /* ignore */ }
+        this.busLimiter = null;
+      }
     }
     if (this.ctx) return;
     this.ctx = getSharedAudioContext();
     if (this.ctx) {
       this.masterGainNode = this.ctx.createGain();
       this.masterGainNode.gain.value = 0; // Start silent, fade in
-      this.masterGainNode.connect(this.ctx.destination);
+      // v4.38.0: лимитер музыкальной шины — makeup ×6 и сумма слоёв
+      // (пэд + бас + мелодия) не должны клипповать на пиках.
+      try {
+        this.busLimiter = this.ctx.createDynamicsCompressor();
+        this.busLimiter.threshold.value = -6;
+        this.busLimiter.knee.value = 6;
+        this.busLimiter.ratio.value = 12;
+        this.busLimiter.attack.value = 0.003;
+        this.busLimiter.release.value = 0.25;
+        this.masterGainNode.connect(this.busLimiter);
+        this.busLimiter.connect(this.ctx.destination);
+      } catch {
+        // Лимитер недоступен (экзотический браузер) — прямое подключение.
+        this.masterGainNode.connect(this.ctx.destination);
+        this.busLimiter = null;
+      }
     }
   }
 
@@ -1140,6 +1182,11 @@ class MusicEngine {
       try { this.masterGainNode.disconnect(); } catch { /* ignore */ }
       this.masterGainNode = null;
     }
+    // v4.38.0: лимитер шины — часть initContext-инфраструктуры, рвём при dispose
+    if (this.busLimiter) {
+      try { this.busLimiter.disconnect(); } catch { /* ignore */ }
+      this.busLimiter = null;
+    }
     this.ctx = null; // Release reference to shared context (don't close it)
   }
 
@@ -1225,7 +1272,12 @@ class MusicEngine {
 
     // ── Pad gain ──
     this.padGain = ctx.createGain();
+    // v4.38.0 FIX (критический): раньше padGain создавался в 0 и НИКОГДА не
+    // поднимался — пэд-аккорды не звучали вовсе (ramp отсутствовал во всей
+    // истории файла). Взводим шину пэда: атаки голосов (2 с) и мастер-фейд
+    // (2 с) дают плавный вход без щелчка.
     this.padGain.gain.setValueAtTime(0, now);
+    this.padGain.gain.linearRampToValueAtTime(1, now + 2);
 
     // ── Routing: pad oscs → pad filter → pad gain → (dry [+ wet]) → master ──
     this.padFilter.connect(this.padGain);
@@ -1241,10 +1293,17 @@ class MusicEngine {
     this.padLfo.start(now);
 
     // ── Fade in master gain over 2 seconds ──
+    // v4.38.0: makeup ×6 — без него шина лежит на −30…−48 дБ (неслышимо).
     const effectiveGain =
-      config.masterGain * this.musicVolume * PRESENTATION_DUCK_GAIN[this.presentationDuckProfile] * this.cinematicTimelineDuckFactor;
+      config.masterGain * MUSIC_BUS_MAKEUP_GAIN * this.musicVolume * PRESENTATION_DUCK_GAIN[this.presentationDuckProfile] * this.cinematicTimelineDuckFactor;
     dest.gain.setValueAtTime(0, now);
     dest.gain.linearRampToValueAtTime(effectiveGain, now + 2);
+
+    // Прод-маркер для диагностики «музыки нет»: подтверждает реальный старт
+    // бэда и итоговый целевой гейн (виден в консоли прод-деплоя).
+    try {
+      console.info(`[audio:music] bed '${sceneId}' → gain ${effectiveGain.toFixed(3)} (makeup ×${MUSIC_BUS_MAKEUP_GAIN}, pad on)`);
+    } catch { /* консоль недоступна — не критично */ }
 
     // ── Start pad layer ──
     this.playPadChord(config, now);
@@ -1691,7 +1750,8 @@ class MusicEngine {
     if (!this.masterGainNode || !this.ctx) return;
 
     const duckMul = PRESENTATION_DUCK_GAIN[this.presentationDuckProfile] * this.cinematicTimelineDuckFactor;
-    const effectiveGain = (this.currentConfig?.masterGain ?? 0.04) * this.musicVolume * duckMul;
+    // v4.38.0: makeup ×6 — согласовано с fade-in в startMusicForScene.
+    const effectiveGain = (this.currentConfig?.masterGain ?? 0.04) * MUSIC_BUS_MAKEUP_GAIN * this.musicVolume * duckMul;
     const now = this.ctx.currentTime;
     const safeRamp = Number.isFinite(rampSec) && rampSec > 0 ? rampSec : 0.45;
     this.masterGainNode.gain.setValueAtTime(this.masterGainNode.gain.value, now);

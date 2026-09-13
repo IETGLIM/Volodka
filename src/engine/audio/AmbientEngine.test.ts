@@ -254,3 +254,40 @@ describe('AmbientSoundPlayer crossfade', () => {
     expect(internal.currentAmbient?.randomTimers).toHaveLength(0);
   });
 });
+
+/* ─── v4.38.0: регресс слышимости процедурного эмбиента («звука нет») ─── */
+describe('AmbientSoundPlayer audible bus (v4.38.0)', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    mockGetSharedAudioContext.mockImplementation(() => buildMockAudioContext());
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('applies ×4 makeup to destination bus and refreshes it on setVolume', () => {
+    const player = new AmbientSoundPlayer();
+    const internal = player as unknown as {
+      initContext: () => void;
+      destination: {
+        gain: {
+          value: number;
+          setValueAtTime: ReturnType<typeof vi.fn>;
+        };
+      } | null;
+    };
+
+    internal.initContext();
+    expect(internal.destination).not.toBeNull();
+    // база 0.7 × makeup 4 = 2.8 (раньше шина оставалась на неслышимых −34 дБ)
+    expect(internal.destination!.gain.value).toBeCloseTo(2.8, 5);
+
+    // FIX: destination раньше настраивался один раз и не реагировал на setVolume
+    player.setVolume(0.5);
+    expect(internal.destination!.gain.setValueAtTime).toHaveBeenCalledWith(
+      2.0,
+      expect.anything(),
+    );
+  });
+});
