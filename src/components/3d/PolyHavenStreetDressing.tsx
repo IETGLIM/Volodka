@@ -167,11 +167,14 @@ function StreetPropDressing() {
     [],
   );
   // Benches: 3 × ~3 parts ≈ 9 → 3
+  // FIX v4.36.0: натив скамьи измерен — 1.16×0.89 м; прежние 1.35/1.15/1.1
+  // давали 0.98–1.20 м ростом (скамья почти с человека). ~×1.0 сохраняет
+  // авторские пропорции: 1.05–1.16 м длина, 0.80–0.89 м высота.
   const benchInstances = useMemo<InstancedPropTransform[]>(
     () => [
-      { position: [0, 0, 0], scale: 1.35 },
-      { position: [-4.4, 0, 2.0], rotation: [0, Math.PI / 2, 0], scale: 1.15 },
-      { position: [3.8, 0, -6.4], rotation: [0, -0.4, 0], scale: 1.1 },
+      { position: [0, 0, 0], scale: 1.0 },
+      { position: [-4.4, 0, 2.0], rotation: [0, Math.PI / 2, 0], scale: 0.95 },
+      { position: [3.8, 0, -6.4], rotation: [0, -0.4, 0], scale: 0.9 },
     ],
     [],
   );
@@ -248,7 +251,9 @@ function StreetPropDressing() {
         <GltfProp url={POLYHAVEN_MODELS.streetLamp} position={[-6.2, 0, -1.2]} scale={1.0} castShadow={castShadow} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
-        <GltfProp url={POLYHAVEN_MODELS.streetLampAlt} position={[5.8, 0, 2.8]} rotationY={Math.PI / 5} scale={1.0} castShadow={castShadow} groundAnchor />
+        {/* FIX v4.36.0: натив street_lamp_02 — 1.68 м (minY −0.395); ×1.0 давал
+            1.28 м над землёй — фонарь ниже игрока. ×2.6 + groundAnchor → ≈4.37 м. */}
+        <GltfProp url={POLYHAVEN_MODELS.streetLampAlt} position={[5.8, 0, 2.8]} rotationY={Math.PI / 5} scale={2.6} castShadow={castShadow} groundAnchor />
       </Suspense>
       <Suspense fallback={null}>
         {/* Подвесной светильник — origin = точка крепления — БЕЗ groundAnchor. */}
@@ -281,6 +286,8 @@ function AuthoredStreetArchitecture() {
     <group>
       {AUTHORED_STREET_FACADES.map((p, i) => (
         <Suspense key={`street-authored-facade-${i}`} fallback={null}>
+          {/* FIX v4.36.0: натив фасада minY −2.0 — без якоря инстанс топил
+              наземный этаж на −2.36…−4.76 м (двери первого этажа под землёй). */}
           <GltfProp
             url={POLYHAVEN_MODELS.urbanFacade}
             position={p.position}
@@ -288,6 +295,7 @@ function AuthoredStreetArchitecture() {
             scale={p.scale}
             castShadow={castShadow}
             variant={p.variant}
+            groundAnchor
           />
         </Suspense>
       ))}

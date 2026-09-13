@@ -7,6 +7,7 @@ import {
   STREET_FACADE_SCALE,
   STREET_SHUTTER_DOOR_SCALE,
   STREET_SHUTTER_WINDOW_SCALE,
+  URBAN_FACADE_NATIVE_HEIGHT_M,
 } from './metricScaleCoherence';
 import { WAKEUP_CAMERA_WAYPOINTS } from '@/engine/wakeup/wakeUpCinematic';
 
@@ -51,9 +52,29 @@ describe('metricScaleCoherence', () => {
     expect(walking.lookAt.y).toBeLessThan(1.65);
   });
 
-  it('street facade multipliers stay in 2-storey band', () => {
-    expect(STREET_FACADE_SCALE.hero).toBeGreaterThan(2.0);
-    expect(STREET_FACADE_SCALE.hero).toBeLessThan(2.6);
+  it('street facade multipliers map measured 17 m native into 15–25 m silhouette band', () => {
+    // Натив modular_urban_apartments_facade измерен по GLB:
+    // accessor min/max × node-TRS → 51.53×17.0×6.66 м. Прежние ×1.78–2.38
+    // (посылка «~3 м shell») давали 30–41 м — против процедурного силуэта 15–25 м.
+    const heroHeightM = STREET_FACADE_SCALE.hero * URBAN_FACADE_NATIVE_HEIGHT_M;
+    const midHeightM = STREET_FACADE_SCALE.mid * URBAN_FACADE_NATIVE_HEIGHT_M;
+    const sideHeightM = STREET_FACADE_SCALE.side * URBAN_FACADE_NATIVE_HEIGHT_M;
+    expect(heroHeightM).toBeGreaterThan(19);
+    expect(heroHeightM).toBeLessThan(22);
+    expect(midHeightM).toBeGreaterThan(16.5);
+    expect(midHeightM).toBeLessThan(19);
+    expect(sideHeightM).toBeGreaterThan(14);
+    expect(sideHeightM).toBeLessThan(16);
+    // Максимальная длина инстанса не выходит за пределы квартала (~61 м при hero).
+    expect(51.53 * STREET_FACADE_SCALE.hero).toBeLessThan(70);
+  });
+
+  it('audit documents facade/lamp/bench scale fixes as measured rows', () => {
+    for (const id of ['street_facade', 'street_lamp_alt', 'bench_scale']) {
+      const row = METRIC_SCALE_AUDIT.find((r) => r.id === id);
+      expect(row, `audit row ${id}`).toBeDefined();
+      expect(row?.status).toBe('fixed');
+    }
   });
 
   it('marks interior shell exterior-impostor debt as fixed in the audit', () => {

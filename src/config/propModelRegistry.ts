@@ -246,8 +246,11 @@ export const PROP_MODEL_REGISTRY: Record<string, PropModelDefinition> = {
   polyhaven_bench: {
     id: 'polyhaven_bench',
     url: POLYHAVEN_MODELS.bench,
-    targetSizeM: [2.05, 0.88, 0.78],
-    fitAxis: 'width',
+    // FIX v4.36.0: натив скамьи ИЗМЕРЕН — 1.16×0.89×0.5 м. Прежний width-fit
+    // [2.05, 0.88, 0.78] давал scale 1.77 и скамью 1.57 м ростом. Height-fit
+    // 0.9 м сохраняет авторские пропорции (scale ≈ 1.01, длина ≈ 1.17 м).
+    targetSizeM: [1.75, 0.9, 0.7],
+    fitAxis: 'height',
     license: 'CC0',
     source: 'Poly Haven — painted wooden bench',
     sourceUrl: POLYHAVEN_URL,

@@ -152,14 +152,16 @@ function AuthoredPlazaProp({
 }
 
 const authoredBenches = [
-  { position: [-6, 0, -4] as [number, number, number], rotationY: 0.08, scale: 1.18 },
-  { position: [6, 0, -4] as [number, number, number], rotationY: -0.1, scale: 1.18 },
-  { position: [-6, 0, 5] as [number, number, number], rotationY: Math.PI + 0.14, scale: 1.12 },
-  { position: [6, 0, 5] as [number, number, number], rotationY: Math.PI - 0.08, scale: 1.12 },
-  { position: [0, 0, 8] as [number, number, number], rotationY: Math.PI / 2, scale: 1.15 },
+  // FIX v4.36.0: натив скамьи 1.16×0.89 м — ×1.18 давал 1.05 м ростом; ~×1.0
+  // сохраняет пропорции (см. audit-строку bench_scale в metricScaleCoherence).
+  { position: [-6, 0, -4] as [number, number, number], rotationY: 0.08, scale: 1.0 },
+  { position: [6, 0, -4] as [number, number, number], rotationY: -0.1, scale: 1.0 },
+  { position: [-6, 0, 5] as [number, number, number], rotationY: Math.PI + 0.14, scale: 0.95 },
+  { position: [6, 0, 5] as [number, number, number], rotationY: Math.PI - 0.08, scale: 0.95 },
+  { position: [0, 0, 8] as [number, number, number], rotationY: Math.PI / 2, scale: 0.98 },
   // Match full procedural ring — High previously dropped the ±9 side seats.
-  { position: [-9, 0, 1] as [number, number, number], rotationY: Math.PI / 2 + 0.12, scale: 1.1 },
-  { position: [9, 0, -1] as [number, number, number], rotationY: -Math.PI / 2 - 0.1, scale: 1.1 },
+  { position: [-9, 0, 1] as [number, number, number], rotationY: Math.PI / 2 + 0.12, scale: 0.95 },
+  { position: [9, 0, -1] as [number, number, number], rotationY: -Math.PI / 2 - 0.1, scale: 0.95 },
 ];
 
 const authoredProps = [
@@ -183,12 +185,15 @@ const authoredProps = [
 ];
 
 const authoredArchitecture = [
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.3, 0, -9.5] as [number, number, number], rotationY: Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.hero },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.0, 0, 3.6] as [number, number, number], rotationY: Math.PI / 2 - 0.03, scale: STREET_FACADE_SCALE.mid },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.2, 0, -10.3] as [number, number, number], rotationY: -Math.PI / 2 - 0.05, scale: STREET_FACADE_SCALE.hero + 0.04 },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.4, 0, 4.2] as [number, number, number], rotationY: -Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.mid + 0.02 },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [-4.2, 0, -13.4] as [number, number, number], rotationY: 0.02, scale: STREET_FACADE_SCALE.mid },
-  { url: POLYHAVEN_MODELS.urbanFacade, position: [5.6, 0, -13.25] as [number, number, number], rotationY: -0.03, scale: STREET_FACADE_SCALE.mid },
+  // FIX v4.36.0: масштабы фасадов согласованы с измеренным нативом 51.5×17.0 м
+  // (см. STREET_FACADE_SCALE); всем инстансам обязателен groundAnchor —
+  // натив minY −2.0 без якоря топил наземный этаж на −2.1…−4.76 м.
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.3, 0, -9.5] as [number, number, number], rotationY: Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.hero, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [-13.0, 0, 3.6] as [number, number, number], rotationY: Math.PI / 2 - 0.03, scale: STREET_FACADE_SCALE.mid, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.2, 0, -10.3] as [number, number, number], rotationY: -Math.PI / 2 - 0.05, scale: STREET_FACADE_SCALE.hero + 0.04, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [13.4, 0, 4.2] as [number, number, number], rotationY: -Math.PI / 2 + 0.04, scale: STREET_FACADE_SCALE.mid + 0.02, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [-4.2, 0, -13.4] as [number, number, number], rotationY: 0.02, scale: STREET_FACADE_SCALE.mid, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.urbanFacade, position: [5.6, 0, -13.25] as [number, number, number], rotationY: -0.03, scale: STREET_FACADE_SCALE.mid, groundAnchor: true },
   { url: POLYHAVEN_MODELS.shutterDoor, position: [-10.9, 0, -4.8] as [number, number, number], rotationY: Math.PI / 2, scale: STREET_SHUTTER_DOOR_SCALE },
   { url: POLYHAVEN_MODELS.shutterDoor, position: [10.9, 0, 5.2] as [number, number, number], rotationY: -Math.PI / 2, scale: STREET_SHUTTER_DOOR_SCALE * 0.96 },
   // FIX v4.35.0 (паритет с фикс-ом v4.14.0 в street_night): прежние 1.25/1.18
@@ -228,7 +233,10 @@ function AuthoredPlazaDressing({ castShadow }: { castShadow: boolean }) {
             url={index % 2 === 0 ? POLYHAVEN_MODELS.streetLamp : POLYHAVEN_MODELS.streetLampAlt}
             position={[x, 0, z]}
             rotationY={index % 2 ? Math.PI / 7 : -Math.PI / 9}
-            scale={1.05}
+            // FIX v4.36.0: лампы разных нативов — street_lamp_01 3.87 м (×1.05 →
+            // 4.06 м), street_lamp_02 всего 1.68 м (×1.05 → 1.35 м — ниже игрока).
+            // ×2.6 для alt даёт ≈4.37 м — паритет с lamp_01.
+            scale={index % 2 === 0 ? 1.05 : 2.6}
             castShadow={castShadow}
             // street_lamp_02 имеет minY −0.395 (см. GltfProp street_night) —
             // без якоря фонари утоплены в плиту на ~0.41 м.

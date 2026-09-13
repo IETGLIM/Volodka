@@ -34,12 +34,22 @@ export const STREET_SHUTTER_DOOR_SCALE =
 export const STREET_SHUTTER_WINDOW_SCALE =
   PLAYER_METRIC.residentialWindowHeightM / PLAYER_METRIC.storefrontShutterWindowHeightM;
 
-/** Urban facade backdrop — ~3 m shell × multiplier ≈ 7–8 m (2–3 storeys). */
+/** Urban facade backdrop — Poly Haven modular_urban_apartments_facade.
+ *  FIX v4.36.0: натив ИЗМЕРЕН по GLB (accessor min/max × node-TRS):
+ *  51.53 × 17.0 × 6.66 м, minY −2.0. Прежние ×1.78–2.38 рассчитывались из
+ *  неверной посылки «~3 м shell» и давали башни 30–41 м высоты и до 123 м
+ *  длины при процедурном силуэте тех же слотов 15–25 м. Новые множители
+ *  согласуют силуэт: hero ×1.18 ≈ 20.1 м (5–6 этажей), mid ×1.03 ≈ 17.5 м,
+ *  side ×0.88 ≈ 15.0 м. Размещение фасадов обязано включать groundAnchor
+ *  (minY −2.0 без якоря топит наземный этаж на −2.36…−4.76 м). */
 export const STREET_FACADE_SCALE = {
-  hero: 2.38,
-  mid: 1.96,
-  side: 1.78,
+  hero: 1.18,
+  mid: 1.03,
+  side: 0.88,
 } as const;
+
+/** Измеренная нативная высота фасадного GLB (м) — якорь для тестов масштаба. */
+export const URBAN_FACADE_NATIVE_HEIGHT_M = 17.0;
 
 /** Plaza monument — human-scale obelisk/statue (~1.6 m), not cathedral scale. */
 export const PLAZA_MONUMENT_SCALE = 0.88;
@@ -114,10 +124,26 @@ export const METRIC_SCALE_AUDIT: readonly ScaleAuditRow[] = [
   {
     id: 'street_facade',
     domain: 'street',
-    targetM: 8,
-    applied: `PH urbanFacade × ${STREET_FACADE_SCALE.hero}`,
-    status: 'ok',
-    note: 'Backdrop shells, not walkable interior',
+    targetM: 20,
+    applied: `PH urbanFacade × ${STREET_FACADE_SCALE.hero} ≈ ${(URBAN_FACADE_NATIVE_HEIGHT_M * STREET_FACADE_SCALE.hero).toFixed(1)} м (натив 17.0 м)`,
+    status: 'fixed',
+    note: 'Было ×2.38 → 40.5 м из посылки «~3 м shell»; натив измерен 51.5×17.0 м. Силуэт согласован с процедурным бэкдропом 15–25 м; фасадам добавлен groundAnchor (minY −2.0 топил наземный этаж до −4.76 м).',
+  },
+  {
+    id: 'street_lamp_alt',
+    domain: 'street',
+    targetM: 4.2,
+    applied: 'street_lamp_02 (натив 1.68 м, minY −0.395) × 2.6 + groundAnchor ≈ 4.37 м',
+    status: 'fixed',
+    note: 'Было ×1.0–1.05 → 1.28–1.35 м над землёй — фонарь ниже игрока 1.75 м. Registry-путь (targetSizeM 3.4, height-fit) был корректен — сломан только manualScale-путь.',
+  },
+  {
+    id: 'bench_scale',
+    domain: 'street',
+    targetM: 0.9,
+    applied: 'painted_wooden_bench (натив 1.16×0.89 м) height-fit 0.9 м',
+    status: 'fixed',
+    note: 'Было: InstancedProp ×1.35 → 1.20 м ростом; registry width-fit [2.05, 0.88] → скамья 1.57 м ростом. Нативные пропорции корректны при scale ≈ 1.',
   },
   {
     id: 'plaza_monument',
