@@ -4,7 +4,7 @@
 
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
-import { Group, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
+import { Box3, Group, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
@@ -98,15 +98,23 @@ function AuthoredPlazaProp({
   rotationY = 0,
   scale = 1,
   castShadow,
+  groundAnchor = false,
 }: {
   url: string;
   position: [number, number, number];
   rotationY?: number;
   scale?: number;
   castShadow: boolean;
+  /** FIX v4.35.0 (паритет с GltfProp street_night): поднять модель так, чтобы
+   *  её низ стоял на authored Y. Часть Poly Haven-пропсов имеет minY<0
+   *  (fire_escape −3.65, old_tyre −0.30, power_box −0.252, trash_can −0.16,
+   *  street_lamp_02 −0.395) — без якоря они уходят под плиту площади.
+   *  НЕ включать для настенных/подвесных пропсов (aircon, камеры, люк). */
+  groundAnchor?: boolean;
 }) {
   const gltf = useGLTF(url, true, true, extendLoader);
   const [scene, setScene] = useState<Object3D | null>(null);
+  const [footLift, setFootLift] = useState(0);
   const cloneRef = useRef<Object3D | null>(null);
 
   useEffect(() => {
@@ -115,6 +123,14 @@ function AuthoredPlazaProp({
       disposeClonedScene(cloneRef.current, { skip: createSourceSkipSet(gltf.scene) });
     }
     cloneRef.current = next;
+    if (groundAnchor) {
+      // Низ AABB (в локальных единицах модели) → внутренний сдвиг; внешний
+      // scale группы умножит его в мировые единицы, как footY в fitPropGltf.
+      const bbox = new Box3().setFromObject(next);
+      setFootLift(Number.isFinite(bbox.min.y) ? -bbox.min.y : 0);
+    } else {
+      setFootLift(0);
+    }
     setScene(next);
     return () => {
       if (cloneRef.current) {
@@ -122,13 +138,15 @@ function AuthoredPlazaProp({
         cloneRef.current = null;
       }
     };
-  }, [gltf.scene, castShadow]);
+  }, [gltf.scene, castShadow, groundAnchor]);
 
   if (!scene) return null;
 
   return (
     <group position={position} rotation={[0, rotationY, 0]} scale={scale}>
-      <primitive object={scene} />
+      <group position={[0, footLift, 0]}>
+        <primitive object={scene} />
+      </group>
     </group>
   );
 }
@@ -148,16 +166,16 @@ const authoredProps = [
   { url: POLYHAVEN_MODELS.roadBarrier, position: [-10.2, 0, -8.2] as [number, number, number], rotationY: 0.2, scale: 1.45 },
   { url: POLYHAVEN_MODELS.roadBarrierAlt, position: [-6.8, 0, -9.4] as [number, number, number], rotationY: -0.1, scale: 1.15 },
   { url: POLYHAVEN_MODELS.shutterDoor, position: [10.25, 0, -8.3] as [number, number, number], rotationY: Math.PI + 0.02, scale: STREET_SHUTTER_DOOR_SCALE },
-  { url: POLYHAVEN_MODELS.metalTrashCan, position: [-9.7, 0, 8.4] as [number, number, number], rotationY: 0.5, scale: 1.15 },
+  { url: POLYHAVEN_MODELS.metalTrashCan, position: [-9.7, 0, 8.4] as [number, number, number], rotationY: 0.5, scale: 0.67, groundAnchor: true },
   { url: POLYHAVEN_MODELS.trashbag, position: [-9.25, 0, 8.75] as [number, number, number], rotationY: -0.4, scale: 1.2 },
   { url: POLYHAVEN_MODELS.cardboardBox, position: [9.4, 0, 8.25] as [number, number, number], rotationY: 0.35, scale: 1.25 },
-  { url: POLYHAVEN_MODELS.wetFloorSign, position: [3.2, 0, -5.9] as [number, number, number], rotationY: -0.45, scale: 1.1 },
+  { url: POLYHAVEN_MODELS.wetFloorSign, position: [3.2, 0, -5.9] as [number, number, number], rotationY: -0.45, scale: 1.1, groundAnchor: true },
   { url: POLYHAVEN_MODELS.barrel, position: [-3.4, 0, -6.05] as [number, number, number], rotationY: 0.6, scale: 1.08 },
-  { url: POLYHAVEN_MODELS.utilityBox, position: [10.4, 0, 8.2] as [number, number, number], rotationY: -0.2, scale: 1.05 },
-  { url: POLYHAVEN_MODELS.powerBox, position: [-10.35, 0, 5.8] as [number, number, number], rotationY: Math.PI / 2, scale: 0.9 },
-  { url: POLYHAVEN_MODELS.oldTyre, position: [-8.4, 0, 7.6] as [number, number, number], rotationY: 0.7, scale: 1.2 },
+  { url: POLYHAVEN_MODELS.utilityBox, position: [10.4, 0, 8.2] as [number, number, number], rotationY: -0.2, scale: 1.05, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.powerBox, position: [-10.35, 0, 5.8] as [number, number, number], rotationY: Math.PI / 2, scale: 0.9, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.oldTyre, position: [-8.4, 0, 7.6] as [number, number, number], rotationY: 0.7, scale: 1.2, groundAnchor: true },
   { url: POLYHAVEN_MODELS.manholeCover, position: [4.8, 0.035, 3.2] as [number, number, number], rotationY: 0.2, scale: 1.1 },
-  { url: POLYHAVEN_MODELS.woodenCrate, position: [8.75, 0, 7.72] as [number, number, number], rotationY: -0.35, scale: 1.16 },
+  { url: POLYHAVEN_MODELS.woodenCrate, position: [8.75, 0, 7.72] as [number, number, number], rotationY: -0.35, scale: 1.16, groundAnchor: true },
   { url: POLYHAVEN_MODELS.exteriorAirconUnit, position: [-10.9, 3.6, -2.2] as [number, number, number], rotationY: Math.PI / 2, scale: 1.0 },
   { url: POLYHAVEN_MODELS.exteriorAirconUnit, position: [10.85, 3.85, 1.8] as [number, number, number], rotationY: -Math.PI / 2, scale: 0.92 },
   { url: POLYHAVEN_MODELS.securityCamera, position: [-10.55, 3.1, 3.7] as [number, number, number], rotationY: Math.PI / 2, scale: 0.82 },
@@ -173,8 +191,11 @@ const authoredArchitecture = [
   { url: POLYHAVEN_MODELS.urbanFacade, position: [5.6, 0, -13.25] as [number, number, number], rotationY: -0.03, scale: STREET_FACADE_SCALE.mid },
   { url: POLYHAVEN_MODELS.shutterDoor, position: [-10.9, 0, -4.8] as [number, number, number], rotationY: Math.PI / 2, scale: STREET_SHUTTER_DOOR_SCALE },
   { url: POLYHAVEN_MODELS.shutterDoor, position: [10.9, 0, 5.2] as [number, number, number], rotationY: -Math.PI / 2, scale: STREET_SHUTTER_DOOR_SCALE * 0.96 },
-  { url: POLYHAVEN_MODELS.fireEscape, position: [-12.85, 0, 1.2] as [number, number, number], rotationY: Math.PI / 2, scale: 1.25 },
-  { url: POLYHAVEN_MODELS.fireEscape, position: [12.9, 0, -6.2] as [number, number, number], rotationY: -Math.PI / 2, scale: 1.18 },
+  // FIX v4.35.0 (паритет с фикс-ом v4.14.0 в street_night): прежние 1.25/1.18
+  // давали 12-метровые лестницы с уходом под плиту на ~4.6 м (натив minY −3.65,
+  // высота 9.76 м). 0.55/0.52 — внутри документированного коридора 0.5–0.62.
+  { url: POLYHAVEN_MODELS.fireEscape, position: [-12.85, 0, 1.2] as [number, number, number], rotationY: Math.PI / 2, scale: 0.55, groundAnchor: true },
+  { url: POLYHAVEN_MODELS.fireEscape, position: [12.9, 0, -6.2] as [number, number, number], rotationY: -Math.PI / 2, scale: 0.52, groundAnchor: true },
 ];
 
 function AuthoredPlazaDressing({ castShadow }: { castShadow: boolean }) {
@@ -209,6 +230,9 @@ function AuthoredPlazaDressing({ castShadow }: { castShadow: boolean }) {
             rotationY={index % 2 ? Math.PI / 7 : -Math.PI / 9}
             scale={1.05}
             castShadow={castShadow}
+            // street_lamp_02 имеет minY −0.395 (см. GltfProp street_night) —
+            // без якоря фонари утоплены в плиту на ~0.41 м.
+            groundAnchor
           />
         </Suspense>
       ))}

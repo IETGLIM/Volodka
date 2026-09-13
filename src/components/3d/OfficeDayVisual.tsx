@@ -182,9 +182,14 @@ function AuthoredOfficeDesk({ castShadow }: { castShadow: boolean }) {
         />
       </Suspense>
       <Suspense fallback={null}>
+        {/* FIX v4.35.0: терминал парил ~0.24 м над столом. Столешница натив
+            0.958 м × scale 0.58 = 0.556 м — терминал (origin у основания)
+            ставим ровно на неё. Высоту самого стола (0.556 против заявленных
+            PLAYER_METRIC.deskHeightM 0.76) менять вслепую нельзя — размер
+            комнаты/раскладка авторские; отдельный follow-up. */}
         <AuthoredOfficeProp
           url={KENNEY_TERMINAL_MODEL}
-          position={[0, 0.8, -0.22]}
+          position={[0, 0.556, -0.22]}
           scale={1.08}
           castShadow={castShadow}
         />
