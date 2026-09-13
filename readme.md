@@ -25,7 +25,15 @@
 - **Физический мир**: Rapier KCC, коллайдеры сцен, дверные ниши, пинаемые банки и ящики с процедурным звуком.
 - **AA visual direction (free stack)**: HDRI/IBL, selective MeshPhysical wet/CRT accents, Poly Haven/Quaternius/Kenney, Bloom, ACES, quality-tier degrade — см. `docs/AA_QUALITY_ROADMAP.md`.
 
-## Текущее состояние (v4.36.0, 2026-09-13)
+## Текущее состояние (v4.36.1, 2026-09-13)
+
+**v4.36.1 — прозрачность деплоя:** форензика по жалобе «не заметно разницы»:
+prod (volodka.vercel.app) раздаёт сборку на 132 коммита позади main — все
+волны фиксов v4.34–v4.36 туда не доезжали (деплои Vercel успешны, но
+production-домен не переключается — нужен Promote to Production / Production
+Branch = main в Dashboard). Чип версии в меню теперь показывает
+«v4.36.1 · <sha коммита>». CI-триггер ci.yml восстановлен (был повреждён).
+Детали — в CHANGELOG v4.36.1.
 
 **v4.36.0 — волна доказательных фиксов №3: масштабы по измеренным нативам
 GLB + тайлинг (полный vitest 2731/2731 зелёные):** закрыты все
