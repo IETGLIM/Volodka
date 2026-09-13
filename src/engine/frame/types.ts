@@ -6,11 +6,21 @@ import type { FrameGameSnapshot } from './frameGameSnapshot';
 /**
  * Frame pipeline order — aligned with R3F useFrame priorities (lower runs first).
  *
+ * КРИТИЧНО (v4.39.0, фикс чёрного экрана): R3F отключает автоматический
+ * gl.render, как только ХОТЬ ОДИН useFrame-подписчик имеет priority > 0
+ * (исходник r3f: `if (!state.internal.priority && state.gl.render) ...`).
+ * Прежние приоритеты post_physics=100 / pre_render=500 / post_render=1000
+ * захватывали рендер-цикл — gl.render не вызывал НИКТО: 0 drawcalls,
+ * scene.children=0 на видимой канве, игрок видит чёрный экран (runtime-
+ * замер вживую: internal.priority=3, internal.frames=0, GPU idle).
+ * Порядок фаз сохраняется отрицательными приоритетами (−1000 < −900 < −800).
+ *
  * 1. pre_physics  (−1000) — input, interaction prep, kinematic targets
  * 2. physics      (0)     — Rapier world.step via <Physics updatePriority={0} />
- * 3. post_physics (100)   — read post-step transforms, player finalize
- * 4. pre_render   (500)   — camera, animations, weather, misc visuals
- * 5. post_render  (1000)  — profiler, canvas guards (after draw stats)
+ * 3. post_physics (−900)  — read post-step transforms, player finalize
+ * 4. pre_render   (−800)  — camera, animations, weather, misc visuals
+ * 5. [gl.render — автоматика R3F]
+ * 6. post_render  (addAfterEffect) — profiler, canvas guards (после отрисовки)
  */
 export const FRAME_PHASE_ORDER = [
   'pre_physics',
@@ -30,9 +40,12 @@ export type LegacyFrameTickPhase = 'pre' | 'post';
 
 export const FRAME_PHASE_R3F_PRIORITY: Record<FrameTickPhase, number> = {
   pre_physics: -1000,
-  post_physics: 100,
-  pre_render: 500,
-  post_render: 1000,
+  post_physics: -900,
+  pre_render: -800,
+  // post_render в useFrame НЕ подписывается (см. PostFrameBudgetRunner):
+  // любой priority > 0 отключает авторендер R3F. Значение оставлено для
+  // внутреннего упорядочивания тиков в FrameBudgetRegistry.
+  post_render: 0,
 };
 
 export const FRAME_PHYSICS_R3F_PRIORITY = 0;
