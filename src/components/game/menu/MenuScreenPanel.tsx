@@ -8,7 +8,6 @@ import { MenuNavigationList } from '@/components/game/menu/MenuNavigationList';
 import { MenuSettingsPanel } from '@/components/game/menu/MenuSettingsPanel';
 import { MenuTypewriterSubtitle } from '@/components/game/menu/MenuTypewriterSubtitle';
 import { SkipPrologueOverlay } from '@/components/game/menu/SkipPrologueOverlay';
-import { MenuAaaPoemSpotlight } from '@/components/game/menu/MenuAaaPoemSpotlight';
 import { ProloguePerfectionOverlay } from '@/components/game/prologue/ProloguePerfectionOverlay';
 import { useMenuSavePreview } from '@/components/game/menu/useMenuSavePreview';
 import { useMenuScreen } from '@/components/game/menu/useMenuScreen';
@@ -198,7 +197,10 @@ function MenuScreenPanelInner() {
       <div className="absolute inset-0 pointer-events-none z-[5] opacity-[0.06] mix-blend-soft-light" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} aria-hidden />
       <div className="absolute inset-0 pointer-events-none z-[6] bg-[radial-gradient(ellipse_at_center,transparent_42%,rgba(0,0,0,0.55)_100%)]" aria-hidden />
 
-      <div className="relative z-10 flex min-h-[100dvh] w-full flex-col items-center justify-center p-4">
+      {/* v4.39.0: колонка центрируется через m-auto и прокручивается на низких
+          вьюпортах — раньше пункты меню уходили за край экрана и были недоступны. */}
+      <div className="relative z-10 flex h-[100dvh] w-full flex-col items-center overflow-y-auto overscroll-contain p-4">
+        <div className="m-auto flex w-full flex-col items-center">
         <div className="cinematic-menu-brand-stage flex flex-col items-center px-4">
           <AaaLuxTitle text={MENU_TITLE} animate={contentMotion} visited={visited} />
           <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(1, visited)} enabled={contentMotion} />
@@ -273,9 +275,8 @@ function MenuScreenPanelInner() {
           <span className="w-px h-3 bg-stone-700/30 hidden md:block" />
           <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/50 hidden md:block">Esc Назад</span>
         </motion.div>
+        </div>
       </div>
-
-      <MenuAaaPoemSpotlight enabled={contentMotion} />
 
       <motion.button
         type="button"
