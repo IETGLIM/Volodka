@@ -52,8 +52,6 @@ function json(body: unknown, status = 200, extra: Record<string, string> = {}): 
     headers: {
       'Content-Type': 'application/json; charset=utf-8',
       'Cache-Control': 'no-store',
-      'Access-Control-Allow-Origin': 'same-origin',
-      'Vary': 'Origin',
       ...extra,
     },
   });
@@ -76,7 +74,7 @@ function pickFallback(mode: QuoteMode = 'quote'): CacheEntry {
 function buildSystemPrompt(scene: string, karma: number, act: number, theme: string | null): string {
   const themeHint = theme ? ` Тематический акцент: ${theme}.` : '';
   return (
-    `Ты — генератор философских цитат в стиле Matrix (фильм) для киберпанк-игры Володня. ` +
+    `Ты — генератор философских цитат в стиле Matrix (фильм) для киберпанк-игры «Володька». ` +
     `Контекст: акт ${act}, сцена ${scene}, карма игрока ${karma}.${themeHint} ` +
     `Сгенерируй 1 короткую (1-2 предложения) цитату на русском языке, в духе: ` +
     `'Система не спит — она лишь делает вид, что дремлет.' или ` +
@@ -134,16 +132,9 @@ function sanitizeQuote(q: string): string {
 }
 
 export default async function handler(req: Request): Promise<Response> {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Origin': 'same-origin',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      },
-    });
-  }
+  // v4.39.0: CORS-preflight-блок удалён — API вызывается только same-origin со
+  // SPA, а 'Access-Control-Allow-Origin': 'same-origin' — невалидное значение
+  // (такого нет в CORS-спеке); same-origin запросы не проходят CORS-проверку.
   if (req.method !== 'GET') return json({ error: 'method_not_allowed' }, 405, { Allow: 'GET' });
 
   const url = new URL(req.url);

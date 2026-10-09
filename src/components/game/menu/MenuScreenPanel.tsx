@@ -266,7 +266,7 @@ function MenuScreenPanelInner() {
           initial={contentMotion ? { opacity: 0 } : false}
           animate={{ opacity: 1 }}
           transition={{ delay: d(3.8, visited), duration: 1 }}
-          className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5"
+          className="mt-7 hidden md:flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5"
           aria-hidden="true"
         >
           <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/70">↑↓ Навигация</span>
@@ -278,6 +278,8 @@ function MenuScreenPanelInner() {
         </div>
       </div>
 
+      {/* v4.39.0: чипы подняты над cinematic-letterbox — полосы bg-black z-[60]
+          (7vh / min 36px) полностью перекрывали их (bottom-8 < 36px). */}
       <motion.button
         type="button"
         initial={contentMotion ? { opacity: 0 } : false}
@@ -287,7 +289,7 @@ function MenuScreenPanelInner() {
           menu.toggleMusic();
           safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
         }}
-        className="absolute bottom-8 right-6 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-stone-700/20 text-stone-400/70 hover:text-stone-100/90 hover:bg-black/50 hover:border-stone-600/30 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50"
+        className="absolute right-6 bottom-[calc(max(7vh,36px)+12px)] z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-stone-700/20 text-stone-400/70 hover:text-stone-100/90 hover:bg-black/50 hover:border-stone-600/30 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50"
         aria-label={menu.musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
       >
         {menu.musicEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
@@ -300,7 +302,7 @@ function MenuScreenPanelInner() {
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
         transition={{ delay: d(2.6, visited) }}
-        className="absolute bottom-8 left-6 z-30 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-stone-800/30"
+        className="absolute bottom-[calc(max(7vh,36px)+12px)] left-6 z-30 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-stone-800/30"
         aria-hidden="true"
       >
         {/* v4.36.1: билд-метка «версия · sha» — видно, какой коммит играет. */}
