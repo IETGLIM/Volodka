@@ -100,8 +100,8 @@ export function JournalPanel({
               <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-500/40 rounded-bl-xl pointer-events-none" aria-hidden />
               <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-500/40 rounded-br-xl pointer-events-none" aria-hidden />
 
-              <div className="w-16 sm:w-20 flex flex-col border-r border-cyan-900/20 bg-slate-950/60 shrink-0 relative">
-                <div className="p-2 sm:p-3 border-b border-cyan-900/20">
+              <div className="w-16 sm:w-20 flex flex-col border-r border-cyan-900/20 bg-slate-950/60 shrink-0 relative min-h-0">
+                <div className="p-2 sm:p-3 border-b border-cyan-900/20 shrink-0">
                   <BookOpen className="size-5 sm:size-6 text-cyan-400/70 mx-auto" aria-hidden />
                   <p className="text-[8px] sm:text-[9px] text-cyan-400/50 text-center mt-1 font-medium tracking-wider uppercase hidden sm:block">
                     Журнал
@@ -111,7 +111,7 @@ export function JournalPanel({
                 <div
                   role="tablist"
                   aria-label="Разделы журнала"
-                  className="flex-1 flex flex-col py-2 gap-0.5 px-1.5 sm:px-2"
+                  className="flex-1 min-h-0 overflow-y-auto custom-scrollbar flex flex-col py-2 gap-0.5 px-1.5 sm:px-2"
                 >
                   {JOURNAL_TABS.map((tab) => {
                     const isActive = journalTab === tab.id;
@@ -125,7 +125,7 @@ export function JournalPanel({
                         aria-selected={isActive}
                         aria-controls={`journal-tabpanel-${tab.id}`}
                         onClick={() => handleTabChange(tab.id)}
-                        className={`flex flex-col items-center justify-center gap-1 py-2.5 sm:py-3 min-h-[44px] rounded-lg transition-all duration-200 ${
+                        className={`flex flex-col items-center justify-center gap-1 py-1.5 sm:py-2.5 sm:min-h-[44px] rounded-lg transition-all duration-200 ${
                           isActive
                             ? 'bg-cyan-950/50 border border-cyan-800/40 shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb) / 0.08)] cyber-tab-indicator cyber-underline-animated'
                             : 'hover:bg-slate-800/30 border border-transparent cyber-underline-animated'
@@ -141,7 +141,7 @@ export function JournalPanel({
                   })}
                 </div>
 
-                <div className="p-1.5 sm:p-2 border-t border-cyan-900/20">
+                <div className="p-1.5 sm:p-2 border-t border-cyan-900/20 shrink-0">
                   <button
                     ref={closeButtonRef}
                     type="button"
@@ -155,7 +155,7 @@ export function JournalPanel({
                 </div>
               </div>
 
-              <div className="flex-1 flex flex-col min-w-0">
+              <div className="flex-1 flex flex-col min-w-0 min-h-0">
                 {/* Animated gradient top border line */}
               <div className="journal-header-glow-line cyber-glow-line absolute top-0 left-0 right-0 h-[2px] rounded-t-xl overflow-hidden pointer-events-none z-20" />
 

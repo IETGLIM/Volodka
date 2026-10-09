@@ -19,6 +19,7 @@ import { getLiveCurrentSceneId, getLivePlayerPosition } from '@/store/stores/exp
 import type { SceneId } from '@/shared/types/game';
 import { getCombatState, getRngState } from '@/engine/CombatSystem';
 import { getPlayerMovementMode } from '@/engine/player/playerMovementMode';
+import { getFrameProfilerSnapshot as getFrameProfilerSnapshotE2E } from '@/engine/frame';
 
 export interface VolodkaE2EPosition {
   x: number;
@@ -64,6 +65,10 @@ export interface VolodkaE2EBridge {
   setPlayerRngSeed: (seed: number) => void;
   /** Read active combat RNG state for replay/debug. */
   getCombatRngState: () => ReturnType<typeof getRngState> | null;
+  /** Live frame-profiler snapshot (FPS budget, systems, top ticks) for e2e perf assertions. */
+  getFrameProfilerSnapshot: () => import('@/engine/frame').FrameProfilerSnapshot;
+  /** Arm devtools so FrameProfilerBridge mounts and publishes live metrics. */
+  armDevTools: () => void;
 }
 
 declare global {
@@ -526,6 +531,12 @@ export function registerVolodkaE2EBridge(): void {
     getCombatRngState() {
       const cs = getCombatState();
       return cs ? getRngState(cs) : null;
+    },
+    getFrameProfilerSnapshot() {
+      return getFrameProfilerSnapshotE2E();
+    },
+    armDevTools() {
+      getGameStore().armDevTools();
     },
   };
 }
