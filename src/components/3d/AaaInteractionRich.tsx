@@ -134,7 +134,9 @@ export function AaaInteractionRich() {
     for (let i = 0; i < MAX_RICH; i++) {
       const h = arr[i];
       const s = slots[i];
-      if (!h) { s.group.visible = false; continue; }
+      /* PERF (D5-финал): edge-triggered — неактивный слот не пишет в scene graph каждый кадр,
+       * одна запись при переходе в скрытое состояние, дальше только чтение. */
+      if (!h) { if (s.group.visible) s.group.visible = false; continue; }
       h.timeRemaining -= dt;
       if (h.timeRemaining <= 0) { arr[i] = null; s.group.visible = false; s.innerMat.opacity = 0; s.outerMat.opacity = 0; s.light.intensity = 0; continue; }
       const p = 1 - h.timeRemaining / h.total;

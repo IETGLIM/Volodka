@@ -5,8 +5,8 @@
    On collect, spawns a short amber sparkle burst. */
 
 import { useRef, useMemo, useEffect, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
 import { DoubleSide, Group, Mesh, MeshBasicMaterial, RingGeometry } from 'three';
+import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGameStore } from '@/store/gameStore';
 import { useCurrentSceneId } from '@/store/selectors';
 import { TRIGGER_ZONES, isTriggerZoneAvailable } from '@/data/triggerZones';
@@ -56,8 +56,12 @@ function PickupGlow({ position, label }: PickupGlowProps) {
     };
   }, [geometry, material]);
 
-  useFrame(({ clock }) => {
-    const t = clock.elapsedTime * PULSE_SPEED;
+  /* PERF: был голый useFrame (мимо FrameBudgetRunner — нет soft-skip/профилирования).
+   * Теперь тик в реестре бюджета, время копим из дельты. */
+  const pulseTimeRef = useRef(0);
+  useFrameTick('interaction', ({ delta }) => {
+    pulseTimeRef.current += Math.min(delta, 0.05);
+    const t = pulseTimeRef.current * PULSE_SPEED;
     const pulse = 0.5 + 0.5 * Math.sin(t);
     if (matRef.current) {
       matRef.current.opacity = 0.25 + 0.35 * pulse;
@@ -125,10 +129,15 @@ type BurstState = {
 function CollectBurst({ burst, onDone }: { burst: BurstState; onDone: (id: string) => void }) {
   const groupRef = useRef<Group>(null);
   const matsRef = useRef<(MeshBasicMaterial | null)[]>([]);
+  /* PERF: максимальное время жизни частиц считается один раз, не каждый кадр (раньше — spread-аллокация 60 раз/с) */
+  const maxLife = useMemo(() => {
+    let m = 0.4;
+    for (const p of burst.particles) if (p.life > m) m = p.life;
+    return m;
+  }, [burst]);
 
-  useFrame((_, delta) => {
+  useFrameTick('interaction', () => {
     const age = (performance.now() - burst.bornAt) / 1000;
-    const maxLife = Math.max(...burst.particles.map((p) => p.life), 0.4);
     if (age >= maxLife) {
       onDone(burst.id);
       return;
@@ -151,7 +160,6 @@ function CollectBurst({ burst, onDone }: { burst: BurstState; onDone: (id: strin
       const mat = matsRef.current[i];
       if (mat) mat.opacity = (1 - t) * 0.85;
     }
-    void delta;
   });
 
   return (

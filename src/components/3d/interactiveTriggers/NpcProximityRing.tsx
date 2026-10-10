@@ -35,6 +35,8 @@ export function NpcProximityRing({
 }: NpcProximityRingProps) {
   const materialRef = useRef<MeshBasicMaterial>(null);
   const meshRef = useRef<Mesh>(null);
+  /* PERF (D1-хвост): edge-triggered — скрытое кольцо не пишет opacity/visible каждый кадр */
+  const hiddenRef = useRef(true);
 
   const ringGeometry = useMemo(
     () => new TorusGeometry(radius, RING_TUBE_RADIUS, 8, RING_SEGMENTS),
@@ -57,11 +59,15 @@ export function NpcProximityRing({
 
     const active = activeRef.current ?? false;
     if (!active) {
-      mat.opacity = 0;
-      mesh.visible = false;
+      if (!hiddenRef.current) {
+        hiddenRef.current = true;
+        mat.opacity = 0;
+        mesh.visible = false;
+      }
       return;
     }
 
+    hiddenRef.current = false;
     mesh.visible = true;
     const prox = proximityRef.current ?? 0;
     const phase = pulsePhaseRef.current ?? 0;

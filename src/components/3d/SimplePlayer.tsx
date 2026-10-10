@@ -12,7 +12,7 @@ import { Group, MathUtils, Vector3 } from 'three';
 import { getLivePlayerPosition } from '@/store/stores/explorationStore';
 import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { useCurrentSceneId, usePlayerKarma } from '@/store/selectors';
-import { createFrameGameSnapshot } from '@/engine/frame/frameGameSnapshot';
+import { createFrameGameSnapshotMemo } from '@/engine/frame/frameGameSnapshot';
 import { setSharedVirtualControlsWritable } from '@/engine/VirtualControlsState';
 import { resetKeyboardInputState } from '@/engine/keyboardInputState';
 import { usePlayerControls, type VirtualControls } from '@/hooks/useGamePhysics';
@@ -164,7 +164,8 @@ export function SimplePlayer({
     const vel = velocityRef.current;
     const floorY = config.floorY;
 
-    const game = createFrameGameSnapshot(getGameSnapshot());
+    /* PERF: мемоизированный снапшот — 0 аллокаций/кадр при стагнации стора */
+    const game = createFrameGameSnapshotMemo(getGameSnapshot());
     const currentMode = game.gamePhase;
     const interactionState = getInteractionState();
     const interactionLocked = isInteractionLocked();

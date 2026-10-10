@@ -26,7 +26,10 @@ export function PostFrameBudgetRunner() {
   const latestFrameRef = useRef<{ state: FrameTickContext['state']; delta: number } | null>(null);
 
   useFrame((state, delta) => {
-    latestFrameRef.current = { state, delta: Math.min(delta, 0.05) };
+    /* PERF (GC): мутируем один хост-объект вместо новой аллокации каждый кадр */
+    const latest = latestFrameRef.current ?? (latestFrameRef.current = { state, delta: 0 });
+    latest.state = state;
+    latest.delta = Math.min(delta, 0.05);
   }, -700);
 
   useEffect(() => {

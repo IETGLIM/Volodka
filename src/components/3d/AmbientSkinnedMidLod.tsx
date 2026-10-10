@@ -234,14 +234,15 @@ function AmbientSkinnedFigure({
     const player = livePlayerPositionRef.current;
     const dt = Math.min(delta, 0.05);
 
+    /* PERF (D9-хвост): edge-triggered — скрытая фигура не пишет visible каждый кадр */
     if (!slot?.active) {
-      root.visible = false;
+      if (root.visible) root.visible = false;
       return;
     }
 
     const dist = Math.hypot(slot.px - player.x, slot.pz - player.z);
     const show = dist <= nearDistance;
-    root.visible = show;
+    if (root.visible !== show) root.visible = show;
     if (!show) return;
 
     root.position.set(slot.px, 0, slot.pz);
