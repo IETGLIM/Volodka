@@ -287,6 +287,11 @@ export function FollowCamera({
 
   const wasTransitionActiveRef = useRef(false);
 
+  // PERF (v4.40): контекст CameraModeContext (~30 полей) хостится в ref и
+  // мутируется — раньше каждый кадр аллоцировал новый литерал объекта
+  // (~3600 аллокаций/с при 60fps + мусор для GC в critical-фазе).
+  const cameraCtxRef = useRef<CameraModeContext | null>(null);
+
   useFrameTick('camera', ({ delta: rawDelta }) => {
     const cam = cameraRef.current as PerspectiveCamera;
     const spring = springRef.current;
@@ -370,44 +375,43 @@ export function FollowCamera({
       );
     }
 
-    const ctx: CameraModeContext = {
-      delta,
-      time: timeRef.current,
-      sceneId,
-      gameMode,
-      currentNodeId,
-      camera: cam,
-      sceneChildren: threeScene.children,
-      playerPos,
-      playerRotation: livePlayerRotationRef.current,
-      playerVelocity: _playerVelocity.current,
-      spring,
-      raycaster: raycaster.current,
-      yaw: yawRef.current,
-      pitch: pitchRef.current,
-      distance: distanceRef.current,
-      interactionDistance: interactionDistanceRef.current,
-      currentSceneFov: currentSceneFovRef.current,
-      dialogueController: dialogueControllerRef.current,
-      exploration: explorationRef.current,
-      combat: combatRef.current,
-      transition: transitionRef.current,
-      cutscene: cutsceneRef.current,
-      npcCutscene: npcCutsceneRef.current,
-      cutsceneActive: cutsceneActiveRef.current,
-      npcCutsceneActive: npcCutsceneActiveRef.current,
-      wasInDialogue: wasInDialogueRef.current,
-      interactionLocked,
-      lookAheadOffset: lookAheadOffsetRef.current,
-      prevVelocitySmooth: prevVelocitySmoothRef.current,
-      moveBlend: moveBlendRef?.current ?? 0,
-      desiredPos: _desiredPos.current,
-      lookTarget: _lookTarget.current,
-      offset: _offset.current,
-      tempVec: _tempVec.current,
-      tempVec2: _tempVec2.current,
-      fallbackNpcPos: _fallbackNpcPos.current,
-    };
+    const ctx = (cameraCtxRef.current ??= {} as CameraModeContext);
+    ctx.delta = delta;
+    ctx.time = timeRef.current;
+    ctx.sceneId = sceneId;
+    ctx.gameMode = gameMode;
+    ctx.currentNodeId = currentNodeId;
+    ctx.camera = cam;
+    ctx.sceneChildren = threeScene.children;
+    ctx.playerPos = playerPos;
+    ctx.playerRotation = livePlayerRotationRef.current;
+    ctx.playerVelocity = _playerVelocity.current;
+    ctx.spring = spring;
+    ctx.raycaster = raycaster.current;
+    ctx.yaw = yawRef.current;
+    ctx.pitch = pitchRef.current;
+    ctx.distance = distanceRef.current;
+    ctx.interactionDistance = interactionDistanceRef.current;
+    ctx.currentSceneFov = currentSceneFovRef.current;
+    ctx.dialogueController = dialogueControllerRef.current;
+    ctx.exploration = explorationRef.current;
+    ctx.combat = combatRef.current;
+    ctx.transition = transitionRef.current;
+    ctx.cutscene = cutsceneRef.current;
+    ctx.npcCutscene = npcCutsceneRef.current;
+    ctx.cutsceneActive = cutsceneActiveRef.current;
+    ctx.npcCutsceneActive = npcCutsceneActiveRef.current;
+    ctx.wasInDialogue = wasInDialogueRef.current;
+    ctx.interactionLocked = interactionLocked;
+    ctx.lookAheadOffset = lookAheadOffsetRef.current;
+    ctx.prevVelocitySmooth = prevVelocitySmoothRef.current;
+    ctx.moveBlend = moveBlendRef?.current ?? 0;
+    ctx.desiredPos = _desiredPos.current;
+    ctx.lookTarget = _lookTarget.current;
+    ctx.offset = _offset.current;
+    ctx.tempVec = _tempVec.current;
+    ctx.tempVec2 = _tempVec2.current;
+    ctx.fallbackNpcPos = _fallbackNpcPos.current;
 
     const modeResult = resolveCameraMode(ctx);
     yawRef.current = ctx.yaw;

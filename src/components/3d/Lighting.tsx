@@ -14,7 +14,7 @@ import { resolveSceneRenderingPipeline } from '@/engine/graphics/resolveSceneRen
 import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import { getShadowMapResolution } from '@/engine/graphics/TimeOfDayLighting';
 import type { SceneId } from '@/shared/types/game';
-import { useRef, useMemo } from 'react';
+import { useRef, useMemo, useEffect } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useThree } from '@react-three/fiber';
 import { computeTimeOfDayLighting } from '@/engine/graphics/TimeOfDayLighting';
@@ -341,47 +341,65 @@ function TimeOfDayAdjuster({
   const sunY = Math.max(1, Math.cos(sunAngle) * 10);
   const sunZ = 5;
 
-  useFrameTick('misc', () => {
+  // PERF (v4.40): раньше это был пер-кадровый useFrameTick с линейным
+  // обходом scene.children в поиске DirectionalLight + computeTimeOfDayLighting
+  // с НЕИЗМЕННЫМ аргументом. timeOfDay меняется только при переходах между
+  // сценами / игровых часах — редкие события, поэтому пересчёт переведён на
+  // useEffect по пропам. Ссылки на свет кэшируются: traverse выполняется
+  // один раз (и при смене сцены через key), а не 60 раз/с.
+  const dirLightRef = useRef<DirectionalLight | null>(null);
+  const hemiLightRef = useRef<HemisphereLight | null>(null);
+
+  useEffect(() => {
     if (!scene) return;
 
-    const tod = computeTimeOfDayLighting(timeOfDay);
-    const tmpColor = tmpColorRef.current;
+    // Защита от устаревшего кэша: свет топ-левела мог быть заменён.
+    if (dirLightRef.current && dirLightRef.current.parent !== scene) dirLightRef.current = null;
+    if (hemiLightRef.current && hemiLightRef.current.parent !== scene) hemiLightRef.current = null;
 
-    // Find directional light in scene
-    for (const obj of scene.children) {
-      if (obj instanceof DirectionalLight) {
-        // Modulate intensity: blend base intensity with time-of-day intensity
-        obj.intensity = baseDirIntensity * (1 - todInfluence) + tod.dirIntensity * todInfluence;
-
-        // Modulate color: blend base color toward time-of-day color
-        tmpColor.setRGB(
-          tod.dirColor[0],
-          tod.dirColor[1],
-          tod.dirColor[2],
-        );
-        obj.color.copy(baseDirCol).lerp(tmpColor, todInfluence);
-
-        // Adjust sun position for outdoor scenes
-        if (sunPosInfluence > 0) {
-          obj.position.set(sunX, sunY, sunZ);
-        }
-        break;
-      }
-    }
-
-    // For indoor scenes, very subtle ambient tint from time-of-day
-    if (isIndoor) {
+    if (!dirLightRef.current) {
       for (const obj of scene.children) {
-        if (obj instanceof HemisphereLight) {
-          // Very slight color shift — indoor rooms barely notice
-          tmpColor.setRGB(tod.ambientColor[0], tod.ambientColor[1], tod.ambientColor[2]);
-          // Blend the sky color of the hemisphere light slightly toward tod
-          obj.color.lerp(tmpColor, 0.05);
+        if (obj instanceof DirectionalLight) {
+          dirLightRef.current = obj;
           break;
         }
       }
     }
-  });
+    if (isIndoor && !hemiLightRef.current) {
+      for (const obj of scene.children) {
+        if (obj instanceof HemisphereLight) {
+          hemiLightRef.current = obj;
+          break;
+        }
+      }
+    }
+
+    const tod = computeTimeOfDayLighting(timeOfDay);
+    const tmpColor = tmpColorRef.current;
+    const dirLight = dirLightRef.current;
+
+    if (dirLight) {
+      dirLight.intensity = baseDirIntensity * (1 - todInfluence) + tod.dirIntensity * todInfluence;
+
+      tmpColor.setRGB(tod.dirColor[0], tod.dirColor[1], tod.dirColor[2]);
+      dirLight.color.copy(baseDirCol).lerp(tmpColor, todInfluence);
+
+      if (sunPosInfluence > 0) {
+        dirLight.position.set(sunX, sunY, sunZ);
+      }
+    }
+
+    if (isIndoor && hemiLightRef.current) {
+      tmpColor.setRGB(tod.ambientColor[0], tod.ambientColor[1], tod.ambientColor[2]);
+      hemiLightRef.current.color.lerp(tmpColor, 0.35);
+    }
+
+    // Свет можно сменить при переходе сцены — сбрасываем кэш ссылок.
+    return () => {
+      dirLightRef.current = null;
+      hemiLightRef.current = null;
+    };
+  }, [scene, timeOfDay, isIndoor, baseDirIntensity, baseDirCol, todInfluence, sunPosInfluence, sunX, sunY, sunZ]);
 
   return null;
 }

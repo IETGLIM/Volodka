@@ -10,6 +10,11 @@ import { initAccessibilitySettings } from '@/engine/accessibility/accessibilityS
 import { initVoiceLineRegistry } from '@/engine/audio/VoiceLineRegistry';
 import { installChunkLoadRecovery } from '@/shared/chunk/chunkLoadRecovery';
 import { installSceneLoadDebugTap } from '@/engine/core/sceneLoadDebug';
+import { installRelativePublicAssetResolver } from '@/engine/assets/relativePublicAssets';
+
+// itch.io / вложенный хостинг: все корневые URL ассетов ('/models/...') резолвятся
+// относительно документа. На корневом хостинге (Vercel) — поведение идентично.
+installRelativePublicAssetResolver();
 
 // Install vite:preloadError handler BEFORE any lazy chunk can be loaded.
 // If this runs after createRoot().render(), Vite may have already attempted
@@ -37,6 +42,9 @@ initLcpProfiler();
 function registerServiceWorker(): void {
   if (!('serviceWorker' in navigator)) return;
   if (!import.meta.env.PROD) return;
+  // itch.io / вложенный хостинг: '/sw.js' недоступен и scope '/' запрещён —
+  // SW регистрируем только когда игра раздаётся с корня домена.
+  if (new URL(document.baseURI).pathname !== '/') return;
   window.addEventListener('load', () => {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })

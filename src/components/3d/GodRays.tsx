@@ -640,6 +640,8 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
   const pointsRef = useRef<Points>(null);
   const materialRef = useRef<PointsMaterial>(null);
   const timeRef = useRef(0);
+  // PERF (v4.40): счётчик кадров для редкого sanitize (раз в 60 кадров).
+  const sanitizeFrameCounterRef = useRef(0);
 
   const c = useMemo(
     () => normalizeGodRayConfig({ ...DEFAULT_RAY, ...config }),
@@ -728,8 +730,13 @@ function RayDustMotes({ config }: { config: GodRayConfig }) {
       if (posArray[i3 + 1] < -halfHeight) posArray[i3 + 1] = halfHeight;
     }
 
-    if (sanitizePositionArray(posArray)) {
-      sanitizeBufferGeometryPositions(pointsRef.current.geometry);
+    // PERF (v4.40): sanitizePositionArray сканировал ВЕСЬ массив каждый кадр.
+    // Позиции клампятся локально (NaN не ожидается) — проверяем раз в секунду.
+    sanitizeFrameCounterRef.current += 1;
+    if (sanitizeFrameCounterRef.current % 60 === 0) {
+      if (sanitizePositionArray(posArray)) {
+        sanitizeBufferGeometryPositions(pointsRef.current.geometry);
+      }
     }
 
     posAttr.needsUpdate = true;

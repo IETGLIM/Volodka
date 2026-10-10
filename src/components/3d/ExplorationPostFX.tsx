@@ -703,6 +703,17 @@ function PostFXPipeline() {
   // ── Единый покадровый тик: DOF bokeh, GodRays opacity, стресс/энергия/поэм-
   // буст для bloom/vignette/chromatic, soft-budget гейты. getState() — без
   // store-подписок на рендер. ──
+  // PERF (v4.40): тяжёлые рантайм-расчёты (computeBloomRuntime /
+  // computeVignetteRuntime / computeChromaticRuntime + resolvePoemTTLPostFxBoost)
+  // переведены на троттлинг 10 Гц: стресс/энергия/поэм-буст меняются медленно,
+  // а пер-кадровые записи в эффекты (интенсивность/offset) остались покадровыми.
+  const runtimeCacheRef = useRef({
+    acc: 0,
+    bloom: null as ReturnType<typeof computeBloomRuntime> | null,
+    vignette: null as ReturnType<typeof computeVignetteRuntime> | null,
+    chromatic: null as ReturnType<typeof computeChromaticRuntime> | null,
+  });
+
   useFrameTick('postfx', ({ delta }) => {
     const state = useGameStore.getState();
     const stress = state.playerState.stress;
@@ -712,52 +723,61 @@ function PostFXPipeline() {
     const rend = renderingRef.current;
     const softOk = isSoftWorkAffordable();
 
-    // ── Bloom: стресс + поэм-буст. ──
-    const bloom = bloomRef.current;
-    if (bloom && profile) {
-      const bloomRuntime = computeBloomRuntime(
+    // ── Троттлинг 10 Гц: пересчёт рантаймов (только при наличии профиля). ──
+    const rt = runtimeCacheRef.current;
+    rt.acc += delta;
+    if (profile && rt.acc >= 0.1) {
+      rt.acc = 0;
+      rt.bloom = computeBloomRuntime(
         rend.useLitePostFx,
         profile,
         rend.bloomIntensityScale,
         stress / 100,
         poemBoost,
       );
-      bloom.intensity = bloomRuntime.intensity;
-    }
-
-    // ── Vignette: стресс-порог + энергия (lite — фиксированная формула + поэм-буст). ──
-    const vignette = vignetteRef.current;
-    if (vignette && profile) {
-      const vignetteRuntime = computeVignetteRuntime(profile, {
+      rt.vignette = computeVignetteRuntime(profile, {
         lite: rend.useLitePostFx,
         noirMode,
         stress,
         energy,
         poemBoost,
       });
-      vignette.darkness = vignetteRuntime.darkness;
-      vignette.offset = vignetteRuntime.offset;
-    }
-
-    // ── Chromatic: база + стресс-рампа (fresh softOk — бюджет восстанавливается). ──
-    const chromatic = chromaticRef.current;
-    if (chromatic && profile) {
-      const eligible =
+      const chromaticEligibleBase =
         softOk
         && !reducedMotion
         && !visualLite
         && !coarsePointer
         && chromaticAberrationEnabled
         && isHighOrUltraTier;
-      const chromaticRuntime = computeChromaticRuntime(profile, {
-        eligible,
-        stressRampEligible: eligible && preset.id === 'high',
-        stress,
-      });
+      rt.chromatic = chromaticEligibleBase
+        ? computeChromaticRuntime(profile, {
+            eligible: chromaticEligibleBase,
+            stressRampEligible: chromaticEligibleBase && preset.id === 'high',
+            stress,
+          })
+        : null;
+    }
+
+    // ── Bloom: покадровое применение кэшированного рантайма. ──
+    const bloom = bloomRef.current;
+    if (bloom && profile && rt.bloom) {
+      bloom.intensity = rt.bloom.intensity;
+    }
+
+    // ── Vignette: покадровое применение кэшированного рантайма. ──
+    const vignette = vignetteRef.current;
+    if (vignette && profile && rt.vignette) {
+      vignette.darkness = rt.vignette.darkness;
+      vignette.offset = rt.vignette.offset;
+    }
+
+    // ── Chromatic: покадровое применение кэшированного рантайма. ──
+    const chromatic = chromaticRef.current;
+    if (chromatic && profile && rt.chromatic) {
       const offsetValue = chromatic.uniforms.get('offset')?.value as { x: number; y: number } | undefined;
       if (offsetValue && typeof offsetValue.x === 'number') {
-        offsetValue.x = chromaticRuntime.offsetX;
-        offsetValue.y = chromaticRuntime.offsetY;
+        offsetValue.x = rt.chromatic.offsetX;
+        offsetValue.y = rt.chromatic.offsetY;
       }
     }
 

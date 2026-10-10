@@ -26,7 +26,12 @@ export * from '@dimforge/rapier3d-compat-original';
 let initPromise: Promise<void> | null = null;
 let initMode: 'pending' | 'external' | 'inline' | 'failed' = 'pending';
 
-const EXTERNAL_WASM_URL = '/rapier/rapier_wasm3d_bg.wasm';
+// PERF/PORT (v4.40): путь через BASE_URL — на itch.io билд с base='./' живёт
+// по вложенному пути, корневой '/rapier/...' отдавал 404 (fallback на inline
+// base64 = +829KB gzip в память). На корневом хостинге BASE_URL='/' → '' после
+// трима — прежний абсолютный путь.
+const RAPIER_BASE = (import.meta.env.BASE_URL || '/').replace(/\/+$/, '');
+const EXTERNAL_WASM_URL = `${RAPIER_BASE}/rapier/rapier_wasm3d_bg.wasm`;
 
 /**
  * Initialize Rapier WASM. Tries external file first (no HEAD probe — saves 1 RTT),

@@ -181,22 +181,32 @@ export function InteractionHighlight() {
     };
 
     const unsub = eventBus.on('object:highlight', ({ position, size }) => {
+      // PERF (v4.40): новый хайлайт выводит систему из idle-гейта.
+      tickIdleRef.current = false;
       spawnHighlight(position, size);
     });
 
     return unsub;
   }, [slots]);
 
+  // PERF (v4.40): idle-гейт. Пока нет ни одного активного хайлайта и все
+  // слоты уже скрыты, тик не трогает scene graph (раньше каждый кадр
+  // писал visible=false во все пустые слоты + 4 свойства на слот).
+  const tickIdleRef = useRef(true);
+
   useFrameTick('interaction', ({ delta }) => {
+    if (tickIdleRef.current) return;
+
     const dt = Math.min(delta, 0.05);
     const highlights = highlightsRef.current;
+    let anyVisible = false;
 
     for (let i = 0; i < MAX_HIGHLIGHTS; i++) {
       const highlight = highlights[i];
       const slot = slots[i];
 
       if (!highlight) {
-        slot.group.visible = false;
+        if (slot.group.visible) slot.group.visible = false;
         continue;
       }
 
@@ -218,11 +228,12 @@ export function InteractionHighlight() {
       const scalePulse = 1 + Math.sin(progress * Math.PI) * 0.06;
 
       if (opacity <= 0.01) {
-        slot.group.visible = false;
+        if (slot.group.visible) slot.group.visible = false;
         continue;
       }
 
-      slot.group.visible = true;
+      anyVisible = true;
+      if (!slot.group.visible) slot.group.visible = true;
       const [w, h, d] = highlight.size;
 
       slot.innerMesh.scale.set(
@@ -235,6 +246,8 @@ export function InteractionHighlight() {
       slot.light.intensity = glowIntensity;
       slot.spotLight.intensity = glowIntensity * 0.85;
     }
+
+    if (!anyVisible) tickIdleRef.current = true;
   });
 
   return (

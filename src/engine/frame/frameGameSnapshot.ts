@@ -45,6 +45,30 @@ export function createFrameGameSnapshot(store: GameStoreSnapshot): FrameGameSnap
   };
 }
 
+/* ─── PERF (v4.40): мемоизация по ссылке стора ───
+ * getGameSnapshot() возвращает КАШИРОВАННЫЙ объект, пока слайсы не мутировали
+ * (gameSnapshotCache по ссылкам). Раньше FrameBudgetRunner каждый кадр строил
+ * НОВЫЙ FrameGameSnapshot + пересчитывал movementLock — 60 аллокаций/с +
+ * resolvePlayerMovementLockContract 60 раз/с при нулевой динамике стора.
+ * Теперь пока ссылка стора та же — возвращаем прошлый объект.
+ * Снапшот read-only для всех потребителей тиков (поля не мутируются). */
+let memoizedStoreRef: GameStoreSnapshot | null = null;
+let memoizedFrameSnapshot: FrameGameSnapshot = DEFAULT_FRAME_GAME_SNAPSHOT;
+
+export function createFrameGameSnapshotMemo(store: GameStoreSnapshot): FrameGameSnapshot {
+  if (store !== memoizedStoreRef) {
+    memoizedStoreRef = store;
+    memoizedFrameSnapshot = createFrameGameSnapshot(store);
+  }
+  return memoizedFrameSnapshot;
+}
+
+/** Test-only: сброс мемо-кэша. */
+export function resetFrameGameSnapshotMemoForTests(): void {
+  memoizedStoreRef = null;
+  memoizedFrameSnapshot = DEFAULT_FRAME_GAME_SNAPSHOT;
+}
+
 /* ─── FIX (perf GC): снапшот кадра создаётся ОДИН раз в pre_physics ───
  * (FrameBudgetRunner) и переиспользуется пост-фазами того же кадра
  * (PostFrameBudgetRunner) — раньше пост-фаза пересоздавала объект и

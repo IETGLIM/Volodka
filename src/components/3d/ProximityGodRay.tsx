@@ -1,6 +1,6 @@
 import { useRef } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import { AdditiveBlending, DoubleSide, Mesh, MeshBasicMaterial, PointLight, SpotLight } from 'three';
+import { AdditiveBlending, DoubleSide, Group, Mesh, MeshBasicMaterial, PointLight, SpotLight } from 'three';
 
 interface ProximityGodRayProps {
   /** Static active flag — omit when using activeRef */
@@ -22,7 +22,12 @@ interface ProximityGodRayProps {
   staticHighlightRef?: React.RefObject<boolean>;
   /** Base radius of the volumetric cone — widen for area-scale zones (hazard zones). */
   coneRadius?: number;
-  /** Mount spot/fill lights at all — false keeps the additive cone only (visualLite presets). */
+  /** Mount spot/fill lights at all — false keeps the additive cone only.
+   *  PERF (v4.40): default теперь false. Раньше каждая зона/NPC/выход
+   *  монтировала spot+point свет (2 источника × 12-19 инстанций = 25-40
+   *  лишних light-юнитов на сцену): пухлые шейдеры всех материалов,
+   *  пер-кадровый CPU-аплоад light-униформ, риск ре-компиляции при смене
+   *  счётчика света. Аддитивный конус + глинт читаются и без реального света. */
   enableLights?: boolean;
   /** Spot cone angle in radians — keep in sync with coneRadius for wide beams. */
   spotAngle?: number;
@@ -41,7 +46,7 @@ export function ProximityGodRay({
   pulsePhaseRef,
   staticHighlightRef,
   coneRadius = 0.38,
-  enableLights = true,
+  enableLights = false,
   spotAngle = 0.38,
 }: ProximityGodRayProps) {
   const spotRef = useRef<SpotLight>(null);
@@ -53,22 +58,30 @@ export function ProximityGodRay({
   const pulseRef = useRef(0);
   const usesActiveRef = activeRef !== undefined;
   const resolvedColor = colorRef?.current ?? color;
+  // PERF (v4.40): edge-triggered видимость. Неактивный луч — самый частый
+  // случай (17-19 зон на сцену активны максимум по одной). Раньше каждый
+  // неактивный экземпляр КАЖДЫЙ кадр писал 7 свойств (intensity/opacity/
+  // visible) — грязнил scene graph и жёг CPU в critical-фазе. Теперь группа
+  // скрывается ОДИН раз при переходе active→inactive, и тик выходит сразу.
+  const rootGroupRef = useRef<Group>(null);
+  const hiddenRef = useRef(true);
 
   useFrameTick('interaction', ({ delta }) => {
     const liveActive = usesActiveRef ? (activeRef?.current ?? false) : active;
-    const liveColor = colorRef?.current ?? color;
+
     if (!liveActive) {
-      if (spotRef.current) spotRef.current.intensity = 0;
-      if (fillRef.current) fillRef.current.intensity = 0;
-      if (coneMatRef.current) coneMatRef.current.opacity = 0;
-      if (coneMeshRef.current) coneMeshRef.current.visible = false;
-      if (glintMatRef.current) glintMatRef.current.opacity = 0;
-      if (glintMeshRef.current) glintMeshRef.current.visible = false;
+      if (!hiddenRef.current) {
+        hiddenRef.current = true;
+        if (rootGroupRef.current) rootGroupRef.current.visible = false;
+      }
       return;
     }
 
-    if (coneMeshRef.current) coneMeshRef.current.visible = true;
-    if (glintMeshRef.current) glintMeshRef.current.visible = true;
+    const liveColor = colorRef?.current ?? color;
+    if (hiddenRef.current) {
+      hiddenRef.current = false;
+      if (rootGroupRef.current) rootGroupRef.current.visible = true;
+    }
     if (!pulsePhaseRef) pulseRef.current += delta * 3.4;
     const prox = Math.max(0.25, Math.min(1, proximityRef?.current ?? 1));
     const phase = pulsePhaseRef?.current ?? pulseRef.current;
@@ -101,7 +114,7 @@ export function ProximityGodRay({
   if (!usesActiveRef && !active) return null;
 
   return (
-    <group position={[0, baseY, 0]}>
+    <group ref={rootGroupRef} position={[0, baseY, 0]} visible={!hiddenRef.current}>
       {enableLights && (
         <spotLight
           ref={spotRef}

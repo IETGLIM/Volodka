@@ -93,6 +93,9 @@ export function EnvironmentalHazardSystem({
   useFrameTick('misc', (info) => {
     // Only run during exploration — combat has its own damage model.
     if (mode !== 'exploration') return;
+    // PERF (v4.40): в сценах без зон (например volodka_room) — ранний выход
+    // без аллокаций: раньше filter() создавал новый массив каждый кадр.
+    if (enabledHazards.length === 0) return;
     if (!livePlayerPositionRef.current) return;
 
     const dt = info.delta;

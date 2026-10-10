@@ -1114,6 +1114,8 @@ function DustMotesInside({ config }: { config: VolumetricShaftConfig }) {
   const pointsRef = useRef<Points>(null);
   const matRef = useRef<PointsMaterial>(null);
   const timeRef = useRef(0);
+  // PERF (v4.40): счётчик кадров для редкого sanitize (раз в 60 кадров).
+  const sanitizeFrameCounterRef = useRef(0);
 
   const c = useMemo(
     () => normalizeShaftConfig({ ...DEFAULT_SHAFT, ...config }),
@@ -1194,7 +1196,10 @@ function DustMotesInside({ config }: { config: VolumetricShaftConfig }) {
       }
     }
 
-    if (sanitizePositionArray(posArray)) {
+    // PERF (v4.40): sanitizePositionArray сканировал весь массив каждый кадр —
+    // позиции клампятся локально, проверяем раз в секунду.
+    sanitizeFrameCounterRef.current += 1;
+    if (sanitizeFrameCounterRef.current % 60 === 0 && sanitizePositionArray(posArray)) {
       sanitizeBufferGeometryPositions(pointsRef.current.geometry);
     }
     posAttr.needsUpdate = true;

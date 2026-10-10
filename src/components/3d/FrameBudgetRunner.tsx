@@ -13,7 +13,7 @@ import { getGameSnapshot } from '@/engine/StateDispatcher';
 import { runFrameBudgetForPhase } from '@/engine/frame/FrameBudgetRegistry';
 import { isFrameSimulationActive } from '@/engine/frame/frameVisibility';
 import {
-  createFrameGameSnapshot,
+  createFrameGameSnapshotMemo,
   setLatestFrameGameSnapshot,
   DEFAULT_FRAME_GAME_SNAPSHOT,
 } from '@/engine/frame/frameGameSnapshot';
@@ -42,7 +42,9 @@ export function FrameBudgetRunner() {
     // здесь (pre_physics) и переиспользуется пост-фазами этого же кадра.
     frameCtxRef.current.state = state;
     frameCtxRef.current.delta = Math.min(delta, 0.05);
-    frameCtxRef.current.game = createFrameGameSnapshot(getGameSnapshot());
+    // PERF (v4.40): снапшот мемоизирован по ссылке стора — пока стор не
+    // мутировал, переиспользуется прошлый объект (0 аллокаций/кадр).
+    frameCtxRef.current.game = createFrameGameSnapshotMemo(getGameSnapshot());
     setLatestFrameGameSnapshot(frameCtxRef.current.game);
     // ВРЕМЕННАЯ DEV-диагностика (домен «медленное движение»): живые дельты кадра.
     if (import.meta.env.DEV) {
