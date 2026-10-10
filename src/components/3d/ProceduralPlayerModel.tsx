@@ -167,7 +167,7 @@ export const ProceduralPlayerModel = memo(function ProceduralPlayerModel({
     eyeWhite: new MeshStandardMaterial({ color: '#f0eeea', roughness: 0.4, metalness: 0.02, envMapIntensity: 0.25 }),
     pupil: new MeshStandardMaterial({ color: '#1e100a', roughness: 0.25, metalness: 0.1, envMapIntensity: 0.2 }),
     iris: new MeshStandardMaterial({ color: '#4a3520', roughness: 0.5, metalness: 0.08, envMapIntensity: 0.28 }),
-    eyeGlow: new MeshStandardMaterial({ color: '#00ccdd', emissive: new Color('#00ccdd'), emissiveIntensity: 0.35, transparent: true, opacity: 0.5 }),
+    eyeGlow: new MeshStandardMaterial({ color: '#8497ab', emissive: new Color('#8497ab'), emissiveIntensity: 0.35, transparent: true, opacity: 0.5 }),
     brow: new MeshStandardMaterial({ color: '#2a1e12', roughness: 0.85 }),
     mouth: new MeshPhysicalMaterial({ color: '#8a6a52', roughness: 0.62, sheen: 0.15, sheenRoughness: 0.6, envMapIntensity: 0.18 }),
     stubble: new MeshStandardMaterial({ color: '#b89a72', roughness: 0.88, transparent: true, opacity: 0.22 }),

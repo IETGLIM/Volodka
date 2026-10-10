@@ -46,7 +46,7 @@ interface BossBarData {
 const BOSS_BAR_DATA: Partial<Record<EnemyType, BossBarData>> = {
   boss_neuro_sys: { name: 'НЕЙРО-СИСТЕМА', act: 3, accent: '#ff3b6b' },
   boss_dream_eater: { name: 'ПОЖИРАТЕЛЬ СНОВ', act: 5, accent: '#9b5cff' },
-  boss_final_code: { name: 'ФИНАЛЬНЫЙ КОД', act: 7, accent: '#00e5ff' },
+  boss_final_code: { name: 'ФИНАЛЬНЫЙ КОД', act: 7, accent: '#9db3c8' },
   boss_catacombs_keeper: { name: 'ХРАНИТЕЛЬ КАТАКОМБ', act: 4, accent: '#8b5cf6' },
   boss_silent_warden: { name: 'ТИХИЙ ХРАНИТЕЛЬ', act: 4, accent: '#35f0a0' },
 };

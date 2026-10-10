@@ -351,7 +351,7 @@
 }
 
 .mobile-action-btn:active {
-  background: rgba(0, 229, 255, 0.12);
+  background: rgba(157, 179, 200, 0.12);
   border-color: rgb(var(--cyber-cyan-rgb) / 0.6);
   box-shadow:
     0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2),
@@ -373,7 +373,7 @@
 }
 
 .mobile-action-btn--interact:active {
-  background: rgba(0, 229, 255, 0.18);
+  background: rgba(157, 179, 200, 0.18);
   border-color: rgb(var(--cyber-cyan-rgb) / 0.8);
   box-shadow:
     0 0 24px rgb(var(--cyber-cyan-rgb) / 0.3),

@@ -27,7 +27,7 @@ const QUEST_COLOR = '#d946ef'; // fuchsia-500 — quest objectives
 
 /* ── Color helpers ── */
 function markerColor(zone: TriggerZone): string {
-  if (zone.containerContents) return '#34d399'; // emerald-400 — containers/loot
+  if (zone.containerContents) return '#57a874'; // emerald-400 — containers/loot
   if (zone.interactionType === 'talk' || zone.linkedNpcId) return '#fbbf24'; // amber-400 — NPCs
   if (zone.autoTrigger) return '#f87171'; // red-400 — combat/danger
   // examine, read, take, hack, open, use, push, default
@@ -358,7 +358,7 @@ const RadarInner = memo(function RadarInner({
         <span className="text-[7px] font-mono text-amber-400/50 tracking-wider data-badge">
           NPC
         </span>
-        <span className="legend-dot" style={{ backgroundColor: '#34d399' }} />
+        <span className="legend-dot" style={{ backgroundColor: '#57a874' }} />
         <span className="text-[7px] font-mono text-emerald-400/50 tracking-wider data-badge">
           Лут
         </span>

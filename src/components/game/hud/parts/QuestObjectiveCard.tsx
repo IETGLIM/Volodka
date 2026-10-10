@@ -169,32 +169,32 @@ const QUEST_TYPE_CONFIG: Record<QuestType, {
   icon: typeof Star;
 }> = {
   main: {
-    color: '#ff6644',
-    glow: 'rgba(255, 102, 68, 0.5)',
+    color: '#e2a84b',
+    glow: 'rgba(226, 168, 75, 0.35)',
     label: t('hud.questCard.type.main', 'ОСНОВНОЙ'),
     icon: Swords,
   },
   side: {
-    color: '#00d4e0',
-    glow: 'rgba(0, 212, 224, 0.5)',
+    color: '#9db3c8',
+    glow: 'rgba(157, 179, 200, 0.3)',
     label: t('hud.questCard.type.side', 'ПОБОЧНЫЙ'),
     icon: BookOpen,
   },
   hidden: {
-    color: '#cc66ff',
-    glow: 'rgba(204, 102, 255, 0.5)',
+    color: '#8d7fb5',
+    glow: 'rgba(141, 127, 181, 0.3)',
     label: t('hud.questCard.type.hidden', 'СКРЫТЫЙ'),
     icon: Star,
   },
   daily: {
-    color: '#aaaaaa',
-    glow: 'rgba(170, 170, 170, 0.4)',
+    color: '#a9a698',
+    glow: 'rgba(169, 166, 152, 0.3)',
     label: t('hud.questCard.type.daily', 'ЕЖЕДНЕВНЫЙ'),
     icon: Clock,
   },
   weekly: {
-    color: '#ffaa00',
-    glow: 'rgba(255, 170, 0, 0.5)',
+    color: '#d9b98a',
+    glow: 'rgba(217, 185, 138, 0.3)',
     label: t('hud.questCard.type.weekly', 'ЕЖЕДЕЛЬНЫЙ'),
     icon: Trophy,
   },
@@ -206,12 +206,12 @@ const DIFFICULTY_CONFIG: Record<QuestDifficulty, {
   bgColor: string;
   label: string;
 }> = {
-  trivial: { color: '#888888', bgColor: 'rgba(136,136,136,0.15)', label: t('hud.questCard.difficulty.trivial', 'ТРИВИАЛЬНЫЙ') },
-  easy: { color: '#88cc44', bgColor: 'rgba(136,204,68,0.15)', label: t('hud.questCard.difficulty.easy', 'ЛЁГКИЙ') },
-  normal: { color: '#4488cc', bgColor: 'rgba(68,136,204,0.15)', label: t('hud.questCard.difficulty.normal', 'ОБЫЧНЫЙ') },
-  hard: { color: '#cc8844', bgColor: 'rgba(204,136,68,0.15)', label: t('hud.questCard.difficulty.hard', 'СЛОЖНЫЙ') },
-  nightmare: { color: '#cc4444', bgColor: 'rgba(204,68,68,0.15)', label: t('hud.questCard.difficulty.nightmare', 'КОШМАР') },
-  impossible: { color: '#aa00ff', bgColor: 'rgba(170,0,255,0.2)', label: t('hud.questCard.difficulty.impossible', 'НЕВОЗМОЖНЫЙ') },
+  trivial: { color: '#8a8778', bgColor: 'rgba(138,135,120,0.15)', label: t('hud.questCard.difficulty.trivial', 'ТРИВИАЛЬНЫЙ') },
+  easy: { color: '#57a874', bgColor: 'rgba(87,168,116,0.15)', label: t('hud.questCard.difficulty.easy', 'ЛЁГКИЙ') },
+  normal: { color: '#9db3c8', bgColor: 'rgba(157,179,200,0.15)', label: t('hud.questCard.difficulty.normal', 'ОБЫЧНЫЙ') },
+  hard: { color: '#d9b98a', bgColor: 'rgba(217,185,138,0.15)', label: t('hud.questCard.difficulty.hard', 'СЛОЖНЫЙ') },
+  nightmare: { color: '#c65548', bgColor: 'rgba(198,85,72,0.15)', label: t('hud.questCard.difficulty.nightmare', 'КОШМАР') },
+  impossible: { color: '#8d7fb5', bgColor: 'rgba(141,127,181,0.18)', label: t('hud.questCard.difficulty.impossible', 'НЕВОЗМОЖНЫЙ') },
 };
 
 /** Цветовые схемы для статусов / Color schemes by status */
@@ -221,10 +221,10 @@ const STATUS_STYLES: Record<QuestStatus, {
   borderColor: string;
 }> = {
   available: { tint: '', overlayColor: 'transparent', borderColor: 'rgba(100,120,140,0.3)' },
-  active: { tint: '', overlayColor: 'transparent', borderColor: 'var(--quest-color, #00d4e0)' },
+  active: { tint: '', overlayColor: 'transparent', borderColor: 'var(--quest-color, #9db3c8)' },
   completed: {
     tint: 'hue-rotate(90deg)',
-    overlayColor: 'rgba(0,255,100,0.08)',
+    overlayColor: 'rgba(70, 185, 110,0.08)',
     borderColor: 'rgba(0,200,80,0.6)',
   },
   failed: {

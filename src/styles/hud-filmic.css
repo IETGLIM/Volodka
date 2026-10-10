@@ -1432,7 +1432,7 @@
     background: linear-gradient(
       180deg,
       transparent 0%,
-      rgba(0, 255, 100, 0.015) 50%,
+      rgba(70, 185, 110, 0.015) 50%,
       transparent 100%
     );
     height: 30%;
@@ -1612,7 +1612,7 @@
 }
 
 .choice-difficulty-easy {
-  color: #34d399;
+  color: #57a874;
   background: rgba(52, 211, 153, 0.08);
   border-color: rgba(52, 211, 153, 0.2);
 }
@@ -1638,7 +1638,7 @@
 
 /* Hover lift on difficulty badges — subtle glow reinforcement */
 .choice-difficulty:hover {
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.08);
+  box-shadow: 0 0 8px rgba(157, 179, 200, 0.08);
 }
 
 .choice-difficulty-easy:hover {
@@ -2127,8 +2127,8 @@
    className="hud-filmic-glow-breathe" on important indicators. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-glow-breathe-cycle {
-    0%, 100% { filter: brightness(1) drop-shadow(0 0 2px rgba(0, 229, 255, 0.15)); }
-    50% { filter: brightness(1.08) drop-shadow(0 0 6px rgba(0, 229, 255, 0.35)); }
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 2px rgba(157, 179, 200, 0.15)); }
+    50% { filter: brightness(1.08) drop-shadow(0 0 6px rgba(157, 179, 200, 0.35)); }
   }
 
   .hud-filmic-glow-breathe {
@@ -2155,7 +2155,7 @@
   }
 
   .hud-filmic-circuit-trace {
-    background: linear-gradient(90deg, transparent 0%, rgba(0, 229, 255, 0.08) 45%, rgba(0, 229, 255, 0.2) 50%, rgba(0, 229, 255, 0.08) 55%, transparent 100%);
+    background: linear-gradient(90deg, transparent 0%, rgba(157, 179, 200, 0.08) 45%, rgba(157, 179, 200, 0.2) 50%, rgba(157, 179, 200, 0.08) 55%, transparent 100%);
     background-size: 200% 100%;
     animation: hud-filmic-circuit-trace 4s linear infinite;
   }
@@ -2197,14 +2197,14 @@
 
 /* ── 16. Edge decay ──
    Subtle border-color decay effect — edge glow fading in and out.
-   2.8s cycle, border-color rgba(0,229,255, 0.15) → 0.4 → 0.15.
+   2.8s cycle, border-color rgba(157, 179, 200, 0.15) → 0.4 → 0.15.
    Apply via className="hud-filmic-edge-decay" on bordered panels
    that should pulse their edge glow. Element must have a border
    for this to be visible. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-edge-decay {
-    0%, 100% { border-color: rgba(0, 229, 255, 0.15); }
-    50% { border-color: rgba(0, 229, 255, 0.4); }
+    0%, 100% { border-color: rgba(157, 179, 200, 0.15); }
+    50% { border-color: rgba(157, 179, 200, 0.4); }
   }
 
   .hud-filmic-edge-decay {
@@ -2215,7 +2215,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hud-filmic-edge-decay {
     animation: none;
-    border-color: rgba(0, 229, 255, 0.25);
+    border-color: rgba(157, 179, 200, 0.25);
   }
 }
 
@@ -2247,8 +2247,8 @@
    className="hud-filmic-text-shadow-pulse" on key text labels. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-text-shadow-pulse {
-    0%, 100% { text-shadow: 0 0 4px rgba(0, 229, 255, 0.1); }
-    50% { text-shadow: 0 0 8px rgba(0, 229, 255, 0.3), 0 0 12px rgba(0, 229, 255, 0.1); }
+    0%, 100% { text-shadow: 0 0 4px rgba(157, 179, 200, 0.1); }
+    50% { text-shadow: 0 0 8px rgba(157, 179, 200, 0.3), 0 0 12px rgba(157, 179, 200, 0.1); }
   }
 
   .hud-filmic-text-shadow-pulse {
@@ -3775,10 +3775,10 @@
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-proximity-glow-breathe {
     0%, 100% {
-      box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0);
+      box-shadow: 0 0 6px 2px rgba(157, 179, 200, 0);
     }
     50% {
-      box-shadow: 0 0 12px 4px rgba(0, 229, 255, 0.15);
+      box-shadow: 0 0 12px 4px rgba(157, 179, 200, 0.15);
     }
   }
 
@@ -3790,7 +3790,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hud-filmic-proximity-glow-breathe {
     animation: none;
-    box-shadow: 0 0 6px 2px rgba(0, 229, 255, 0.08);
+    box-shadow: 0 0 6px 2px rgba(157, 179, 200, 0.08);
   }
 }
 

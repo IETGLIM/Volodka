@@ -2,7 +2,7 @@ import { memo } from 'react';
 import type { EndingView } from '@/engine/karmaPoem/karmaPoemPresentation';
 
 function karmaStrokeColor(karma: number): string {
-  if (karma >= 60) return '#34d399';
+  if (karma >= 60) return '#57a874';
   if (karma < 40) return '#f87171';
   return '#fbbf24';
 }

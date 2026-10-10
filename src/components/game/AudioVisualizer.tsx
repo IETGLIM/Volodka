@@ -74,7 +74,7 @@ function loadPersistedMode(): VizMode {
 /** Lerp factor for bar smoothing */
 const SMOOTH = 0.18;
 
-/** Cyan #00e5ff → emerald #34d399 gradient stops */
+/** Cyan #9db3c8 → emerald #57a874 gradient stops */
 const COLOR_START = { r: 0, g: 229, b: 255 };
 const COLOR_END = { r: 52, g: 211, b: 153 };
 
@@ -295,12 +295,12 @@ function drawIdle(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.clearRect(0, 0, w, h);
   const midY = h / 2;
   ctx.beginPath();
-  ctx.strokeStyle = 'rgba(0, 229, 255, 0.18)';
+  ctx.strokeStyle = 'rgba(157, 179, 200, 0.18)';
   ctx.lineWidth = 1;
   ctx.moveTo(4, midY);
   ctx.lineTo(w - 4, midY);
   ctx.stroke();
-  ctx.fillStyle = 'rgba(0, 229, 255, 0.35)';
+  ctx.fillStyle = 'rgba(157, 179, 200, 0.35)';
   ctx.font = '9px "Geist Mono", monospace';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
@@ -320,9 +320,9 @@ function drawWaveform(
   const step = w / data.length;
 
   ctx.beginPath();
-  ctx.strokeStyle = '#00e5ff';
+  ctx.strokeStyle = '#9db3c8';
   ctx.lineWidth = 1.5;
-  ctx.shadowColor = 'rgba(0, 229, 255, 0.6)';
+  ctx.shadowColor = 'rgba(157, 179, 200, 0.6)';
   ctx.shadowBlur = 6;
 
   for (let i = 0; i < data.length; i++) {
@@ -337,7 +337,7 @@ function drawWaveform(
   ctx.lineTo(w, midY);
   ctx.lineTo(0, midY);
   ctx.closePath();
-  ctx.fillStyle = 'rgba(0, 229, 255, 0.04)';
+  ctx.fillStyle = 'rgba(157, 179, 200, 0.04)';
   ctx.shadowBlur = 0;
   ctx.fill();
 }
@@ -421,8 +421,8 @@ function drawRadial(
   // Center dot
   ctx.beginPath();
   ctx.arc(0, 0, 2, 0, Math.PI * 2);
-  ctx.fillStyle = 'rgba(0, 229, 255, 0.6)';
-  ctx.shadowColor = '#00e5ff';
+  ctx.fillStyle = 'rgba(157, 179, 200, 0.6)';
+  ctx.shadowColor = '#9db3c8';
   ctx.shadowBlur = 6;
   ctx.fill();
 

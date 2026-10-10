@@ -24,31 +24,31 @@ interface OverlayColor {
 const VISUAL_TAG_COLORS: Record<string, OverlayColor> = {
   /* Head */
   head_ushanka_worn:      { main: '#4a3520', emissive: '#2a1a10', emissiveIntensity: 0.08, opacity: 0.75 },
-  head_cyber_visor:       { main: '#0a3a4a', emissive: '#00ccdd', emissiveIntensity: 0.35, opacity: 0.55 },
+  head_cyber_visor:       { main: '#0a3a4a', emissive: '#8497ab', emissiveIntensity: 0.35, opacity: 0.55 },
   head_hard_hat:          { main: '#a08818', emissive: '#c8a820', emissiveIntensity: 0.12, opacity: 0.7 },
   head_bandana_neon:      { main: '#8a1144', emissive: '#cc2266', emissiveIntensity: 0.30, opacity: 0.6 },
 
   /* Body — тёмные куртки/плащи */
   body_worn_jacket:       { main: '#2a2a2e', emissive: '#1a1a20', emissiveIntensity: 0.06, opacity: 0.8 },
   body_it_uniform:        { main: '#2a2a38', emissive: '#1a1a2e', emissiveIntensity: 0.05, opacity: 0.85 },
-  body_cyber_coat:        { main: '#1a2a2e', emissive: '#00ccdd', emissiveIntensity: 0.15, opacity: 0.7 },
+  body_cyber_coat:        { main: '#1a2a2e', emissive: '#8497ab', emissiveIntensity: 0.15, opacity: 0.7 },
   body_leather_jacket:    { main: '#3a2820', emissive: '#2a1a10', emissiveIntensity: 0.08, opacity: 0.8 },
   body_worker_overalls:   { main: '#3a3a20', emissive: '#4a4a30', emissiveIntensity: 0.04, opacity: 0.75 },
 
   /* Legs */
   legs_worn_jeans:        { main: '#2e3545', emissive: '#1a2030', emissiveIntensity: 0.04, opacity: 0.7 },
-  legs_cyber_pants:       { main: '#1a2a2e', emissive: '#00ccdd', emissiveIntensity: 0.12, opacity: 0.65 },
+  legs_cyber_pants:       { main: '#1a2a2e', emissive: '#8497ab', emissiveIntensity: 0.12, opacity: 0.65 },
   legs_uniform_pants:     { main: '#2a2a38', emissive: '#1a1a2e', emissiveIntensity: 0.05, opacity: 0.8 },
   legs_track_pants:       { main: '#4a5568', emissive: '#6b7280', emissiveIntensity: 0.04, opacity: 0.65 },
 
   /* Feet */
   feet_worn_boots:        { main: '#3a2820', emissive: '#2a1a10', emissiveIntensity: 0.06, opacity: 0.7 },
-  feet_cyber_sneakers:    { main: '#1a1a2e', emissive: '#00ccdd', emissiveIntensity: 0.20, opacity: 0.6 },
+  feet_cyber_sneakers:    { main: '#1a1a2e', emissive: '#8497ab', emissiveIntensity: 0.20, opacity: 0.6 },
   feet_formal_shoes:      { main: '#1a1a1a', emissive: '#0a0a0a', emissiveIntensity: 0.03, opacity: 0.8 },
 
   /* Hands */
   hands_work_gloves:      { main: '#6a5a30', emissive: '#8a7a40', emissiveIntensity: 0.05, opacity: 0.55 },
-  hands_cyber_gloves:     { main: '#1a2a2e', emissive: '#00ccdd', emissiveIntensity: 0.18, opacity: 0.55 },
+  hands_cyber_gloves:     { main: '#1a2a2e', emissive: '#8497ab', emissiveIntensity: 0.18, opacity: 0.55 },
 
   /* Accessory — no 3D overlay by default */
   accessory_server_tag:   { main: '#2a2a38', emissive: '#4a4a6a', emissiveIntensity: 0.10, opacity: 0.4 },

@@ -251,8 +251,8 @@ export function LoadingScreen({
         <div
           className="absolute left-0 right-0 h-[2px]"
           style={{
-            background: 'linear-gradient(90deg, transparent 0%, rgba(0,255,255,0.08) 30%, rgba(0,255,255,0.15) 50%, rgba(0,255,255,0.08) 70%, transparent 100%)',
-            boxShadow: '0 0 8px rgba(0,255,255,0.1), 0 0 20px rgba(0,255,255,0.05)',
+            background: 'linear-gradient(90deg, transparent 0%, rgba(157, 179, 200,0.08) 30%, rgba(157, 179, 200,0.15) 50%, rgba(157, 179, 200,0.08) 70%, transparent 100%)',
+            boxShadow: '0 0 8px rgba(157, 179, 200,0.1), 0 0 20px rgba(157, 179, 200,0.05)',
           }}
         />
       </div>
@@ -329,7 +329,7 @@ export function LoadingScreen({
         )}
 
         {showTitle && (
-          <MotionBox fx={fx} className="font-mono text-sm sm:text-base tracking-[0.4em] uppercase bg-[linear-gradient(90deg,rgba(0,255,255,0.8),rgba(255,140,0,0.6),rgba(0,255,255,0.8))] bg-clip-text text-transparent" delay={0.8}>
+          <MotionBox fx={fx} className="font-mono text-sm sm:text-base tracking-[0.4em] uppercase bg-[linear-gradient(90deg,rgba(157, 179, 200,0.8),rgba(255,140,0,0.6),rgba(157, 179, 200,0.8))] bg-clip-text text-transparent" delay={0.8}>
             {LOADING_SUBTITLE_TEXT}
           </MotionBox>
         )}

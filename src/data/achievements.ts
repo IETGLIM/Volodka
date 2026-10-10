@@ -51,7 +51,7 @@ export interface AchievementDefinition {
 export const CATEGORY_META: Record<AchievementCategory, { label: string; icon: string; color: string }> = {
   story: { label: 'Сюжет', icon: '📖', color: '#a78bfa' },
   combat: { label: 'Бой', icon: '⚔️', color: '#f87171' },
-  exploration: { label: 'Исследование', icon: '🧭', color: '#34d399' },
+  exploration: { label: 'Исследование', icon: '🧭', color: '#57a874' },
   poetry: { label: 'Поэзия', icon: '📜', color: '#fbbf24' },
   social: { label: 'Социальные', icon: '🤝', color: '#60a5fa' },
   hidden: { label: 'Секретные', icon: '🔮', color: '#c084fc' },

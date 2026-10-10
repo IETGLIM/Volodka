@@ -29,8 +29,8 @@
 
 /* ─── Glow breath for bar container ─── */
 @keyframes stats-bar-glow-breathe {
-  0%, 100% { box-shadow: 0 0 4px var(--stats-bar-glow-color, rgba(0,229,255,0.2)); }
-  50% { box-shadow: 0 0 10px var(--stats-bar-glow-color, rgba(0,229,255,0.35)), 0 0 20px var(--stats-bar-glow-color-inner, rgba(0,229,255,0.1)); }
+  0%, 100% { box-shadow: 0 0 4px var(--stats-bar-glow-color, rgba(157, 179, 200,0.2)); }
+  50% { box-shadow: 0 0 10px var(--stats-bar-glow-color, rgba(157, 179, 200,0.35)), 0 0 20px var(--stats-bar-glow-color-inner, rgba(157, 179, 200,0.1)); }
 }
 
 .stats-panel-bar-fill {

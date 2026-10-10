@@ -50,7 +50,7 @@ const MOOD_COLORS: Record<PoemMood, { bg: string; text: string; dot: string; glo
   rage:      { bg: 'poem-mood-rage',       text: '#fca5a5', dot: '#f43f5e', glow: 'rgba(244,63,94,0.15)' },
   wonder:    { bg: 'poem-mood-wonder',     text: '#d8b4fe', dot: '#a78bfa', glow: 'rgba(167,139,250,0.15)' },
   love:      { bg: 'poem-mood-love',       text: '#f9a8d4', dot: '#f472b6', glow: 'rgba(244,114,182,0.15)' },
-  default:   { bg: 'poem-mood-default',    text: '#a5f3fc', dot: '#00e5ff', glow: 'rgba(0,229,255,0.1)' },
+  default:   { bg: 'poem-mood-default',    text: '#a5f3fc', dot: '#9db3c8', glow: 'rgba(157, 179, 200,0.1)' },
 };
 
 const MOOD_LABELS: Record<PoemMood, string> = {
@@ -95,13 +95,13 @@ function ProgressRing({ collected, total }: { collected: number; total: number }
       <svg width="88" height="88" viewBox="0 0 88 88" className="poem-progress-ring">
         <circle cx="44" cy="44" r={r} fill="none" stroke="rgba(100,116,139,0.12)" strokeWidth="4" />
         <circle
-          cx="44" cy="44" r={r} fill="none" stroke="#00e5ff" strokeWidth="4"
+          cx="44" cy="44" r={r} fill="none" stroke="#9db3c8" strokeWidth="4"
           strokeLinecap="round"
           strokeDasharray={circ}
           strokeDashoffset={offset}
           className="poem-progress-ring-fill"
           transform="rotate(-90 44 44)"
-          style={{ filter: 'drop-shadow(0 0 4px rgba(0,229,255,0.3))' }}
+          style={{ filter: 'drop-shadow(0 0 4px rgba(157, 179, 200,0.3))' }}
         />
         <text x="44" y="42" textAnchor="middle" fill="#e2e8f0" fontSize="16" fontWeight="700" fontFamily="'JetBrains Mono', monospace">
           {collected}

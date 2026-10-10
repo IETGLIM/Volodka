@@ -149,7 +149,7 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
             className="absolute inset-0 bg-black flex items-center justify-center"
             style={{ transform: `translate(${parallax.x}px, ${parallax.y}px)` }}
           >
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,255,255,0.09)_0%,rgba(0,0,0,1)_72%)]" aria-hidden />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(157, 179, 200,0.09)_0%,rgba(0,0,0,1)_72%)]" aria-hidden />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-full max-w-3xl h-[40vh] mt-[34vh] opacity-[0.07] blur-[0.8px] scale-y-[-0.52] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.45)_0%,transparent_58%)]" aria-hidden>
                 <CinematicTitleCard title="ПРОБУЖДЕНИЕ" subtitle={titleSubtitle} accentColor="#44ffcc" type="act_transition" reducedMotion={true} />

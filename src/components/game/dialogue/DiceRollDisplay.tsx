@@ -157,7 +157,7 @@ function TypedText({ text, visible, color }: {
       {displayed}
       {visible && displayed.length < text.length && (
         <span className="inline-block w-1.5 h-4 ml-0.5 animate-pulse"
-          style={{ background: color ?? 'rgba(0,255,255,0.7)' }}
+          style={{ background: color ?? 'rgba(157, 179, 200,0.7)' }}
         />
       )}
     </span>
@@ -285,11 +285,11 @@ export function DiceRollDisplay({
           transition={{ duration: 0.3 }}
           className="relative w-full max-w-md mx-auto rounded-xl border px-5 py-4 backdrop-blur-md glass-panel"
           style={{
-            borderColor: phase === 'result' ? `${resultColor}60` : 'rgba(0,255,255,0.15)',
+            borderColor: phase === 'result' ? `${resultColor}60` : 'rgba(157, 179, 200,0.15)',
             background: 'rgba(0,0,0,0.85)',
             boxShadow: phase === 'result'
               ? `0 0 30px ${resultColor}25, 0 0 60px ${resultColor}10`
-              : '0 0 20px rgba(0,255,255,0.05)',
+              : '0 0 20px rgba(157, 179, 200,0.05)',
           }}
         >
           {/* Title */}
@@ -339,7 +339,7 @@ export function DiceRollDisplay({
               <TypedText
                 text={`+ ${modifierText} = +${modifier}`}
                 visible
-                color="rgba(0,255,255,0.8)"
+                color="rgba(157, 179, 200,0.8)"
               />
             </motion.div>
           )}
@@ -421,7 +421,7 @@ export function DiceRollDisplay({
           <div
             className="pointer-events-none absolute inset-0 rounded-xl opacity-[0.03] panel-scanlines-subtle"
             style={{
-              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.1) 2px, rgba(0,255,255,0.1) 4px)',
+              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157, 179, 200,0.1) 2px, rgba(157, 179, 200,0.1) 4px)',
             }}
           />
         </motion.div>

@@ -28,7 +28,7 @@ const INTERACTION_HINT_VISUAL: Record<InteractionHintType, InteractionHintVisual
     bg: 'rgba(251,191,36,0.08)',
   },
   exit: {
-    color: '#34d399',
+    color: '#57a874',
     glow: '0 0 8px rgba(52,211,153,0.4), 0 0 16px rgba(52,211,153,0.2)',
     border: 'rgba(52,211,153,0.35)',
     bg: 'rgba(52,211,153,0.08)',
@@ -46,16 +46,16 @@ const TRANSITION_ACCENT: Record<SceneTransitionStyle, string> = {
   darken: 'rgba(100, 130, 180, 1)',
   ripple: 'rgba(180, 100, 255, 1)',
   dissolve: 'rgba(200, 180, 255, 1)',
-  wipe: 'rgba(0, 255, 255, 1)',
+  wipe: 'rgba(157, 179, 200, 1)',
   film_burn: 'rgba(255, 120, 40, 1)',
-  glitch_cut: 'rgba(0, 255, 100, 1)',
+  glitch_cut: 'rgba(70, 185, 110, 1)',
   breathe: 'rgba(140, 200, 255, 1)',
   // Session 9: crossfade — the smooth, no-cut transition. Soft warm-neutral accent.
   crossfade: 'rgba(180, 190, 210, 1)',
   // Breathe zoom — organic, dreamy. Cool blue-white.
   breathe_zoom: 'rgba(120, 200, 255, 1)',
   // Data stream — matrix cascade. Bright cyan.
-  data_stream: 'rgba(0, 229, 255, 1)',
+  data_stream: 'rgba(157, 179, 200, 1)',
   // Glitch reveal — cyberpunk digital corruption. Neon magenta.
   glitch_reveal: 'rgba(255, 0, 170, 1)',
   // Poem dissolve — ethereal text fade. Soft lavender.
@@ -68,7 +68,7 @@ const PROGRESS_ACTIVE: TransitionProgressVisual = {
 };
 
 const PROGRESS_COMPLETE: TransitionProgressVisual = {
-  primary: '#34d399',
+  primary: '#57a874',
   glow: 'rgba(52, 211, 153, 0.35)',
 };
 

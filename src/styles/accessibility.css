@@ -71,7 +71,7 @@ select:focus-visible {
   select:focus-visible {
     outline: 3px solid #00ffff !important;
     outline-offset: 2px;
-    box-shadow: 0 0 0 6px rgba(0, 255, 255, 0.3) !important;
+    box-shadow: 0 0 0 6px rgba(157, 179, 200, 0.3) !important;
   }
 
   /* Panel outlines */
@@ -499,7 +499,7 @@ button:hover [data-keyboard-hint]::after {
 [data-high-contrast="true"] [role="listitem"]:hover,
 [data-high-contrast="true"] [role="listitem"][aria-selected="true"] {
   border-color: #00ffff !important;
-  box-shadow: 0 0 0 1px rgba(0, 255, 255, 0.3) !important;
+  box-shadow: 0 0 0 1px rgba(157, 179, 200, 0.3) !important;
 }
 
 /* ── High Contrast: Combat UI ── */
@@ -537,7 +537,7 @@ button:hover [data-keyboard-hint]::after {
 [data-high-contrast="true"] [data-narrative-choice]:hover,
 [data-high-contrast="true"] [data-narrative-choice]:focus-visible {
   border-color: #00ffff !important;
-  background-color: rgba(0, 255, 255, 0.05) !important;
+  background-color: rgba(157, 179, 200, 0.05) !important;
 }
 
 /* ── Reduced Motion: New components from rounds 5-7 ── */

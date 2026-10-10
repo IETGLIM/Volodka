@@ -20,9 +20,6 @@ import { PlayerStatusFrame } from '@/components/game/hud/parts/PlayerStatusFrame
 import { TopBarDataTicker } from '@/components/game/hud/parts/TopBarDataTicker';
 import { ExplorationProgressBadge } from '@/components/game/hud/parts/ExplorationProgressBadge';
 import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
-import { FootstepPedometer } from '@/components/game/hud/parts/FootstepPedometer';
-import { SessionPlayTimer } from '@/components/game/hud/parts/SessionPlayTimer';
-import { PlayerCoordinatesDisplay } from '@/components/game/hud/parts/PlayerCoordinatesDisplay';
 import { KarmaTierBadge } from '@/components/game/hud/parts/KarmaTierBadge';
 import { KarmaRing } from '@/components/game/hud/parts/KarmaRing';
 import { LevelBadge } from '@/components/game/hud/parts/LevelBadge';
@@ -121,17 +118,11 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         <ExplorationProgressBadge />
       </motion.div>
 
-      {/* Bottom-left: session pedometer + play timer */}
-      <motion.div
-        initial={reducedMotion ? false : { opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute bottom-2 left-2.5 flex items-end gap-3"
-      >
-        <FootstepPedometer />
-        <SessionPlayTimer />
-        <PlayerCoordinatesDisplay />
-      </motion.div>
+      {/* v4.45.0: нижний левый кластер (шагомер + таймер сессии + координаты)
+          ДЕМОНТИРОВАН. Три цифровые метрики выглядели отладкой и тянули
+          внимание (арт-ревью HUD). Компоненты сохранены — при желании
+          возвращаются одной строкой. <FootstepPedometer /> <SessionPlayTimer />
+          <PlayerCoordinatesDisplay /> */}
     </div>
   );
 });

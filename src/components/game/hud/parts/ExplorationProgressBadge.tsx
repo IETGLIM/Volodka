@@ -27,7 +27,7 @@ export function ExplorationProgressBadge() {
   const offset = circumference - (pct / 100) * circumference;
   const size = 44;
   const center = size / 2;
-  const ringColor = 'rgba(0, 255, 100, 0.6)'; // matrix green #00ff64 at 60% opacity
+  const ringColor = 'rgba(70, 185, 110, 0.6)'; // matrix green #46b96e at 60% opacity
 
   return (
     <div className="exploration-progress-badge flex flex-col items-center gap-0.5 select-none" aria-label={`Исследовано ${discoveredCount} из ${totalScenes} локаций`}>
@@ -68,7 +68,7 @@ export function ExplorationProgressBadge() {
             transform={`rotate(-90 ${center} ${center})`}
             style={{
               transition: 'stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-              filter: `drop-shadow(0 0 3px rgba(0, 255, 100, 0.3))`,
+              filter: `drop-shadow(0 0 3px rgba(70, 185, 110, 0.3))`,
             }}
           />
           {/* Center percentage text */}
@@ -80,7 +80,7 @@ export function ExplorationProgressBadge() {
             fontSize="11"
             fill={ringColor}
             fontFamily="monospace"
-            style={{ filter: 'drop-shadow(0 0 3px rgba(0, 255, 100, 0.25))' }}
+            style={{ filter: 'drop-shadow(0 0 3px rgba(70, 185, 110, 0.25))' }}
           >
             {pct}%
           </text>
@@ -91,7 +91,7 @@ export function ExplorationProgressBadge() {
         className="font-mono tracking-[0.12em] uppercase"
         style={{
           fontSize: uiTextScaledPx(8),
-          color: 'rgba(0, 255, 100, 0.45)',
+          color: 'rgba(70, 185, 110, 0.45)',
           lineHeight: 1,
         }}
       >

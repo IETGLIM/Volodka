@@ -70,7 +70,7 @@ export function resolveCinematicNarrativePresentation(
   if (lower.includes('act') && lower.includes('transition')) {
     return {
       type: 'act_transition',
-      accentColor: accentColor ?? '#00ffaa',
+      accentColor: accentColor ?? '#e2a84b',
       letterboxStyle: 'full',
       showEmbers: true,
       glitchIntensity: 0.25,
@@ -85,7 +85,7 @@ export function resolveCinematicNarrativePresentation(
   ) {
     return {
       type: 'revelation',
-      accentColor: accentColor ?? '#ff6688',
+      accentColor: accentColor ?? '#cd7a6c',
       letterboxStyle: 'full',
       showEmbers: true,
       glitchIntensity: 0.15,
@@ -95,7 +95,7 @@ export function resolveCinematicNarrativePresentation(
   if (kind === 'dialogue' && !isNarrator) {
     return {
       type: 'dialogue',
-      accentColor: accentColor ?? '#88ccff',
+      accentColor: accentColor ?? '#9db3c8',
       letterboxStyle: 'thin',
       showEmbers: false,
       glitchIntensity: 0,
@@ -105,7 +105,7 @@ export function resolveCinematicNarrativePresentation(
   if (!isNarrator) {
     return {
       type: 'character_intro',
-      accentColor: accentColor ?? '#ccaa88',
+      accentColor: accentColor ?? '#d9b98a',
       letterboxStyle: 'thin',
       showEmbers: false,
       glitchIntensity: 0,
@@ -114,14 +114,14 @@ export function resolveCinematicNarrativePresentation(
 
   return {
     type: 'story_moment',
-    accentColor: accentColor ?? '#66ddcc',
+    accentColor: accentColor ?? '#9db3c8',
     letterboxStyle: 'thin',
     showEmbers: false,
     glitchIntensity: 0.08,
   };
 }
 
-export function resolveExaminePresentation(accentColor = '#66ddcc'): CinematicNarrativePresentation {
+export function resolveExaminePresentation(accentColor = '#9db3c8'): CinematicNarrativePresentation {
   return {
     type: 'story_moment',
     accentColor,
@@ -131,7 +131,7 @@ export function resolveExaminePresentation(accentColor = '#66ddcc'): CinematicNa
   };
 }
 
-export function resolveSceneLocationPresentation(accentColor = '#88aacc'): CinematicNarrativePresentation {
+export function resolveSceneLocationPresentation(accentColor = '#9db3c8'): CinematicNarrativePresentation {
   return {
     type: 'story_moment',
     accentColor,

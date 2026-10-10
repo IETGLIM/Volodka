@@ -304,8 +304,8 @@ function TravelConfirmDialog({
             onClick={onConfirm}
             className="px-4 py-1.5 rounded-md text-sm text-slate-100 transition-colors"
             style={{
-              background: 'rgba(0, 229, 255, 0.15)',
-              border: '1px solid rgba(0, 229, 255, 0.3)',
+              background: 'rgba(157, 179, 200, 0.15)',
+              border: '1px solid rgba(157, 179, 200, 0.3)',
             }}
           >
             Перейти
@@ -629,7 +629,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                   ? `${regionColor}12`
                                   : 'rgba(51, 65, 85, 0.15)',
                               border: isFocused
-                                ? '2px solid rgba(0,229,255,0.7)'
+                                ? '2px solid rgba(157, 179, 200,0.7)'
                                 : hasQuestMarker
                                   ? '2px solid rgba(251, 191, 36, 0.75)'
                                   : isCurrent
@@ -638,7 +638,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                       ? `1.5px solid ${regionColor}55`
                                       : '1px solid rgba(71, 85, 105, 0.2)',
                               boxShadow: isFocused
-                                ? '0 0 18px rgba(0,229,255,0.55), 0 0 4px rgba(255,200,80,0.4)'
+                                ? '0 0 18px rgba(157, 179, 200,0.55), 0 0 4px rgba(255,200,80,0.4)'
                                 : hasQuestMarker
                                   ? '0 0 16px rgba(251, 191, 36, 0.55), 0 0 4px rgba(251, 191, 36, 0.35)'
                                   : isCurrent

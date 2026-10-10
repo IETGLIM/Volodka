@@ -30,11 +30,14 @@ export type MenuSavePreview = {
 };
 
 export function buildMenuItems(hasSave: boolean): MenuItemDef[] {
+  /* v4.45.0 «Ночная тетрадь»: неоновый акцент на каждый пункт (emerald/cyan/
+     amber/magenta) убран — единственный герой-акцент теперь янтарная засечка
+     выбранного пункта (см. cinematic-menu-item в volodka-skin.css). */
   return [
-    { id: 'continue', label: 'Продолжить', icon: '▸', disabled: !hasSave, accent: 'emerald' },
-    { id: 'new', label: 'Новая игра', icon: '▶', accent: 'cyan' },
-    { id: 'settings', label: 'Настройки', icon: '⚙', accent: 'amber' },
-    { id: 'about', label: 'Об авторе', icon: '◈', accent: 'magenta' },
+    { id: 'continue', label: 'Продолжить', icon: '', disabled: !hasSave },
+    { id: 'new', label: 'Новая игра', icon: '' },
+    { id: 'settings', label: 'Настройки', icon: '' },
+    { id: 'about', label: 'Об авторе', icon: '' },
   ];
 }
 
@@ -49,10 +52,10 @@ export function getAccentColors(accent?: string, isSelected?: boolean): MenuAcce
         text: isSelected ? 'text-cyan-100' : 'text-cyan-300/90',
         textHover: 'hover:text-cyan-100',
         glow: isSelected
-          ? '0 0 20px rgba(0, 255, 255, 0.15), inset 0 0 15px rgba(0, 255, 255, 0.08)'
-          : '0 0 8px rgba(0, 255, 255, 0.1)',
-        glowHover: 'inset 0 0 30px rgba(0, 255, 255, 0.2), 0 0 25px rgba(0, 255, 255, 0.15)',
-        scanColor: 'rgba(0, 255, 255, 0.08)',
+          ? '0 0 20px rgba(157, 179, 200, 0.15), inset 0 0 15px rgba(157, 179, 200, 0.08)'
+          : '0 0 8px rgba(157, 179, 200, 0.1)',
+        glowHover: 'inset 0 0 30px rgba(157, 179, 200, 0.2), 0 0 25px rgba(157, 179, 200, 0.15)',
+        scanColor: 'rgba(157, 179, 200, 0.08)',
       };
     case 'emerald':
       return {
@@ -105,8 +108,8 @@ export function getAccentColors(accent?: string, isSelected?: boolean): MenuAcce
         text: 'text-cyan-300/90',
         textHover: 'hover:text-cyan-100',
         glow: 'none',
-        glowHover: 'inset 0 0 30px rgba(0, 255, 255, 0.2), 0 0 25px rgba(0, 255, 255, 0.15)',
-        scanColor: 'rgba(0, 255, 255, 0.08)',
+        glowHover: 'inset 0 0 30px rgba(157, 179, 200, 0.2), 0 0 25px rgba(157, 179, 200, 0.15)',
+        scanColor: 'rgba(157, 179, 200, 0.08)',
       };
   }
 }
@@ -114,7 +117,7 @@ export function getAccentColors(accent?: string, isSelected?: boolean): MenuAcce
 export function getAccentBarColor(accent?: string): string {
   switch (accent) {
     case 'cyan':
-      return 'rgba(0, 255, 255, 0.8)';
+      return 'rgba(157, 179, 200, 0.8)';
     case 'emerald':
       return 'rgba(52, 211, 153, 0.8)';
     case 'amber':
@@ -122,7 +125,7 @@ export function getAccentBarColor(accent?: string): string {
     case 'magenta':
       return 'rgba(217, 70, 239, 0.8)';
     default:
-      return 'rgba(0, 255, 255, 0.8)';
+      return 'rgba(157, 179, 200, 0.8)';
   }
 }
 

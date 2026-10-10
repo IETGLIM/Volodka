@@ -81,7 +81,7 @@ export function SceneTransitionProgress() {
             <motion.div
               className="absolute inset-y-0 left-0"
               style={{
-                background: `linear-gradient(90deg, ${visual.primary}, ${visual.primary}88, ${isComplete ? visual.primary : '#34d399'})`,
+                background: `linear-gradient(90deg, ${visual.primary}, ${visual.primary}88, ${isComplete ? visual.primary : '#57a874'})`,
                 boxShadow: `0 0 8px ${visual.glow}, 0 0 20px ${visual.glow}`,
               }}
               initial={false}

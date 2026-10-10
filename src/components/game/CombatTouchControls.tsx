@@ -114,7 +114,7 @@ export function CombatTouchControls({
       <TouchActionButton
         label="Защита"
         icon={<Shield className="size-5" aria-hidden />}
-        accent="#34d399"
+        accent="#57a874"
         disabled={disabled}
         onPress={onDefend}
         haptic="medium"

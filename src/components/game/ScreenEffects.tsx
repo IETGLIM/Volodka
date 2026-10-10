@@ -318,7 +318,7 @@ export function ScreenEffects() {
             className="fixed inset-0 pointer-events-none"
             style={{
               zIndex: UI_LAYERS.GLITCH + 1,
-              background: `linear-gradient(${chromaticIntensity * 2}deg, rgba(255,0,0,${chromaticIntensity * 0.04}) 0%, transparent 30%, transparent 70%, rgba(0,255,255,${chromaticIntensity * 0.04}) 100%)`,
+              background: `linear-gradient(${chromaticIntensity * 2}deg, rgba(255,0,0,${chromaticIntensity * 0.04}) 0%, transparent 30%, transparent 70%, rgba(157, 179, 200,${chromaticIntensity * 0.04}) 100%)`,
               // Этап 32: mixBlendMode форсит отдельный композит-проход —
               // на low/medium тирах обходимся без него (градиент сам по себе мягкий).
               ...(budget.allowBlendModes ? { mixBlendMode: 'screen' as const } : {}),

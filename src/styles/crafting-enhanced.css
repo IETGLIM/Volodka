@@ -39,9 +39,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 229, 255, 0.06) 25%,
-    rgba(0, 229, 255, 0.12) 50%,
-    rgba(0, 229, 255, 0.06) 75%,
+    rgba(157, 179, 200, 0.06) 25%,
+    rgba(157, 179, 200, 0.12) 50%,
+    rgba(157, 179, 200, 0.06) 75%,
     transparent 100%
   );
   background-size: 200% 100%;

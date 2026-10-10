@@ -210,14 +210,14 @@ function ObjectiveGroupProgress({ objectives, questState, label, icon }: {
         <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">
           {label}
         </span>
-        <span className="text-[10px] font-mono tabular-nums ml-auto" style={{ color: completed === total ? '#34d399' : '#94a3b8' }}>
+        <span className="text-[10px] font-mono tabular-nums ml-auto" style={{ color: completed === total ? '#57a874' : '#94a3b8' }}>
           {completed}/{total}
         </span>
       </div>
       <div className="h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
         <motion.div
           className="h-full rounded-full"
-          style={{ background: completed === total ? 'linear-gradient(90deg, #059669, #34d399)' : 'linear-gradient(90deg, #57534e, #a8a29e)' }}
+          style={{ background: completed === total ? 'linear-gradient(90deg, #059669, #57a874)' : 'linear-gradient(90deg, #57534e, #a8a29e)' }}
           initial={false}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.4, ease: 'easeOut' }}

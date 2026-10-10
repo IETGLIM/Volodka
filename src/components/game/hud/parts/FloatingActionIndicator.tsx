@@ -36,7 +36,7 @@ export function FloatingActionIndicator() {
 
     // Listen for quest events
     const unsubQuest = eventBus.on('quest:completed', () => {
-      addAction('✓', 'Задание выполнено', '#34d399');
+      addAction('✓', 'Задание выполнено', '#57a874');
     });
 
     // Listen for choice events with karma changes
@@ -46,7 +46,7 @@ export function FloatingActionIndicator() {
         addAction(
           d > 0 ? '🕊' : '⚠',
           d > 0 ? `Карма +${d}` : `Карма ${d}`,
-          d > 0 ? '#34d399' : '#fb7185',
+          d > 0 ? '#57a874' : '#fb7185',
         );
       }
     });

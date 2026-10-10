@@ -67,8 +67,8 @@ interface FactionVisual {
 const FACTION_VISUALS: Record<FactionId, FactionVisual> = {
   network: {
     label: FACTION_LABELS_RU.network,
-    color: '#00e5ff',
-    glow: '0 0 12px rgba(0,229,255,0.25)',
+    color: '#9db3c8',
+    glow: '0 0 12px rgba(157, 179, 200,0.25)',
     icon: Shield,
     blurb: 'Подполье хакеров и курьеров Сети. Стихи как валюта, тишина как щит.',
   },
@@ -81,7 +81,7 @@ const FACTION_VISUALS: Record<FactionId, FactionVisual> = {
   },
   resistance: {
     label: FACTION_LABELS_RU.resistance,
-    color: '#34d399',
+    color: '#57a874',
     glow: '0 0 12px rgba(52,211,153,0.25)',
     icon: Swords,
     blurb: '«Чёрная Чернильница». Утечки, саботаж чипов, ночные трансляции стихов.',
@@ -118,9 +118,9 @@ function relationToBarPercent(value: number): number {
 
 function getTierColor(value: number): string {
   // Mirror the tier color from NpcCodexPanel.getRelationColor for consistency.
-  if (value >= 81) return '#34d399';
-  if (value >= 51) return '#34d399';
-  if (value >= 11) return '#00e5ff';
+  if (value >= 81) return '#57a874';
+  if (value >= 51) return '#57a874';
+  if (value >= 11) return '#9db3c8';
   if (value >= -9) return '#a1a1aa';
   if (value >= -49) return '#fb923c';
   return '#f87171';

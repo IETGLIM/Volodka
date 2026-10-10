@@ -300,7 +300,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: '«Не код. Стихи. Настоящие, живые стихи.»',
     triggerStoryNode: 'fix_success',
     textDurationMs: 6000,
-    textAccentColor: '#34d399', // emerald — revelation
+    textAccentColor: '#57a874', // emerald — revelation
     type: 'revelation',
     oneShot: true,
     letterboxStyle: 'full',
@@ -647,7 +647,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Феномен не аномалия. Феномен — ответ.',
     triggerStoryNode: 'poem_virus_truth',
     textDurationMs: 8000,
-    textAccentColor: '#34d399', // emerald
+    textAccentColor: '#57a874', // emerald
     type: 'revelation',
     oneShot: true,
     letterboxStyle: 'full',

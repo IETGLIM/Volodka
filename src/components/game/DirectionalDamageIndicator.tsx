@@ -106,7 +106,7 @@ function GlitchOverlay({ intensity }: { intensity: number }) {
       <div
         className="absolute inset-0"
         style={{
-          background: 'rgba(0,255,255,0.03)',
+          background: 'rgba(157, 179, 200,0.03)',
           mixBlendMode: 'screen',
           transform: `translateX(-${2 + intensity * 0.3}px)`,
         }}

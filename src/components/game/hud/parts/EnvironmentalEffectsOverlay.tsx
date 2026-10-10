@@ -885,8 +885,8 @@ const DigitalSpaceEffect = memo<DigitalSpaceEffectProps>(({ reducedMotion }) => 
       className="absolute inset-0"
       style={{
         backgroundImage: `
-          linear-gradient(rgba(0, 229, 255, 0.06) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0, 229, 255, 0.06) 1px, transparent 1px)
+          linear-gradient(rgba(157, 179, 200, 0.06) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(157, 179, 200, 0.06) 1px, transparent 1px)
         `,
         backgroundSize: '32px 32px',
         animation: reducedMotion ? 'none' : 'cyber-grid-scroll 8s linear infinite',
@@ -898,7 +898,7 @@ const DigitalSpaceEffect = memo<DigitalSpaceEffectProps>(({ reducedMotion }) => 
       <div
         className="absolute inset-0"
         style={{
-          background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(0, 229, 255, 0.02) 10px, rgba(0, 229, 255, 0.02) 11px)',
+          background: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(157, 179, 200, 0.02) 10px, rgba(157, 179, 200, 0.02) 11px)',
         }}
       />
     )}
@@ -915,15 +915,15 @@ const DigitalSpaceEffect = memo<DigitalSpaceEffectProps>(({ reducedMotion }) => 
     <div
       className="absolute top-0 left-0 right-0 h-px"
       style={{
-        background: 'linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.2), transparent)',
-        boxShadow: '0 0 8px rgba(0, 229, 255, 0.3)',
+        background: 'linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.2), transparent)',
+        boxShadow: '0 0 8px rgba(157, 179, 200, 0.3)',
       }}
     />
     <div
       className="absolute bottom-0 left-0 right-0 h-px"
       style={{
-        background: 'linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.2), transparent)',
-        boxShadow: '0 0 8px rgba(0, 229, 255, 0.3)',
+        background: 'linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.2), transparent)',
+        boxShadow: '0 0 8px rgba(157, 179, 200, 0.3)',
       }}
     />
   </div>

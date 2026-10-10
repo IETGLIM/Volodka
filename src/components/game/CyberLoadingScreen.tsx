@@ -60,7 +60,7 @@ function MatrixRain() {
               className="text-green-400"
               style={{ 
                 opacity: 1 - (i / col.chars.length),
-                textShadow: i === 0 ? '0 0 8px #39ff14' : undefined,
+                textShadow: i === 0 ? '0 0 8px #57a874' : undefined,
               }}
             >
               {char}

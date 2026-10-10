@@ -60,12 +60,12 @@ export const DAMAGE_CHANNEL_LABELS: Record<DamageChannel, string> = {
 
 /** Color mapping for UI display (matches cyberPalette tokens). */
 export const DAMAGE_CHANNEL_COLORS: Record<DamageChannel, string> = {
-  code: '#39ff14',      // CYBER_GREEN — coding/exploit
-  logic: '#00e5ff',     // CYBER_CYAN — analytical
+  code: '#57a874',      // CYBER_GREEN — coding/exploit
+  logic: '#9db3c8',     // CYBER_CYAN — analytical
   empathy: '#ff6b9d',   // rose — compassionate
   intuition: '#a78bfa', // purple — perceptive
   writing: '#d4920a',   // amberGold — poetic
-  physical: '#ffab00',  // CYBER_AMBER — brute force
+  physical: '#e2a84b',  // CYBER_AMBER — brute force
 };
 
 /* ═══════════════════════════════════════════════════════════════

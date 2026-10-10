@@ -17,7 +17,7 @@ describe('playerStatsPanelPresentation', () => {
   });
 
   it('resolves karma ring colors by threshold', () => {
-    expect(getKarmaRingColor(80)).toBe('#34d399');
+    expect(getKarmaRingColor(80)).toBe('#57a874');
     expect(getKarmaRingColor(40)).toBe('var(--cyber-cyan)');
     expect(getKarmaRingColor(10)).toBe('#fb7185');
   });

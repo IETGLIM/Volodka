@@ -54,6 +54,7 @@ export function useContextualHints() {
   const [currentHint, setCurrentHint] = useState<ContextualHintData | null>(null);
   const queueRef = useRef<QueuedHint[]>([]);
   const shownMapRef = useRef<Map<string, number>>(new Map()); // key → timestamp
+  const tutorialShownRef = useRef<Set<string>>(new Set()); // tutorial keys — раз за сессию
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const isShowingRef = useRef(false);
   const prevSceneRef = useRef(currentSceneId);
@@ -99,6 +100,7 @@ export function useContextualHints() {
 
     const next = queueRef.current.splice(nextIdx, 1)[0];
     shownMapRef.current.set(hintDedupKey(next), now);
+    if (next.category === 'tutorial') tutorialShownRef.current.add(hintDedupKey(next));
 
     setCurrentHint({
       id: next.id,
@@ -123,6 +125,10 @@ export function useContextualHints() {
   const enqueueHint = useCallback((hint: ContextualHintData) => {
     const now = Date.now();
     const dedupKey = hintDedupKey(hint);
+    /* v4.45.0: обучающие подсказки — не чаще одного раза за сессию.
+       Прежний дебаунс 45с превращал «Shift — бег» в вечный туториал
+       посреди исследования (жалоба арт-ревью HUD). */
+    if (hint.category === 'tutorial' && tutorialShownRef.current.has(dedupKey)) return;
     const lastShown = shownMapRef.current.get(dedupKey);
     if (lastShown !== undefined && now - lastShown < DEBOUNCE_MS) return; // debounced
 

@@ -14,7 +14,7 @@
 }
 
 .choice-consequence-chip.positive {
-  color: #34d399;
+  color: #57a874;
   background: rgba(16, 185, 129, 0.1);
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
@@ -45,7 +45,7 @@
 }
 
 .choice-difficulty-badge.easy {
-  color: #34d399;
+  color: #57a874;
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.25);
   text-shadow: 0 0 4px rgba(16, 185, 129, 0.3);
@@ -98,7 +98,7 @@
 }
 
 .choice-timer-fill.safe {
-  background: linear-gradient(90deg, #06b6d4, #00e5ff);
+  background: linear-gradient(90deg, #06b6d4, #9db3c8);
 }
 
 .choice-timer-fill.warning {

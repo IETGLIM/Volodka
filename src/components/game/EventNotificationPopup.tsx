@@ -61,7 +61,7 @@ const ACCENT_MAP: Record<NotificationType, {
     bg: 'rgba(20, 16, 8, 0.82)',
   },
   quest: {
-    primary: '#34d399',     // emerald-400
+    primary: '#57a874',     // emerald-400
     border: 'rgba(52, 211, 153, 0.35)',
     bg: 'rgba(8, 24, 18, 0.82)',
   },

@@ -97,16 +97,16 @@ function getFactionBadgeClass(faction: string | undefined): string {
 /* ─── Relation helpers ─── */
 
 function getRelationLabel(value: number): { label: string; color: string } {
-  if (value >= 60) return { label: 'Союзник', color: '#34d399' };
-  if (value >= 20) return { label: 'Дружелюбный', color: '#00e5ff' };
+  if (value >= 60) return { label: 'Союзник', color: '#57a874' };
+  if (value >= 20) return { label: 'Дружелюбный', color: '#9db3c8' };
   if (value >= -20) return { label: 'Нейтральный', color: '#a1a1aa' };
   if (value >= -60) return { label: 'Холодный', color: '#fb923c' };
   return { label: 'Враждебный', color: '#f87171' };
 }
 
 function getRelationColor(value: number): string {
-  if (value >= 60) return '#34d399';
-  if (value >= 20) return '#00e5ff';
+  if (value >= 60) return '#57a874';
+  if (value >= 20) return '#9db3c8';
   if (value >= -20) return '#a1a1aa';
   if (value >= -60) return '#fb923c';
   return '#f87171';
@@ -129,7 +129,7 @@ function NpcAvatar({
   const accentColor = appearance?.accentColor ?? '#64748b';
   const headAccessory = appearance?.headAccessory ?? 'none';
   const silhouette = appearance?.silhouette ?? 'average';
-  const glow = glowColor ?? '#00e5ff';
+  const glow = glowColor ?? '#9db3c8';
 
   if (!discovered) {
     return (
@@ -220,7 +220,7 @@ function NpcCard({
   const { npc, discovered, relationValue } = data;
   const relColor = getRelationColor(relationValue);
   const relLabel = getRelationLabel(relationValue);
-  const glowColor = npc.appearance?.glowColor ?? '#00e5ff';
+  const glowColor = npc.appearance?.glowColor ?? '#9db3c8';
   const isDiscovered = discovered;
 
   return (
@@ -326,7 +326,7 @@ function NpcDetailView({
   relationValue: number;
   onClose: () => void;
 }) {
-  const glowColor = npc.appearance?.glowColor ?? '#00e5ff';
+  const glowColor = npc.appearance?.glowColor ?? '#9db3c8';
   const relInfo = getRelationLabel(relationValue);
   const relColor = getRelationColor(relationValue);
 
@@ -663,8 +663,8 @@ export function NpcCodexPanel({ open, onClose }: NpcCodexPanelProps) {
               <motion.div
                 className="npc-codex-relation-fill"
                 style={{
-                  background: 'linear-gradient(90deg, #0e7490, #00e5ff)',
-                  boxShadow: '0 0 8px rgba(0,229,255,0.3)',
+                  background: 'linear-gradient(90deg, #0e7490, #9db3c8)',
+                  boxShadow: '0 0 8px rgba(157, 179, 200,0.3)',
                 }}
                 initial={false}
                 animate={{

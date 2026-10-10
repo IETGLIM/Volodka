@@ -90,15 +90,15 @@ export const MenuNavigationList = memo(function MenuNavigationList({
             style={style}
             className={getFilmicMenuItemClass(isSelected, isDisabled)}
           >
-            <span className="relative z-10 flex flex-col items-center gap-1">
-              <span className="tracking-[0.22em] uppercase">{item.label}</span>
+            <span className="relative z-10 flex flex-col items-start gap-1 text-left">
+              <span className="tracking-[0.3em] uppercase">{item.label}</span>
               {isDisabled ? (
-                <span className="text-[10px] font-serif italic tracking-normal normal-case text-stone-500/55">
+                <span className="text-[10px] font-serif italic tracking-normal normal-case" style={{ color: 'rgba(130,128,118,0.6)' }}>
                   нет сохранения
                 </span>
               ) : null}
               {item.id === 'continue' && savePreview ? (
-                <span className="text-[11px] font-serif tracking-wide text-stone-400/65 normal-case">
+                <span className="text-[11px] font-serif tracking-wide normal-case" style={{ color: 'rgba(169,166,152,0.65)' }}>
                   Ур.{savePreview.level} · {savePreview.sceneName} · {savePreview.poemsCollected}/{savePreview.poemsTotal}
                 </span>
               ) : null}

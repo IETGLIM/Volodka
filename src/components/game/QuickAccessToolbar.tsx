@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
+import { Map, Backpack, ScrollText, BookOpen, NotebookPen, Sparkles } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
@@ -18,7 +19,7 @@ type ToolbarContext = 'exploration' | 'combat' | 'dialogue' | 'menu';
 
 type ToolbarSlot = {
   id: string;
-  icon: string;
+  icon: ReactNode;
   label: string;
   shortcut: string;
   action: () => void;
@@ -57,12 +58,14 @@ function getExplorationSlots(
     /* FIX: слоты «Карта» и «Кодекс» были заглушками (action: () => {}).
      * Теперь они открывают реальные панели через панельный диспетчер —
      * тот же путь, что и клавиши M / K. */
-    { id: 'map', icon: '🗺', label: t('hud.toolbar.map', 'Карта'), shortcut: '1', action: () => { firePanelShortcut('KeyM'); } },
-    { id: 'inventory', icon: '🎒', label: t('hud.toolbar.inventory', 'Инвентарь'), shortcut: '2', action: openers.onOpenInventory },
-    { id: 'quests', icon: '📋', label: t('hud.toolbar.quests', 'Задания'), shortcut: '3', action: openers.onOpenQuests },
-    { id: 'codex', icon: '📖', label: t('hud.toolbar.codex', 'Кодекс'), shortcut: '4', action: () => { firePanelShortcut('KeyK'); } },
-    { id: 'journal', icon: '📝', label: t('hud.toolbar.journal', 'Журнал'), shortcut: '5', action: openers.onOpenJournal },
-    { id: 'poems', icon: '✦', label: t('hud.toolbar.poems', 'Стихи'), shortcut: '6', action: openers.onOpenPoetry },
+    /* v4.45.0: цветные эмодзи (🗺🎒📋📖📝) ломали монохромную дисциплину
+     * «Ночной тетради» — заменены на штриховые иконки Lucide. */
+    { id: 'map', icon: <Map className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.map', 'Карта'), shortcut: '1', action: () => { firePanelShortcut('KeyM'); } },
+    { id: 'inventory', icon: <Backpack className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.inventory', 'Инвентарь'), shortcut: '2', action: openers.onOpenInventory },
+    { id: 'quests', icon: <ScrollText className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.quests', 'Задания'), shortcut: '3', action: openers.onOpenQuests },
+    { id: 'codex', icon: <BookOpen className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.codex', 'Кодекс'), shortcut: '4', action: () => { firePanelShortcut('KeyK'); } },
+    { id: 'journal', icon: <NotebookPen className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.journal', 'Журнал'), shortcut: '5', action: openers.onOpenJournal },
+    { id: 'poems', icon: <Sparkles className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.poems', 'Стихи'), shortcut: '6', action: openers.onOpenPoetry },
   ];
 }
 

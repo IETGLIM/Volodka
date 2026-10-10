@@ -45,7 +45,7 @@ const TOTAL_POEMS = POEMS.length;
 
 const RADAR_STATS: Array<{ key: string; label: string; color: string }> = [
   { key: 'writing', label: 'Поэзия', color: '#f59e0b' },
-  { key: 'coding', label: 'Взлом', color: '#00e5ff' },
+  { key: 'coding', label: 'Взлом', color: '#9db3c8' },
   { key: 'empathy', label: 'Эмпатия', color: '#f472b6' },
   { key: 'persuasion', label: 'Улица', color: '#a78bfa' },
   { key: 'intuition', label: 'Храбрость', color: '#fb923c' },
@@ -94,8 +94,8 @@ function StatRadarChart({ skills }: { skills: Record<string, number> }) {
       {/* Data shape */}
       <polygon
         points={shapePoints}
-        fill="rgba(0, 229, 255, 0.08)"
-        stroke="#00e5ff"
+        fill="rgba(157, 179, 200, 0.08)"
+        stroke="#9db3c8"
         strokeWidth="1.5"
         className="profile-radar-shape"
       />
@@ -272,7 +272,7 @@ function BiographySection({
 function KarmaMeterWithDisposition({ karma, npcRelations }: { karma: number; npcRelations: Array<{ npcId: string; value: number }> }) {
   const thumbPos = Math.max(0, Math.min(100, karma));
   const thumbColor = karma >= KARMA_HIGH_THRESHOLD
-    ? '#00e5ff'
+    ? '#9db3c8'
     : karma <= KARMA_LOW_THRESHOLD
       ? '#fb7185'
       : '#fbbf24';
@@ -283,7 +283,7 @@ function KarmaMeterWithDisposition({ karma, npcRelations }: { karma: number; npc
     const neutrals = npcRelations.filter((r) => ['lyonya', 'grigory', 'anya'].includes(r.npcId));
     const enemies = npcRelations.filter((r) => ['tolpa', 'dmitry'].some((e) => r.npcId.includes(e)));
     return [
-      { name: 'Сеть', relations: network, color: '#00e5ff' },
+      { name: 'Сеть', relations: network, color: '#9db3c8' },
       { name: 'Нейтралы', relations: neutrals, color: '#fbbf24' },
       { name: 'Толпа', relations: enemies, color: '#fb7185' },
     ];
@@ -816,7 +816,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                           value={energy}
                           color={isLowEnergy
                             ? 'linear-gradient(90deg, #9f1239, #f43f5e)'
-                            : 'linear-gradient(90deg, #059669, #34d399)'}
+                            : 'linear-gradient(90deg, #059669, #57a874)'}
                           glowColor={isLowEnergy ? 'rgba(244,63,94,0.3)' : 'rgba(52,211,153,0.3)'}
                         />
                         {isLowEnergy && (

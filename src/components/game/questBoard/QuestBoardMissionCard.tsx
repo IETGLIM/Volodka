@@ -122,7 +122,7 @@ export const QuestBoardMissionCard = memo(
               <span
                 className="text-xs font-semibold font-mono truncate"
                 style={{
-                  color: isClaimed ? '#64748b' : isCompleted ? '#34d399' : '#e2e8f0',
+                  color: isClaimed ? '#64748b' : isCompleted ? '#57a874' : '#e2e8f0',
                   textShadow: isCompleted ? '0 0 6px rgba(52,211,153,0.3)' : 'none',
                 }}
               >

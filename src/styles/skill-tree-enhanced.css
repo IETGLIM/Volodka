@@ -89,13 +89,13 @@
 /* Node available cyan breath */
 @keyframes skill-node-available-cyan {
   0%, 100% {
-    box-shadow: 0 0 6px rgba(0, 229, 255, 0.15),
-                0 0 12px rgba(0, 229, 255, 0.08);
+    box-shadow: 0 0 6px rgba(157, 179, 200, 0.15),
+                0 0 12px rgba(157, 179, 200, 0.08);
   }
   50% {
-    box-shadow: 0 0 12px rgba(0, 229, 255, 0.35),
-                0 0 24px rgba(0, 229, 255, 0.15),
-                0 0 36px rgba(0, 229, 255, 0.08);
+    box-shadow: 0 0 12px rgba(157, 179, 200, 0.35),
+                0 0 24px rgba(157, 179, 200, 0.15),
+                0 0 36px rgba(157, 179, 200, 0.08);
   }
 }
 

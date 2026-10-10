@@ -90,7 +90,7 @@
 
 /* ─── Stat change indicator animation ─── */
 @keyframes stat-flash-positive {
-  0% { color: #34d399; text-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
+  0% { color: #57a874; text-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
   100% { color: inherit; text-shadow: none; }
 }
 
@@ -228,7 +228,7 @@
   position: absolute;
   width: 12px;
   height: 12px;
-  border-color: rgba(0, 229, 255, 0.3);
+  border-color: rgba(157, 179, 200, 0.3);
   border-style: solid;
   pointer-events: none;
 }
@@ -260,9 +260,9 @@
   height: 2px;
   background: linear-gradient(90deg, 
     transparent, 
-    rgba(0, 229, 255, 0.5) 15%, 
-    rgba(0, 255, 100, 0.3) 50%, 
-    rgba(0, 229, 255, 0.5) 85%, 
+    rgba(157, 179, 200, 0.5) 15%, 
+    rgba(70, 185, 110, 0.3) 50%, 
+    rgba(157, 179, 200, 0.5) 85%, 
     transparent
   );
   animation: dataStreamFlow 3s linear infinite;
@@ -286,7 +286,7 @@
   transform: translateX(-50%) scale(0.95);
   padding: 4px 10px;
   background: rgba(2, 6, 23, 0.95);
-  border: 1px solid rgba(0, 229, 255, 0.25);
+  border: 1px solid rgba(157, 179, 200, 0.25);
   border-radius: 4px;
   color: #94a3b8;
   font-size: 11px;
@@ -296,7 +296,7 @@
   opacity: 0;
   transition: opacity 0.2s, transform 0.2s;
   z-index: 100;
-  box-shadow: 0 0 10px rgba(0, 229, 255, 0.1);
+  box-shadow: 0 0 10px rgba(157, 179, 200, 0.1);
 }
 
 .cyber-tooltip-enhanced:hover::after {
@@ -330,8 +330,8 @@
 .examine-panel-border {
   border-image: linear-gradient(
     135deg,
-    rgba(0, 229, 255, 0.3),
-    rgba(0, 229, 255, 0.1) 30%,
+    rgba(157, 179, 200, 0.3),
+    rgba(157, 179, 200, 0.1) 30%,
     rgba(147, 130, 220, 0.2) 70%,
     rgba(147, 130, 220, 0.3)
   ) 1;
@@ -365,11 +365,11 @@
   padding: 1px;
   background: conic-gradient(
     from var(--conic-angle),
-    rgba(0, 229, 255, 0.25),
-    rgba(0, 229, 255, 0.05) 25%,
+    rgba(157, 179, 200, 0.25),
+    rgba(157, 179, 200, 0.05) 25%,
     rgba(147, 130, 220, 0.15) 50%,
-    rgba(0, 229, 255, 0.05) 75%,
-    rgba(0, 229, 255, 0.25)
+    rgba(157, 179, 200, 0.05) 75%,
+    rgba(157, 179, 200, 0.25)
   );
   -webkit-mask:
     linear-gradient(#fff 0 0) content-box,
@@ -393,12 +393,12 @@
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(0, 229, 255, 0.18) 30%,
-    rgba(0, 229, 255, 0.3) 50%,
-    rgba(0, 229, 255, 0.18) 70%,
+    rgba(157, 179, 200, 0.18) 30%,
+    rgba(157, 179, 200, 0.3) 50%,
+    rgba(157, 179, 200, 0.18) 70%,
     transparent
   );
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.12), 0 0 4px rgba(0, 229, 255, 0.08);
+  box-shadow: 0 0 12px rgba(157, 179, 200, 0.12), 0 0 4px rgba(157, 179, 200, 0.08);
   pointer-events: none;
   z-index: 2;
   border-radius: inherit;
@@ -406,8 +406,8 @@
 
 /* ── Static top border with cyan glow ── */
 .glass-panel-glow-top {
-  border-top: 1px solid rgba(0, 229, 255, 0.15);
-  box-shadow: 0 -1px 8px rgba(0, 229, 255, 0.06), inset 0 1px 0 rgba(0, 229, 255, 0.05);
+  border-top: 1px solid rgba(157, 179, 200, 0.15);
+  box-shadow: 0 -1px 8px rgba(157, 179, 200, 0.06), inset 0 1px 0 rgba(157, 179, 200, 0.05);
 }
 
 /* ══════════════════════════════════════════════════════════════

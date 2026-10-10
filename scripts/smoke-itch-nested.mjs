@@ -22,6 +22,9 @@ const browser = await chromium.launch({
 const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
 const page = await context.newPage();
 context.on('requestfailed', (req) => {
+  // v4.45.0: ERR_ABORTED — браузер отменил загрузку при смене сцены (three.js
+  // сбрасывает pending-текстуры), это НЕ потеря ассета: файл в архиве есть.
+  if (req.failure()?.errorText === 'net::ERR_ABORTED') return;
   console404s.push(`[ctx-reqfail] ${req.url().slice(-120)} ${req.failure()?.errorText}`);
 });
 context.on('response', (res) => {
@@ -48,6 +51,7 @@ page.on('console', (msg) => {
   }
 });
 page.on('requestfailed', (req) => {
+  if (req.failure()?.errorText === 'net::ERR_ABORTED') return; // отмена при смене сцены — не 404
   console404s.push(`[reqfail] ${req.url().slice(-120)} ${req.failure()?.errorText}`);
 });
 page.on('response', (res) => {
@@ -57,6 +61,7 @@ page.on('response', (res) => {
 });
 page.on('pageerror', (err) => consoleErrors.push(`[pageerror] ${String(err).slice(0, 200)}`));
 page.on('requestfailed', (req) => {
+  if (req.failure()?.errorText === 'net::ERR_ABORTED') return; // отмена при смене сцены — не сбой
   netFailures.push(`${req.url().slice(-90)} :: ${req.failure()?.errorText}`);
 });
 page.on('response', (res) => {

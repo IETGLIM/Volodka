@@ -87,7 +87,7 @@ export function TerminalButton({
         className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
         style={{
           backgroundImage:
-            'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.03) 2px, rgba(0,255,255,0.03) 4px)',
+            'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157, 179, 200,0.03) 2px, rgba(157, 179, 200,0.03) 4px)',
         }}
       />
       {!disabled && (

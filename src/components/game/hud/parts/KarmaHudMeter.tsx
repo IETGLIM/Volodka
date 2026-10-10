@@ -44,7 +44,7 @@ export const KarmaHudMeter = memo(function KarmaHudMeter() {
 
   const tierLabel = getKarmaTierLabel(karma);
   const color = karma >= 60
-    ? 'var(--cyber-cyan, #00e5ff)'
+    ? 'var(--cyber-cyan, #9db3c8)'
     : karma <= 40
       ? '#fb7185'
       : '#fbbf24';

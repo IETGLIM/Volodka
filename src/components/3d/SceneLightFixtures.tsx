@@ -4,7 +4,7 @@
  *  represent light sources, complementing the abstract point lights in Lighting.tsx.
  *
  *  Quality-gated: medium+ (fixtures include meshes + point lights).
- *  Cyberpunk palette: cyan #00e5ff, amber #ffaa44, emerald #00ff88.
+ *  Cyberpunk palette: cyan #9db3c8, amber #ffaa44, emerald #00ff88.
  */
 
 'use client';
@@ -50,9 +50,9 @@ const SCENE_FIXTURES: Partial<Record<SceneId, FixtureConfig[]>> = {
   ],
   volodka_room: [
     // Monitor glow — cyan terminal on the desk
-    { type: 'monitor', position: [1.2, 1.4, -2.5], color: '#00e5ff', intensity: 0.8, distance: 4, width: 0.5, height: 0.35, rotation: [0, 0, 0], scanlineEffect: true },
+    { type: 'monitor', position: [1.2, 1.4, -2.5], color: '#9db3c8', intensity: 0.8, distance: 4, width: 0.5, height: 0.35, rotation: [0, 0, 0], scanlineEffect: true },
     // Neon accent strip above the door
-    { type: 'neon', position: [0, 2.4, 3.5], color: '#00e5ff', intensity: 0.3, distance: 5, width: 0.8, height: 0.06, rotation: [0, Math.PI, 0], animated: 'pulse', seed: 6 },
+    { type: 'neon', position: [0, 2.4, 3.5], color: '#9db3c8', intensity: 0.3, distance: 5, width: 0.8, height: 0.06, rotation: [0, Math.PI, 0], animated: 'pulse', seed: 6 },
   ],
   volodka_corridor: [
     { type: 'neon', position: [0, 2.5, 0], color: '#ccaa55', intensity: 0.4, distance: 6, width: 0.5, height: 0.08, rotation: [Math.PI / 2, 0, 0], animated: 'pulse', seed: 7 },
@@ -63,7 +63,7 @@ const SCENE_FIXTURES: Partial<Record<SceneId, FixtureConfig[]>> = {
   ],
   guild_mainframe: [
     // Server rack monitors
-    { type: 'monitor', position: [-3, 2, -2], color: '#00e5ff', intensity: 1.0, distance: 5, width: 0.5, height: 0.35, rotation: [0, 0.5, 0], scanlineEffect: true },
+    { type: 'monitor', position: [-3, 2, -2], color: '#9db3c8', intensity: 1.0, distance: 5, width: 0.5, height: 0.35, rotation: [0, 0.5, 0], scanlineEffect: true },
     { type: 'monitor', position: [3, 2, -4], color: '#44ddff', intensity: 0.9, distance: 5, width: 0.45, height: 0.32, rotation: [0, -0.4, 0], scanlineEffect: true },
     { type: 'monitor', position: [0, 2.2, -5.2], color: '#00ff88', intensity: 0.7, distance: 4, width: 0.4, height: 0.3, rotation: [0, 0, 0], scanlineEffect: true },
   ],

@@ -45,7 +45,7 @@ const matStone = getSharedStandardMaterial({ color: '#3a4050', roughness: 0.8 })
 const matCurb = getSharedStandardMaterial({ color: '#2e343e', roughness: 0.72, metalness: 0.08 });
 const matNeonCyan = getSharedStandardMaterial({
   color: '#001820',
-  emissive: '#00e5ff',
+  emissive: '#9db3c8',
   emissiveIntensity: 0.62,
 });
 const matNeonMagenta = getSharedStandardMaterial({
@@ -527,7 +527,7 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
             <mesh position={[0, 0.75, 0.55]} geometry={getSharedBoxGeometry(b.size[0] * 0.8, 0.08, 0.06)}>
               <meshPhysicalMaterial
                 color="#101018"
-                emissive={i % 2 === 0 ? '#00e5ff' : '#ff4488'}
+                emissive={i % 2 === 0 ? '#9db3c8' : '#ff4488'}
                 emissiveIntensity={0.72}
                 roughness={wetNeon.roughness}
                 metalness={wetNeon.metalness}

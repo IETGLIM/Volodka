@@ -106,7 +106,7 @@ const KIND_STYLE: Record<DamageNumberKind, KindStyle> = {
     letterSpacing: '0.04em',
   },
   heal: {
-    color: '#34d399',
+    color: '#57a874',
     glow: '0 0 10px rgba(52,211,153,0.55), 0 2px 3px rgba(0,0,0,0.8)',
     fontSizePx: 24,
     weight: 800,

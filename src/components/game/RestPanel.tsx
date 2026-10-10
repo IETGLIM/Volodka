@@ -97,7 +97,7 @@ function DreamOverlay({ active, onComplete }: { active: boolean; onComplete: () 
           <motion.span
             key={text}
             className="block text-sm font-mono"
-            style={{ color: 'rgba(0, 229, 255, 0.6)', textShadow: '0 0 12px rgba(0, 229, 255, 0.3)' }}
+            style={{ color: 'rgba(157, 179, 200, 0.6)', textShadow: '0 0 12px rgba(157, 179, 200, 0.3)' }}
             initial={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
             animate={{ opacity: [0, 0.7, 0.7, 0], y: [10, 0, 0, -10], filter: ['blur(8px)', 'blur(2px)', 'blur(0px)', 'blur(8px)'] }}
             transition={{ duration: 2, delay: i * 0.4, ease: 'easeInOut' }}
@@ -112,10 +112,10 @@ function DreamOverlay({ active, onComplete }: { active: boolean; onComplete: () 
             key={i}
             className="absolute w-0.5 h-0.5 rounded-full"
             style={{
-              background: i % 2 === 0 ? '#00e5ff' : '#a855f7',
+              background: i % 2 === 0 ? '#9db3c8' : '#a855f7',
               left: `${20 + Math.random() * 60}%`,
               top: `${20 + Math.random() * 60}%`,
-              boxShadow: `0 0 4px ${i % 2 === 0 ? 'rgba(0,229,255,0.4)' : 'rgba(168,85,247,0.4)'}`,
+              boxShadow: `0 0 4px ${i % 2 === 0 ? 'rgba(157, 179, 200,0.4)' : 'rgba(168,85,247,0.4)'}`,
             }}
             animate={{
               y: [-20, 20],
@@ -230,14 +230,14 @@ export function RestPanel({ open, onClose }: RestPanelProps) {
                 <div className="flex items-center justify-center mb-4">
                   <div className="w-16 h-16 rounded-full border border-cyan-800/30 flex items-center justify-center relative">
                     <div className="absolute inset-0 rounded-full" style={{
-                      background: 'radial-gradient(circle, rgba(0,229,255,0.06) 0%, transparent 70%)',
+                      background: 'radial-gradient(circle, rgba(157, 179, 200,0.06) 0%, transparent 70%)',
                     }} />
                     <motion.div
                       animate={isResting ? {
                         boxShadow: [
-                          '0 0 12px rgba(0,229,255,0.1)',
-                          '0 0 24px rgba(0,229,255,0.3)',
-                          '0 0 12px rgba(0,229,255,0.1)',
+                          '0 0 12px rgba(157, 179, 200,0.1)',
+                          '0 0 24px rgba(157, 179, 200,0.3)',
+                          '0 0 12px rgba(157, 179, 200,0.1)',
                         ],
                       } : {}}
                       transition={isResting ? { duration: 1.5, repeat: Infinity } : {}}
@@ -456,7 +456,7 @@ export function RestPanel({ open, onClose }: RestPanelProps) {
                       <motion.div
                         className="h-full rounded-full"
                         style={{
-                          background: 'linear-gradient(90deg, rgba(0,229,255,0.4), rgba(168,85,247,0.4), rgba(0,229,255,0.4))',
+                          background: 'linear-gradient(90deg, rgba(157, 179, 200,0.4), rgba(168,85,247,0.4), rgba(157, 179, 200,0.4))',
                           backgroundSize: '200% 100%',
                         }}
                         animate={{

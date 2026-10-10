@@ -54,7 +54,7 @@ const CATEGORY_FILTERS: { key: EventCategory; label: string; icon: typeof BookOp
 const CATEGORY_COLORS: Record<string, { color: string; bg: string; border: string }> = {
   combat:      { color: '#f43f5e', bg: 'rgba(244,63,94,0.08)',   border: 'rgba(244,63,94,0.25)' },
   social:      { color: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.25)' },
-  exploration: { color: '#00e5ff', bg: 'rgba(0,229,255,0.08)',   border: 'rgba(0,229,255,0.25)' },
+  exploration: { color: '#9db3c8', bg: 'rgba(157, 179, 200,0.08)',   border: 'rgba(157, 179, 200,0.25)' },
   lore:        { color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.25)' },
 };
 
@@ -224,7 +224,7 @@ function StatsSummary({ stats }: {
   const items = [
     { icon: Swords,  label: 'Боев',           value: stats.totalCombats,          color: '#f43f5e' },
     { icon: Users,  label: 'NPC знакомств',  value: stats.npcsMet,              color: '#fbbf24' },
-    { icon: MapPin, label: 'Локаций',        value: stats.locationsDiscovered,  color: '#00e5ff' },
+    { icon: MapPin, label: 'Локаций',        value: stats.locationsDiscovered,  color: '#9db3c8' },
     { icon: Feather, label: 'Стихов',         value: stats.poemsCollected,       color: '#a78bfa' },
   ];
 
@@ -402,7 +402,7 @@ export function AdventureLogPanel({ open, onClose }: AdventureLogPanelProps) {
           transition={{ type: 'spring', damping: 25, stiffness: 200 }}
           className="fixed top-0 right-0 bottom-0 w-full sm:w-[40rem]"
           {...dialogProps}
-          style={{ zIndex: UI_LAYERS.PANEL, background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)', borderLeft: '1px solid rgba(0,229,255,0.15)', backdropFilter: 'blur(20px)', boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(0,229,255,0.08)' }}
+          style={{ zIndex: UI_LAYERS.PANEL, background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)', borderLeft: '1px solid rgba(157, 179, 200,0.15)', backdropFilter: 'blur(20px)', boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(157, 179, 200,0.08)' }}
         >
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between px-4 py-3 border-b border-cyan-900/20">

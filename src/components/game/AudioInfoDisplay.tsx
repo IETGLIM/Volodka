@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { Volume2, VolumeX, Music } from 'lucide-react';
+import { Volume2, VolumeX } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { musicEngine } from '@/engine/MusicEngine';
 import { readAudioSettings, AUDIO_SETTINGS_CHANGED, type AudioSettingsSnapshot } from '@/engine/audio/AudioSettings';
@@ -15,25 +15,12 @@ function sceneDisplayName(sceneId: string): string {
     .replace(/(?:^|\s)\S/g, (c) => c.toUpperCase());
 }
 
-/** Animated procedural audio visualization bars (CSS-only) */
-function AudioBars({ active, color }: { active: boolean; color: string }) {
-  return (
-    <div className="flex items-end gap-[2px] h-4" aria-hidden="true">
-      {[0, 1, 2, 3, 4].map((i) => (
-        <span
-          key={i}
-          className="audio-info-bar"
-          style={{
-            '--bar-delay': `${i * 0.15}s`,
-            '--bar-color': color,
-            opacity: active ? 1 : 0.2,
-          } as React.CSSProperties}
-        />
-      ))}
-    </div>
-  );
-}
-
+/**
+ * v4.45.0 «Ночная тетрадь»: эквалайзер-«WinAmp» вырезан (жалоба арт-ревью —
+ * «плеер в лицо съедает атмосферу нарративной RPG»). Осталась тихая строка:
+ * иконка звука · сцена · 4 миниатюрных деления громкости. Сворачивается
+ * до одной иконки, когда музыки нет.
+ */
 export function AudioInfoDisplay() {
   const [audioSettings, setAudioSettings] = useState<AudioSettingsSnapshot>(readAudioSettings);
   const [musicScene, setMusicScene] = useState<string | null>(null);
@@ -76,67 +63,44 @@ export function AudioInfoDisplay() {
 
   return (
     <div
-      className="audio-info-widget glass-noise"
+      className="audio-info-widget"
       style={{ position: 'fixed', bottom: '8px', right: '8px', zIndex: UI_LAYERS.HUD + 1 }}
       role="status"
       aria-label={`Аудио: ${isPlaying ? 'воспроизведение' : 'пауза'}`}
     >
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="audio-info-toggle"
-          onClick={toggleMute}
-          aria-label={audioSettings.muted ? 'Включить звук' : 'Выключить звук'}
-          title={audioSettings.muted ? 'Включить звук' : 'Выключить звук'}
-        >
-          {audioSettings.muted ? (
-            <VolumeX className="w-3.5 h-3.5 text-slate-500" />
-          ) : (
-            <Volume2 className="w-3.5 h-3.5 text-cyan-400/80" />
-          )}
-        </button>
+      <button
+        type="button"
+        className="audio-info-toggle"
+        onClick={toggleMute}
+        aria-label={audioSettings.muted ? 'Включить звук' : 'Выключить звук'}
+        title={audioSettings.muted ? 'Включить звук' : 'Выключить звук'}
+      >
+        {audioSettings.muted ? (
+          <VolumeX className="w-3.5 h-3.5" style={{ color: 'rgba(130,128,118,0.8)' }} />
+        ) : (
+          <Volume2 className="w-3.5 h-3.5" style={{ color: 'var(--vk-amber)' }} />
+        )}
+      </button>
 
-        <AudioBars
-          active={isPlaying}
-          color={isPlaying ? '#00e5ff' : '#64748b'}
-        />
+      {activeSceneName && isPlaying && (
+        <span className="audio-info-scene text-[10px] truncate max-w-[110px]">
+          {activeSceneName}
+        </span>
+      )}
 
-        <div className="flex flex-col min-w-0">
-          <div className="flex items-center gap-1">
-            <Music className="w-2.5 h-2.5 text-slate-500 shrink-0" />
-            <span className="audio-info-status text-[9px] font-mono">
-              {audioSettings.muted
-                ? 'Без звука'
-                : isPlaying
-                  ? 'Воспроизведение'
-                  : audioSettings.musicEnabled
-                    ? 'Ожидание'
-                    : 'Музыка выкл.'}
-            </span>
-          </div>
-          {activeSceneName && isPlaying && (
-            <span className="audio-info-scene text-[8px] font-mono text-slate-500 truncate">
-              {activeSceneName}
-            </span>
-          )}
-        </div>
-
-        <div className="audio-info-volume" aria-label={`Громкость: ${volumePercent}%`}>
-          <div className="flex gap-[1px]">
-            {[1, 2, 3, 4].map((bar) => (
-              <div
-                key={bar}
-                className="w-[3px] rounded-full"
-                style={{
-                  height: `${4 + bar * 2}px`,
-                  background: volumePercent >= bar * 25
-                    ? '#00e5ff'
-                    : 'rgba(100,116,139,0.3)',
-                }}
-              />
-            ))}
-          </div>
-        </div>
+      <div className="audio-info-volume flex gap-[2px] items-end" aria-label={`Громкость: ${volumePercent}%`}>
+        {[1, 2, 3, 4].map((bar) => (
+          <div
+            key={bar}
+            className="w-[2px] rounded-full"
+            style={{
+              height: `${3 + bar * 2}px`,
+              background: volumePercent >= bar * 25
+                ? 'rgba(226,168,75,0.75)'
+                : 'rgba(157,179,200,0.22)',
+            }}
+          />
+        ))}
       </div>
     </div>
   );

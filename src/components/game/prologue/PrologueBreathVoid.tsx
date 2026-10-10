@@ -56,7 +56,7 @@ export function PrologueBreathVoid({ onComplete, innerText }: Props) {
               transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
             >
               <div className="w-12 h-px mx-auto mb-6 bg-gradient-to-r from-transparent via-cyan-200/30 to-transparent" />
-              <p className="font-serif text-lg md:text-xl leading-relaxed tracking-[0.08em] text-stone-200/90 [text-shadow:0_0_24px_rgba(0,255,255,0.15)]">
+              <p className="font-serif text-lg md:text-xl leading-relaxed tracking-[0.08em] text-stone-200/90 [text-shadow:0_0_24px_rgba(157, 179, 200,0.15)]">
                 {innerText}
               </p>
               <div className="w-12 h-px mx-auto mt-6 bg-gradient-to-r from-transparent via-amber-200/20 to-transparent" />
@@ -122,7 +122,7 @@ export function PrologueBreathVoid({ onComplete, innerText }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.14 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 pointer-events-none mix-blend-screen bg-[linear-gradient(90deg,rgba(255,0,80,0.08)_0%,transparent_8%,transparent_92%,rgba(0,255,255,0.08)_100%)]"
+          className="absolute inset-0 pointer-events-none mix-blend-screen bg-[linear-gradient(90deg,rgba(255,0,80,0.08)_0%,transparent_8%,transparent_92%,rgba(157, 179, 200,0.08)_100%)]"
           aria-hidden
         />
       )}

@@ -33,7 +33,7 @@ const EMOTION_CONFIG: Record<EmotionTag, { label: string; color: string; bg: str
   tense:        { label: 'Напряжённо', color: '#f43f5e', bg: 'rgba(244,63,94,0.08)',   border: 'rgba(244,63,94,0.25)' },
   warm:         { label: 'Тепло',       color: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.25)' },
   mysterious:   { label: 'Таинственно', color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.25)' },
-  poem_reveal:  { label: 'Стих',        color: '#00e5ff', bg: 'rgba(0,229,255,0.08)',   border: 'rgba(0,229,255,0.25)' },
+  poem_reveal:  { label: 'Стих',        color: '#9db3c8', bg: 'rgba(157, 179, 200,0.08)',   border: 'rgba(157, 179, 200,0.25)' },
 };
 
 /** Scene → Act mapping for Russian chapter grouping */
@@ -223,7 +223,7 @@ function NPCListItem({
                 className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-full text-[9px] font-mono font-medium"
                 style={{
                   background: colors ? `${colors.primary}20` : 'rgba(52,211,153,0.15)',
-                  color: colors?.primary ?? '#34d399',
+                  color: colors?.primary ?? '#57a874',
                   border: `1px solid ${colors ? colors.primary + '30' : 'rgba(52,211,153,0.2)'}`,
                 }}
               >
@@ -265,7 +265,7 @@ function ConversationEntry({
 
   const accentColor = isPlayer
     ? 'var(--cyber-cyan)'
-    : (npcColors?.primary ?? '#34d399');
+    : (npcColors?.primary ?? '#57a874');
 
   const accentBg = isPlayer
     ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'

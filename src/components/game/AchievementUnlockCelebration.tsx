@@ -13,7 +13,7 @@ const AUTO_DISMISS_MS = 5000;
 const CATEGORY_META: Record<TrophyCategory, { label: string; color: string }> = {
   story:       { label: 'Сюжет',       color: '#a78bfa' },
   combat:      { label: 'Бой',         color: '#f87171' },
-  exploration: { label: 'Исследование', color: '#34d399' },
+  exploration: { label: 'Исследование', color: '#57a874' },
   poetry:      { label: 'Поэзия',      color: '#fbbf24' },
   social:      { label: 'Социальные',  color: '#60a5fa' },
 };

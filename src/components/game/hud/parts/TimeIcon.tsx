@@ -19,7 +19,7 @@ export function getTimeOfDayShadow(hour: number): string {
     return '0 0 8px rgba(255, 109, 0, 0.30)';
   }
   // Night (22-6): cool cyan
-  return '0 0 6px rgba(0, 229, 255, 0.20)';
+  return '0 0 6px rgba(157, 179, 200, 0.20)';
 }
 
 export function TimeIcon({ hour }: { hour: number }) {

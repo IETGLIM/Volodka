@@ -128,7 +128,7 @@ const DEFAULT_DEBUFF_ICON = Skull;
 
 /** Color configuration for buff effects */
 const BUFF_COLORS = {
-  primary: '#00f0ff',
+  primary: '#9db3c8',
   secondary: '#00ff88',
   glow: 'rgba(0, 240, 255, 0.5)',
   glowSecondary: 'rgba(0, 255, 136, 0.3)',

@@ -44,7 +44,7 @@
 }
 
 .npc-rel-meter-fill--ally {
-  background: linear-gradient(90deg, #059669, #34d399);
+  background: linear-gradient(90deg, #059669, #57a874);
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
@@ -206,4 +206,4 @@
 .npc-rel-value--low { color: #fb923c; text-shadow: 0 0 8px rgba(249, 115, 22, 0.2); }
 .npc-rel-value--neutral { color: #fbbf24; text-shadow: 0 0 8px rgba(245, 158, 11, 0.2); }
 .npc-rel-value--friendly { color: #22d3ee; text-shadow: 0 0 8px rgba(6, 182, 212, 0.3); }
-.npc-rel-value--ally { color: #34d399; text-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }
+.npc-rel-value--ally { color: #57a874; text-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }

@@ -55,7 +55,7 @@
 }
 
 .quest-board-tab--active-text {
-  color: #34d399;
+  color: #57a874;
 }
 
 .quest-board-header-badge {
@@ -80,14 +80,14 @@
 .quest-board-btn--accept {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
   border: 1px solid rgba(16, 185, 129, 0.3);
-  color: #34d399;
+  color: #57a874;
   box-shadow: 0 0 8px rgba(16, 185, 129, 0.1);
 }
 
 .quest-board-btn--claim {
   background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
   border: 1px solid rgba(16, 185, 129, 0.4);
-  color: #34d399;
+  color: #57a874;
   box-shadow: 0 0 12px rgba(16, 185, 129, 0.15);
 }
 

@@ -88,8 +88,8 @@ export const GlitchRevealTransition = memo(function GlitchRevealTransition({
               0deg,
               transparent 0px,
               transparent 2px,
-              rgba(0, 255, 255, 0.03) 2px,
-              rgba(0, 255, 255, 0.03) 4px
+              rgba(157, 179, 200, 0.03) 2px,
+              rgba(157, 179, 200, 0.03) 4px
             )`,
             pointerEvents: 'none',
           }}
@@ -139,7 +139,7 @@ export const GlitchRevealTransition = memo(function GlitchRevealTransition({
             <div
               className="absolute inset-0"
               style={{
-                background: `rgba(0, 255, 100, 0.15)`,
+                background: `rgba(70, 185, 110, 0.15)`,
               }}
             />
           </motion.div>

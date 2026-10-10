@@ -32,10 +32,13 @@ interface ExplorationHint {
 }
 
 const CATEGORY_CONFIG: Record<HintCategory, { icon: typeof Lightbulb; label: string; color: string; borderColor: string }> = {
-  social: { icon: Users, label: 'Общение', color: 'text-cyan-400', borderColor: 'rgba(6,182,212,0.3)' },
-  exploration: { icon: Compass, label: 'Разведка', color: 'text-emerald-400', borderColor: 'rgba(16,185,129,0.3)' },
-  quest: { icon: ScrollText, label: 'Задание', color: 'text-amber-400', borderColor: 'rgba(245,158,11,0.3)' },
-  combat: { icon: Swords, label: 'Бой', color: 'text-rose-400', borderColor: 'rgba(244,63,94,0.3)' },
+  /* v4.45.0 «Ночная тетрадь»: цветовая дисциплина — серебро для типов,
+     янтарь для заданий, кирпич для боя. Прежние неоновые cyan/emerald/rose
+     выбивались из монохромной ночной гаммы (жалоба арт-ревью HUD). */
+  social: { icon: Users, label: 'Общение', color: 'text-[#9db3c8]', borderColor: 'rgba(157,179,200,0.25)' },
+  exploration: { icon: Compass, label: 'Разведка', color: 'text-[#9db3c8]', borderColor: 'rgba(157,179,200,0.25)' },
+  quest: { icon: ScrollText, label: 'Задание', color: 'text-[#e2a84b]', borderColor: 'rgba(226,168,75,0.3)' },
+  combat: { icon: Swords, label: 'Бой', color: 'text-[#c65548]', borderColor: 'rgba(198,85,72,0.3)' },
 };
 
 /* Progressive delay before showing detailed hints (ms) */
@@ -182,7 +185,7 @@ export function ExplorationHintsPanel() {
         style={{
           background: 'linear-gradient(145deg, rgba(0,0,0,0.72) 0%, rgba(15,23,42,0.6) 50%, rgba(0,0,0,0.5) 100%)',
           borderColor: 'rgba(51,65,85,0.4)',
-          boxShadow: '0 0 12px rgba(0,229,255,0.06), 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)',
+          boxShadow: '0 0 12px rgba(157, 179, 200,0.06), 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03)',
         }}
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}

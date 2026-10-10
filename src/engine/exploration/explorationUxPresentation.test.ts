@@ -14,17 +14,19 @@ import {
 describe('explorationUxPresentation', () => {
   it('getInteractionHintVisual returns per-type accents', () => {
     expect(getInteractionHintVisual('npc').color).toContain('cyber-cyan');
-    expect(getInteractionHintVisual('exit').color).toBe('#34d399');
+    expect(getInteractionHintVisual('exit').color).toBe('#57a874');
   });
 
   it('getSceneTransitionAccent maps styles', () => {
+    // v4.45.0 «Ночная тетрадь»: wipe/data_stream переведены с неонового циана
+    // (255,255) на лунную сталь (157,179,200) — тест следует новой палитре.
     expect(getSceneTransitionAccent('flash')).toContain('255');
-    expect(getSceneTransitionAccent('wipe')).toContain('255, 255');
+    expect(getSceneTransitionAccent('wipe')).toContain('157, 179, 200');
   });
 
   it('getTransitionProgressVisual switches on complete', () => {
     expect(getTransitionProgressVisual(false).primary).toContain('cyber-cyan');
-    expect(getTransitionProgressVisual(true).primary).toBe('#34d399');
+    expect(getTransitionProgressVisual(true).primary).toBe('#57a874');
   });
 
   it('formats transition and hint labels', () => {

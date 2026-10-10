@@ -60,9 +60,9 @@ function getSceneHint(sceneId: string): string {
 const CATEGORY_COLORS: Record<string, string> = {
   history: '#fbbf24',
   factions: '#fb7185',
-  technology: '#00e5ff',
+  technology: '#9db3c8',
   culture: '#a78bfa',
-  mysteries: '#34d399',
+  mysteries: '#57a874',
 };
 
 /* ─── Helpers ─── */

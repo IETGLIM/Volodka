@@ -300,7 +300,7 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
                                   <span key={i}>
                                     {i > 0 && <span className="text-slate-600 text-xs mx-0.5">+</span>}
                                     <kbd
-                                      className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded text-xs font-mono transition-all duration-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-[0_0_8px_rgba(0,229,255,0.3),0_0_16px_rgba(0,229,255,0.1)]"
+                                      className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded text-xs font-mono transition-all duration-200 hover:border-cyan-400/50 hover:text-cyan-300 hover:shadow-[0_0_8px_rgba(157, 179, 200,0.3),0_0_16px_rgba(157, 179, 200,0.1)]"
                                       style={{
                                         background: 'linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.95) 100%)',
                                         borderColor: 'rgba(71, 85, 105, 0.35)',

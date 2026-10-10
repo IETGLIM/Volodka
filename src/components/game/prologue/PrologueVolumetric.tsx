@@ -48,7 +48,7 @@ export function PrologueVolumetric({ phase }: { phase: string }) {
       {/* Subtle chromatic edge on title */}
       {isTitle && (
         <>
-          <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(90deg,rgba(255,0,80,0.35)_0%,transparent_6%,transparent_94%,rgba(0,255,255,0.35)_100%)] mix-blend-screen" />
+          <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(90deg,rgba(255,0,80,0.35)_0%,transparent_6%,transparent_94%,rgba(157, 179, 200,0.35)_100%)] mix-blend-screen" />
           <motion.div
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 0.08, x: 0 }}

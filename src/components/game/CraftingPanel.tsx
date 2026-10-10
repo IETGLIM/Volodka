@@ -41,7 +41,7 @@ const CATEGORY_VISUAL: Record<CraftingCategory, { emoji: string; color: string; 
   },
   consumable: {
     emoji: '🧪',
-    color: '#34d399',
+    color: '#57a874',
     glowColor: 'rgba(52,211,153,0.25)',
     bgGradient: 'linear-gradient(135deg, rgba(52,211,153,0.06) 0%, rgba(15,23,42,0.4) 60%)',
   },
@@ -653,13 +653,13 @@ function RecipeDetail({
                   style={{
                     background: met ? 'rgba(52,211,153,0.05)' : 'rgba(251,113,133,0.05)',
                     border: `1px solid ${met ? 'rgba(52,211,153,0.15)' : 'rgba(251,113,133,0.1)'}`,
-                    color: met ? '#34d399' : '#fb7185',
+                    color: met ? '#57a874' : '#fb7185',
                   }}
                 >
                   <span
                     className="inline-block w-2 h-2 rounded-full shrink-0"
                     style={{
-                      backgroundColor: met ? '#34d399' : '#fb7185',
+                      backgroundColor: met ? '#57a874' : '#fb7185',
                       boxShadow: met ? '0 0 6px rgba(52,211,153,0.5)' : '0 0 4px rgba(251,113,133,0.3)',
                     }}
                   />

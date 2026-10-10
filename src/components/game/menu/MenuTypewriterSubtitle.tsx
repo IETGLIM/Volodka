@@ -21,7 +21,7 @@ export function MenuTypewriterSubtitle({ text, delay = 0, enabled = true }: { te
 
   if (!enabled) {
     return (
-      <p className="mt-4 font-serif text-base md:text-xl tracking-[0.42em] uppercase text-stone-200/85">{text}</p>
+      <p className="mt-4 font-serif text-base md:text-xl tracking-[0.3em] uppercase" style={{ color: 'rgba(234,228,214,0.85)' }}>{text}</p>
     );
   }
 
@@ -30,8 +30,9 @@ export function MenuTypewriterSubtitle({ text, delay = 0, enabled = true }: { te
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: Math.min(delay, 0.4), duration: 0.45 }}
-      className={`mt-4 font-serif text-base md:text-xl tracking-[0.42em] uppercase text-stone-200/85 ${done && started ? 'typing-cursor' : ''}`}
+      className={`mt-4 font-serif text-base md:text-xl tracking-[0.3em] uppercase ${done && started ? 'typing-cursor' : ''}`}
       style={{
+        color: 'rgba(234,228,214,0.85)',
         // Accessibility: scale subtitle with the --subtitle-scale CSS var
         // set by AccessibilityManager on <html> (default 1 = no scaling).
         fontSize: 'calc(1rem * var(--subtitle-scale, 1))',

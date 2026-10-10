@@ -153,14 +153,14 @@ export function SceneTransitionOverlay() {
                 <>
               <div className="absolute inset-0" style={{ background: 'rgba(255, 0, 0, 0.08)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 1.5}px)` }} />
               <div className="absolute inset-0" style={{ background: 'rgba(0, 100, 255, 0.08)', mixBlendMode: 'screen', transform: `translateX(${-glitchOffset * 1.2}px)` }} />
-              <div className="absolute inset-0" style={{ background: 'rgba(0, 255, 100, 0.04)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 0.7}px)` }} />
+              <div className="absolute inset-0" style={{ background: 'rgba(70, 185, 110, 0.04)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 0.7}px)` }} />
               <div className="absolute inset-0" style={{
-                background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0, 255, 255, 0.03) 2px, rgba(0, 255, 255, 0.03) 4px)',
+                background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(157, 179, 200, 0.03) 2px, rgba(157, 179, 200, 0.03) 4px)',
                 transform: `translateX(${glitchOffset * 0.5}px) skewX(${glitchOffset * 0.1}deg)`,
               }} />
               <motion.div className="absolute inset-0" style={{ background: 'rgba(255, 255, 255, 0.12)' }} initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 0.15, ease: 'easeOut' }} />
               <div className="absolute inset-0" style={{
-                background: 'linear-gradient(transparent 0%, transparent 30%, rgba(0,255,255,0.02) 30%, rgba(0,255,255,0.02) 32%, transparent 32%, transparent 55%, rgba(255,0,100,0.03) 55%, rgba(255,0,100,0.03) 57%, transparent 57%, transparent 78%, rgba(0,100,255,0.02) 78%, rgba(0,100,255,0.02) 80%, transparent 80%)',
+                background: 'linear-gradient(transparent 0%, transparent 30%, rgba(157, 179, 200,0.02) 30%, rgba(157, 179, 200,0.02) 32%, transparent 32%, transparent 55%, rgba(255,0,100,0.03) 55%, rgba(255,0,100,0.03) 57%, transparent 57%, transparent 78%, rgba(0,100,255,0.02) 78%, rgba(0,100,255,0.02) 80%, transparent 80%)',
                 transform: `translateX(${glitchOffset * 2}px)`,
               }} />
                 </>
@@ -613,7 +613,7 @@ export function SceneTransitionOverlay() {
               className="absolute inset-0 bg-black"
               exit={{ opacity: 0, transition: { duration: 0.2, ease: 'easeInOut' } }}
             >
-              <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(0,255,255,0.015) 1px, rgba(0,255,255,0.015) 2px)' }} />
+              <div className="absolute inset-0" style={{ background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(157, 179, 200,0.015) 1px, rgba(157, 179, 200,0.015) 2px)' }} />
               <div className="absolute inset-0" style={{ background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 80%)' }} />
               {SceneNameDisplay}
             </motion.div>

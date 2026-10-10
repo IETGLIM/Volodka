@@ -26,14 +26,14 @@ const LORE_TOAST_RARITY: Record<LoreRarity, LoreToastVisualConfig> = {
     countdownBg: '#94a3b8',
   },
   uncommon: {
-    primary: '#34d399',
+    primary: '#57a874',
     glow: 'rgba(52, 211, 153, 0.18)',
     border: 'rgba(52, 211, 153, 0.35)',
     bg: 'rgba(8, 24, 18, 0.82)',
     shadow: '0 0 12px rgba(52, 211, 153, 0.12)',
     iconBg: 'rgba(52, 211, 153, 0.12)',
-    textColor: '#34d399',
-    countdownBg: '#34d399',
+    textColor: '#57a874',
+    countdownBg: '#57a874',
   },
   rare: {
     primary: 'var(--cyber-cyan)',

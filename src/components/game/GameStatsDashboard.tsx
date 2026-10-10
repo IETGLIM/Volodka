@@ -112,7 +112,7 @@ interface StatCardProps {
   delta?: number;
 }
 
-function StatCard({ icon, label, value, color = '#00e5ff', delta }: StatCardProps) {
+function StatCard({ icon, label, value, color = '#9db3c8', delta }: StatCardProps) {
   return (
     <div className="stat-dashboard-card" style={{ '--stat-color': color } as React.CSSProperties}>
       <div className="flex items-center gap-2 mb-1.5">
@@ -124,7 +124,7 @@ function StatCard({ icon, label, value, color = '#00e5ff', delta }: StatCardProp
         {delta !== undefined && delta !== 0 && (
           <span
             className="text-[10px] font-mono"
-            style={{ color: delta > 0 ? '#34d399' : '#f87171' }}
+            style={{ color: delta > 0 ? '#57a874' : '#f87171' }}
           >
             {delta > 0 ? `+${delta}` : String(delta)}
           </span>
@@ -291,7 +291,7 @@ export function GameStatsDashboard({ open, onClose }: GameStatsDashboardProps) {
               icon={<ScrollText className="w-3.5 h-3.5" />}
               label="Задания"
               value={totalQuestsCompleted}
-              color="#34d399"
+              color="#57a874"
               delta={questDelta}
             />
             <StatCard
@@ -328,7 +328,7 @@ export function GameStatsDashboard({ open, onClose }: GameStatsDashboardProps) {
               icon={<Heart className="w-3.5 h-3.5" />}
               label="Карма"
               value={playerKarma}
-              color={playerKarma >= 0 ? '#34d399' : '#f87171'}
+              color={playerKarma >= 0 ? '#57a874' : '#f87171'}
             />
             <StatCard
               icon={<Footprints className="w-3.5 h-3.5" />}

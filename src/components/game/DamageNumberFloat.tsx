@@ -38,7 +38,7 @@ const NUMBER_LIFETIME_MS = 1500;
 
 const TYPE_COLORS: Record<DamageNumberType, string> = {
   damage: '#fb7185',     // rose-400
-  heal: '#34d399',       // emerald-400
+  heal: '#57a874',       // emerald-400
   stress: '#fbbf24',     // amber-400
   xp: 'var(--cyber-cyan)',         // cyan-400
   critical: '#fb7185',   // rose-400 (brighter effect)

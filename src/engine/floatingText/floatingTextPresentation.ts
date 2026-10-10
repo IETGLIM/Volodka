@@ -7,7 +7,7 @@ export const TYPE_COLORS: Record<FloatingTextType, string> = {
   karma: 'var(--cyber-cyan)',
   skill: '#a78bfa',
   damage: '#f43f5e',
-  heal: '#34d399',
+  heal: '#57a874',
   item: '#f59e0b',
   stress: '#fb923c',
   energy: '#4ade80',

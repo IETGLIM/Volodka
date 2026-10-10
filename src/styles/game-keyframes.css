@@ -177,10 +177,10 @@
 
 @keyframes menu-title-breathe {
   0%, 100% {
-    filter: brightness(1) drop-shadow(0 0 20px rgba(0, 255, 255, 0.3));
+    filter: brightness(1) drop-shadow(0 0 20px rgba(157, 179, 200, 0.3));
   }
   50% {
-    filter: brightness(1.1) drop-shadow(0 0 40px rgba(0, 255, 255, 0.5));
+    filter: brightness(1.1) drop-shadow(0 0 40px rgba(157, 179, 200, 0.5));
   }
 }
 
@@ -190,10 +190,10 @@
 
 @keyframes new-game-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(0, 255, 255, 0.15), inset 0 0 12px rgba(0, 255, 255, 0.05);
+    box-shadow: 0 0 8px rgba(157, 179, 200, 0.15), inset 0 0 12px rgba(157, 179, 200, 0.05);
   }
   50% {
-    box-shadow: 0 0 16px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.1);
+    box-shadow: 0 0 16px rgba(157, 179, 200, 0.3), inset 0 0 20px rgba(157, 179, 200, 0.1);
   }
 }
 
@@ -328,12 +328,12 @@
 @keyframes hint-breathe-glow {
   0%, 100% {
     box-shadow:
-      0 0 12px rgba(0, 255, 255, 0.08),
+      0 0 12px rgba(157, 179, 200, 0.08),
       0 4px 20px rgba(0, 0, 0, 0.5);
   }
   50% {
     box-shadow:
-      0 0 20px rgba(0, 255, 255, 0.20),
+      0 0 20px rgba(157, 179, 200, 0.20),
       0 4px 24px rgba(0, 0, 0, 0.5);
   }
 }
@@ -345,7 +345,7 @@
 /* ─── Quest objective count flash ─── */
 @keyframes objective-flash {
   0% {
-    background-color: rgba(0, 255, 255, 0.25);
+    background-color: rgba(157, 179, 200, 0.25);
   }
   100% {
     background-color: transparent;

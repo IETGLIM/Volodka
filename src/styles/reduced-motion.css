@@ -175,8 +175,8 @@ html[data-reduced-motion='true'] .ambient-particle {
 /* Neon border breathe */
 .neon-border-breathe {
   animation: none !important;
-  border-color: rgba(0, 229, 255, 0.3);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.06);
+  border-color: rgba(157, 179, 200, 0.3);
+  box-shadow: 0 0 8px rgba(157, 179, 200, 0.06);
 }
 
 /* Thought pulse (from inner monologue) */

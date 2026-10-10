@@ -154,7 +154,7 @@
 /* ─── RGB split hover effect on interactive text ─── */
 @keyframes cyberpunk-rgb-split {
   0%, 100% { text-shadow: 0 0 4px rgb(var(--cyber-matrix-rgb) / 0.4); }
-  50% { text-shadow: -1px 0 2px rgba(0, 255, 255, 0.3), 1px 0 2px rgba(255, 0, 100, 0.3); }
+  50% { text-shadow: -1px 0 2px rgba(157, 179, 200, 0.3), 1px 0 2px rgba(255, 0, 100, 0.3); }
 }
 
 [data-cyberpunk] a:hover,
@@ -265,7 +265,7 @@
   pointer-events: none;
   z-index: 2;
   box-shadow:
-    inset 3px 0 8px -4px rgba(0, 255, 255, 0.04),
+    inset 3px 0 8px -4px rgba(157, 179, 200, 0.04),
     inset -3px 0 8px -4px rgba(255, 0, 100, 0.03);
 }
 
@@ -283,7 +283,7 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(ellipse at 20% 80%, rgba(0, 255, 255, 0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 20% 80%, rgba(157, 179, 200, 0.03) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(255, 140, 0, 0.02) 0%, transparent 50%);
   animation: cp-fog-drift 12s ease-in-out infinite;
 }
@@ -375,7 +375,7 @@
   right: -50%;
   width: 100%;
   height: 100%;
-  background: radial-gradient(ellipse, rgba(0, 255, 255, 0.02) 0%, transparent 70%);
+  background: radial-gradient(ellipse, rgba(157, 179, 200, 0.02) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -383,7 +383,7 @@
 /* ─── Subtle gradient noise on all data-panel elements ─── */
 [data-cyberpunk] [data-panel] {
   background:
-    linear-gradient(135deg, rgba(0, 255, 255, 0.01) 0%, transparent 50%, rgba(255, 140, 0, 0.008) 100%),
+    linear-gradient(135deg, rgba(157, 179, 200, 0.01) 0%, transparent 50%, rgba(255, 140, 0, 0.008) 100%),
     rgba(0, 6, 10, 0.92);
  border: 1px solid rgb(var(--cyber-matrix-rgb) / 0.12);
   box-shadow:
@@ -1741,13 +1741,13 @@
 
 .cyber-tab-item:hover {
   color: rgba(226, 232, 240, 0.85);
-  background: rgba(0, 229, 255, 0.04);
+  background: rgba(157, 179, 200, 0.04);
 }
 
 .cyber-tab-item-active {
   color: rgb(var(--cyber-cyan-rgb));
   border-bottom-color: rgb(var(--cyber-cyan-rgb) / 0.7);
-  background: rgba(0, 229, 255, 0.06);
+  background: rgba(157, 179, 200, 0.06);
   text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3);
 }
 
@@ -1770,7 +1770,7 @@
 .cyber-tag-cyan {
   color: rgb(var(--cyber-cyan-rgb));
   border-color: rgb(var(--cyber-cyan-rgb) / 0.25);
-  background: rgba(0, 229, 255, 0.06);
+  background: rgba(157, 179, 200, 0.06);
 }
 
 .cyber-tag-amber {
@@ -1786,7 +1786,7 @@
 }
 
 .cyber-tag-emerald {
-  color: #34d399;
+  color: #57a874;
   border-color: rgba(52, 211, 153, 0.25);
   background: rgba(52, 211, 153, 0.06);
 }
@@ -1802,7 +1802,7 @@
   font-family: 'Geist Mono', 'SF Mono', monospace;
   font-size: 0.85em;
   padding: 1px 5px;
-  background: rgba(0, 229, 255, 0.08);
+  background: rgba(157, 179, 200, 0.08);
   border: 1px solid rgb(var(--cyber-cyan-rgb) / 0.15);
   border-radius: 3px;
   color: rgb(var(--cyber-cyan-rgb) / 0.9);
@@ -1826,7 +1826,7 @@
 }
 
 .cyber-accordion-trigger:hover {
-  background: rgba(0, 229, 255, 0.04);
+  background: rgba(157, 179, 200, 0.04);
   border-color: rgb(var(--cyber-cyan-rgb) / 0.2);
 }
 

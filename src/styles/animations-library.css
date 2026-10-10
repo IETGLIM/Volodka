@@ -84,8 +84,8 @@
   50%      { transform: scale(1.05); opacity: 0.85; }
 }
 @keyframes glowPulse {
-  0%, 100% { box-shadow: 0 0 4px  var(--glow-color, rgba(0,229,255,0.3)), 0 0 8px var(--glow-color, rgba(0,229,255,0.15)); }
-  50%      { box-shadow: 0 0 12px var(--glow-color, rgba(0,229,255,0.5)), 0 0 24px var(--glow-color, rgba(0,229,255,0.25)); }
+  0%, 100% { box-shadow: 0 0 4px  var(--glow-color, rgba(157, 179, 200,0.3)), 0 0 8px var(--glow-color, rgba(157, 179, 200,0.15)); }
+  50%      { box-shadow: 0 0 12px var(--glow-color, rgba(157, 179, 200,0.5)), 0 0 24px var(--glow-color, rgba(157, 179, 200,0.25)); }
 }
 @keyframes float {
   0%, 100% { transform: translateY(0); }
@@ -119,27 +119,27 @@
 
 @keyframes glitchText {
   0%, 90%, 100% {
-    text-shadow: 2px 0 #ff0040, -2px 0 #00e5ff;
+    text-shadow: 2px 0 #ff0040, -2px 0 #9db3c8;
     transform: translate(0);
     clip-path: inset(0 0 0 0);
   }
   92% {
-    text-shadow: -3px -1px #ff0040, 3px 1px #00e5ff;
+    text-shadow: -3px -1px #ff0040, 3px 1px #9db3c8;
     transform: translate(-2px, 1px);
     clip-path: inset(20% 0 60% 0);
   }
   94% {
-    text-shadow: 3px 1px #ff0040, -3px -1px #00e5ff;
+    text-shadow: 3px 1px #ff0040, -3px -1px #9db3c8;
     transform: translate(2px, -1px);
     clip-path: inset(60% 0 10% 0);
   }
   96% {
-    text-shadow: -1px 2px #ff0040, 1px -2px #00e5ff;
+    text-shadow: -1px 2px #ff0040, 1px -2px #9db3c8;
     transform: translate(0, 2px);
     clip-path: inset(40% 0 30% 0);
   }
   98% {
-    text-shadow: 2px -1px #ff0040, -2px 1px #00e5ff;
+    text-shadow: 2px -1px #ff0040, -2px 1px #9db3c8;
     transform: translate(-1px, 0);
     clip-path: inset(10% 0 70% 0);
   }
@@ -147,7 +147,7 @@
 @keyframes neonFlicker {
   0%, 18%, 22%, 25%, 53%, 57%, 100% {
     opacity: 1;
-    text-shadow: 0 0 7px rgba(0,229,255,0.7), 0 0 14px rgba(0,229,255,0.4), 0 0 28px rgba(0,229,255,0.2);
+    text-shadow: 0 0 7px rgba(157, 179, 200,0.7), 0 0 14px rgba(157, 179, 200,0.4), 0 0 28px rgba(157, 179, 200,0.2);
   }
   20%, 24%, 55% {
     opacity: 0.6;

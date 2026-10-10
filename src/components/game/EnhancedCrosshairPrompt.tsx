@@ -112,8 +112,8 @@ export function EnhancedCrosshairPrompt() {
               className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg backdrop-blur-md border ${isMobile ? 'min-w-[180px]' : 'min-w-[7rem]'}`}
               style={{
                 background: 'rgba(0, 0, 0, 0.75)',
-                borderColor: 'rgba(0, 229, 255, 0.12)',
-                boxShadow: '0 0 16px rgba(0, 229, 255, 0.06), 0 4px 12px rgba(0, 0, 0, 0.4)',
+                borderColor: 'rgba(157, 179, 200, 0.12)',
+                boxShadow: '0 0 16px rgba(157, 179, 200, 0.06), 0 4px 12px rgba(0, 0, 0, 0.4)',
               }}
             >
               {/* Context icon */}
@@ -122,7 +122,7 @@ export function EnhancedCrosshairPrompt() {
               {/* Key badge */}
               <span
                 className="font-mono text-xs font-bold text-cyan-400"
-                style={{ textShadow: '0 0 8px rgba(0, 229, 255, 0.5)' }}
+                style={{ textShadow: '0 0 8px rgba(157, 179, 200, 0.5)' }}
               >
                 {showTouchHint ? '▲' : `[${promptKey}]`}
               </span>
@@ -142,7 +142,7 @@ export function EnhancedCrosshairPrompt() {
             <div
               className="absolute bottom-0 left-[20%] right-[20%] h-[1px]"
               style={{
-                background: 'linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.3), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.3), transparent)',
               }}
               aria-hidden="true"
             />

@@ -57,7 +57,7 @@ const BOSS_INTRO_DATA: Partial<Record<EnemyType, BossIntroData>> = {
   boss_final_code: {
     name: 'ФИНАЛЬНЫЙ КОД',
     subtitle: 'Последняя строка Володьки',
-    accent: '#00e5ff',
+    accent: '#9db3c8',
     ariaLabel: 'Босс: Финальный Код',
   },
   boss_catacombs_keeper: {

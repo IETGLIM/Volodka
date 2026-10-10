@@ -113,7 +113,7 @@ function getDispositionColor(relation: number): { fill: string; glow: string } {
     return { fill: '#ff3355', glow: 'rgba(255, 51, 85, 0.6)' };
   }
   if (relation > RELATION_FRIENDLY) {
-    return { fill: '#39ff14', glow: 'rgba(57, 255, 20, 0.6)' };
+    return { fill: '#57a874', glow: 'rgba(57, 255, 20, 0.6)' };
   }
   return { fill: '#ffcc00', glow: 'rgba(255, 204, 0, 0.6)' };
 }

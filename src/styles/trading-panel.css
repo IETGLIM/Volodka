@@ -10,9 +10,9 @@
 }
 
 .trading-merchant--general {
-  --merchant-border: rgba(0, 229, 255, 0.35);
-  --merchant-glow: rgba(0, 229, 255, 0.12);
-  --merchant-accent: #00e5ff;
+  --merchant-border: rgba(157, 179, 200, 0.35);
+  --merchant-glow: rgba(157, 179, 200, 0.12);
+  --merchant-accent: #9db3c8;
 }
 
 .trading-merchant--shady {
@@ -30,7 +30,7 @@
 .trading-merchant--elite {
   --merchant-border: rgba(52, 211, 153, 0.35);
   --merchant-glow: rgba(52, 211, 153, 0.12);
-  --merchant-accent: #34d399;
+  --merchant-accent: #57a874;
 }
 
 /* ── Animated credits counter ── */
@@ -46,7 +46,7 @@
 
 /* ── Price comparison highlight ── */
 .trading-price-good {
-  color: #34d399;
+  color: #57a874;
   text-shadow: 0 0 6px rgba(52, 211, 153, 0.3);
 }
 
@@ -75,12 +75,12 @@
   background: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.08), 0 4px 20px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(157, 179, 200, 0.2);
+  box-shadow: 0 0 12px rgba(157, 179, 200, 0.08), 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 .trading-stat-better {
-  color: #34d399;
+  color: #57a874;
   text-shadow: 0 0 4px rgba(52, 211, 153, 0.3);
 }
 
@@ -108,9 +108,9 @@
   background: linear-gradient(
     to bottom,
     transparent,
-    rgba(0, 229, 255, 0.15) 20%,
-    rgba(0, 229, 255, 0.25) 50%,
-    rgba(0, 229, 255, 0.15) 80%,
+    rgba(157, 179, 200, 0.15) 20%,
+    rgba(157, 179, 200, 0.25) 50%,
+    rgba(157, 179, 200, 0.15) 80%,
     transparent
   );
   position: relative;
@@ -125,8 +125,8 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.3);
+  background: rgba(157, 179, 200, 0.4);
+  box-shadow: 0 0 8px rgba(157, 179, 200, 0.3);
 }
 
 /* ── Drag indicator between columns ── */

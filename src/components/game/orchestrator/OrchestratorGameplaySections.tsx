@@ -125,6 +125,7 @@ import { useTrophyAchievementWatcher } from '@/engine/achievements/achievementWa
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useMobileDetection } from './useMobileDetection';
 import { useGameStore } from '@/store/gameStore';
+import { getSceneLocationCategory } from '@/config/sceneLocationCategories';
 import {
   useEnvironmentalEffectsOverlayProps,
   useActiveEffects,
@@ -652,10 +653,16 @@ export const GameplayMobileActionButtons = memo(function GameplayMobileActionBut
   return <MobileActionButtons />;
 });
 
-/** Circular minimap with NPC dots, quest markers, and scene boundaries. */
+/** Circular minimap with NPC dots, quest markers, and scene boundaries.
+ *  v4.45.0: скрыт в тесных интерьерах (комнаты/коридоры/кафе/офис/библиотека) —
+ *  там карта пуста и занимает четверть экрана (жалоба арт-ревью HUD). */
+const MINIMAP_HIDDEN_CATEGORIES = new Set(['home', 'corridor', 'cafe', 'office', 'library']);
+
 export const GameplayMinimap = memo(function GameplayMinimap() {
   const profile = useGameplayPresentationProfile();
+  const sceneId = useGameStore((s) => s.exploration.currentSceneId);
   if (!isExplorationHudProfile(profile)) return null;
+  if (MINIMAP_HIDDEN_CATEGORIES.has(getSceneLocationCategory(sceneId))) return null;
 
   return <MinimapComponent />;
 });

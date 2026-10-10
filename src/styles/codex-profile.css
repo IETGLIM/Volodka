@@ -1,6 +1,6 @@
 /* ══════════════════════════════════════════════════════════════
    Codex / Profile / Poem Journal — Comprehensive Styling
-   Cyberpunk palette: cyan #00e5ff, amber, emerald
+   Cyberpunk palette: cyan #9db3c8, amber, emerald
    ══════════════════════════════════════════════════════════════ */
 
 /* ── Lore Category Tab Colors ── */
@@ -43,12 +43,12 @@
 .codex-cat-factions.codex-cat-active::after { box-shadow: 0 0 8px rgba(251,113,133,0.4); }
 
 .codex-cat-technology.codex-cat-active {
-  color: #00e5ff;
-  background: rgba(0, 229, 255, 0.08);
-  border-color: rgba(0, 229, 255, 0.25);
+  color: #9db3c8;
+  background: rgba(157, 179, 200, 0.08);
+  border-color: rgba(157, 179, 200, 0.25);
 }
-.codex-cat-technology::after { background: #00e5ff; }
-.codex-cat-technology.codex-cat-active::after { box-shadow: 0 0 8px rgba(0,229,255,0.4); }
+.codex-cat-technology::after { background: #9db3c8; }
+.codex-cat-technology.codex-cat-active::after { box-shadow: 0 0 8px rgba(157, 179, 200,0.4); }
 
 .codex-cat-culture.codex-cat-active {
   color: #a78bfa;
@@ -59,11 +59,11 @@
 .codex-cat-culture.codex-cat-active::after { box-shadow: 0 0 8px rgba(167,139,250,0.4); }
 
 .codex-cat-mysteries.codex-cat-active {
-  color: #34d399;
+  color: #57a874;
   background: rgba(52, 211, 153, 0.08);
   border-color: rgba(52, 211, 153, 0.25);
 }
-.codex-cat-mysteries::after { background: #34d399; }
+.codex-cat-mysteries::after { background: #57a874; }
 .codex-cat-mysteries.codex-cat-active::after { box-shadow: 0 0 8px rgba(52,211,153,0.4); }
 
 /* ── Lore Entry Cards ── */
@@ -110,9 +110,9 @@
 /* Category-specific entry left borders */
 .codex-entry-cat-history::before { background: #fbbf24; }
 .codex-entry-cat-factions::before { background: #fb7185; }
-.codex-entry-cat-technology::before { background: #00e5ff; }
+.codex-entry-cat-technology::before { background: #9db3c8; }
 .codex-entry-cat-culture::before { background: #a78bfa; }
-.codex-entry-cat-mysteries::before { background: #34d399; }
+.codex-entry-cat-mysteries::before { background: #57a874; }
 
 /* ── Lore Entry Detail View ── */
 .codex-detail {
@@ -134,13 +134,13 @@
   background: radial-gradient(ellipse at 30% 0%, #fb7185, transparent 70%);
 }
 .codex-detail-atmosphere-technology {
-  background: radial-gradient(ellipse at 30% 0%, #00e5ff, transparent 70%);
+  background: radial-gradient(ellipse at 30% 0%, #9db3c8, transparent 70%);
 }
 .codex-detail-atmosphere-culture {
   background: radial-gradient(ellipse at 30% 0%, #a78bfa, transparent 70%);
 }
 .codex-detail-atmosphere-mysteries {
-  background: radial-gradient(ellipse at 30% 0%, #34d399, transparent 70%);
+  background: radial-gradient(ellipse at 30% 0%, #57a874, transparent 70%);
 }
 
 /* Discovery timestamp badge */
@@ -162,7 +162,7 @@
   font-style: italic;
   font-size: 11px;
   color: rgba(148, 163, 184, 0.35);
-  text-shadow: 0 0 12px rgba(0, 229, 255, 0.1);
+  text-shadow: 0 0 12px rgba(157, 179, 200, 0.1);
   animation: codex-hint-pulse 3s ease-in-out infinite;
 }
 @keyframes codex-hint-pulse {
@@ -205,7 +205,7 @@
    Radar Chart (SVG)
    ══════════════════════════════════════════════════════════════ */
 .profile-radar-glow {
-  filter: drop-shadow(0 0 6px rgba(0, 229, 255, 0.3));
+  filter: drop-shadow(0 0 6px rgba(157, 179, 200, 0.3));
 }
 .profile-radar-shape {
   transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
@@ -277,9 +277,9 @@
   overflow: hidden;
 }
 .equip-slot:hover {
-  border-color: rgba(0, 229, 255, 0.35);
-  background: rgba(0, 229, 255, 0.05);
-  box-shadow: 0 0 12px rgba(0, 229, 255, 0.1), inset 0 0 8px rgba(0, 229, 255, 0.03);
+  border-color: rgba(157, 179, 200, 0.35);
+  background: rgba(157, 179, 200, 0.05);
+  box-shadow: 0 0 12px rgba(157, 179, 200, 0.1), inset 0 0 8px rgba(157, 179, 200, 0.03);
 }
 .equip-slot-equipped {
   border-color: rgba(251, 191, 36, 0.3);
@@ -343,15 +343,15 @@
   overflow: hidden;
 }
 .skill-tree-mini-node.skill-unlocked {
-  border-color: rgba(0, 229, 255, 0.35);
-  background: rgba(0, 229, 255, 0.08);
-  box-shadow: 0 0 8px rgba(0, 229, 255, 0.1);
+  border-color: rgba(157, 179, 200, 0.35);
+  background: rgba(157, 179, 200, 0.08);
+  box-shadow: 0 0 8px rgba(157, 179, 200, 0.1);
 }
 .skill-tree-mini-node.skill-unlocked::after {
   content: '';
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at center, rgba(0, 229, 255, 0.1), transparent 70%);
+  background: radial-gradient(circle at center, rgba(157, 179, 200, 0.1), transparent 70%);
   animation: skill-node-pulse 2.5s ease-in-out infinite;
 }
 @keyframes skill-node-pulse {
@@ -375,7 +375,7 @@
   left: 0;
   right: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.15), transparent);
+  background: linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.15), transparent);
 }
 .profile-biography-text {
   font-size: 12px;
@@ -388,7 +388,7 @@
 .karma-meter-track {
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(90deg, #fb7185, #fbbf24, #00e5ff);
+  background: linear-gradient(90deg, #fb7185, #fbbf24, #9db3c8);
   position: relative;
 }
 .karma-meter-thumb {
@@ -448,14 +448,14 @@
   pointer-events: none;
   z-index: 0;
   background:
-    radial-gradient(1px 1px at 10% 20%, rgba(0, 229, 255, 0.15), transparent),
+    radial-gradient(1px 1px at 10% 20%, rgba(157, 179, 200, 0.15), transparent),
     radial-gradient(1px 1px at 30% 70%, rgba(251, 191, 36, 0.1), transparent),
     radial-gradient(1px 1px at 50% 40%, rgba(167, 139, 250, 0.08), transparent),
-    radial-gradient(1px 1px at 70% 80%, rgba(0, 229, 255, 0.12), transparent),
+    radial-gradient(1px 1px at 70% 80%, rgba(157, 179, 200, 0.12), transparent),
     radial-gradient(1px 1px at 90% 30%, rgba(251, 191, 36, 0.1), transparent),
     radial-gradient(1px 1px at 20% 90%, rgba(52, 211, 153, 0.08), transparent),
     radial-gradient(1px 1px at 80% 10%, rgba(251, 113, 133, 0.08), transparent),
-    radial-gradient(1px 1px at 60% 60%, rgba(0, 229, 255, 0.1), transparent);
+    radial-gradient(1px 1px at 60% 60%, rgba(157, 179, 200, 0.1), transparent);
   animation: poem-particles-drift 20s linear infinite;
 }
 @keyframes poem-particles-drift {
@@ -476,7 +476,7 @@
   inset: 0;
   border-radius: 12px;
   padding: 1px;
-  background: linear-gradient(135deg, var(--poem-accent, rgba(0,229,255,0.2)), transparent 50%);
+  background: linear-gradient(135deg, var(--poem-accent, rgba(157, 179, 200,0.2)), transparent 50%);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -484,7 +484,7 @@
 }
 .poem-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px var(--poem-glow, rgba(0,229,255,0.05));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3), 0 0 20px var(--poem-glow, rgba(157, 179, 200,0.05));
 }
 
 /* ── Poem Mood Colors ── */
@@ -514,8 +514,8 @@
   --poem-text: #f9a8d4;
 }
 .poem-mood-default {
-  --poem-accent: rgba(0, 229, 255, 0.2);
-  --poem-glow: rgba(0, 229, 255, 0.05);
+  --poem-accent: rgba(157, 179, 200, 0.2);
+  --poem-glow: rgba(157, 179, 200, 0.05);
   --poem-text: #a5f3fc;
 }
 
@@ -532,7 +532,7 @@
   transition: all 0.2s ease;
 }
 .poem-power-badge-active {
-  color: #34d399;
+  color: #57a874;
   border-color: rgba(52, 211, 153, 0.3);
   background: rgba(52, 211, 153, 0.08);
   box-shadow: 0 0 8px rgba(52, 211, 153, 0.1);
@@ -548,7 +548,7 @@
   font-family: 'Georgia', 'Times New Roman', 'Palatino Linotype', serif;
   line-height: 1.9;
   color: rgba(226, 232, 240, 0.85);
-  text-shadow: 0 0 20px rgba(0, 229, 255, 0.03);
+  text-shadow: 0 0 20px rgba(157, 179, 200, 0.03);
 }
 .poem-verse-line {
   transition: opacity 0.3s ease;
@@ -558,12 +558,12 @@
   font-size: 18px;
   font-weight: 600;
   letter-spacing: 0.02em;
-  text-shadow: 0 0 12px var(--poem-glow, rgba(0,229,255,0.1));
+  text-shadow: 0 0 12px var(--poem-glow, rgba(157, 179, 200,0.1));
 }
 
 /* ── Poem Progress Tracker ── */
 .poem-progress-ring {
-  filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.2));
+  filter: drop-shadow(0 0 4px rgba(157, 179, 200, 0.2));
 }
 .poem-progress-ring-fill {
   transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -584,8 +584,8 @@
 }
 .poem-list-item.poem-list-selected {
   background: rgba(15, 23, 42, 0.6);
-  border-color: var(--poem-accent, rgba(0, 229, 255, 0.2));
-  box-shadow: 0 0 12px var(--poem-glow, rgba(0, 229, 255, 0.05));
+  border-color: var(--poem-accent, rgba(157, 179, 200, 0.2));
+  box-shadow: 0 0 12px var(--poem-glow, rgba(157, 179, 200, 0.05));
 }
 .poem-list-item .poem-mood-indicator {
   width: 6px;

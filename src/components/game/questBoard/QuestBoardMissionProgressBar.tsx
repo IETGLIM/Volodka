@@ -31,7 +31,7 @@ export function QuestBoardMissionProgressBar({
     >
       <motion.div
         className="absolute inset-y-0 left-0 rounded-full progress-bar-cyber-fill"
-        style={{ background: 'linear-gradient(90deg, #10b981, #34d399)' }}
+        style={{ background: 'linear-gradient(90deg, #10b981, #57a874)' }}
         initial={false}
         animate={{ width: `${pct}%` }}
         transition={getProgressBarTransition(reducedMotion)}

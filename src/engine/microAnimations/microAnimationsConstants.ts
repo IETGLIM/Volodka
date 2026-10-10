@@ -12,7 +12,7 @@ export const LEVEL_UP_BANNER_DURATION_MS = 3000;
 
 export const RARITY_COLORS: Record<ItemRarity | 'epic', string> = {
   common: '#94a3b8',
-  uncommon: '#34d399',
+  uncommon: '#57a874',
   rare: '#60a5fa',
   epic: '#a78bfa',
   legendary: '#fbbf24',

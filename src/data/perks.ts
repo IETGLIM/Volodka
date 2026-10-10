@@ -48,7 +48,7 @@ export const PERK_CATEGORY_META: Record<PerkCategory, PerkCategoryMeta> = {
     id: 'survival',
     name: 'Выживание',
     icon: 'Shield',
-    color: '#34d399', // emerald
+    color: '#57a874', // emerald
   },
   social: {
     id: 'social',

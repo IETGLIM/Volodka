@@ -135,7 +135,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                     ? 'linear-gradient(90deg, #9f1239, #f43f5e)'
                     : inventory.length >= maxSlots * 0.75
                       ? 'linear-gradient(90deg, #b45309, #f59e0b)'
-                      : 'linear-gradient(90deg, #059669, #34d399)',
+                      : 'linear-gradient(90deg, #059669, #57a874)',
                 }}
               />
             </div>

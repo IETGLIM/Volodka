@@ -136,11 +136,11 @@
 }
 
 .narrative-choice-hover:hover {
-  background: linear-gradient(135deg, rgba(0, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.65) 100%) !important;
+  background: linear-gradient(135deg, rgba(157, 179, 200, 0.06) 0%, rgba(0, 0, 0, 0.65) 100%) !important;
   border-color: rgb(var(--cyber-cyan-rgb) / 0.25) !important;
   box-shadow:
-    0 0 20px rgba(0, 255, 255, 0.06),
-    inset 0 0 30px rgba(0, 255, 255, 0.02),
+    0 0 20px rgba(157, 179, 200, 0.06),
+    inset 0 0 30px rgba(157, 179, 200, 0.02),
     0 4px 20px rgba(0, 0, 0, 0.3) !important;
   transform: translateX(4px);
 }
@@ -169,8 +169,8 @@
 /* ─── Typewriter text glow during active typing ─── */
 .typewriter-active-glow {
   text-shadow:
-    0 0 10px rgba(0, 255, 255, 0.08),
-    0 0 20px rgba(0, 255, 255, 0.04);
+    0 0 10px rgba(157, 179, 200, 0.08),
+    0 0 20px rgba(157, 179, 200, 0.04);
 }
 
 /* ─── Dialogue focus: dim exploration HUD while a dialogue is open ───

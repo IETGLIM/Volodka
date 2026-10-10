@@ -2,20 +2,21 @@
 html { background: #000 !important; }
 
 /*
- * Dark-only theme: OKLCH tokens live on :root / .dark (no light palette).
- * index.html sets <html class="dark"> — activates shadcn `dark:*` utilities below.
- * Cyber hex/RGB tokens stay on :root for CSS vars + canvas helpers.
+ * ВОЛОДЬКА v4.45.0 — дизайн-система «Ночная тетрадь».
+ * Единый язык: чернильная ночь · тёплая бумага · фонарь-янтарь · лунное серебро.
+ * Один герой-акцент (янтарь) + один структурный металл (серебро).
+ * Неоновая радуга (cyan/magenta/violet) переведена в приглушённые тона —
+ * переменные сохранены, значения перекрашены: весь старый UI перекрашивается сам.
  */
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Geist', ui-sans-serif, system-ui, sans-serif;
-  --font-mono: 'Geist Mono', ui-monospace, monospace;
-  /* v4.43.0: Cormorant грузится из index.html (Google Fonts), но --font-serif
-     не был объявлен — весь «luxury serif» (меню, титры, диалоги) молча
-     рендерился Georgia. Теперь font-serif = Cormorant везде. */
+  /* Golos Text — гротеск Paratype с полной кириллицей; самохостинг (fonts.css) */
+  --font-sans: 'Golos Text', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'Geist Mono', ui-monospace, 'Cascadia Mono', monospace;
+  /* Cormorant — титры, заголовки, стихи (самохостинг, см. fonts.css) */
   --font-serif: 'Cormorant', 'Georgia', ui-serif, serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -51,7 +52,7 @@ html { background: #000 !important; }
   --color-cyber-amber: var(--cyber-amber);
   --color-cyber-rose: var(--cyber-rose);
   --color-cyber-violet: var(--cyber-violet);
-  /* Unify Tailwind cyan scale with canonical neon cyan (was #22d3ee drift) */
+  /* Tailwind cyan scale → «лунная сталь» (единый холодный металл UI) */
   --color-cyan-400: var(--cyber-cyan);
   --color-cyan-500: var(--cyber-cyan-dim);
   --radius-sm: calc(var(--radius) - 4px);
@@ -61,29 +62,52 @@ html { background: #000 !important; }
 }
 
 :root {
-  /* ── Cyber palette (single source of truth — sync with shared/constants/cyberPalette.ts) ── */
-  --cyber-cyan: #00e5ff;
-  --cyber-cyan-rgb: 0 229 255;
-  --cyber-cyan-dim: #00ccdd;
-  --cyber-matrix: #00ff64;
-  --cyber-matrix-rgb: 0 255 100;
-  --cyber-green: #39ff14;
-  --cyber-green-rgb: 57 255 20;
-  --cyber-amber: #ffab00;
-  --cyber-amber-rgb: 255 171 0;
-  --cyber-rose: #ff1744;
-  --cyber-violet: #d500f9;
-  --cyber-violet-rgb: 213 0 249;
+  /* ── Палитра «Ночная тетрадь» (single source of truth) ──
+   * Акценты игры: фонарь-янтарь (герой) и лунное серебро (структура).
+   * Прежние cyber-* имена сохранены как алиасы — старый код перекрашивается сам. */
+  /* «циан» → лунная сталь: холодный, приглушённый серебристо-синий */
+  --cyber-cyan: #9db3c8;
+  --cyber-cyan-rgb: 157 179 200;
+  --cyber-cyan-dim: #8497ab;
+  /* матрица/зелёный → глубокий мудый шалфей (только для digital-контента) */
+  --cyber-matrix: #46b96e;
+  --cyber-matrix-rgb: 70 185 110;
+  --cyber-green: #57a874;
+  --cyber-green-rgb: 87 168 116;
+  /* янтарь → фонарь: главный акцент (интеракция, выбор, награда) */
+  --cyber-amber: #e2a84b;
+  --cyber-amber-rgb: 226 168 75;
+  /* роза → приглушённый кирпич (опасность) */
+  --cyber-rose: #c65548;
+  --cyber-violet: #8d7fb5;
+  --cyber-violet-rgb: 141 127 181;
   /* CyberpunkTheme context aliases */
   --cyber-matrix-green: var(--cyber-matrix);
   --cyber-neon-cyan: var(--cyber-cyan);
-  --cyber-amber-gold: #d4920a;
-  --cyber-deep-crimson: #cc2020;
-  --cyber-muted-olive: #6a8a30;
+  --cyber-amber-gold: #d9992e;
+  --cyber-deep-crimson: #b23c31;
+  --cyber-muted-olive: #6f8a5c;
+
+  /* ── Семантика «Ночной тетради» ── */
+  --vk-ink: #0c1017;            /* чернильная ночь — фон */
+  --vk-ink-raised: #12161f;     /* приподнятая поверхность */
+  --vk-paper: #eae4d6;          /* тёплая бумага — основной текст */
+  --vk-paper-dim: #a9a698;      /* приглушённая бумага — вторичный текст */
+  --vk-silver: #9db3c8;         /* лунное серебро — хайрлайны, структура */
+  --vk-silver-dim: #6e7f90;     /* тусклое серебро */
+  --vk-amber: #e2a84b;          /* фонарь — герой-акцент */
+  --vk-amber-soft: rgba(226, 168, 75, 0.14);
+  --vk-amber-glow: rgba(226, 168, 75, 0.28);
+  --vk-brick: #c65548;          /* кирпич — опасность */
+  --vk-hairline: rgba(157, 179, 200, 0.16);   /* волосяная рамка */
+  --vk-hairline-strong: rgba(157, 179, 200, 0.30);
+  --vk-plate: rgba(11, 14, 21, 0.72);         /* тарелка панели */
+  --vk-plate-strong: rgba(8, 10, 16, 0.88);
+  --vk-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
+  --vk-shadow-inset: inset 0 1px 0 rgba(234, 228, 214, 0.06);
 
   /*
    * Z-index stack — sync with shared/constants/uiLayers.ts
-   * Use var(--z-*) in CSS overlays; UI_LAYERS in JSX.
    */
   --z-canvas: 0;
   --z-noir-overlay: 3;
@@ -96,10 +120,6 @@ html { background: #000 !important; }
   --z-examine: 38;
   --z-minigame: 40;
   --z-mobile-controls: 42;
-  /* FIX (v4.17.1): синхронизировано с UI_LAYERS (shared/constants/uiLayers.ts).
-   * Раньше --z-menu:45/--z-panel:55/--z-tooltip:58 расходились с
-   * TS-константами (58/60/62) — тултипы рендерились ПОД панелями,
-   * CSS-меню садились под боевой UI. */
   --z-menu: 58;
   --z-combat: 50;
   --z-damage-flash: 51;
@@ -123,39 +143,39 @@ html { background: #000 !important; }
   --backdrop-blur-strength: 1;
 }
 
-/* shadcn / Tailwind semantic tokens — dark palette only (see html.dark in index.html) */
+/* shadcn / Tailwind semantic tokens — тёмная палитра «Ночной тетради» */
 :root,
 .dark {
   --radius: 0.625rem;
-  --background: oklch(0.06 0.01 260);
-  --foreground: oklch(0.93 0.01 260);
-  --card: oklch(0.1 0.015 260);
-  --card-foreground: oklch(0.93 0.01 260);
-  --popover: oklch(0.1 0.015 260);
-  --popover-foreground: oklch(0.93 0.01 260);
-  --primary: oklch(0.75 0.15 195);
-  --primary-foreground: oklch(0.1 0.01 260);
-  --secondary: oklch(0.15 0.02 260);
-  --secondary-foreground: oklch(0.85 0.01 260);
-  --muted: oklch(0.15 0.015 260);
-  --muted-foreground: oklch(0.6 0.01 260);
-  --accent: oklch(0.2 0.04 260);
-  --accent-foreground: oklch(0.93 0.01 260);
-  --destructive: oklch(0.65 0.25 25);
-  --border: oklch(1 0 0 / 8%);
-  --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.75 0.15 195);
-  --chart-1: oklch(0.75 0.15 195);
-  --chart-2: oklch(0.7 0.18 150);
-  --chart-3: oklch(0.65 0.2 80);
-  --chart-4: oklch(0.7 0.2 25);
-  --chart-5: oklch(0.7 0.25 310);
-  --sidebar: oklch(0.08 0.01 260);
-  --sidebar-foreground: oklch(0.93 0.01 260);
-  --sidebar-primary: oklch(0.75 0.15 195);
-  --sidebar-primary-foreground: oklch(0.1 0.01 260);
-  --sidebar-accent: oklch(0.15 0.02 260);
-  --sidebar-accent-foreground: oklch(0.93 0.01 260);
-  --sidebar-border: oklch(1 0 0 / 8%);
-  --sidebar-ring: oklch(0.75 0.15 195);
+  --background: oklch(0.145 0.012 250);
+  --foreground: oklch(0.925 0.012 85);
+  --card: oklch(0.185 0.014 250);
+  --card-foreground: oklch(0.925 0.012 85);
+  --popover: oklch(0.185 0.014 250);
+  --popover-foreground: oklch(0.925 0.012 85);
+  --primary: oklch(0.76 0.11 75);
+  --primary-foreground: oklch(0.17 0.02 250);
+  --secondary: oklch(0.235 0.016 250);
+  --secondary-foreground: oklch(0.88 0.012 85);
+  --muted: oklch(0.235 0.014 250);
+  --muted-foreground: oklch(0.66 0.012 85);
+  --accent: oklch(0.28 0.03 75);
+  --accent-foreground: oklch(0.94 0.012 85);
+  --destructive: oklch(0.58 0.16 30);
+  --border: oklch(0.92 0.01 250 / 12%);
+  --input: oklch(0.92 0.01 250 / 16%);
+  --ring: oklch(0.76 0.11 75);
+  --chart-1: oklch(0.76 0.11 75);
+  --chart-2: oklch(0.62 0.06 160);
+  --chart-3: oklch(0.68 0.08 250);
+  --chart-4: oklch(0.6 0.14 30);
+  --chart-5: oklch(0.6 0.1 300);
+  --sidebar: oklch(0.165 0.012 250);
+  --sidebar-foreground: oklch(0.925 0.012 85);
+  --sidebar-primary: oklch(0.76 0.11 75);
+  --sidebar-primary-foreground: oklch(0.17 0.02 250);
+  --sidebar-accent: oklch(0.235 0.016 250);
+  --sidebar-accent-foreground: oklch(0.925 0.012 85);
+  --sidebar-border: oklch(0.92 0.01 250 / 12%);
+  --sidebar-ring: oklch(0.76 0.11 75);
 }

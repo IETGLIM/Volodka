@@ -155,24 +155,28 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
     <div
       data-exploration-ui
       data-testid="player-status-frame"
-      className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/55 px-2 py-1.5 backdrop-blur-sm"
-      style={{ boxShadow: '0 0 14px rgba(0, 210, 255, 0.12)' }}
+      className="flex items-center gap-2 rounded-lg border px-2 py-1.5 backdrop-blur-sm"
+      style={{
+        borderColor: 'var(--vk-hairline)',
+        background: 'var(--vk-plate)',
+        boxShadow: 'var(--vk-shadow-inset)',
+      }}
       role="group"
       aria-label={t('hud.playerStatus.aria', 'Состояние героя: энергия, стресс, карма')}
     >
       {/* Портрет: монограмма героя в кольце уровня */}
       <div className="relative shrink-0" aria-hidden="true">
         <div
-          className="flex h-11 w-11 items-center justify-center rounded-full border-2"
+          className="flex h-10 w-10 items-center justify-center rounded-full border"
           style={{
-            borderColor: 'rgba(0, 229, 255, 0.55)',
-            background: 'radial-gradient(circle at 35% 30%, rgba(0,229,255,0.28), rgba(10,18,32,0.95) 70%)',
-            boxShadow: '0 0 10px rgba(0, 210, 255, 0.35), inset 0 0 8px rgba(0, 210, 255, 0.2)',
+            borderColor: 'rgba(157, 179, 200, 0.4)',
+            background: 'radial-gradient(circle at 35% 30%, rgba(157, 179, 200,0.18), rgba(10,14,22,0.95) 72%)',
+            boxShadow: 'inset 0 1px 0 rgba(234,228,214,0.08)',
           }}
         >
           <span
-            className="font-serif text-lg font-bold text-cyan-100"
-            style={{ textShadow: '0 0 6px rgba(0,229,255,0.7)' }}
+            className="font-serif text-lg font-semibold"
+            style={{ color: 'var(--vk-paper)', textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
           >
             {t('hud.playerStatus.monogram', 'В')}
           </span>
@@ -191,8 +195,8 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           label={t('hud.playerStatus.energyShort', 'ЭН')}
           value={energy}
           max={Math.max(100, energy)}
-          fill="linear-gradient(90deg, #16a34a, #4ade80)"
-          glow="0 0 6px rgba(74, 222, 128, 0.45)"
+          fill="linear-gradient(90deg, #3f7d54, #57a874)"
+          glow="0 0 5px rgba(87, 168, 116, 0.3)"
           flash={energy <= 25}
           threshold={HUD_ENERGY_LOW_THRESHOLD}
           thresholdActive={energy < HUD_ENERGY_LOW_THRESHOLD}
@@ -205,8 +209,8 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           label={t('hud.playerStatus.stressShort', 'СТР')}
           value={stress}
           max={100}
-          fill="linear-gradient(90deg, #be123c, #fb7185)"
-          glow="0 0 6px rgba(251, 113, 133, 0.4)"
+          fill="linear-gradient(90deg, #8f3a32, #c65548)"
+          glow="0 0 5px rgba(198, 85, 72, 0.28)"
           flash={stress >= 85}
           threshold={HUD_STRESS_HIGH_THRESHOLD}
           thresholdActive={stress > HUD_STRESS_HIGH_THRESHOLD}
@@ -219,8 +223,8 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
           label={t('hud.playerStatus.karmaShort', 'КАР')}
           value={karmaPct}
           max={100}
-          fill="linear-gradient(90deg, #3b82f6, #6366f1)"
-          glow="0 0 6px rgba(99, 102, 241, 0.4)"
+          fill="linear-gradient(90deg, #6e8296, #9db3c8)"
+          glow="0 0 5px rgba(157, 179, 200, 0.25)"
           flash={karmaDrop}
           ariaValue={t('hud.playerStatus.karmaAria', `Карма: ${karma}, ${tierLabel}`, {
             karma,

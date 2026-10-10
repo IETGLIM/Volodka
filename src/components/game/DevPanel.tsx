@@ -176,7 +176,7 @@ export function DevPanel({ startOpen = false }: { startOpen?: boolean }) {
         backdropFilter: 'blur(12px)',
         WebkitBackdropFilter: 'blur(12px)',
         userSelect: 'none',
-        boxShadow: '0 0 30px rgba(0, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.5)',
+        boxShadow: '0 0 30px rgba(157, 179, 200, 0.06), 0 8px 32px rgba(0, 0, 0, 0.5)',
       }}
     >
       <h2 {...titleProps} className="sr-only">Панель разработчика</h2>
@@ -814,7 +814,7 @@ function CheatsTab() {
               borderRadius: 3,
               border: '1px solid rgba(52,211,153,0.2)',
               background: 'rgba(52,211,153,0.05)',
-              color: '#34d399',
+              color: '#57a874',
               cursor: 'pointer',
               marginRight: 3,
             }}

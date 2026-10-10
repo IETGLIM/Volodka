@@ -4,7 +4,7 @@
  *  visible bulb/sign) that matches the light's color, giving scene
  *  props a sense of physical light emission.
  *
- *  Cyberpunk palette: cyan #00e5ff, amber #ffaa44, emerald #00ff88.
+ *  Cyberpunk palette: cyan #9db3c8, amber #ffaa44, emerald #00ff88.
  */
 
 'use client';
@@ -179,10 +179,10 @@ export function StreetLampFixture({
 
 /** Monitor glow fixture — dim colored point light + emissive plane.
  *  Simulates CRT/LCD screen glow on nearby surfaces.
- *  Cyberpunk: cyan #00e5ff for terminals, green for Заря-М. */
+ *  Cyberpunk: cyan #9db3c8 for terminals, green for Заря-М. */
 export function MonitorGlowFixture({
   position,
-  color = '#00e5ff',
+  color = '#9db3c8',
   intensity = 1.5,
   distance = 5,
   width = 0.5,

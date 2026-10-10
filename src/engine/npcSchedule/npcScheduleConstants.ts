@@ -47,7 +47,7 @@ export const LOCATION_COLOR_STYLES: Record<LocationCategory, LocationColorStyle>
   office: {
     bg: 'rgba(16,185,129,0.55)',
     border: 'rgba(16,185,129,0.7)',
-    text: '#34d399',
+    text: '#57a874',
     glow: 'rgba(16,185,129,0.25)',
   },
   park: {

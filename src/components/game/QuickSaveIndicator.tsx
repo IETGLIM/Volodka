@@ -105,16 +105,16 @@ export function QuickSaveIndicator() {
               background: 'linear-gradient(135deg, rgba(8, 12, 24, 0.88) 0%, rgba(4, 8, 16, 0.82) 100%)',
               backdropFilter: 'blur(16px) saturate(1.3)',
               WebkitBackdropFilter: 'blur(16px) saturate(1.3)',
-              border: '1px solid rgba(0,229,255,0.19)',
-              boxShadow: '0 0 12px rgba(0,229,255,0.08), 0 2px 8px rgba(0,0,0,0.4)',
+              border: '1px solid rgba(157, 179, 200,0.19)',
+              boxShadow: '0 0 12px rgba(157, 179, 200,0.08), 0 2px 8px rgba(0,0,0,0.4)',
               minWidth: 180,
             }}
           >
             <div
               className="flex items-center justify-center w-7 h-7 shrink-0 rounded-md"
               style={{
-                background: 'rgba(0,229,255,0.07)',
-                border: '1px solid rgba(0,229,255,0.13)',
+                background: 'rgba(157, 179, 200,0.07)',
+                border: '1px solid rgba(157, 179, 200,0.13)',
               }}
             >
               <PhaseIcon className="size-3.5" style={{ color: clr }} />
@@ -124,7 +124,7 @@ export function QuickSaveIndicator() {
                 <span className="text-[10px] font-mono font-semibold tracking-wide" style={{ color: clr }}>
                   {phaseLabel}
                 </span>
-                <span className="text-[9px] font-mono px-1 py-px rounded" style={{ color: 'rgba(0,229,255,0.5)', background: 'rgba(0,229,255,0.03)', border: '1px solid rgba(0,229,255,0.08)' }}>
+                <span className="text-[9px] font-mono px-1 py-px rounded" style={{ color: 'rgba(157, 179, 200,0.5)', background: 'rgba(157, 179, 200,0.03)', border: '1px solid rgba(157, 179, 200,0.08)' }}>
                   {SLOT_LABEL}
                 </span>
               </div>

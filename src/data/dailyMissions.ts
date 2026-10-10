@@ -42,7 +42,7 @@ export interface DailyMission {
 
 export const DAILY_MISSION_CATEGORY_META: Record<DailyMissionCategory, { label: string; color: string }> = {
   combat: { label: 'Бой', color: '#f87171' },
-  exploration: { label: 'Разведка', color: '#34d399' },
+  exploration: { label: 'Разведка', color: '#57a874' },
   social: { label: 'Общение', color: '#60a5fa' },
   poetry: { label: 'Поэзия', color: '#c084fc' },
   crafting: { label: 'Крафт', color: '#fbbf24' },

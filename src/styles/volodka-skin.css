@@ -1,0 +1,685 @@
+/* ═══════════════════════════════════════════════════════════════════
+ *  ВОЛОДЬКА v4.45.0 — «НОЧНАЯ ТЕТРАДЬ» · единый скин интерфейса
+ * ───────────────────────────────────────────────────────────────────
+ *  Один язык для всего: чернильная ночь, тёплая бумага, фонарь-янтарь,
+ *  лунное серебро. Панели — матовое стекло с волосяной рамкой.
+ *  Глоу существует только у янтаря и только мягкий.
+ *  Этот файл заменил 26 «военных слоёв» (hud-round4–12, menu-session8,
+ *  aaa-luxury, glass-polish, *-polish, *-chrome, glow-effects и др.).
+ * ═══════════════════════════════════════════════════════════════════ */
+
+/* ── 0. Тонкая подстройка палитры hud-filmic под новый язык ── */
+:root {
+  --hud-filmic-ink: rgba(234, 228, 214, 0.92);
+  --hud-filmic-ink-muted: rgba(169, 166, 152, 0.78);
+  --hud-filmic-ink-dim: rgba(130, 128, 118, 0.62);
+  --hud-filmic-ink-meta: rgba(169, 166, 152, 0.85);
+  --hud-filmic-ink-hero: rgba(248, 244, 235, 0.96);
+  --hud-filmic-rule: rgba(157, 179, 200, 0.34);
+  --hud-filmic-rule-soft: rgba(157, 179, 200, 0.18);
+  --hud-filmic-plate: rgba(11, 14, 21, 0.66);
+  --hud-filmic-plate-strong: rgba(8, 10, 16, 0.86);
+  --hud-filmic-plate-glass: rgba(11, 14, 21, 0.5);
+  --hud-filmic-border: rgba(157, 179, 200, 0.16);
+  --hud-filmic-accent: rgba(226, 168, 75, 0.85);
+  --hud-filmic-warn: rgba(226, 168, 75, 0.8);
+  --hud-filmic-danger: rgba(198, 85, 72, 0.85);
+  --hud-filmic-focus: rgba(226, 168, 75, 0.65);
+  --hud-filmic-focus-glow: rgba(226, 168, 75, 0.14);
+  --hud-filmic-glow-warm: rgba(226, 168, 75, 0.14);
+  --hud-filmic-glow-cool: rgba(157, 179, 200, 0.10);
+  --hud-filmic-scan-accent: rgba(157, 179, 200, 0.22);
+}
+
+/* ── 1. Глобальные поверхности ── */
+body {
+  font-family: 'Golos Text', 'Segoe UI', ui-sans-serif, system-ui, sans-serif;
+  color: var(--vk-paper);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Тихие скроллбары — тонкое серебро */
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: rgba(157, 179, 200, 0.18);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-thumb:hover { background: rgba(157, 179, 200, 0.3); }
+
+/* ── 2. МАТЕРИАЛ: матовое стекло «Ночной тетради» ── */
+.vk-plate,
+.glass-panel,
+.glass-panel-dark,
+.glass-dark,
+.panel-glass-dark-9 {
+  background: var(--vk-plate);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 14px;
+  box-shadow: var(--vk-shadow), var(--vk-shadow-inset);
+}
+
+.glass-panel-dark,
+.glass-dark,
+.panel-glass-dark-9 {
+  background: var(--vk-plate-strong);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.glass-celebration {
+  background: linear-gradient(180deg, rgba(20, 24, 33, 0.92), rgba(10, 12, 18, 0.95));
+  border: 1px solid var(--vk-hairline-strong);
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), var(--vk-shadow-inset);
+}
+
+/* Зерно стекла — почти невидимое, тёплое */
+.glass-noise::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+
+/* Тултипы */
+.tooltip-glass-enhanced {
+  background: var(--vk-plate-strong);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 10px;
+  box-shadow: var(--vk-shadow);
+  color: var(--vk-paper);
+}
+
+/* Инвентарь / журнал */
+.inventory-panel,
+.journal-tabpanel {
+  background: linear-gradient(180deg, rgba(18, 22, 31, 0.96), rgba(12, 16, 23, 0.97));
+  border: 1px solid var(--vk-hairline);
+  border-radius: 16px;
+  box-shadow: var(--vk-shadow), var(--vk-shadow-inset);
+}
+
+.tab-indicator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--vk-amber) 35%, var(--vk-amber) 65%, transparent);
+  opacity: 0.85;
+}
+
+.input-field {
+  background: rgba(8, 10, 16, 0.6);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 10px;
+  color: var(--vk-paper);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+.input-field:focus,
+.input-field:focus-visible {
+  outline: none;
+  border-color: rgba(226, 168, 75, 0.55);
+  box-shadow: 0 0 0 3px rgba(226, 168, 75, 0.12);
+}
+
+.progress-fill {
+  background: linear-gradient(90deg, rgba(226, 168, 75, 0.75), var(--vk-amber));
+  border-radius: inherit;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── 3. ГЛАВНОЕ МЕНЮ ── */
+.cinematic-menu-shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-width: 0;
+}
+
+.cinematic-menu-panel {
+  position: relative;
+  background: linear-gradient(180deg, rgba(14, 17, 25, 0.72), rgba(9, 11, 17, 0.82));
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 16px;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55), var(--vk-shadow-inset);
+}
+
+/* Тонкая янтарная нить по верхней кромке панели меню — единственный акцент */
+.cinematic-menu-panel::before {
+  content: '';
+  position: absolute;
+  inset-inline: 18%;
+  top: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(226, 168, 75, 0.55), transparent);
+  pointer-events: none;
+}
+
+.cinematic-menu-primary-nav { display: flex; flex-direction: column; }
+
+.cinematic-menu-brand-stage { position: relative; }
+
+/* Пункт меню — наборная строка, не «кнопка-таблетка» */
+.cinematic-menu-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.72rem 1.4rem 0.72rem 1.9rem;
+  font-family: 'Golos Text', ui-sans-serif, system-ui, sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(169, 166, 152, 0.78);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.35s ease, letter-spacing 0.35s ease, padding-left 0.35s ease;
+  text-align: left;
+}
+.cinematic-menu-item:focus-visible {
+  outline: none;
+  box-shadow: inset 0 0 0 1px rgba(226, 168, 75, 0.4);
+}
+
+/* Левая засечка-указатель: тонкая вертикальная нить */
+.cinematic-menu-item::before {
+  content: '';
+  position: absolute;
+  left: 1.15rem;
+  top: 50%;
+  height: 0;
+  width: 1px;
+  background: var(--vk-amber);
+  opacity: 0;
+  transform: translateY(-50%);
+  transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+
+.cinematic-menu-item:hover:not(:disabled) { color: var(--vk-paper); }
+
+.cinematic-menu-item--selected {
+  color: var(--vk-paper);
+  padding-left: 2.05rem;
+}
+.cinematic-menu-item--selected::before {
+  height: 58%;
+  opacity: 0.9;
+}
+
+.cinematic-menu-item--muted,
+.cinematic-menu-item:disabled {
+  opacity: 0.32;
+  cursor: not-allowed;
+  color: rgba(169, 166, 152, 0.6);
+}
+
+.cinematic-menu-item--danger { color: rgba(198, 85, 72, 0.85); }
+.cinematic-menu-item--danger.cinematic-menu-item--selected { color: #dc8a7d; }
+
+/* Отражение титра */
+.menu-lux-title-reflection {
+  color: rgba(234, 228, 214, 0.35);
+  -webkit-mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 60%);
+  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 60%);
+}
+
+/* Компакт-режимы (меню влезает в 960x540) */
+@media (max-height: 600px) {
+  .menu-compact-tight { margin-top: 0.65rem !important; }
+  .menu-compact-hide { display: none !important; }
+}
+
+.skip-prologue-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(4, 5, 9, 0.82);
+  backdrop-filter: blur(10px);
+}
+
+/* ── 4. УГОЛКИ И РАМКИ — единая школа ──
+ * Тонкие серебряные уголки 14×14, 1px. Активное состояние — янтарные. */
+.corner-tl, .corner-tr, .corner-bl, .corner-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  pointer-events: none;
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+.corner-tl { top: -1px; left: -1px; border-top: 1px solid var(--vk-silver); border-left: 1px solid var(--vk-silver); }
+.corner-tr { top: -1px; right: -1px; border-top: 1px solid var(--vk-silver); border-right: 1px solid var(--vk-silver); }
+.corner-bl { bottom: -1px; left: -1px; border-bottom: 1px solid var(--vk-silver); border-left: 1px solid var(--vk-silver); }
+.corner-br { bottom: -1px; right: -1px; border-bottom: 1px solid var(--vk-silver); border-right: 1px solid var(--vk-silver); }
+.corner-tl:hover, .corner-tr:hover, .corner-bl:hover, .corner-br:hover { opacity: 0.9; }
+
+.corner-bracket-sm,
+.corner-bracket-sm-tl, .corner-bracket-sm-tr,
+.corner-bracket-sm-bl, .corner-bracket-sm-br {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  opacity: 0.35;
+}
+.corner-bracket-sm-tl { top: 6px; left: 6px; border-top: 1px solid var(--vk-silver); border-left: 1px solid var(--vk-silver); }
+.corner-bracket-sm-tr { top: 6px; right: 6px; border-top: 1px solid var(--vk-silver); border-right: 1px solid var(--vk-silver); }
+.corner-bracket-sm-bl { bottom: 6px; left: 6px; border-bottom: 1px solid var(--vk-silver); border-left: 1px solid var(--vk-silver); }
+.corner-bracket-sm-br { bottom: 6px; right: 6px; border-bottom: 1px solid var(--vk-silver); border-right: 1px solid var(--vk-silver); }
+.corner-bracket-sm { border: 1px solid var(--vk-silver); }
+
+/* Уголки HUD-кадра — кадрирующие, по краям экрана */
+.hud-corner-accent, .hud-frame-corner { position: absolute; pointer-events: none; }
+.hud-corner-accent-tl { top: 18px; left: 18px; width: 22px; height: 22px; border-top: 1px solid var(--vk-hairline-strong); border-left: 1px solid var(--vk-hairline-strong); }
+.hud-corner-accent-tr { top: 18px; right: 18px; width: 22px; height: 22px; border-top: 1px solid var(--vk-hairline-strong); border-right: 1px solid var(--vk-hairline-strong); }
+.hud-corner-accent-bl { bottom: 18px; left: 18px; width: 22px; height: 22px; border-bottom: 1px solid var(--vk-hairline-strong); border-left: 1px solid var(--vk-hairline-strong); }
+.hud-corner-accent-br { bottom: 18px; right: 18px; width: 22px; height: 22px; border-bottom: 1px solid var(--vk-hairline-strong); border-right: 1px solid var(--vk-hairline-strong); }
+
+/* Схемные дорожки → тихая серебряная линия */
+.circuit-trace, .circuit-trace-line {
+  position: absolute;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.25), transparent);
+  pointer-events: none;
+}
+
+.hex-grid-bg {
+  background-image:
+    linear-gradient(rgba(157, 179, 200, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(157, 179, 200, 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* ── 5. HUD-ВИДЖЕТЫ ── */
+
+/* Аудио-виджет: тихая строка «сцена · трек», не WinAmp */
+.audio-info-widget {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.4rem 0.75rem;
+  background: var(--vk-plate);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 10px;
+  color: var(--vk-paper-dim);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+.audio-info-bar {
+  height: 2px;
+  border-radius: 2px;
+  background: rgba(157, 179, 200, 0.18);
+  overflow: hidden;
+}
+.audio-info-volume { color: var(--vk-amber); }
+.audio-info-scene { color: var(--vk-paper); font-weight: 500; }
+.audio-info-status { color: var(--vk-paper-dim); }
+.audio-info-toggle {
+  color: var(--vk-paper-dim);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+.audio-info-toggle:hover { color: var(--vk-amber); }
+
+/* Карма */
+.karma-hud-meter { display: flex; align-items: center; gap: 0.5rem; }
+.karma-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--vk-paper-dim); }
+.karma-value { font-size: 12px; font-weight: 600; color: var(--vk-paper); font-variant-numeric: tabular-nums; }
+.karma-ring-outer { border: 1px solid var(--vk-hairline); border-radius: 999px; }
+.karma-preview { color: var(--vk-paper-dim); font-size: 11px; }
+.karma-tier-badge-glow { box-shadow: 0 0 18px rgba(226, 168, 75, 0.25); }
+.karma-flash-positive { animation: vk-flash-amber 0.6s ease-out; }
+.karma-flash-negative { animation: vk-flash-brick 0.6s ease-out; }
+@keyframes vk-flash-amber { 0% { color: var(--vk-amber); } 100% { color: inherit; } }
+@keyframes vk-flash-brick { 0% { color: var(--vk-brick); } 100% { color: inherit; } }
+
+/* NPC-близость */
+.npc-proximity-card {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  background: var(--vk-plate);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+}
+.npc-proximity-name { font-size: 12px; color: var(--vk-paper); letter-spacing: 0.04em; }
+.npc-proximity-relation { font-size: 10px; color: var(--vk-paper-dim); letter-spacing: 0.14em; text-transform: uppercase; }
+.npc-proximity-dot {
+  width: 6px; height: 6px; border-radius: 999px;
+  background: var(--vk-amber);
+  box-shadow: 0 0 8px rgba(226, 168, 75, 0.5);
+}
+.npc-proximity-pulse { animation: vk-pulse-soft 2.4s ease-in-out infinite; }
+@keyframes vk-pulse-soft {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+/* Радар-пульс: кольцо от центра, серебро */
+.radar-ping {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 1px solid rgba(157, 179, 200, 0.4);
+  animation: vk-radar-ping 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: none;
+}
+.radar-ping-delayed { animation-delay: 0.5s; }
+@keyframes vk-radar-ping {
+  from { transform: scale(0.4); opacity: 0.7; }
+  to { transform: scale(1.8); opacity: 0; }
+}
+.radar-proximity-container { position: relative; pointer-events: none; }
+.radar-sweep {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: conic-gradient(from 0deg, rgba(157, 179, 200, 0.14), transparent 60deg);
+  animation: vk-radar-sweep 3.2s linear infinite;
+  pointer-events: none;
+}
+@keyframes vk-radar-sweep { to { transform: rotate(360deg); } }
+
+/* Спринт */
+.sprint-drain-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, transparent 62%, rgba(198, 85, 72, 0.12) 100%);
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.sprint-edge-pulse { animation: vk-pulse-soft 1.1s ease-in-out infinite; }
+.sprint-speed-line-top, .sprint-speed-line-bottom {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.3), transparent);
+  pointer-events: none;
+}
+.sprint-speed-line-top { top: 12%; }
+.sprint-speed-line-bottom { bottom: 12%; }
+
+/* День/ночь */
+.daynight-icon { display: inline-flex; align-items: center; justify-content: center; color: var(--vk-amber); }
+.daynight-time { font-variant-numeric: tabular-nums; color: var(--vk-paper); }
+.daynight-mobile-compact { transform: scale(0.85); transform-origin: top left; }
+
+/* Тикер данных */
+.data-ticker-container { overflow: hidden; display: flex; align-items: center; }
+.data-ticker-track { display: flex; gap: 1.5rem; will-change: transform; }
+.data-ticker-item { font-size: 11px; letter-spacing: 0.12em; color: var(--vk-paper-dim); white-space: nowrap; }
+.data-ticker-separator { color: rgba(157, 179, 200, 0.35); }
+.data-pulse { animation: vk-pulse-soft 2s ease-in-out infinite; }
+.data-stream { color: var(--vk-paper-dim); font-family: var(--font-mono); font-size: 11px; }
+.text-data-stream { color: var(--vk-paper-dim); letter-spacing: 0.06em; }
+
+/* Таймер сессии */
+.session-timer-widget {
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  color: var(--vk-paper-dim);
+  letter-spacing: 0.1em;
+}
+.session-timer-blink { animation: vk-blink-soft 1.6s steps(2, start) infinite; }
+@keyframes vk-blink-soft { 50% { opacity: 0.35; } }
+
+/* Координаты */
+.player-coords, .coordinates-flicker {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(169, 166, 152, 0.55);
+  font-variant-numeric: tabular-nums;
+}
+.coordinates-flicker { animation: vk-blink-soft 3.2s ease-in-out infinite; }
+.pedometer-step-pop { animation: vk-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+@keyframes vk-pop { from { transform: translateY(2px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+
+/* Настроение */
+.mood-bar-container { display: flex; align-items: center; gap: 0.4rem; }
+.mood-bar-icon { color: var(--vk-amber); }
+.mood-bar-label { font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--vk-paper-dim); }
+
+/* Прогресс исследования */
+.exploration-progress-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--vk-hairline);
+  border-radius: 999px;
+  background: var(--vk-plate);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--vk-paper-dim);
+}
+.exploration-ring-breathe { animation: vk-pulse-soft 3.5s ease-in-out infinite; }
+
+/* Комбо-счётчик */
+.combo-counter-display {
+  font-family: 'Cormorant', Georgia, serif;
+  font-weight: 600;
+  color: var(--vk-amber);
+  letter-spacing: 0.1em;
+  text-shadow: 0 2px 16px rgba(226, 168, 75, 0.3);
+}
+
+/* Фаза хода */
+.turn-phase-bar {
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(157, 179, 200, 0.15);
+  overflow: hidden;
+}
+.turn-phase-slider {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(226, 168, 75, 0.6), var(--vk-amber));
+  border-radius: inherit;
+  transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Компас */
+.compass-poi-marker {
+  position: absolute;
+  color: var(--vk-paper-dim);
+  transition: color 0.3s ease;
+}
+.compass-poi-marker[data-active='true'], .compass-poi-marker.active { color: var(--vk-amber); }
+
+/* Кулдауны */
+.cooldown-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(8, 10, 16, 0.55);
+  backdrop-filter: blur(1.5px);
+  pointer-events: none;
+}
+.cooldown-ring-svg { transform: rotate(-90deg); }
+.cooldown-ring-track { stroke: rgba(157, 179, 200, 0.2); }
+.cooldown-ring-active { stroke: var(--vk-amber); filter: drop-shadow(0 0 4px rgba(226, 168, 75, 0.4)); }
+
+/* Дистанционное кольцо */
+.distance-ring-fill { stroke: rgba(226, 168, 75, 0.7); }
+.distance-ring-track { stroke: rgba(157, 179, 200, 0.22); }
+.distance-ring-in-range { stroke: var(--vk-amber); }
+.distance-ring-tick { stroke: rgba(157, 179, 200, 0.5); }
+
+/* Прицел */
+.dynamic-crosshair-line {
+  position: absolute;
+  background: rgba(234, 228, 214, 0.75);
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Сияние близости интерактива — янтарный тёплый ореол */
+.proximity-glow-aura {
+  position: absolute;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(226, 168, 75, 0.14) 0%, transparent 68%);
+  pointer-events: none;
+}
+.proximity-glow-inner {
+  position: absolute;
+  border-radius: 999px;
+  border: 1px solid rgba(226, 168, 75, 0.35);
+  pointer-events: none;
+}
+.proximity-glow-ring {
+  position: absolute;
+  border-radius: 999px;
+  border: 1px dashed rgba(226, 168, 75, 0.28);
+  pointer-events: none;
+}
+
+/* Стрелка квеста */
+.quest-arrow-ring-pulse { animation: vk-pulse-soft 1.8s ease-in-out infinite; }
+
+/* Лут */
+.loot-proximity-card {
+  padding: 0.3rem 0.65rem;
+  background: var(--vk-plate);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 8px;
+  backdrop-filter: blur(8px);
+}
+.loot-proximity-pulse-dot {
+  width: 5px; height: 5px; border-radius: 999px;
+  background: var(--vk-amber);
+  animation: vk-pulse-soft 1.4s ease-in-out infinite;
+}
+.loot-acquired-text { color: var(--vk-amber); letter-spacing: 0.08em; }
+.loot-acquired-flash { animation: vk-flash-amber 0.8s ease-out; }
+
+/* Быстрые слоты */
+.quick-slot-enhanced {
+  position: relative;
+  background: var(--vk-plate);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+}
+.quick-slot-enhanced:hover {
+  border-color: rgba(226, 168, 75, 0.45);
+  box-shadow: 0 0 0 1px rgba(226, 168, 75, 0.2), 0 8px 22px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
+}
+.slot-icon { display: inline-flex; align-items: center; justify-content: center; color: var(--vk-paper); }
+
+/* Дашборд статистики */
+.stat-dashboard-panel { background: var(--vk-plate); border: 1px solid var(--vk-hairline); border-radius: 14px; backdrop-filter: blur(12px); }
+.stat-dashboard-card { background: rgba(18, 22, 31, 0.6); border: 1px solid var(--vk-hairline); border-radius: 10px; }
+.stat-dashboard-icon { color: var(--vk-amber); }
+.stat-dashboard-label { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--vk-paper-dim); }
+.stat-dashboard-value { font-size: 18px; font-weight: 600; color: var(--vk-paper); font-variant-numeric: tabular-nums; }
+.stat-dashboard-record { font-size: 11px; color: var(--vk-paper-dim); }
+.stat-dashboard-overlay { background: rgba(8, 10, 16, 0.4); border-radius: inherit; }
+
+/* Динамический шум дешёвой ЭЛТ → тихое зерно */
+.digital-noise {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100' height='100' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: vk-noise-shift 0.9s steps(4) infinite;
+}
+@keyframes vk-noise-shift {
+  0% { transform: translate(0, 0); }
+  25% { transform: translate(-2%, 1%); }
+  50% { transform: translate(1%, -2%); }
+  75% { transform: translate(-1%, -1%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ── 6. ХОТБАР: компактная тихая полоса (v4.45.0) ──
+ * Иконки без подписей на десктопе (тултипы остаются), янтарный ховер. */
+.quick-access-toolbar {
+  position: fixed;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.quick-access-toolbar-inner {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 5px 7px;
+  background: rgba(11, 14, 21, 0.55);
+  border: 1px solid var(--vk-hairline);
+  border-radius: 12px;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: var(--vk-shadow), var(--vk-shadow-inset);
+}
+.quick-access-slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 11px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--vk-paper-dim);
+  cursor: pointer;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+.quick-access-slot:hover,
+.quick-access-slot--hover {
+  color: var(--vk-paper);
+  background: rgba(226, 168, 75, 0.09);
+}
+.quick-access-slot:active { transform: scale(0.96); }
+.quick-access-slot-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: currentColor;
+}
+.quick-access-slot-label {
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: inherit;
+  opacity: 0.75;
+  line-height: 1;
+}
+/* Десктоп с мышью: подписи спрятаны — иконки самодостаточны, есть title */
+@media (pointer: fine) {
+  .quick-access-slot-label { display: none; }
+  .quick-access-slot { padding: 9px 12px; }
+}
+.quick-access-slot-kbd {
+  position: absolute;
+  top: -7px;
+  right: -5px;
+  font-size: 9px;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 5px;
+  background: rgba(8, 10, 16, 0.92);
+  border: 1px solid var(--vk-hairline);
+  color: var(--vk-amber);
+  font-variant-numeric: tabular-nums;
+}

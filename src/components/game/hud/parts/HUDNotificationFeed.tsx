@@ -58,7 +58,7 @@ export function HUDNotificationFeed() {
     });
 
     const unsubQuestCompleted = eventBus.on('quest:completed', (payload) => {
-      addItem('✓', t('hud.feed.questCompleted', `Выполнено: ${payload.questId}`, { id: payload.questId }), '#34d399');
+      addItem('✓', t('hud.feed.questCompleted', `Выполнено: ${payload.questId}`, { id: payload.questId }), '#57a874');
     });
 
     const unsubChoice = eventBus.on('choice:made', (payload) => {
@@ -67,7 +67,7 @@ export function HUDNotificationFeed() {
         addItem(
           d > 0 ? '🕊' : '⚠',
           d > 0 ? t('hud.feed.karmaGain', `Карма +${d}`, { n: d }) : t('hud.feed.karmaDrop', `Карма ${d}`, { n: d }),
-          d > 0 ? '#34d399' : '#fb7185',
+          d > 0 ? '#57a874' : '#fb7185',
         );
       }
     });

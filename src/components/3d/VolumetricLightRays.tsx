@@ -6,7 +6,7 @@
  *  Quality-gated: high/ultra only. Volumetric rays are disabled on
  *  low/medium presets and when reducedMotion is active.
  *
- *  Cyberpunk palette: cyan #00e5ff, amber #ffaa44, emerald #00ff88.
+ *  Cyberpunk palette: cyan #9db3c8, amber #ffaa44, emerald #00ff88.
  */
 
 'use client';

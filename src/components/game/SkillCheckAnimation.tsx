@@ -116,7 +116,7 @@ function DieFace({ value, spinning, revealed, color }: {
           boxShadow: revealed
             ? `0 0 24px ${color}50, 0 0 48px ${color}18, inset 0 0 16px ${color}12`
             : spinning
-              ? `0 0 8px rgba(0,229,255,0.15)`
+              ? `0 0 8px rgba(157, 179, 200,0.15)`
               : 'none',
           transformStyle: 'preserve-3d',
           backfaceVisibility: 'hidden',
@@ -178,7 +178,7 @@ function TypedText({ text, visible, color }: {
       {displayed}
       {visible && displayed.length < text.length && (
         <span className="inline-block w-1.5 h-4 ml-0.5 animate-pulse"
-          style={{ background: color ?? 'rgba(0,255,255,0.7)' }}
+          style={{ background: color ?? 'rgba(157, 179, 200,0.7)' }}
         />
       )}
     </span>
@@ -351,11 +351,11 @@ export function SkillCheckAnimation({
           transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
           className="relative w-full max-w-md mx-auto rounded-xl border px-5 py-5 backdrop-blur-md"
           style={{
-            borderColor: phase === 'result' ? `${resultColor}60` : 'rgba(0,229,255,0.12)',
+            borderColor: phase === 'result' ? `${resultColor}60` : 'rgba(157, 179, 200,0.12)',
             background: 'rgba(0,0,0,0.88)',
             boxShadow: phase === 'result'
               ? `0 0 40px ${resultColor}20, 0 0 80px ${resultColor}08, inset 0 0 30px ${resultColor}06`
-              : '0 0 24px rgba(0,229,255,0.06)',
+              : '0 0 24px rgba(157, 179, 200,0.06)',
           }}
         >
           {/* Title */}
@@ -371,7 +371,7 @@ export function SkillCheckAnimation({
               value={dice[0]}
               spinning={phase === 'spinning'}
               revealed={die1Revealed}
-              color={phase === 'result' ? resultColor : '#00e5ff'}
+              color={phase === 'result' ? resultColor : '#9db3c8'}
             />
             <motion.span
               className="text-xl font-mono text-white/20"
@@ -384,7 +384,7 @@ export function SkillCheckAnimation({
               value={dice[1]}
               spinning={phase === 'spinning'}
               revealed={die2Revealed}
-              color={phase === 'result' ? resultColor : '#00e5ff'}
+              color={phase === 'result' ? resultColor : '#9db3c8'}
             />
           </div>
 
@@ -411,7 +411,7 @@ export function SkillCheckAnimation({
               <TypedText
                 text={`+ ${modifierText} = +${modifier}`}
                 visible
-                color="rgba(0,229,255,0.8)"
+                color="rgba(157, 179, 200,0.8)"
               />
             </motion.div>
           )}
@@ -526,7 +526,7 @@ export function SkillCheckAnimation({
           <div
             className="pointer-events-none absolute inset-0 rounded-xl opacity-[0.03]"
             style={{
-              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,229,255,0.1) 2px, rgba(0,229,255,0.1) 4px)',
+              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157, 179, 200,0.1) 2px, rgba(157, 179, 200,0.1) 4px)',
             }}
           />
         </motion.div>

@@ -301,7 +301,7 @@
 
 /* ─── Crafting: Ingredient list enhanced icons ─── */
 .ingredient-check {
-  color: #34d399;
+  color: #57a874;
   text-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
   font-weight: 700;
   font-size: 11px;
@@ -317,7 +317,7 @@
 }
 
 .ingredient-count-available {
-  color: #34d399;
+  color: #57a874;
   font-family: 'Geist Mono', monospace;
   font-size: 10px;
 }

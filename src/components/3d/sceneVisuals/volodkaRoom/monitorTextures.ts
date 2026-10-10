@@ -82,13 +82,13 @@ export function createGrafanaTexture(): CanvasTexture {
   ctx.fillStyle = '#7d8aa0';
   ctx.font = '8px monospace';
   ctx.fillText('Network I/O', 8, 100);
-  drawChart(ctx, 8, 104, 240, 48, '#34d399', 'rgba(52,211,153,0.18)', 191);
-  ctx.fillStyle = '#34d399';
+  drawChart(ctx, 8, 104, 240, 48, '#57a874', 'rgba(52,211,153,0.18)', 191);
+  ctx.fillStyle = '#57a874';
   ctx.font = 'bold 11px monospace';
   ctx.fillText('12MB/s', 196, 101);
   ctx.fillStyle = '#11161f';
   ctx.fillRect(0, 162, 256, 14);
-  ctx.fillStyle = '#34d399';
+  ctx.fillStyle = '#57a874';
   ctx.font = '8px monospace';
   ctx.fillText('● live · refresh 5s', 8, 172);
   const tex = new CanvasTexture(canvas);
@@ -114,9 +114,9 @@ export function createZabbixTexture(): CanvasTexture {
   ctx.fillText('Response time (ms)', 8, 32);
   drawChart(ctx, 8, 36, 240, 44, '#f59e0b', 'rgba(245,158,11,0.16)', 53);
   const rows: Array<[string, string, string]> = [
-    ['web-01', 'OK', '#34d399'],
+    ['web-01', 'OK', '#57a874'],
     ['db-02', 'PROBLEM', '#e8413a'],
-    ['node-7', 'OK', '#34d399'],
+    ['node-7', 'OK', '#57a874'],
     ['disk /', '87%', '#f59e0b'],
   ];
   rows.forEach(([host, status, color], i) => {

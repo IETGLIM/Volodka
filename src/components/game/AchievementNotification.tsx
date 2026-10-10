@@ -62,8 +62,8 @@ function injectAchievementStyles() {
       50% { opacity: 1; transform: scaleY(1.8); }
     }
     @keyframes achievement-border-pulse {
-      0%, 100% { border-color: rgba(0,255,255,0.3); }
-      50% { border-color: rgba(0,255,255,0.6); }
+      0%, 100% { border-color: rgba(157, 179, 200,0.3); }
+      50% { border-color: rgba(157, 179, 200,0.6); }
     }
     @keyframes achievement-glow-pulse {
       0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.1), 0 0 40px rgba(251,191,36,0.05); }

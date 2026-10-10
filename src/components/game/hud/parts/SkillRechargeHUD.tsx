@@ -20,8 +20,6 @@ import { Clock, Zap } from 'lucide-react';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
-/* Import enhanced quick slot styles */
-import '@/styles/hud-round12.css';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 
 /* ─── Type Definitions ─── */
@@ -98,7 +96,7 @@ const ANIMATION = {
 /** Cyberpunk color palette for skill states */
 const COLORS = {
   /** Primary cyan for ready/glow effects */
-  cyan: 'var(--cyber-cyan, #00f0ff)',
+  cyan: 'var(--cyber-cyan, #9db3c8)',
   /** Amber for warnings/almost-ready */
   amber: 'var(--cyber-amber, #ffb800)',
   /** Dark overlay for cooldown */
@@ -737,10 +735,11 @@ export default SkillRechargeHUD;
  *
  * @remarks
  * This component uses CSS custom properties for theming:
- * - `--cyber-cyan`: Primary accent color (default: #00f0ff)
+ * - `--cyber-cyan`: Primary accent color (default: #9db3c8)
  * - `--cyber-amber`: Warning/highlight color (default: #ffb800)
  *
- * The component imports styles from `hud-round12.css` which contains:
+ * The component relies on the unified «Ночная тетрадь» skin
+ * (volodka-skin.css) which contains:
  * - `.quick-slot-enhanced` base styles
  * - `.skill-slot-*` modifiers for various states
  *

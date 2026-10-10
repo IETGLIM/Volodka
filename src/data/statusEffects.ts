@@ -69,7 +69,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Энергия восстанавливается быстрее. Поставленный чай и хороший сон.',
     icon: '⚡',
     category: 'buff',
-    color: '#34d399', // emerald
+    color: '#57a874', // emerald
     duration: 3,
     stackable: true,
     maxStacks: 3,
@@ -217,7 +217,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Активна способность «Ночной дозор»: ночью макс. энергии повышен.',
     icon: '🌙',
     category: 'perk',
-    color: '#34d399', // emerald
+    color: '#57a874', // emerald
   },
   iron_stomach: {
     id: 'iron_stomach',
@@ -225,7 +225,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Активна способность «Желудок стали»: входящий стресс снижен.',
     icon: '🛡️',
     category: 'perk',
-    color: '#34d399', // emerald
+    color: '#57a874', // emerald
   },
   counter_strike: {
     id: 'counter_strike',

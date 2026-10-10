@@ -45,7 +45,7 @@ function classifyScene(sceneId: SceneId): SceneCategory {
 const PALETTES: Record<SceneCategory, AtmospherePalette> = {
   street_night: {
     category: 'street_night',
-    gradient: 'linear-gradient(180deg, rgba(0,229,255,0.08) 0%, rgba(0,150,200,0.04) 40%, transparent 100%)',
+    gradient: 'linear-gradient(180deg, rgba(157, 179, 200,0.08) 0%, rgba(0,150,200,0.04) 40%, transparent 100%)',
     peakOpacity: 0.6,
   },
   indoor_warm: {
