@@ -27,6 +27,22 @@ function NoirModeToggle() {
   );
 }
 
+function MatrixRainToggle() {
+  const { matrixRainEnabled, toggleMatrixRain } = useMenuVisualToggles();
+  return (
+    <SettingsToggle
+      label="Матричный дождь"
+      enabled={matrixRainEnabled}
+      enabledClassName="border-stone-400/30 bg-stone-950/40 text-stone-200"
+      onToggle={() => {
+        toggleMatrixRain();
+        safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
+      }}
+      ariaLabel={matrixRainEnabled ? 'Выключить матричный дождь' : 'Включить матричный дождь'}
+    />
+  );
+}
+
 export function MenuSettingsPanel({ musicEnabled, onToggleMusic, onClose }: MenuSettingsPanelProps) {
   return (
     <motion.div
@@ -67,6 +83,8 @@ export function MenuSettingsPanel({ musicEnabled, onToggleMusic, onClose }: Menu
           />
 
           <NoirModeToggle />
+
+          <MatrixRainToggle />
 
           <div className="pt-3 border-t border-stone-500/15 space-y-1.5">
             <p className="text-[10px] font-serif tracking-[0.2em] uppercase text-stone-500/60 mb-2 text-center">

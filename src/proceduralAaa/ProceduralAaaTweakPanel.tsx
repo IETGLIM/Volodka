@@ -15,6 +15,7 @@ import {
 } from './params';
 import { generateProceduralAaaScene } from './ProceduralAaaManager';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 const PANEL_STYLE: React.CSSProperties = {
   position: 'fixed',
@@ -23,7 +24,7 @@ const PANEL_STYLE: React.CSSProperties = {
   width: 300,
   maxHeight: '78vh',
   overflowY: 'auto',
-  zIndex: 99990,
+  zIndex: UI_LAYERS.DEV_PANEL /* v4.43.0: было 99990 — вне лестницы слоёв */,
   background: 'rgba(12, 14, 22, 0.92)',
   border: '1px solid rgba(120, 140, 200, 0.35)',
   borderRadius: 8,

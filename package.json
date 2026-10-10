@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "4.41.0",
+  "version": "4.43.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -52,6 +52,8 @@
     "budgets": "node scripts/check-bundle-budgets.mjs --report",
     "budgets:check": "node scripts/check-bundle-budgets.mjs",
     "deploy:archive": "node scripts/create-deploy-archive.mjs",
+    "build:itch": "vite build --base=./",
+    "archive:itch": "node scripts/create-itch-archive.mjs",
     "verify:deploy": "npx tsx --tsconfig tsconfig.json scripts/verify-deploy-assets.ts"
   },
   "dependencies": {

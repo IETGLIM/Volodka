@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useTypewriter } from '@/hooks/useTypewriter';
 
+/**
+ * v4.43.0 — субтитр меню переведён на filmic-язык: сериф, мягкий камень
+ * вместо неонового моно с градиентом cyan→orange. Печатная машинка
+ * осталась (шарм «сказки, рассказанной вполголоса»), курсор — тонкий,
+ * приглушённый. Поддержка доступности (--subtitle-scale) сохранена.
+ */
 export function MenuTypewriterSubtitle({ text, delay = 0, enabled = true }: { text: string; delay?: number; enabled?: boolean }) {
   const [started, setStarted] = useState(false);
 
@@ -15,31 +21,29 @@ export function MenuTypewriterSubtitle({ text, delay = 0, enabled = true }: { te
 
   if (!enabled) {
     return (
-      <p className="mt-3 font-mono text-base md:text-lg tracking-[0.4em] uppercase text-cyan-300/80">{text}</p>
+      <p className="mt-4 font-serif text-base md:text-xl tracking-[0.42em] uppercase text-stone-200/85">{text}</p>
     );
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay, duration: 0.5 }}
-      className={`mt-3 font-mono text-base md:text-lg tracking-[0.4em] uppercase ${done && started ? 'typing-cursor' : ''}`}
+      transition={{ delay: Math.min(delay, 0.4), duration: 0.45 }}
+      className={`mt-4 font-serif text-base md:text-xl tracking-[0.42em] uppercase text-stone-200/85 ${done && started ? 'typing-cursor' : ''}`}
       style={{
-        background: 'linear-gradient(90deg, rgba(0,255,255,0.8), rgba(255,140,0,0.6), rgba(0,255,255,0.8))',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
         // Accessibility: scale subtitle with the --subtitle-scale CSS var
         // set by AccessibilityManager on <html> (default 1 = no scaling).
         fontSize: 'calc(1rem * var(--subtitle-scale, 1))',
+        textShadow: '0 1px 12px rgba(0,0,0,0.65)',
       }}
     >
       {displayed}
       <span
-        className="inline-block w-[2px] h-[1em] ml-0.5 align-middle"
+        className="inline-block w-[2px] h-[0.9em] ml-1 align-middle"
         style={{
-          backgroundColor: done || !started ? 'transparent' : 'rgba(0, 255, 255, 0.8)',
-          animation: done || !started ? 'none' : 'cursor-blink 0.8s step-end infinite',
+          backgroundColor: done || !started ? 'transparent' : 'rgba(214, 211, 209, 0.55)',
+          animation: done || !started ? 'none' : 'cursor-blink 0.9s step-end infinite',
         }}
         aria-hidden="true"
       />

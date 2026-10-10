@@ -26,6 +26,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
+import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { ItemIcon } from '@/components/game/shared/ItemIcon';
 import {
   INVENTORY_RARITY_BORDER_CLASS,
@@ -368,8 +369,10 @@ const DragGhost = memo(function DragGhost({ payload, ghostRef }: GhostProps) {
     <div
       ref={ghostRef}
       aria-hidden
-      className="pointer-events-none fixed left-0 top-0 z-[80] will-change-transform"
-      style={{ touchAction: 'none' }}
+      /* v4.43.0: z-[80] (вне лестницы) → DRAG_GHOST (63): над панелями
+         и тултипами, под эффектами стихов и переходами. */
+      className="pointer-events-none fixed left-0 top-0 will-change-transform"
+      style={{ touchAction: 'none', zIndex: UI_LAYERS.DRAG_GHOST }}
     >
       <div
         className={`

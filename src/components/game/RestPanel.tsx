@@ -76,7 +76,10 @@ function DreamOverlay({ active, onComplete }: { active: boolean; onComplete: () 
 
   return (
     <motion.div
-      className="fixed inset-0 z-[200] pointer-events-none flex items-center justify-center"
+      /* v4.43.0: z-[200] (= DEV_PANEL!) → CINEMATIC_TRANSITION: сон-оверлей
+         отдыха — полупрозрачный кинематографичный эффект, а не dev-панель. */
+      className="fixed inset-0 pointer-events-none flex items-center justify-center"
+      style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
       initial={{ opacity: 0 }}
       animate={{ opacity: [0, 0.6, 0.8, 0.8, 0.6, 0] }}
       exit={{ opacity: 0 }}

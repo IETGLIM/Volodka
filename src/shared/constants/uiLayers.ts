@@ -38,6 +38,12 @@ export const UI_LAYERS = {
   VOICE_SUBTITLE: 37,
   /** HUD tooltips — above panels, below poem overlay */
   TOOLTIP: 62,
+  /** Drag ghost (inventory drag&drop) — above panels & tooltips, below poem FX */
+  DRAG_GHOST: 63,
+  /** Root toast portal (shadcn Toaster в AppBootRoot) — над панелями и
+   *  тултипами, ниже кинематографичных переходов и загрузки. v4.43.0:
+   *  раньше был z-[100] = LOADING — тосты ложились на экраны загрузки. */
+  NOTIFICATION_ROOT: 65,
   /** Cinematic transition (fade-to-black) */
   CINEMATIC_TRANSITION: 95,
   /** Ambient world response when a poem power fires (tint, epigraph) */

@@ -16,6 +16,9 @@
 
 .cinematic-menu-brand-stage {
   position: relative;
+  /* v4.43.0: мягкая тёмная подложка под титр — на ночной фотоплашке
+     буквы серифа сливались с тёмным горизонтом (замечка VLM-ревью). */
+  background: radial-gradient(ellipse 62% 58% at 50% 46%, rgba(3, 6, 14, 0.6) 0%, rgba(3, 6, 14, 0.32) 46%, transparent 72%);
 }
 
 .cinematic-menu-brand-stage::before {
@@ -49,7 +52,7 @@
   display: block;
   width: 100%;
   padding: 0.7rem 1rem;
-  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-family: 'Cormorant', 'Georgia', 'Times New Roman', serif;
   font-size: 0.95rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -228,4 +231,37 @@
   pointer-events: none;
   isolation: isolate;
   font-family: 'Geist Mono', monospace;
+}
+
+/* ─── v4.43.0: компакт-меню для низких вьюпортов (itch.io 960×540, 640×480) ───
+   Колонка меню не влезает по высоте: титр 5.6rem + отражение + теглайн +
+   нав + посвящение. Прячем отражение титула, теглайн и подсказки клавиш,
+   уменьшаем титр и вертикальные отступы. Скролл остаётся страховкой. */
+@media (max-height: 760px) {
+  /* Средняя ступень (itch 1280×720): титр lg 7.2rem → 4.2rem, отражение
+     и подсказки прячем — посвящение и все пункты влезают целиком. */
+  .menu-lux-title {
+    font-size: 4.2rem !important;
+  }
+  .menu-lux-title-reflection,
+  .menu-compact-hide {
+    display: none !important;
+  }
+  .menu-compact-tight {
+    margin-top: 1.25rem !important;
+  }
+}
+@media (max-height: 640px) {
+  /* Полный компакт (itch 960×540, 640×480) */
+  .menu-lux-title {
+    font-size: 2.8rem !important;
+    line-height: 0.95 !important;
+  }
+  .menu-lux-title-reflection,
+  .menu-compact-hide {
+    display: none !important;
+  }
+  .menu-compact-tight {
+    margin-top: 1rem !important;
+  }
 }

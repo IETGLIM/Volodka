@@ -68,8 +68,11 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
   }, []);
 
   return (
+    /* v4.43.0: z-[9999] убран — inline style уже ставит LOADING+10 (110):
+       выше экрана загрузки, ниже DEV_PANEL. Хардкод-класс конфликтовал
+       с лестницей UI_LAYERS. */
     <motion.div
-      className="fixed inset-0 z-[9999] bg-black overflow-hidden select-none"
+      className="fixed inset-0 bg-black overflow-hidden select-none"
       style={{ zIndex: UI_LAYERS.LOADING + 10 }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

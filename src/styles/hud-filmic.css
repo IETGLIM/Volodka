@@ -72,7 +72,7 @@
 }
 
 .hud-filmic-body {
-  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-family: 'Cormorant', 'Georgia', 'Times New Roman', serif;
   font-size: 0.8125rem;
   line-height: 1.45;
   letter-spacing: 0.02em;
@@ -114,7 +114,7 @@
 }
 
 .hud-filmic-caption__text {
-  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-family: 'Cormorant', 'Georgia', 'Times New Roman', serif;
   font-size: 0.75rem;
   font-style: italic;
   letter-spacing: 0.04em;
@@ -147,7 +147,7 @@
 }
 
 .hud-filmic-topbar__scene {
-  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-family: 'Cormorant', 'Georgia', 'Times New Roman', serif;
   font-size: 0.875rem;
   font-weight: 500;
   letter-spacing: 0.06em;
@@ -249,7 +249,7 @@
   backdrop-filter: blur(10px);
   box-shadow: var(--hud-filmic-shadow);
   color: var(--hud-filmic-ink-muted);
-  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-family: 'Cormorant', 'Georgia', 'Times New Roman', serif;
   font-size: 0.75rem;
   font-style: italic;
 }
@@ -320,7 +320,7 @@
 }
 
 .hud-filmic-dialogue__body {
-  font-family: ui-serif, Georgia, 'Times New Roman', serif;
+  font-family: 'Cormorant', 'Georgia', 'Times New Roman', serif;
   font-size: 0.9375rem;
   line-height: 1.55;
   color: rgba(245, 245, 244, 0.92);

@@ -45,7 +45,9 @@ function d(baseDelay: number, visited: boolean): number {
   return visited ? baseDelay * 0.4 : baseDelay;
 }
 
-/* ── AAA Lux Title — filmi serif with light bleed, volumetric glow ── */
+/* ── Filmic title — serif with light bleed, gentle parallax ──
+ * v4.43.0: появление ускорено 2.4с → 0.9с — «вау» не должно ждать,
+ * игрок видит меню целиком за полторы секунды, а не за четыре. */
 function AaaLuxTitle({ text, animate, visited }: { text: string; animate: boolean; visited: boolean }) {
   const reducedMotion = useEffectiveReducedMotion();
   const [parallax, setParallax] = useState({ x: 0, y: 0 });
@@ -56,8 +58,8 @@ function AaaLuxTitle({ text, animate, visited }: { text: string; animate: boolea
       const cx = window.innerWidth / 2;
       const cy = window.innerHeight / 2;
       setParallax({
-        x: ((e.clientX - cx) / cx) * 10,
-        y: ((e.clientY - cy) / cy) * 6,
+        x: ((e.clientX - cx) / cx) * 8,
+        y: ((e.clientY - cy) / cy) * 5,
       });
     };
     window.addEventListener('mousemove', onMove, { passive: true });
@@ -67,21 +69,21 @@ function AaaLuxTitle({ text, animate, visited }: { text: string; animate: boolea
   return (
     <div className="relative">
       <div
-        className="absolute inset-0 blur-[52px] pointer-events-none opacity-70"
+        className="absolute inset-0 blur-[52px] pointer-events-none opacity-60"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(0,255,255,0.16) 0%, rgba(255,180,80,0.08) 38%, transparent 72%)',
+          background: 'radial-gradient(ellipse at center, rgba(0,255,255,0.13) 0%, rgba(255,180,80,0.07) 38%, transparent 72%)',
           transform: `translate(${parallax.x * 0.35}px, ${parallax.y * 0.35}px)`,
         }}
         aria-hidden
       />
       <motion.h1
-        initial={animate && !reducedMotion ? { opacity: 0, y: 22, filter: 'blur(14px)', letterSpacing: '0.3em' } : { opacity: 1 }}
+        initial={animate && !reducedMotion ? { opacity: 0, y: 18, filter: 'blur(12px)', letterSpacing: '0.3em' } : { opacity: 1 }}
         animate={{ opacity: 1, y: 0, filter: 'blur(0px)', letterSpacing: '0.18em' }}
-        transition={{ duration: 2.4, delay: d(0.15, visited), ease: [0.16, 1, 0.3, 1] }}
-        className="relative font-serif text-[3.2rem] md:text-[5.6rem] lg:text-[7.2rem] font-[280] tracking-[0.18em] leading-none select-none"
+        transition={{ duration: 0.9, delay: d(0.1, visited), ease: [0.16, 1, 0.3, 1] }}
+        className="menu-lux-title relative font-serif text-[3.2rem] md:text-[5.6rem] lg:text-[7.2rem] font-[280] tracking-[0.18em] leading-none select-none"
         style={{
           transform: `translate(${parallax.x}px, ${parallax.y}px)`,
-          textShadow: '0 0 44px rgba(0,255,255,0.26), 0 0 140px rgba(255,200,100,0.14), 0 2px 0 rgba(0,0,0,0.75), 0 12px 28px rgba(0,0,0,0.55)',
+          textShadow: '0 0 44px rgba(0,255,255,0.24), 0 0 140px rgba(255,200,100,0.13), 0 2px 0 rgba(0,0,0,0.75), 0 12px 28px rgba(0,0,0,0.55)',
           color: 'rgb(236, 239, 237)',
         }}
       >
@@ -97,9 +99,9 @@ function AaaLuxTitle({ text, animate, visited }: { text: string; animate: boolea
       </motion.h1>
       <motion.div
         initial={{ opacity: 0 }}
-        animate={{ opacity: 0.11 }}
-        transition={{ delay: d(1.5, visited), duration: 1.4 }}
-        className="pointer-events-none select-none font-serif text-[3.2rem] md:text-[5.6rem] lg:text-[7.2rem] font-[280] tracking-[0.18em] leading-none scale-y-[-0.58] -mt-4 blur-[0.7px] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.42)_0%,transparent_58%)]"
+        animate={{ opacity: 0.1 }}
+        transition={{ delay: d(0.7, visited), duration: 1.1 }}
+        className="menu-lux-title-reflection pointer-events-none select-none font-serif text-[3.2rem] md:text-[5.6rem] lg:text-[7.2rem] font-[280] tracking-[0.18em] leading-none scale-y-[-0.58] -mt-4 blur-[0.7px] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.42)_0%,transparent_58%)]"
         aria-hidden
       >
         {text}
@@ -187,109 +189,104 @@ function MenuScreenPanelInner() {
 
   return (
     <div
-      className="game-critical-motion digital-noise fixed inset-0 h-[100dvh] min-h-[100dvh] w-full bg-black overflow-hidden overscroll-none"
+      className="game-critical-motion fixed inset-0 h-[100dvh] min-h-[100dvh] w-full bg-black overflow-hidden overscroll-none"
       style={{ zIndex: UI_LAYERS.LOADING }}
       data-testid="menu-screen"
     >
       <MenuBackgroundEffects fx={fx} tier={deviceTier} matrixRainEnabled={matrixRainEnabled} contentMotion={contentMotion} />
 
-      {/* AAA layered vignette + film grain */}
-      <div className="absolute inset-0 pointer-events-none z-[5] opacity-[0.06] mix-blend-soft-light" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")` }} aria-hidden />
-      <div className="absolute inset-0 pointer-events-none z-[6] bg-[radial-gradient(ellipse_at_center,transparent_42%,rgba(0,0,0,0.55)_100%)]" aria-hidden />
-
-      {/* v4.39.0: колонка центрируется через m-auto и прокручивается на низких
-          вьюпортах — раньше пункты меню уходили за край экрана и были недоступны. */}
+      {/* v4.43.0: колонка центрируется через m-auto и прокручивается на низких
+          вьюпортах — пункты меню всегда достижимы (сохранено из v4.39.0). */}
       <div className="relative z-10 flex h-[100dvh] w-full flex-col items-center overflow-y-auto overscroll-contain p-4">
         <div className="m-auto flex w-full flex-col items-center">
-        <div className="cinematic-menu-brand-stage flex flex-col items-center px-4">
-          <AaaLuxTitle text={MENU_TITLE} animate={contentMotion} visited={visited} />
-          <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(1, visited)} enabled={contentMotion} />
+          <div className="cinematic-menu-brand-stage flex flex-col items-center px-4">
+            <AaaLuxTitle text={MENU_TITLE} animate={contentMotion} visited={visited} />
+            <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(0.5, visited)} enabled={contentMotion} />
 
-          <motion.p
-            initial={contentMotion ? { opacity: 0, y: 6 } : false}
-            animate={{ opacity: 0.76, y: 0 }}
-            transition={{ delay: d(1.9, visited), duration: 1.3, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-3 max-w-[32rem] text-center font-serif text-sm md:text-[15px] tracking-[0.22em] text-stone-300/70 leading-relaxed"
-          >
-            {MENU_TAGLINE}
-          </motion.p>
-
-          <motion.p
-            initial={contentMotion ? { opacity: 0, y: 6 } : false}
-            animate={{ opacity: 0.62, y: 0 }}
-            transition={{ delay: d(2.6, visited), duration: 1.2 }}
-            className="mt-3 font-serif text-xs md:text-[13px] tracking-[0.24em] italic"
-            style={{ color: 'var(--hud-filmic-ink-meta)' }}
-          >
-            {MENU_POET_CREDIT}
-          </motion.p>
-        </div>
-
-        <motion.div
-          initial={contentMotion ? { opacity: 0, y: 10 } : false}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: d(3, visited), duration: 1.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-7 flex flex-col items-center gap-2"
-        >
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-amber-200/30 to-transparent" />
-          <p className="font-serif text-xs sm:text-sm md:text-[15px] tracking-[0.18em] italic dedication-glow text-stone-200/85 text-center max-w-[30rem] leading-relaxed px-4">
-            {MENU_DEDICATION}
-          </p>
-          <div className="w-24 h-px bg-gradient-to-r from-transparent via-cyan-200/22 to-transparent" />
-        </motion.div>
-
-        <div className="hud-filmic-divider mt-3" aria-hidden style={{ width: '20rem', opacity: 0.7 }} />
-
-        <motion.div
-          ref={menuRef}
-          initial={contentMotion ? { opacity: 0, y: 22, filter: 'blur(6px)' } : false}
-          animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-          transition={{ duration: 0.8, delay: d(2.0, visited), ease: [0.16, 1, 0.3, 1] }}
-          className="mt-9 w-full max-w-[24rem]"
-        >
-          <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav hud-filmic-menu backdrop-blur-[20px] bg-gradient-to-b from-black/45 to-black/60 border border-stone-600/20 shadow-[0_12px_48px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_0_rgba(0,0,0,0.6)] rounded-[14px]">
-            <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/[0.05] via-transparent to-transparent" aria-hidden />
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" aria-hidden />
-            <MenuNavigationList
-              items={menu.menuItems}
-              selectedIndex={menu.selectedIndex}
-              setSelectedIndex={menu.setSelectedIndex}
-              onSelect={wrappedHandleMenuAction}
-              savePreview={savePreview}
-              contentMotion={contentMotion}
-              fastAnimation={visited}
-            />
+            {/* Теглайн + автор стихов — единый тихий блок (было два
+                разрозненных motion.p с задержками 1.9/2.6с). */}
+            <motion.div
+              initial={contentMotion ? { opacity: 0, y: 6 } : false}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: d(0.8, visited), duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              className="mt-4 flex flex-col items-center gap-1.5"
+            >
+              <p className="menu-compact-hide max-w-[32rem] text-center font-serif text-sm md:text-[15px] tracking-[0.22em] text-stone-300/70 leading-relaxed">
+                {MENU_TAGLINE}
+              </p>
+              <p
+                className="font-serif text-xs md:text-[13px] tracking-[0.24em] italic"
+                style={{ color: 'var(--hud-filmic-ink-meta)' }}
+              >
+                {MENU_POET_CREDIT}
+              </p>
+            </motion.div>
           </div>
-        </motion.div>
 
-        <motion.div
-          initial={contentMotion ? { opacity: 0 } : false}
-          animate={{ opacity: 1 }}
-          transition={{ delay: d(3.8, visited), duration: 1 }}
-          className="mt-7 hidden md:flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5"
-          aria-hidden="true"
-        >
-          <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/70">↑↓ Навигация</span>
-          <span className="w-px h-3 bg-stone-700/30" />
-          <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/70">Enter Выбрать</span>
-          <span className="w-px h-3 bg-stone-700/30 hidden md:block" />
-          <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/50 hidden md:block">Esc Назад</span>
-        </motion.div>
+          <motion.div
+            ref={menuRef}
+            initial={contentMotion ? { opacity: 0, y: 16, filter: 'blur(4px)' } : false}
+            animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+            transition={{ duration: 0.6, delay: d(0.7, visited), ease: [0.16, 1, 0.3, 1] }}
+            className="menu-compact-tight mt-8 w-full max-w-[24rem]"
+          >
+            <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav hud-filmic-menu backdrop-blur-[20px] bg-gradient-to-b from-black/45 to-black/60 border border-stone-600/20 shadow-[0_12px_48px_rgba(0,0,0,0.7),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_0_rgba(0,0,0,0.6)] rounded-[14px]">
+              <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/[0.05] via-transparent to-transparent" aria-hidden />
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" aria-hidden />
+              <MenuNavigationList
+                items={menu.menuItems}
+                selectedIndex={menu.selectedIndex}
+                setSelectedIndex={menu.setSelectedIndex}
+                onSelect={wrappedHandleMenuAction}
+                savePreview={savePreview}
+                contentMotion={contentMotion}
+                fastAnimation={visited}
+              />
+            </div>
+          </motion.div>
+
+          {/* Посвящение — сердце игры, сразу под меню, тихим свечением */}
+          <motion.div
+            initial={contentMotion ? { opacity: 0 } : false}
+            animate={{ opacity: 1 }}
+            transition={{ delay: d(1.1, visited), duration: 0.9 }}
+            className="menu-compact-tight mt-6 flex flex-col items-center gap-2"
+          >
+            <div className="w-24 h-px bg-gradient-to-r from-transparent via-amber-200/30 to-transparent" />
+            <p className="font-serif text-xs sm:text-sm md:text-[15px] tracking-[0.18em] italic dedication-glow text-stone-200/85 text-center max-w-[30rem] leading-relaxed px-4">
+              {MENU_DEDICATION}
+            </p>
+          </motion.div>
+
+          <motion.div
+            initial={contentMotion ? { opacity: 0 } : false}
+            animate={{ opacity: 1 }}
+            transition={{ delay: d(1.3, visited), duration: 0.7 }}
+            className="mt-5 hidden md:flex menu-compact-hide flex-wrap items-center justify-center gap-x-5 gap-y-1.5"
+            aria-hidden="true"
+          >
+            <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/70">↑↓ Навигация</span>
+            <span className="w-px h-3 bg-stone-700/30" />
+            <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/70">Enter Выбрать</span>
+            <span className="w-px h-3 bg-stone-700/30 hidden md:block" />
+            <span className="font-serif text-[10px] tracking-[0.24em] text-stone-500/50 hidden md:block">Esc Назад</span>
+          </motion.div>
         </div>
       </div>
 
-      {/* v4.39.0: чипы подняты над cinematic-letterbox — полосы bg-black z-[60]
-          (7vh / min 36px) полностью перекрывали их (bottom-8 < 36px). */}
+      {/* v4.43.0: чипы живут в зоне единых CinematicBars (6vh/min 24px) —
+          без пиксельной арифметики calc(max(7vh,36px)+12px) из v4.39.0,
+          которая поднимала их над УДАЛЁННЫМ жёстким леттербоксом z-[60]. */}
       <motion.button
         type="button"
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
-        transition={{ delay: d(2.2, visited) }}
+        transition={{ delay: d(1.0, visited) }}
         onClick={() => {
           menu.toggleMusic();
           safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
         }}
-        className="absolute right-6 bottom-[calc(max(7vh,36px)+12px)] z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-stone-700/20 text-stone-400/70 hover:text-stone-100/90 hover:bg-black/50 hover:border-stone-600/30 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50"
+        className="absolute right-6 bottom-8 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-stone-700/20 text-stone-400/70 hover:text-stone-100/90 hover:bg-black/50 hover:border-stone-600/30 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-stone-300/50"
         aria-label={menu.musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
       >
         {menu.musicEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
@@ -301,8 +298,8 @@ function MenuScreenPanelInner() {
       <motion.div
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
-        transition={{ delay: d(2.6, visited) }}
-        className="absolute bottom-[calc(max(7vh,36px)+12px)] left-6 z-30 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-stone-800/30"
+        transition={{ delay: d(1.2, visited) }}
+        className="absolute bottom-8 left-6 z-30 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-stone-800/30"
         aria-hidden="true"
       >
         {/* v4.36.1: билд-метка «версия · sha» — видно, какой коммит играет. */}

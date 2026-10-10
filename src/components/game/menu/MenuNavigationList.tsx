@@ -53,14 +53,17 @@ export const MenuNavigationList = memo(function MenuNavigationList({
         // CSS animation delay for the mount-in fade (replaces framer-motion
         // transition.delay). fastAnimation = quick fade on menu re-open;
         // default = the slow cinematic staggered reveal on first boot.
+        // v4.43.0: каскад ускорен (было 1.6 + index*0.1 — пункты доползали
+        // почти три секунды). Меню должно быть готово к взаимодействию
+        // за полсекунды; «вау» делает титр, а не очередь кнопок.
         const animDelay = contentMotion
           ? fastAnimation
-            ? 0.2 + index * 0.04
-            : 1.6 + index * 0.1
+            ? 0.1 + index * 0.03
+            : 0.3 + index * 0.06
           : 0;
         const style: CSSProperties | undefined = contentMotion
           ? {
-              animation: 'menu-item-in 0.45s ease-out both',
+              animation: 'menu-item-in 0.35s ease-out both',
               animationDelay: `${animDelay}s`,
             }
           : undefined;
