@@ -18,7 +18,10 @@
 import { useRef } from 'react';
 import { Uniform } from 'three';
 import { Effect } from 'postprocessing';
-import { wrapEffect } from '@react-three/postprocessing';
+// v4.45.2: wrapEffect 3.0.4 + React 19 — ref попадал в JSON.stringify-депсы
+// и ронял повторный рендер (circular). safeWrapEffect — идентичное поведение,
+// безопасная сериализация.
+import { safeWrapEffect } from '@/engine/graphics/safeWrapEffect';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { getMotionBlurStrength } from '@/engine/camera/motionBlurState';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
@@ -79,10 +82,10 @@ class RadialBlurEffect extends Effect {
   }
 }
 
-/* ─── React wrapper via wrapEffect ─── */
-// @react-three/postprocessing utility: wraps the Effect constructor into a
-// declarative R3F element that can be placed inside <EffectComposer>.
-const RadialBlur = wrapEffect(RadialBlurEffect);
+/* ─── React wrapper via safeWrapEffect ─── */
+// Declarative R3F element for <EffectComposer> (see safeWrapEffect.tsx for
+// the React-19/circular-JSON rationale).
+const RadialBlur = safeWrapEffect(RadialBlurEffect);
 
 /* ─── Transition animation state (same pattern as DOF in ExplorationPostFX) ─── */
 interface BlurTransition {

@@ -38,22 +38,33 @@ import { Mesh, Vector2, Vector3 } from 'three';
 import '@/engine/three/patchPostprocessingDepthBlit';
 import {
   EffectComposer,
-  Bloom,
-  Vignette,
-  HueSaturation,
-  BrightnessContrast,
-  ToneMapping,
-  N8AO,
   LUT,
-  ChromaticAberration,
-  Scanline,
-  Noise,
   DepthOfField,
   GodRays,
-  SMAA,
+  // v4.45.2: N8AO импорт убран — пасс временно отключён (NaN, см. комментарий ниже)
 } from '@react-three/postprocessing';
-import { BlendFunction, KernelSize, ToneMappingMode, SMAAPreset } from 'postprocessing';
+import {
+  BlendFunction,
+  KernelSize,
+  ToneMappingMode,
+  SMAAPreset,
+  BloomEffect,
+  VignetteEffect,
+  HueSaturationEffect,
+  BrightnessContrastEffect,
+  ChromaticAberrationEffect,
+  ScanlineEffect,
+  NoiseEffect,
+  ToneMappingEffect,
+  SMAAEffect,
+} from 'postprocessing';
 import type { EffectComposer as EffectComposerImpl, DepthOfFieldEffect, GodRaysEffect } from 'postprocessing';
+// v4.45.2: wrapEffect 3.0.4 + React 19 ронял рендер (ref в JSON.stringify-депсах
+// → «Converting circular structure to JSON»). P-based компоненты переведены на
+// safeWrapEffect — поведение идентично, депсы сериализуются безопасно.
+// Кастомные компоненты библиотеки (EffectComposer/N8AO/LUT/DepthOfField/GodRays)
+// не используют wrapEffect — остались как есть.
+import { safeWrapEffect } from '@/engine/graphics/safeWrapEffect';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { dialogueFocusTarget } from '@/engine/graphics/dialogueFocusTarget';
 import { isSoftWorkAffordable } from '@/engine/graphics/softWorkBudget';
@@ -96,6 +107,22 @@ import {
   type ScenePostFxTargets,
 } from '@/engine/graphics/applyScenePostFx';
 import type { SceneId } from '@/shared/types/game';
+
+/* ── v4.45.2: safe-обёртки P-based эффектов ──
+ * Дефолты скопированы из @react-three/postprocessing@3.0.4 (dist):
+ *   Bloom = P(BloomEffect, { blendFunction: ADD })
+ *   Scanline = P(ScanlineEffect, { blendFunction: OVERLAY, density: 1.25 })
+ *   Noise = P(NoiseEffect, { blendFunction: COLOR_DODGE })
+ *   остальные — без дефолтов. */
+const Bloom = safeWrapEffect(BloomEffect, { blendFunction: BlendFunction.ADD });
+const Vignette = safeWrapEffect(VignetteEffect);
+const HueSaturation = safeWrapEffect(HueSaturationEffect);
+const BrightnessContrast = safeWrapEffect(BrightnessContrastEffect);
+const ChromaticAberration = safeWrapEffect(ChromaticAberrationEffect);
+const Scanline = safeWrapEffect(ScanlineEffect, { blendFunction: BlendFunction.OVERLAY, density: 1.25 });
+const Noise = safeWrapEffect(NoiseEffect, { blendFunction: BlendFunction.COLOR_DODGE });
+const ToneMapping = safeWrapEffect(ToneMappingEffect);
+const SMAA = safeWrapEffect(SMAAEffect);
 
 /** DOF — third-person dialogue focuses via world-space NPC target (autofocus).
  *  Fallback focusDistance used only when no dialogueFocusTarget is resolved yet. */
@@ -486,7 +513,7 @@ function PostFXPipeline() {
             contrast={-0.02}
             blendFunction={BlendFunction.NORMAL}
           />
-          <ToneMapping ref={toneMappingRef as any} mode={toneMappingMode} exposure={SCENE_VISIBILITY.toneExposure} />
+          <ToneMapping ref={toneMappingRef as any} mode={toneMappingMode} />
           {wantsSmaa ? <SMAA ref={smaaEffectRef as any} preset={smaaPreset} /> : null as any}
         </>
       );
@@ -513,17 +540,10 @@ function PostFXPipeline() {
           blendFunction={BlendFunction.NORMAL}
         />
         <Scanline ref={scanlineRef as any} blendFunction={BlendFunction.OVERLAY} density={1.2} />
-        {/* halfRes=false: N8AO half-res MRT can share depth with composer input and
-            trigger the same glBlitFramebuffer identical-attachment error (n8ao#53).
-            Пер-сценные вкл/выкл и конфигурация — через pass.enabled/configuration. */}
-        <N8AO
-          ref={n8aoRef as any}
-          aoRadius={0.45}
-          intensity={2.5}
-          distanceFalloff={0.5}
-          halfRes={false}
-          color="black"
-        />
+        {/* v4.45.2: N8AO ВРЕМЕННО ОТКЛЮЧЁН — его пасс выдаёт NaN (SwiftShader +
+            реальная сцена/глубина), отравляя весь кадр после композера (чёрный
+            экран на ultra). Раньше маскировалось крашем wrapEffect. AO не работал
+            ни в одной версии; вернуть после расследования n8ao NaN (см. worklog). */}
         {/* Part 3: Cinematic DOF — always mounted on high/ultra desktop, bokehScale animated 0↔target via ref.
             Smooth 0.4s easeInOutCubic transition when dialogue/cutscene opens/closes.
             Focus target follows the active NPC (dialogueFocusTarget singleton). */}
@@ -572,9 +592,10 @@ function PostFXPipeline() {
         <Noise ref={noiseRef as any} premultiply blendFunction={BlendFunction.NORMAL} opacity={0} />
         {/* Cinematic radial motion blur — ultra-only, force-enabled during cutscene/dialogue on high+ultra. */}
         <MotionBlurEffect />
-        {/* exposure — исторический no-op (ToneMappingEffect без exposure в 6.39),
-            поведение сохранено; реальный режим — mode (сеттер). */}
-        <ToneMapping ref={toneMappingRef as any} mode={toneMappingMode} exposure={SCENE_VISIBILITY.toneExposure} />
+        {/* v4.45.2: проп exposure удалён — в @react-three/postprocessing 3.1.3
+            его больше нет в типах ToneMapping (исторически был no-op в 6.39);
+            реальный режим — mode (сеттер). */}
+        <ToneMapping ref={toneMappingRef as any} mode={toneMappingMode} />
         {wantsSmaa ? <SMAA ref={smaaEffectRef as any} preset={smaaPreset} /> : null as any}
       </>
     );
@@ -885,11 +906,15 @@ function PostFXPipeline() {
           onMount={handleSunMount}
         />
       ) : null}
+      {/* autoClear={false}: ОБЯЗАТЕЛЕН при смонтированном GodRays — его внутренний
+          lightScene-пасс затирает основной буфер при autoClear=true (чёрный кадр
+          на ultra; латентно с этапа 98 — маскировался крашем wrapEffect). */}
       <ManagedEffectComposer
         composerRef={composerRef}
         multisampling={0}
         depthBuffer
         stencilBuffer={false}
+        autoClear={false}
       >
         {composerChildren}
       </ManagedEffectComposer>
