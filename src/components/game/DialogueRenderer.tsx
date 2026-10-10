@@ -10,6 +10,7 @@ import { FastForward, History } from 'lucide-react';
 import {
   useDialogueContext,
   useVisitNode } from '@/store/selectors';
+import { useGameSelector } from '@/store/selectors/hooks';
 import {
   getDialogueNodes,
   findNpcByName,
@@ -64,9 +65,7 @@ import {
   DICE_SKILL_LABELS,
   type DiceRollResult,
 } from '@/engine/skillCheck';
-import { useThoughtSkillModifiers, useEquippedThoughts } from '@/store/selectors/thoughtCabinetSelectors';
 import { useClothingDialogueModifier } from '@/store/selectors/clothingSelectors';
-import { resolveThoughtInterjections, type ThoughtInterjection } from '@/engine/narrative/thoughtInterjection';
 import {
   recordFailedCheck,
   hasFailedCheckForChoice,
@@ -188,44 +187,6 @@ function playSpatialBarkForSpeaker(
   }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Thought Interjection display — inner voice lines
-   ══════════════════════════════════════════════════════════════ */
-function ThoughtInterjectionLine({ interjection, accentColor }: {
-  interjection: ThoughtInterjection;
-  accentColor: string;
-}) {
-  const emotionColorMap: Record<string, string> = {
-    calm: 'text-amber-300/90',
-    angry: 'text-red-300/90',
-    sad: 'text-blue-300/80',
-    whisper: 'text-amber-200/70',
-    insight: 'text-emerald-300/90',
-  };
-  const colorClass = emotionColorMap[interjection.emotion ?? 'calm'] ?? 'text-amber-300/90';
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.15 }}
-      className={`my-1.5 px-3 py-1.5 rounded-md border border-amber-500/20 bg-amber-950/15 backdrop-blur-sm hud-filmic-interjection ${colorClass} italic text-sm font-light`}
-      style={{
-        boxShadow: `0 0 8px ${accentColor}15`,
-        // Accessibility: scale inner-voice subtitle with the --subtitle-scale CSS var
-        // set by AccessibilityManager on <html> (default 1 = no scaling). Base size
-        // is 0.875rem (Tailwind text-sm) so scale=1 preserves the original look.
-        fontSize: 'calc(0.875rem * var(--subtitle-scale, 1))',
-      }}
-    >
-      <span className="font-mono text-xs text-amber-400/70 not-italic mr-1">
-        [{interjection.thoughtName}]
-      </span>
-      {interjection.text}
-    </motion.div>
-  );
-}
-
 /* ── White/Red check badge for choices ── */
 function CheckTypeBadge({ checkType, isRetryable }: {
   checkType: CheckType;
@@ -252,12 +213,16 @@ function CheckTypeBadge({ checkType, isRetryable }: {
    DIALOGUE HISTORY — tracks previous lines for scrolling
    ══════════════════════════════════════════════════════════════ */
 
+/* v4.44: стабильная ссылка для селектора собранных мыслей (без ре-рендера). */
+const EMPTY_ACQUIRED_THOUGHTS: readonly string[] = [];
+
 /* ── Component ── */
 export function DialogueRenderer() {
   const { mode: _mode, showStoryOverlay, currentNodeId, karma, skills, flags, progression, npcRelations, timeOfDay, collectedPoems, activeTTLFlags, ownedItemIdsKey } = useDialogueContext();
   const visitNode = useVisitNode();
-  const thoughtModifiers = useThoughtSkillModifiers();
-  const equippedThoughts = useEquippedThoughts();
+  /* v4.44: Кабинет мыслей вырезан — трим только собранные мысли для гейта
+   * thoughtRequired (в story-данных пока не используется, семантика — «мысль собрана»). */
+  const acquiredThoughtIds = useGameSelector((s) => s.acquiredThoughtIds ?? EMPTY_ACQUIRED_THOUGHTS);
   const clothingDialogueMod = useClothingDialogueModifier();
 
   const [skillCheckBanner, setSkillCheckBanner] = useState<{
@@ -270,7 +235,6 @@ export function DialogueRenderer() {
     result: DiceRollResult;
     skill: TrainablePlayerSkill;
     skillLevel: number;
-    thoughtBonus: number;
   } | null>(null);
   const pendingDiceChoiceRef = useRef<{ choice: DialogueChoice; index: number } | null>(null);
   const diceRollActiveRef = useRef(false);
@@ -447,11 +411,6 @@ export function DialogueRenderer() {
       clothingLockTags: clothingDialogueMod.lockTags }, collectedPoems);
   }, [karma, skills, flags, progression, npcRelations, timeOfDay, node, collectedPoems, activeTTLFlags, ownedItemIdsKey, clothingDialogueMod]);
 
-  // ── Thought interjections for current node ──
-  const thoughtInterjections = useMemo(() => {
-    if (!node || equippedThoughts.length === 0) return [] as ThoughtInterjection[];
-    return resolveThoughtInterjections(node, equippedThoughts, skills);
-  }, [node, equippedThoughts, skills]);
   const isMobile = useIsMobile();
   // Typewriter: faster on mobile (impatience accommodation)
   const { displayed, done, skip, reducedMotion } = useNarrativeTypewriter(resolvedText, isMobile ? 22 : 30);
@@ -641,7 +600,6 @@ export function DialogueRenderer() {
           skill,
           skillLevel: skills[skill] ?? 0,
           dc: difficulty - clothingDcAdjust + ((_getGameStore() as any).difficulty?.skillCheckThreshold || 0),
-          thoughtModifiers,
           situationalModifier: clothingSkillBonus,
         });
 
@@ -651,7 +609,6 @@ export function DialogueRenderer() {
           result,
           skill,
           skillLevel: skills[skill] ?? 0,
-          thoughtBonus: thoughtModifiers[skill] ?? 0,
         });
         return;
       }
@@ -671,7 +628,7 @@ export function DialogueRenderer() {
 
       handleChoice(choice);
     },
-    [node, done, conditionCtx, handleChoice, skills, thoughtModifiers, clothingDialogueMod, addDialogueEntry],
+    [node, done, conditionCtx, handleChoice, skills, clothingDialogueMod, addDialogueEntry],
   );
 
   useNarrativeChoiceKeyboard({
@@ -874,7 +831,6 @@ export function DialogueRenderer() {
                   result={diceRollState.result}
                   skill={diceRollState.skill}
                   skillLevel={diceRollState.skillLevel}
-                  thoughtBonus={diceRollState.thoughtBonus}
                   successDegree={diceRollState.result.degree}
                   onComplete={handleDiceRollComplete}
                   autoDismissMs={2000}
@@ -882,20 +838,6 @@ export function DialogueRenderer() {
               </motion.div>
             )}
           </AnimatePresence>
-          {/* Thought interjections — inner voice lines */}
-          {thoughtInterjections.length > 0 && (
-            <div className="mb-2 w-full max-w-2xl">
-              {thoughtInterjections
-                .filter((ti) => ti.timing === 'after_npc' || ti.timing === 'on_skill_check')
-                .map((ti) => (
-                  <ThoughtInterjectionLine
-                    key={`${ti.thoughtId}-${ti.timing}`}
-                    interjection={ti}
-                    accentColor={portraitColors.primary}
-                  />
-                ))}
-            </div>
-          )}
           <AnimatePresence>
             {skillCheckBanner && !diceRollState && (
               <motion.div
@@ -924,10 +866,11 @@ export function DialogueRenderer() {
           choices={node.choices.map((choice, i) => {
             const cond = checkStoryCondition(choice.condition, conditionCtx);
             const impact = getChoiceImpact(choice.effects, npcId);
-            // Thought-gated choices: only visible if required thought is equipped
+            // Thought-gated choices: visible if the required thought has been
+            // acquired (v4.44: Кабинет вырезан — гейт по собранным мыслям)
             const thoughtRequired = choice.condition?.thoughtRequired;
             const thoughtGatedPass = thoughtRequired
-              ? equippedThoughts.some((t) => t.id === thoughtRequired)
+              ? acquiredThoughtIds.includes(thoughtRequired)
               : true;
             // minSkillCheck choices are always clickable (dice determines outcome)
             const isDiceCheck = Boolean(

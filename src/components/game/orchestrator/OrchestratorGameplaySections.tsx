@@ -117,7 +117,6 @@ const LazyDataTerminalOverlay = lazy(() =>
   import('@/components/game/DataTerminalOverlay').then((m) => ({ default: m.DataTerminalOverlay })),
 );
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
-import { ProximityWhisperOverlay } from '@/components/game/ProximityWhisperOverlay';
 import { ScenePoiCompass } from '@/components/hud/ScenePoiCompass';
 import EnvironmentalEffectsOverlay from '@/components/game/hud/parts/EnvironmentalEffectsOverlay';
 import BuffDebuffTracker from '@/components/game/hud/parts/BuffDebuffTracker';
@@ -503,8 +502,6 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
     <>
       <AutoSaveIndicator />
       <QuickSaveIndicator />
-      {/* Proximity whispers */}
-      <ProximityWhisperOverlay />
       {!initialHudFocus ? (
         <>
           <StressIndicator />

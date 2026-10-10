@@ -1,9 +1,10 @@
 /** Canonical shipped player GLB — single source: ASSET_MANIFEST.player_volodka. */
 import { getAssetDefinition, getAssetLod0Url } from './assetManifest';
+import { publicAsset } from './publicAssetPath';
 
 export const PLAYER_VOLODKA_MANIFEST_ID = 'player_volodka' as const;
 
-const FALLBACK_LOD0 = '/models/characters/volodka/volodka_lod0.glb';
+const FALLBACK_LOD0 = publicAsset('/models/characters/volodka/volodka_lod0.glb');
 
 /** Runtime player mesh URL (LOD0 / best available). */
 export function getPlayerVolodkaModelUrl(): string {

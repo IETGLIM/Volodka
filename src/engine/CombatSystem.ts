@@ -59,7 +59,7 @@ import {
   createBuff, addBuff, sumBuffEffect, hasBuffEffect, tickBuffs,
   getEnemyDefenseReduction, getPlayerDamageMultiplier,
   getPlayerAttackBoost } from './combat/buffSystem';
-import { getPlayerAttack, getPlayerMaxHp, isPowerAvailable, addXp, getPlayerCritChance, getPlayerThoughtFleeBonus, getPlayerThoughtComboMultiplierBonus, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
+import { getPlayerAttack, getPlayerMaxHp, isPowerAvailable, addXp, getPlayerCritChance, applyCritMultiplier, getComboDamageMultiplier } from './combat/formulas';
 import { initCombatRngForEncounter, SeededCombatRng, type CombatRngState } from './combat/combatRng';
 import { getFleeChanceBonus, computeEnemyScalingFactor } from './combat/combatDifficulty';
 import { getPassiveSkillModifiers } from '@/engine/skills/passiveSkillModifiers';
@@ -657,9 +657,8 @@ export function playerAttack(): CombatState | null {
   /* ── Combo System: consecutive attacks increase damage ── */
   const newComboCount = cs.comboCount + 1;
   const comboMultiplier = getComboDamageMultiplier(newComboCount);
-  // Thought-cabinet combo multiplier bonus (persuasion/rhythm thoughts)
-  const thoughtComboBonus = getPlayerThoughtComboMultiplierBonus();
-  damage = Math.floor(damage * (comboMultiplier + thoughtComboBonus));
+  // v4.44: Кабинет мыслей вырезан — thoughtComboBonus удалён.
+  damage = Math.floor(damage * comboMultiplier);
 
   /* ── Perk outgoing damage multiplier (combat_veteran, stress_mastery,
      night_owl, code_poet) — conditional on stress/time/combo. ── */
@@ -993,8 +992,7 @@ export function playerFlee(): CombatState | null {
   if (karma >= 70) fleeChance += 0.05;
 
   fleeChance += getFleeChanceBonus();
-  // Thought-cabinet flee bonus (empathy thoughts → +5% per thought)
-  fleeChance += getPlayerThoughtFleeBonus() / 100;
+  // v4.44: Кабинет мыслей вырезан — thoughtFleeBonus удалён.
   fleeChance += snap().difficultySettings.combatFleeBaseChance - 0.3;
 
   // Clamp to [0.15, 0.95]

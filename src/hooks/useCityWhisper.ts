@@ -17,6 +17,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isApiRuntimeAvailable } from '@/shared/utils/apiAvailability';
 import { useGameStore } from '@/store/gameStore';
 
 /* ─── Чистая логика гейтинга (юнит-тестируется) ─── */
@@ -104,6 +105,8 @@ export function useCityWhisper(): CityWhisperState {
     if (!shouldRequestWhisper(stress, episodeWhisperedRef.current, readLastWhisperAt(), now)) {
       return;
     }
+    // v4.44: на статике (itch.io) /api нет — не шумим 404 в консоли.
+    if (!isApiRuntimeAvailable()) return;
     if (inFlightRef.current) return;
     inFlightRef.current = true;
     episodeWhisperedRef.current = true;

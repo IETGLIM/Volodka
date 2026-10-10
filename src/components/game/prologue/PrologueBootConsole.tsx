@@ -174,16 +174,9 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
         </motion.div>
       </div>
 
-      {/* Skip hint */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 0.5 }}
-        transition={{ delay: 1.8, duration: 1 }}
-        className="absolute bottom-6 right-6 z-30 text-[10px] tracking-[0.22em] uppercase text-stone-500/60 hidden md:block"
-        aria-hidden
-      >
-        Esc — пропустить
-      </motion.div>
+      {/* Skip hint — v4.44: убран. Кнопку «Пропустить [Esc]» рисует
+          ProloguePerfectionOverlay поверх консоли; угловая текстовая
+          подсказка дублировала её и путала (два «Esc» на экране). */}
     </div>
   );
 }

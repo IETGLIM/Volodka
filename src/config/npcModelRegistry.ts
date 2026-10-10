@@ -8,6 +8,7 @@
    Quaternius models look like real 3D characters vs primitive boxes/spheres. */
 
 import type { AssetRenderMode } from '@/engine/graphics/qualityPresets';
+import { publicAsset } from '@/config/publicAssetPath';
 import {
   getRpmNpcByRegistryId,
   getRpmPublicUrls,
@@ -32,7 +33,7 @@ export interface NpcModelAssetMeta {
   sourceUrl: string;
 }
 
-const NPCS = '/models/npcs';
+const NPCS = publicAsset('/models/npcs');
 
 /** Explicit marker — no shipped GLB; renderer uses ProceduralNPCModel. */
 export const NPC_PROCEDURAL_MODEL_PLACEHOLDER = 'procedural';

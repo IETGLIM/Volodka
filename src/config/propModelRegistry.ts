@@ -6,6 +6,7 @@ import {
   type Ai3dgenPropStub,
 } from './ai3dgenPropRegistry';
 import { POLYHAVEN_MODELS } from './polyhavenAssets';
+import { publicAsset } from './publicAssetPath';
 
 export type PropModelLicense = 'CC0' | 'AI3DGen-Free' | 'AI3DGen-Pro';
 
@@ -47,7 +48,7 @@ function ai3dgenStubToPropDefinition(stub: Ai3dgenPropStub): PropModelDefinition
   };
 }
 
-const PROPS = '/models/props';
+const PROPS = publicAsset('/models/props');
 const CITYKIT = `${PROPS}/citykit`;
 const KENNEY_CITY_URL = 'https://kenney.nl/assets/city-kit-roads';
 const KENNEY_FURNITURE_URL = 'https://kenney.nl/assets/furniture-kit';

@@ -4,7 +4,6 @@ import { Heart, ShieldPlus } from 'lucide-react';
 import type { CombatBuff } from '@/shared/types/game';
 import { BuffDebuffBar } from '@/components/game/combatUi/CombatStatusBadges';
 import { AnimatedHPBar } from '@/components/game/combatUi/CombatHpBars';
-import { ThoughtCombatBadges } from '@/components/game/combatUi/CombatThoughtBadges';
 import { useGameSelector } from '@/store/selectors/hooks';
 import { getTotalEquipmentBonusSummary } from '@/engine/combat/EquipmentBonusCalculator';
 
@@ -56,7 +55,6 @@ export function CombatPlayerCard({
           <BuffDebuffBar buffs={playerBuffs} label="ВАШИ ЭФФЕКТЫ" />
         </div>
       )}
-      <ThoughtCombatBadges />
     </div>
   );
 }

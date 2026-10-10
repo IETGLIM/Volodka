@@ -17,6 +17,23 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
+/**
+ * v4.44: дедупликация — одна и та же ошибка (name + message) логируется
+ * не чаще раза в 10 секунд на весь процесс. Раньше цикл ремоунтов
+ * (например, 404 модели игрока) спамил консоль и тосты по кругу.
+ */
+const LAST_LOGGED = new Map<string, number>();
+const LOG_DEDUP_INTERVAL_MS = 10_000;
+
+function shouldLogError(name: string, message: string): boolean {
+  const key = `${name}::${message}`;
+  const now = Date.now();
+  const last = LAST_LOGGED.get(key) ?? 0;
+  if (now - last < LOG_DEDUP_INTERVAL_MS) return false;
+  LAST_LOGGED.set(key, now);
+  return true;
+}
+
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
@@ -28,7 +45,9 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo): void {
-    console.error(`[ErrorBoundary:${this.props.name}]`, error, errorInfo);
+    if (shouldLogError(this.props.name, error.message)) {
+      console.error(`[ErrorBoundary:${this.props.name}]`, error, errorInfo);
+    }
     forceDisposeOrphanedWebGLResources(this.props.name);
   }
 

@@ -15,7 +15,6 @@ export * from './statsSelectors';
 export * from './actionSelectors';
 export * from './saveSelectors';
 export * from './tutorialSelectors';
-export * from './thoughtCabinetSelectors';
 export * from './clothingSelectors';
 export * from './hudMountSelectors';
 export * from './factionReputationSelectors';

@@ -45,7 +45,6 @@ function migrateV1toV2(data: Record<string, unknown>): Record<string, unknown> {
 function migrateV2toV3(data: Record<string, unknown>): Record<string, unknown> {
   const next: Record<string, unknown> = { ...data, saveVersion: 3 };
   if (!Array.isArray(next.acquiredThoughtIds)) next.acquiredThoughtIds = [];
-  if (!Array.isArray(next.equippedThoughtIds)) next.equippedThoughtIds = [];
   return next;
 }
 

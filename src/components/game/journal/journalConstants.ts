@@ -6,7 +6,6 @@ import {
   FileText,
   Swords,
   BrainCircuit,
-  Brain,
   Shirt,
   BarChart3,
 } from 'lucide-react';
@@ -17,7 +16,6 @@ export const JOURNAL_TABS: { id: JournalTab; label: string; icon: typeof FileTex
   { id: 'poems', label: 'Стихи', icon: Feather },
   { id: 'lore', label: 'Лор', icon: BookOpen },
   { id: 'thoughts', label: 'Мысли', icon: BrainCircuit },
-  { id: 'cabinet', label: 'Кабинет Мыслей', icon: Brain },
   { id: 'clothing', label: 'Одежда', icon: Shirt },
   { id: 'statistics', label: 'Статистика', icon: BarChart3 },
 ];

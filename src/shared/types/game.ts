@@ -20,7 +20,6 @@ export * from './definitions/schedule';
 export * from './definitions/combat';
 export * from './definitions/progression';
 export * from './definitions/weather';
-export * from './definitions/thoughtCabinet';
 
 export * from './state/relations';
 export * from './state/quest';

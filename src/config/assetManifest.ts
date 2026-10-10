@@ -5,6 +5,7 @@
 
 import type { CompressionPreference } from '@/engine/graphics/qualityPresets';
 import { ASSET_DISK_SHIPPED } from './assetManifestShipped.generated';
+import { publicAsset } from './publicAssetPath';
 
 export interface AssetLodLevel {
   /** Relative path under /models/ */
@@ -41,7 +42,8 @@ export interface GltfAssetDefinition {
   shipped?: boolean;
 }
 
-const MODELS = '/models';
+// v4.44: publicAsset — document-relative для itch (base './'), корневой для Vercel.
+const MODELS = publicAsset('/models');
 
 /** Map game NPC id → ASSET_MANIFEST key (when they differ). */
 export const NPC_ID_TO_MANIFEST: Readonly<Record<string, string>> = {

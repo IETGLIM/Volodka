@@ -23,6 +23,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isApiRuntimeAvailable } from '@/shared/utils/apiAvailability';
 
 const LS_PREFIX = 'matrix-quote-';
 const LS_TTL_MS = 30 * 60 * 1000; // 30 min
@@ -113,7 +114,7 @@ export function useMatrixQuote(
 
   const doFetch = useCallback(
     async (force: boolean): Promise<void> => {
-      if (!scene || !isOnline()) {
+      if (!scene || !isOnline() || !isApiRuntimeAvailable()) {
         setState((prev) => ({
           ...prev,
           loading: false,

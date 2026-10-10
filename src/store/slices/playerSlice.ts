@@ -9,7 +9,7 @@ import { createPlayerInventorySlice, type PlayerInventorySlice } from './playerI
 import { createPlayerProgressionSlice, type PlayerProgressionSlice } from './playerProgressionSlice';
 import { createPlayerEconomySlice, type PlayerEconomySlice } from './playerEconomySlice';
 import { createPlayerQuestRewardsSlice, type PlayerQuestRewardsSlice } from './playerQuestRewardsSlice';
-import { createThoughtCabinetSlice, type ThoughtCabinetSlice } from './thoughtCabinetSlice';
+import { createAcquiredThoughtsSlice, type AcquiredThoughtsSlice } from './acquiredThoughtsSlice';
 
 export type PlayerSliceState = Pick<
   PlayerCoreSlice,
@@ -22,7 +22,7 @@ export type PlayerSliceActions =
   & PlayerProgressionSlice
   & PlayerEconomySlice
   & PlayerQuestRewardsSlice
-  & ThoughtCabinetSlice;
+  & AcquiredThoughtsSlice;
 
 export type PlayerSlice = PlayerSliceState & PlayerSliceActions;
 
@@ -39,5 +39,5 @@ export const createPlayerSlice: StateCreator<
   ...createPlayerProgressionSlice(...a),
   ...createPlayerEconomySlice(...a),
   ...createPlayerQuestRewardsSlice(...a),
-  ...createThoughtCabinetSlice(...a),
+  ...createAcquiredThoughtsSlice(...a),
 });

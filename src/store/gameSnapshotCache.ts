@@ -18,6 +18,9 @@ let cachedSnapshot: GameStoreSnapshot | null = null;
 
 // Стабильные пустые массивы — раньше `?? []` аллоцировал их на каждый вызов.
 const EMPTY_CHOICE_LOG: readonly never[] = Object.freeze([]);
+// v4.44: замороженные слоты удалённого Кабинета мыслей (позиции 42/43).
+const SNAPSHOT_FROZEN_EMPTY_LIST: readonly never[] = Object.freeze([]);
+const SNAPSHOT_FROZEN_EMPTY_MAP: Readonly<Record<string, never>> = Object.freeze({});
 const EMPTY_MORAL_CHOICES: readonly never[] = Object.freeze([]);
 
 function collectSnapshotCacheKey(state: GameStoreState, out: unknown[]): void {
@@ -66,10 +69,10 @@ function collectSnapshotCacheKey(state: GameStoreState, out: unknown[]): void {
   out[39] = state.weatherEnabled;
   out[40] = state.rainIntensity;
   out[41] = state.acquiredThoughtIds;
-  out[42] = state.equippedThoughtIds;
-  // v4.16: изолированные изменения очков проработки должны инвалидировать
-  // снапшот движка (масштабированные боевые эффекты мыслей).
-  out[43] = state.thoughtInternalizationPoints;
+  // v4.44: Кабинет вырезан — слоты 42/43 заморожены стабильными пустышками
+  // (позиционный формат ключа не меняется, кэш не ломается).
+  out[42] = SNAPSHOT_FROZEN_EMPTY_LIST;
+  out[43] = SNAPSHOT_FROZEN_EMPTY_MAP;
 }
 
 function snapshotCacheKeysEqual(a: unknown[], b: unknown[]): boolean {

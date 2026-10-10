@@ -43,11 +43,4 @@ export {
   getFailedCheckRecords,
   resetFailedCheckRecords,
 } from '@/engine/narrative/whiteRedCheckSystem';
-
-export type {
-  ThoughtInterjection,
-} from '@/engine/narrative/thoughtInterjection';
-
-export {
-  resolveThoughtInterjections,
-} from '@/engine/narrative/thoughtInterjection';
+// v4.44: Кабинет мыслей вырезан — реэкспорт thoughtInterjection удалён.

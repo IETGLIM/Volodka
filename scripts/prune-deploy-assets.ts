@@ -45,7 +45,9 @@ const MANAGED_ROOTS = new Set(['hdri', 'menu', 'models', 'textures']);
 const PRESERVED_PREFIXES = ['assets/', 'basis/', 'draco/'];
 
 function normalizePublicPath(url: string): string {
-  return url.replace(/^\//, '').replaceAll('\\', '/');
+  // v4.44: конфиг-константы теперь идут через publicAsset() — при сборке с
+  // base './' они имеют вид './models/...'. Стриппим и './', и '/'.
+  return url.replace(/^\.\//, '').replace(/^\//, '').replaceAll('\\', '/');
 }
 
 function formatMb(bytes: number): string {

@@ -3,6 +3,7 @@ import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGLTF } from '@react-three/drei';
 import { AnimationAction, Group, MathUtils } from 'three';
 import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
+import { publicAsset } from '@/config/publicAssetPath';
 import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
 import { usePlayerLocomotionController } from '@/engine/player/usePlayerLocomotionController';
@@ -29,7 +30,7 @@ if (PLAYER_MODEL_SHIPPED) {
   useGLTF.preload(PLAYER_MODEL_URL, true, true, extendLoader);
 }
 
-const ANIMATIONS_BASE = '/models/animations';
+const ANIMATIONS_BASE = publicAsset('/models/animations');
 /** Critical clips only — talking/working deferred to cut load hitch on New Game wake. */
 const PLAYER_CRITICAL_ANIM_URLS = [
   `${ANIMATIONS_BASE}/idle.glb`,

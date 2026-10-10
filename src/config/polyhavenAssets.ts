@@ -3,6 +3,8 @@
  * Credit: https://polyhaven.com — assets are CC0; API usage credited in ATTRIBUTION.
  */
 
+import { publicAsset } from './publicAssetPath';
+
 export type PolyHavenMaterialId =
   | 'asphalt_02'
   | 'concrete_floor_painted'
@@ -62,7 +64,7 @@ function getPolyHavenMapUrlBase(
   const res = resolvePolyHavenRes(materialId, textureScale);
   // Fall back to 1k path if 2k not shipped for this material/map
   const useRes = HAS_2K[materialId] && res === '2k' ? '2k' : '1k';
-  return `/textures/polyhaven/${materialId}/${materialId}_${map}_${useRes}.${ext}`;
+  return publicAsset(`/textures/polyhaven/${materialId}/${materialId}_${map}_${useRes}.${ext}`);
 }
 
 /** Этап 133: основной формат внешних карт — KTX2/Basis для diff/rough/ao
@@ -151,12 +153,12 @@ export function getPolyHavenFallbackPbrUrls(
 export type PolyHavenHdriId = 'moonlit_golf_2k' | 'moonlit_golf_1k' | 'abandoned_parking_1k' | 'lebombo_1k';
 
 export const POLYHAVEN_HDRI: Record<PolyHavenHdriId, string> = {
-  moonlit_golf_2k: '/hdri/moonlit_golf_2k.hdr',
+  moonlit_golf_2k: publicAsset('/hdri/moonlit_golf_2k.hdr'),
   // v4.7.3: box-2x downscale of moonlit_golf_2k (6.7→3.1 МБ) — for
   // low-tier devices (mobile / low memory); selected via resolveHeroHdriPath.
-  moonlit_golf_1k: '/hdri/moonlit_golf_1k.hdr',
-  abandoned_parking_1k: '/hdri/abandoned_parking_1k.hdr',
-  lebombo_1k: '/hdri/lebombo_1k.hdr',
+  moonlit_golf_1k: publicAsset('/hdri/moonlit_golf_1k.hdr'),
+  abandoned_parking_1k: publicAsset('/hdri/abandoned_parking_1k.hdr'),
+  lebombo_1k: publicAsset('/hdri/lebombo_1k.hdr'),
 };
 
 export function resolveHeroHdriPath(sceneId: string, options?: { lowMemory?: boolean }): string | null {
@@ -202,41 +204,41 @@ export function usesPhotographicHdriBackground(sceneId: string): boolean {
 
 /** Local Poly Haven glTF props/facades under public/models/polyhaven. */
 export const POLYHAVEN_MODELS = {
-  urbanFacade: '/models/polyhaven/modular_urban_apartments_facade/modular_urban_apartments_facade.glb',
-  fireEscape: '/models/polyhaven/modular_fire_escape/modular_fire_escape.glb',
-  roadBarrier: '/models/polyhaven/concrete_road_barrier/concrete_road_barrier.glb',
-  bench: '/models/polyhaven/painted_wooden_bench/painted_wooden_bench.glb',
-  industrialLamp: '/models/polyhaven/hanging_industrial_lamp/hanging_industrial_lamp.glb',
-  shutterWindow: '/models/polyhaven/rollershutter_window_01/rollershutter_window_01.glb',
-  barrel: '/models/polyhaven/Barrel_01/Barrel_01.glb',
-  cardboardBox: '/models/polyhaven/cardboard_box_01/cardboard_box_01_1k.glb',
-  metalTrashCan: '/models/polyhaven/metal_trash_can/metal_trash_can_1k.glb',
-  streetLamp: '/models/polyhaven/street_lamp_01/street_lamp_01_1k.glb',
-  trashbag: '/models/polyhaven/trashbag/trashbag_1k.glb',
-  wetFloorSign: '/models/polyhaven/WetFloorSign_01/WetFloorSign_01_1k.glb',
-  shutterDoor: '/models/polyhaven/rollershutter_door/rollershutter_door_1k.glb',
-  gothicStatue: '/models/polyhaven/gothic_statue/gothic_statue_2k.glb',
-  streetLampAlt: '/models/polyhaven/street_lamp_02/street_lamp_02_1k.glb',
-  roadBarrierAlt: '/models/polyhaven/concrete_road_barrier_02/concrete_road_barrier_02_1k.glb',
-  shutterWindowAlt: '/models/polyhaven/rollershutter_window_02/rollershutter_window_02_1k.glb',
-  exteriorAirconUnit: '/models/polyhaven/exterior_aircon_unit/exterior_aircon_unit_1k.glb',
-  powerBox: '/models/polyhaven/power_box_01/power_box_01_1k.glb',
-  securityCamera: '/models/polyhaven/security_camera_01/security_camera_01_1k.glb',
-  utilityBox: '/models/polyhaven/utility_box_01/utility_box_01_1k.glb',
-  oldTyre: '/models/polyhaven/old_tyre/old_tyre_1k.glb',
-  manholeCover: '/models/polyhaven/water_manhole_cover/water_manhole_cover_1k.glb',
-  woodenCrate: '/models/polyhaven/wooden_crate_01/wooden_crate_01_1k.glb',
-  armChair: '/models/polyhaven/ArmChair_01/ArmChair_01_2k.glb',
-  paintedWoodenTable: '/models/polyhaven/painted_wooden_table/painted_wooden_table_2k.glb',
-  paintedWoodenCabinet: '/models/polyhaven/painted_wooden_cabinet/painted_wooden_cabinet_2k.glb',
-  woodenBookshelfWorn: '/models/polyhaven/wooden_bookshelf_worn/wooden_bookshelf_worn_2k.glb',
-  deskLampArm: '/models/polyhaven/desk_lamp_arm_01/desk_lamp_arm_01_2k.glb',
-  sofa: '/models/polyhaven/sofa_02/sofa_02_2k.glb',
-  cassettePlayer: '/models/polyhaven/portable_cassette_player/portable_cassette_player_1k.glb',
-  gothicBed: '/models/polyhaven/GothicBed_01/GothicBed_01_1k.glb',
-  hangingPictureFrame: '/models/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.glb',
+  urbanFacade: publicAsset('/models/polyhaven/modular_urban_apartments_facade/modular_urban_apartments_facade.glb'),
+  fireEscape: publicAsset('/models/polyhaven/modular_fire_escape/modular_fire_escape.glb'),
+  roadBarrier: publicAsset('/models/polyhaven/concrete_road_barrier/concrete_road_barrier.glb'),
+  bench: publicAsset('/models/polyhaven/painted_wooden_bench/painted_wooden_bench.glb'),
+  industrialLamp: publicAsset('/models/polyhaven/hanging_industrial_lamp/hanging_industrial_lamp.glb'),
+  shutterWindow: publicAsset('/models/polyhaven/rollershutter_window_01/rollershutter_window_01.glb'),
+  barrel: publicAsset('/models/polyhaven/Barrel_01/Barrel_01.glb'),
+  cardboardBox: publicAsset('/models/polyhaven/cardboard_box_01/cardboard_box_01_1k.glb'),
+  metalTrashCan: publicAsset('/models/polyhaven/metal_trash_can/metal_trash_can_1k.glb'),
+  streetLamp: publicAsset('/models/polyhaven/street_lamp_01/street_lamp_01_1k.glb'),
+  trashbag: publicAsset('/models/polyhaven/trashbag/trashbag_1k.glb'),
+  wetFloorSign: publicAsset('/models/polyhaven/WetFloorSign_01/WetFloorSign_01_1k.glb'),
+  shutterDoor: publicAsset('/models/polyhaven/rollershutter_door/rollershutter_door_1k.glb'),
+  gothicStatue: publicAsset('/models/polyhaven/gothic_statue/gothic_statue_2k.glb'),
+  streetLampAlt: publicAsset('/models/polyhaven/street_lamp_02/street_lamp_02_1k.glb'),
+  roadBarrierAlt: publicAsset('/models/polyhaven/concrete_road_barrier_02/concrete_road_barrier_02_1k.glb'),
+  shutterWindowAlt: publicAsset('/models/polyhaven/rollershutter_window_02/rollershutter_window_02_1k.glb'),
+  exteriorAirconUnit: publicAsset('/models/polyhaven/exterior_aircon_unit/exterior_aircon_unit_1k.glb'),
+  powerBox: publicAsset('/models/polyhaven/power_box_01/power_box_01_1k.glb'),
+  securityCamera: publicAsset('/models/polyhaven/security_camera_01/security_camera_01_1k.glb'),
+  utilityBox: publicAsset('/models/polyhaven/utility_box_01/utility_box_01_1k.glb'),
+  oldTyre: publicAsset('/models/polyhaven/old_tyre/old_tyre_1k.glb'),
+  manholeCover: publicAsset('/models/polyhaven/water_manhole_cover/water_manhole_cover_1k.glb'),
+  woodenCrate: publicAsset('/models/polyhaven/wooden_crate_01/wooden_crate_01_1k.glb'),
+  armChair: publicAsset('/models/polyhaven/ArmChair_01/ArmChair_01_2k.glb'),
+  paintedWoodenTable: publicAsset('/models/polyhaven/painted_wooden_table/painted_wooden_table_2k.glb'),
+  paintedWoodenCabinet: publicAsset('/models/polyhaven/painted_wooden_cabinet/painted_wooden_cabinet_2k.glb'),
+  woodenBookshelfWorn: publicAsset('/models/polyhaven/wooden_bookshelf_worn/wooden_bookshelf_worn_2k.glb'),
+  deskLampArm: publicAsset('/models/polyhaven/desk_lamp_arm_01/desk_lamp_arm_01_2k.glb'),
+  sofa: publicAsset('/models/polyhaven/sofa_02/sofa_02_2k.glb'),
+  cassettePlayer: publicAsset('/models/polyhaven/portable_cassette_player/portable_cassette_player_1k.glb'),
+  gothicBed: publicAsset('/models/polyhaven/GothicBed_01/GothicBed_01_1k.glb'),
+  hangingPictureFrame: publicAsset('/models/polyhaven/hanging_picture_frame_01/hanging_picture_frame_01_1k.glb'),
 } as const;
 
 /* Этап 125: ночной кинематографический план меню конвертирован PNG → WebP (q90).
  * 1 218 655 B → 170 576 B (−86%); визуальная разница на градиентах ночного неба отсутствует. */
-export const POLYHAVEN_MENU_PLATE = '/menu/cinematic_night_plate.webp';
+export const POLYHAVEN_MENU_PLATE = publicAsset('/menu/cinematic_night_plate.webp');

@@ -46,22 +46,22 @@ function loadRequiredPublicPaths(): string[] {
 
   for (const asset of Object.values(ASSET_MANIFEST)) {
     if (asset.shipped !== true) continue;
-    for (const lod of asset.lods) paths.add(lod.url.replace(/^\//, ''));
+    for (const lod of asset.lods) paths.add(lod.url.replace(/^\.?\//, ''));
     if (asset.variants) {
       for (const url of Object.values(asset.variants)) {
-        if (url) paths.add(url.replace(/^\//, ''));
+        if (url) paths.add(url.replace(/^\.?\//, ''));
       }
     }
-    if (asset.impostor?.url) paths.add(asset.impostor.url.replace(/^\//, ''));
-    if (asset.bakedLightmap) paths.add(asset.bakedLightmap.replace(/^\//, ''));
+    if (asset.impostor?.url) paths.add(asset.impostor.url.replace(/^\.?\//, ''));
+    if (asset.bakedLightmap) paths.add(asset.bakedLightmap.replace(/^\.?\//, ''));
   }
 
-  for (const url of getNpcModelUrls()) paths.add(url.replace(/^\//, ''));
+  for (const url of getNpcModelUrls()) paths.add(url.replace(/^\.?\//, ''));
   // v4.33.0: ambient crowd rigs must survive the deploy prune — verify them
   // so a registry/keep-set drift fails the build instead of 404ing at runtime.
-  for (const url of getAmbientSkinnedRigUrls()) paths.add(url.replace(/^\//, ''));
-  for (const url of getPropModelUrls()) paths.add(url.replace(/^\//, ''));
-  for (const url of Object.values(MODEL_URLS)) paths.add(url.replace(/^\//, ''));
+  for (const url of getAmbientSkinnedRigUrls()) paths.add(url.replace(/^\.?\//, ''));
+  for (const url of getPropModelUrls()) paths.add(url.replace(/^\.?\//, ''));
+  for (const url of Object.values(MODEL_URLS)) paths.add(url.replace(/^\.?\//, ''));
 
   for (const rel of VERCEL_GLB_EXTERNAL_TEXTURES) paths.add(rel);
 
@@ -72,12 +72,12 @@ function loadRequiredPublicPaths(): string[] {
   for (const materialId of POLYHAVEN_MATERIAL_IDS) {
     for (const map of POLYHAVEN_MAP_KINDS) {
       for (const scale of POLYHAVEN_TEXTURE_SCALES) {
-        paths.add(getPolyHavenMapUrl(materialId, map, scale).replace(/^\//, ''));
-        paths.add(getPolyHavenFallbackMapUrl(materialId, map, scale).replace(/^\//, ''));
+        paths.add(getPolyHavenMapUrl(materialId, map, scale).replace(/^\.?\//, ''));
+        paths.add(getPolyHavenFallbackMapUrl(materialId, map, scale).replace(/^\.?\//, ''));
       }
     }
   }
-  for (const url of Object.values(POLYHAVEN_HDRI)) paths.add(url.replace(/^\//, ''));
+  for (const url of Object.values(POLYHAVEN_HDRI)) paths.add(url.replace(/^\.?\//, ''));
 
   return [...paths];
 }

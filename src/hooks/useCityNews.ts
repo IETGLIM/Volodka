@@ -27,6 +27,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { onUiTick } from '@/hooks/useUiTick';
+import { isApiRuntimeAvailable } from '@/shared/utils/apiAvailability';
 
 const LS_PREFIX = 'city-news-';
 const POLL_INTERVAL_MS = 3.5 * 60 * 1000; // 3.5 мин — «не чаще раза в 3-4 минуты»
@@ -122,7 +123,7 @@ export function useCityNews(scene: string, act: number, hour: number): UseCityNe
 
   const doFetch = useCallback(
     async (force: boolean): Promise<void> => {
-      if (!scene || !isOnline()) {
+      if (!scene || !isOnline() || !isApiRuntimeAvailable()) {
         setState((prev) => ({
           ...prev,
           loading: false,

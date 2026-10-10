@@ -1,9 +1,10 @@
 import type { QuaterniusRigRef } from '@/config/npcComposer/types';
 import { getAssetLod0Url } from '@/config/assetManifest';
 import { getPlayerVolodkaModelUrl } from '@/config/playerModelUrl';
+import { publicAsset } from '@/config/publicAssetPath';
 
-const RIGS = '/models/npcs/_rigs';
-const NPCS = '/models/npcs';
+const RIGS = publicAsset('/models/npcs/_rigs');
+const NPCS = publicAsset('/models/npcs');
 
 function npcFallback(manifestId: string, fileBase: string): string {
   return getAssetLod0Url(manifestId) ?? `${NPCS}/${fileBase}.glb`;

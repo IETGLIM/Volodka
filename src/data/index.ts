@@ -131,12 +131,8 @@ export type {
   ResolvedSceneAmbience,
 } from './ambientSounds';
 
-// Thought Cabinet
-export {
-  THOUGHT_CABINET_ITEMS,
-  THOUGHT_CABINET_MAP,
-  MAX_EQUIPPED_THOUGHTS,
-} from './thoughtCabinet';
+// v4.44: Кабинет мыслей вырезан — THOUGHT_CABINET_* экспорты удалены
+// (минимальный справочник имён живёт в ./thoughtNames).
 
 // Status Effects
 export {

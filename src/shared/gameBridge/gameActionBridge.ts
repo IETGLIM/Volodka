@@ -52,9 +52,6 @@ export interface GameStoreSnapshot {
     karma: number;
     stress: number;
     visitedNodes: string[];
-    equippedThoughtIds: string[];
-    /** v4.16: очки прозрения проработки мыслей для масштабирования боевых эффектов. */
-    thoughtInternalizationPoints?: Record<string, number>;
     progression: {
       level: number;
       currentAct: number;
@@ -205,8 +202,6 @@ export type GameAction =
   | { type: 'phase/clearGameplayFlags' }
   | { type: 'journal/addThought'; text: string; sceneId: string }
   | { type: 'thoughtCabinet/acquire'; thoughtId: string }
-  | { type: 'thoughtCabinet/equip'; thoughtId: string }
-  | { type: 'thoughtCabinet/unequip'; thoughtId: string }
   | { type: 'trophy/trackCraft' }
   | { type: 'trophy/trackPoemPowerUse' }
   | { type: 'trophy/trackHighStressWin' }

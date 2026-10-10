@@ -294,7 +294,11 @@ const LegacyGameModeSchema = z.enum([
 
 const GameModeSchema = z.literal('exploration');
 
-const JournalTabSchema = z.enum(['notes', 'skills', 'poems', 'lore', 'thoughts', 'cabinet', 'clothing', 'statistics']);
+// v4.44: 'cabinet' удалён; старые сейвы с journalTab='cabinet' мягко
+// мигрируют в 'thoughts' через .catch.
+const JournalTabSchema = z
+  .enum(['notes', 'skills', 'poems', 'lore', 'thoughts', 'clothing', 'statistics'])
+  .catch('thoughts' as const);
 
 /* ─── Full save payload schema ─── */
 /* When adding a persisted field: extend this schema, then add its default in
@@ -326,11 +330,9 @@ export const SavePayloadSchema = z.object({
    *  was previously dropped on save/load (CRITICAL data loss: equipped thought bonuses
    *  vanished after reload, breaking combat balance + narrative choices). */
   acquiredThoughtIds: z.array(z.string()).optional().default([]),
-  /** Thought Cabinet: currently equipped thought ids (max MAX_EQUIPPED_THOUGHTS). Persisted. */
-  equippedThoughtIds: z.array(z.string()).optional().default([]),
-  /** v4.16: очки прозрения проработки мыслей (арки внутреннего диалога).
-   *  Мысли без арки в карту не попадают — сейвы старых версий совместимы. */
-  thoughtInternalizationPoints: z.record(z.string(), z.number()).optional().default({}),
+  // v4.44: Кабинет мыслей вырезан — equippedThoughtIds и
+  // thoughtInternalizationPoints удалены из схемы; старые сейвы с этими
+  // полями загружаются (zod strippeт неизвестные ключи без ошибок).
   /** Notification log history — persisted for journal continuity. */
   notificationHistory: z.array(NotificationHistoryEntrySchema).optional().default([]),
   poemPowers: z.record(z.string(), PoemPowerSchema),

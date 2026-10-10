@@ -10,6 +10,7 @@
  */
 
 import type { NPCAnimationState } from '@/engine/interaction/interactionMachine';
+import { publicAsset } from '@/config/publicAssetPath';
 
 export type MixamoClipId =
   | 'idle'
@@ -37,7 +38,7 @@ export interface MixamoAnimationSpec {
 }
 
 const MIXAMO_SOURCE = 'assets-source/mixamo';
-const ANIMATIONS = '/models/animations';
+const ANIMATIONS = publicAsset('/models/animations');
 
 export const MIXAMO_ANIMATION_CATALOG: readonly MixamoAnimationSpec[] = [
   {
