@@ -24,6 +24,11 @@ const DEFAULTS: Required<DeplasticizeCharacterOptions> = {
   enableSssApprox: true,
 };
 
+/** Маркер однократной обработки (см. комментарий в deplasticizeCharacterMaterials). */
+interface DeplasticizeMarkedMaterial extends MeshStandardMaterial {
+  __deplasticized?: boolean;
+}
+
 /**
  * Quaternius / Mixamo / kit GLBs often ship as plastic-shiny MeshStandard.
  * Pull them toward worn cloth/skin response without rebuilding the mesh.
@@ -42,6 +47,12 @@ export function deplasticizeCharacterMaterials(
     for (const m of mats) {
       if (!m || !(m as MeshStandardMaterial).isMeshStandardMaterial) continue;
       const std = m as MeshStandardMaterial;
+
+      // Идемпотентность (v4.40 этап 30/D10): общие материалы кэша фигур
+      // проходят deplasticize при каждом маунте фигуры. roughnessMul —
+      // МУЛЬТИПЛИКАТИВЕН: без флага повторный проход накапливал бы
+      // roughness (класс бага v4.17.1, но теперь на уровне shared-кэша).
+      if ((std as DeplasticizeMarkedMaterial).__deplasticized) continue;
 
       const name = `${std.name ?? ''} ${mesh.name ?? ''}`.toLowerCase();
       const isSkin =
@@ -127,6 +138,10 @@ export function deplasticizeCharacterMaterials(
           physical.clearcoatRoughness = 0.55;
         } catch { /* ignore */ }
       }
+
+      // Обработка завершена — помечаем материал для идемпотентности
+      // (повторные проходы по shared-материалам кэша фигур — no-op).
+      (std as DeplasticizeMarkedMaterial).__deplasticized = true;
     }
   });
 }

@@ -114,15 +114,46 @@ describe('gameStore facade flush', () => {
     });
 
     await Promise.resolve();
-    expect(facadeListener).not.toHaveBeenCalled();
+    // Z4 (v4.40): фазовый слайс (uiStore → mainMenuOpen) долетает до фасада
+    // СИНХРОННО в микротаске — подписчики уже уведомлены, одно-кадрового
+    // лага фаз больше нет.
+    expect(facadeListener).toHaveBeenCalledTimes(1);
+    // Небыстрый player-mutation остался коалесцированным в один rAF.
     expect(rafQueue).toHaveLength(1);
 
     rafQueue[0]?.(0);
+    // Повторных уведомлений нет: синхронный фазовый flush уже снял dirty,
+    // а отложенный rAF-flush видит фасад согласованным.
     expect(facadeListener).toHaveBeenCalledTimes(1);
 
     usePlayerStore.setState({
       playerState: { ...usePlayerStore.getState().playerState, energy },
     });
+    useUIStore.setState({ mainMenuOpen: menuOpen });
+    unsub();
+  });
+
+  it('Z4: фазовый слайс уведомляет фасад синхронно, до rAF', async () => {
+    resetSliceMutationSchedulerForTests();
+
+    const rafQueue: FrameRequestCallback[] = [];
+    vi.stubGlobal('requestAnimationFrame', (cb: FrameRequestCallback) => {
+      rafQueue.push(cb);
+      return rafQueue.length;
+    });
+
+    const facadeListener = vi.fn();
+    const unsub = useGameStore.subscribe(facadeListener);
+    facadeListener.mockClear();
+
+    const menuOpen = useUIStore.getState().mainMenuOpen;
+    useUIStore.setState({ mainMenuOpen: !menuOpen });
+
+    // Микротаск батча — фасад уже уведомлен, rAF не нужен.
+    await Promise.resolve();
+    expect(facadeListener).toHaveBeenCalledTimes(1);
+    expect(rafQueue).toHaveLength(0);
+
     useUIStore.setState({ mainMenuOpen: menuOpen });
     unsub();
   });

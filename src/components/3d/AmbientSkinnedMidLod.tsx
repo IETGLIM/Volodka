@@ -5,7 +5,7 @@
 import { Suspense, useEffect, useMemo, useRef } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { clone as cloneSkinnedScene } from 'three/examples/jsm/utils/SkeletonUtils.js';
-import { AnimationAction, AnimationClip, AnimationMixer, Color, Group, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Vector3 } from 'three';
+import { AnimationAction, AnimationClip, AnimationMixer, Color, Group, Material, Mesh, MeshPhysicalMaterial, MeshStandardMaterial, Vector3 } from 'three';
 import type { QuaterniusRigRef } from '@/config/npcComposer/types';
 import { NPC_GLTF_TARGET_HEIGHT_M } from '@/config/metricScaleCoherence';
 import { AMBIENT_SKINNED_RIG_POOL, resolveQuaterniusStagedRigUrl } from '@/config/quaterniusRigCatalog';
@@ -14,7 +14,6 @@ import { extendGltfLoader } from '@/engine/assets/gltfPipeline';
 import { scheduleGltfPreload, GltfPreloadPriority } from '@/engine/assets/gltfPreloadScheduler';
 import { fitCharacterGltf, measureCharacterGltfBounds } from '@/engine/assets/gltfScale';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
-import { cloneSceneMaterials } from '@/engine/graphics/materials/cloneSceneMaterials';
 import { deplasticizeCharacterMaterials } from '@/engine/graphics/materials/deplasticizeCharacterMaterials';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { DEFAULT_NPC_LOD, scaleNpcLodThresholds } from '@/engine/lod/distanceLod';
@@ -58,6 +57,60 @@ function pickClip(clips: AnimationClip[], pattern: RegExp): AnimationClip | unde
   return clips.find((c) => pattern.test(c.name));
 }
 
+/**
+ * PERF (v4.40, этап 30 / D10): общий кэш материалов атмосферных фигур.
+ *
+ * Раньше каждый маунт фигуры клонировал все материалы рига заново
+ * (cloneSceneMaterials) и диспозил их на unmount: при каждом входе в
+ * уличную сцену — заново компилировались шейдер-программы всех органик-
+ * апгрейдов до MeshPhysicalMaterial, а GC/GPU-очередь получала волну
+ * create/dispose. Кэш модульного уровня (риг + фактор тинта + исходный
+ * материал → один инстанс) переживает смену сцен: программы шейдеров
+ * остаются «горячими», повторный маунт толкается в кэш. Живут материалы
+ * сессию (~8 ригов × несколько материалов — пренебрежимо), из dispose
+ * исключаются через skip-сет.
+ */
+const sharedFigureMaterialCache = new Map<string, Material>();
+
+function acquireSharedFigureMaterial(
+  cachePrefix: string,
+  source: Material,
+  tint: Color,
+  tintFactor: number,
+  onShared: (mat: Material) => void,
+): Material {
+  const key = `${cachePrefix}:${tintFactor.toFixed(2)}:${source.uuid}`;
+  const cached = sharedFigureMaterialCache.get(key);
+  if (cached) {
+    onShared(cached);
+    return cached;
+  }
+
+  let next = source.clone();
+  const std = next as MeshStandardMaterial;
+  if (std.isMeshStandardMaterial) {
+    std.color.lerp(tint, tintFactor);
+    // WS16-A: deplasticize organic surfaces on LOD NPCs — upgrade cloned MeshStandardMaterial
+    // to MeshPhysicalMaterial with sheen for skin/hair/cloth material names. Non-organic
+    // surfaces (eyes, metallics, plastic props) stay as MeshStandardMaterial.
+    const matName = (std.name || '').toLowerCase();
+    const isOrganic = /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth|hair|cloth|fabric|hoodie|jeans|shirt/.test(matName);
+    if (isOrganic && !(std as MeshPhysicalMaterial).isMeshPhysicalMaterial) {
+      const physical = new MeshPhysicalMaterial();
+      physical.copy(std);
+      physical.sheen = 0.35;
+      physical.sheenRoughness = 0.5;
+      physical.name = std.name;
+      // Промежуточный клон больше не нужен.
+      std.dispose();
+      next = physical;
+    }
+  }
+  sharedFigureMaterialCache.set(key, next);
+  onShared(next);
+  return next;
+}
+
 function AmbientSkinnedFigure({
   rig,
   slotIndex,
@@ -78,34 +131,28 @@ function AmbientSkinnedFigure({
   const rootRef = useRef<Group>(null);
   const mixWeightRef = useRef(0);
 
-  const { scene, mixer, actions } = useMemo(() => {
+  const { scene, mixer, actions, sharedMaterials } = useMemo(() => {
     const clone = cloneSkinnedScene(gltf.scene) as Group;
     const tint = new Color(tintHex);
+    const sharedMaterials = new Set<Material>();
+    const tintFactor = 0.32 + slotIndex * 0.04;
+    const cachePrefix = `${rig}`;
 
-    // FIX (v4.17.1): материалы клонируются ДО мутаций — раньше
-    // deplasticizeCharacterMaterials выполнялся ПЕРВЫМ и мутировал
-    // SHARED-материалы кэша useGLTF (roughnessMul накапливался на каждом
-    // маунте каждой фигуры). Теперь deplasticize идёт ПОСЛЕ клонирования
-    // и работает только по клонам.
-    cloneSceneMaterials(clone, (cloned) => {
-      const std = cloned as MeshStandardMaterial;
-      if (!std.isMeshStandardMaterial) return cloned;
-      std.color.lerp(tint, 0.32 + slotIndex * 0.04);
-      // WS16-A: deplasticize organic surfaces on LOD NPCs — upgrade cloned MeshStandardMaterial
-      // to MeshPhysicalMaterial with sheen for skin/hair/cloth material names. Non-organic
-      // surfaces (eyes, metallics, plastic props) stay as MeshStandardMaterial.
-      const matName = (std.name || '').toLowerCase();
-      const isOrganic = /skin|face|body|head|hand|arm|leg|flesh|beard|stubble|mouth|hair|cloth|fabric|hoodie|jeans|shirt/.test(matName);
-      if (isOrganic && !(std as MeshPhysicalMaterial).isMeshPhysicalMaterial) {
-        const physical = new MeshPhysicalMaterial();
-        physical.copy(std);
-        physical.sheen = 0.35;
-        physical.sheenRoughness = 0.5;
-        physical.name = std.name;
-        // Промежуточный клон освобождает утилита cloneSceneMaterials.
-        return physical;
+    // FIX (v4.17.1) + PERF (v4.40 этап 30/D10): вместо клона материала на
+    // каждый маунт — общий кэш. Материал создаётся ОДНОКРАТНО (тинт +
+    // organic-апгрейд), deplasticize ниже идемпотентен по флагу, поэтому
+    // повторные маунты фигур не накапливают roughnessMul на общих
+    // инстансах. Dispose — через skip-сет (см. sourceSkip ниже).
+    clone.traverse((obj) => {
+      const mesh = obj as Mesh;
+      if (!mesh.isMesh) return;
+      if (Array.isArray(mesh.material)) {
+        mesh.material = mesh.material.map((m) =>
+          m ? acquireSharedFigureMaterial(cachePrefix, m, tint, tintFactor, (mat) => sharedMaterials.add(mat)) : m,
+        );
+      } else if (mesh.material) {
+        mesh.material = acquireSharedFigureMaterial(cachePrefix, mesh.material, tint, tintFactor, (mat) => sharedMaterials.add(mat));
       }
-      return cloned;
     });
 
     deplasticizeCharacterMaterials(clone, {
@@ -163,13 +210,21 @@ function AmbientSkinnedFigure({
       nextActions.walk = walk;
     }
 
-    return { scene: clone, mixer: nextMixer, actions: nextActions };
-  }, [gltf.scene, gltf.animations, tintHex, slotIndex]);
+    return { scene: clone, mixer: nextMixer, actions: nextActions, sharedMaterials };
+  }, [gltf.scene, gltf.animations, tintHex, slotIndex, rig]);
 
   // FIX (v4.17.1): dispose с skip-сетом исходной сцены — cloneSkinnedScene
   // шарит GEOMETRY с кэшем useGLTF; без skip диспозились общие буферы →
   // ре-аплоад и перекомпиляция шейдеров при следующем использовании рига.
-  const sourceSkip = useMemo(() => createSourceSkipSet(gltf.scene), [gltf.scene]);
+  // Этап 30/D10: в skip добавлены и ОБЩИЕ материалы кэша — они переживают
+  // unmount фигуры и переиспользуются следующими маунтами.
+  const sourceSkip = useMemo(() => {
+    const base = createSourceSkipSet(gltf.scene);
+    return {
+      ...base,
+      materials: new Set<Material>([...(base.materials ?? []), ...sharedMaterials]),
+    };
+  }, [gltf.scene, sharedMaterials]);
   useEffect(() => () => disposeSkinnedClone(scene, mixer, { skip: sourceSkip }), [scene, mixer, sourceSkip]);
 
   useFrameTick('npc', ({ delta }) => {

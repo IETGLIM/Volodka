@@ -7,8 +7,8 @@
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { CanvasTexture, Color, Group, InstancedMesh, Mesh, MeshStandardMaterial, Object3D, PointLight, RepeatWrapping, Vector3 } from 'three';
-import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { LightPoolDecal } from './ContactBlobShadow';
 import { scratchColor } from '@/engine/three/frameScratch';
 import {
   getSharedBoxGeometry,
@@ -241,7 +241,9 @@ export function FactoryBasementVisual(_props: FactoryBasementVisualProps) {
             <meshStandardMaterial color="#101416" roughness={0.8} />
           </mesh>
         ))}
-        <pointLight ref={coreLightRef} position={[0, 1.6, 1.4]} color="#22ff88" intensity={2.2} distance={9} decay={2} castShadow shadow-mapSize-width={512} shadow-mapSize-height={512} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
+        <pointLight ref={coreLightRef} position={[0, 1.6, 1.4]} color="#22ff88" intensity={2.2} distance={9} decay={2} />
+        {/* PERF этап 28: cube-тени реактора заменены световым пулом */}
+        <LightPoolDecal position={[0, 0.02, 1.4]} radius={2.4} color="#22ff88" opacity={0.3} />
       </group>
 
       {/* ── Overhead pipes ── */}

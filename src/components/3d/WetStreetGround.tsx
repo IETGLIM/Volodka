@@ -9,6 +9,7 @@ import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { allowsHeavyGfxFeature } from '@/engine/graphics/qualityFeatureGates';
 import { useReflectorCleanup } from '@/hooks/useReflectorCleanup';
 import {
+  ENABLE_BASIC_WET_REFLECTOR,
   allowsUltraSsrWetStreet,
   getReflectorMaterialSettings,
   getUltraSsrWetStreetMirrorAmount,
@@ -56,7 +57,8 @@ function WetStreetGroundPbr({
     && !reducedMotion
     && allowsUltraSsrWetStreet(sceneId, selectedPreset, { coarsePointer });
   const useBasicReflector =
-    !useUltraSsr
+    ENABLE_BASIC_WET_REFLECTOR
+    && !useUltraSsr
     && !isWinter
     && !reducedMotion
     && isWetStreetScene(sceneId)
@@ -152,6 +154,9 @@ function WetStreetGroundPbr({
           aoMap={maps.aoMap}
           roughness={dryRoughness}
           metalness={dryMetalness}
+          // Этап 30 / D9: envmap-фейк вместо basic-рефлектора — мокрый асфальт
+          // читает scene.environment тем сильнее, чем сильнее дождь.
+          envMapIntensity={wetActive ? 1.35 : 0.85}
           polygonOffset
           polygonOffsetFactor={1}
           polygonOffsetUnits={1}
@@ -182,7 +187,8 @@ function WetStreetGroundProceduralFallback({
     && !reducedMotion
     && allowsUltraSsrWetStreet(sceneId, selectedPreset, { coarsePointer });
   const useBasicReflector =
-    !useUltraSsr
+    ENABLE_BASIC_WET_REFLECTOR
+    && !useUltraSsr
     && !isWinter
     && !reducedMotion
     && isWetStreetScene(sceneId)
@@ -213,13 +219,16 @@ function WetStreetGroundProceduralFallback({
     ? (reflectorSettings.streakBlur ?? reflectorSettings.blur)
     : reflectorSettings.blur;
 
+  const wetActive = effectiveRain > 0;
+
   useLayoutEffect(() => {
     if (usePlanarReflector) return;
     applySurfaceDetailMaps(wetMat, isWinter ? 'concrete' : 'asphalt', preset.textureScale, size / 60);
-  }, [wetMat, usePlanarReflector, isWinter, preset.textureScale, size]);
+    // Этап 30 / D9: envmap-фейк — мокрая procedural-дорожка тоже читает окружение.
+    wetMat.envMapIntensity = wetActive ? 1.35 : 0.85;
+  }, [wetMat, usePlanarReflector, isWinter, preset.textureScale, size, wetActive]);
 
   const reflectorMatRef = useRef<ComponentRef<typeof MeshReflectorMaterial>>(null);
-  const wetActive = effectiveRain > 0;
 
   useLayoutEffect(() => {
     if (!usePlanarReflector) return;

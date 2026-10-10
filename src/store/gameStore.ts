@@ -11,7 +11,7 @@ import { wrapStoreSubscribeIfDev } from './dev/storeSubscribeProfiler';
 import { registerGameActionBridge, type GameSnapshotSubscribeOptions, type GameStoreSnapshot } from '@/shared/gameBridge/gameActionBridge';
 import type { GameStoreState } from './types';
 export type { GameStoreState, CrossSliceReads } from './types';
-import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCache, scheduleAfterSliceStoresSettle } from './combinedState';
+import { getCombinedGameState, subscribeAllStores, invalidateCombinedGameStateCache, scheduleAfterSliceStoresSettle, isPhaseSyncSlice } from './combinedState';
 import { usePlayerStore } from './stores/playerStore';
 import { useWorldStore } from './stores/worldStore';
 import { getCachedGameSnapshot } from './gameSnapshotCache';
@@ -28,8 +28,24 @@ let facadeFlushQueued = false;
 function flushFacadeState(): void {
   facadeDirty = false;
   const next = getCombinedGameState();
-  if (next === baseGetState()) return;
+  const current = baseGetState();
+  if (next === current) return;
+  // Z2 (v4.40, этап 29): данные-сравнение вместо identity-сравнения.
+  // Слайс мог измениться так, что shallow-merge фасада даёт те же
+  // ссылки по всем полям (например, изменён служебный флаг слайса,
+  // не входящий в фасад) — подписчикам нечего перерисовывать, не звеним.
+  if (facadeStatesDataEqual(next as unknown as Record<string, unknown>, current as unknown as Record<string, unknown>)) return;
   facadeSetState(next, true);
+}
+
+function facadeStatesDataEqual(a: Record<string, unknown>, b: Record<string, unknown>): boolean {
+  for (const key in a) {
+    if (!Object.is(a[key], b[key])) return false;
+  }
+  for (const key in b) {
+    if (!(key in a)) return false;
+  }
+  return true;
 }
 
 function syncMarkFacadeDirty(): void {
@@ -54,8 +70,16 @@ function getBridgeSnapshot(): GameStoreSnapshot {
   return toGameSnapshot(getCombinedGameState());
 }
 
-subscribeAllStores(() => {
+subscribeAllStores((sourceStore) => {
   syncMarkFacadeDirty();
+  if (isPhaseSyncSlice(sourceStore)) {
+    // Z4 (v4.40, этап 29): фазовый флаг (меню/катсцена/бой) — фасад
+    // обновляется СИНХРОННО, без rAF-ожидания. Устраняет одно-кадровый
+    // рассинхрон фасад/слайсы (storeFacadeCutsceneLag.test.ts) — источник
+    // «миганий» фаз. Фазовые переходы редки — sync flush ничего не стоит.
+    flushFacadeState();
+    return;
+  }
   scheduleFacadeFlush();
 });
 

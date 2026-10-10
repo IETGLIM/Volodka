@@ -439,6 +439,22 @@ export interface ReflectorMaterialSettings {
   mixShowThreshold?: number;
 }
 
+/**
+ * PERF (v4.40, этап 30 / D9): basic-рефлектор medium/high снят с производства.
+ * MeshReflectorMaterial рендерит сцену ВТОРОЙ раз за кадр (RT 256-384 + два
+ * blur-прохода) — на уличных сценах это самый дорогой постоянный GPU-статья
+ * после самого рендера. Мокрый вид на medium/high теперь даёт envmap-фейк:
+ * та же plain MeshStandard-дорожка, что и low/winter (roughness 0.28 +
+ * metalness 0.35 под дождём), с поднятым envMapIntensity — отражения неона
+ * по-прежнему читаются через NeonRainReflections (аддитивные пятна) и
+ * scene.environment. Ultra SSR (1024 RT) сохранён без изменений — он был
+ * явным пользовательским запросом.
+ *
+ * Флаг оставлен экспортным: один переключатель, чтобы вернуть прежний
+ * вид если envmap-фейк не устроит по скриншотам.
+ */
+export const ENABLE_BASIC_WET_REFLECTOR = false;
+
 /** Tiered reflector cost — medium is lightest; high lighter than ultra. */
 export function getReflectorMaterialSettings(
   presetId: Exclude<QualityPresetId, 'auto'>,

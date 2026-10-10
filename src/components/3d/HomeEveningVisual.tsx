@@ -9,6 +9,7 @@ import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry'
 import { useGameStore } from '@/store/gameStore';
 import { eventBus } from '@/engine/EventBus';
 import { Radiator, Plant, Picture } from './lazyInteriorModels';
+import { LightPoolDecal } from './ContactBlobShadow';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createHomeEveningWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
@@ -432,11 +433,13 @@ export function HomeEveningVisual() {
       {/* ── LIGHTS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* Kitchen light */}
-      <pointLight position={[4.0, 2.5, -5.0]} color="#ffe0a0" intensity={3.5} distance={10} castShadow shadow-mapSize-width={256} />
+      {/* Kitchen light — PERF этап 28: без cube-теней, световой пул на полу */}
+      <pointLight position={[4.0, 2.5, -5.0]} color="#ffe0a0" intensity={3.5} distance={10} />
+      <LightPoolDecal position={[4.0, 0.02, -5.0]} radius={1.8} color="#ffe0a0" opacity={0.28} />
 
       {/* Living area warm light */}
-      <pointLight position={[-2.0, 2.5, -1.0]} color="#ffcc80" intensity={4.0} distance={12} castShadow shadow-mapSize-width={256} />
+      <pointLight position={[-2.0, 2.5, -1.0]} color="#ffcc80" intensity={4.0} distance={12} />
+      <LightPoolDecal position={[-2.0, 0.02, -1.0]} radius={2.2} color="#ffcc80" opacity={0.3} />
 
       {/* Bedroom soft light */}
       <pointLight position={[-5.0, 2.5, 3.0]} color="#ccbbdd" intensity={2.5} distance={9} />
@@ -537,7 +540,7 @@ export function HomeEveningVisual() {
         {/* Lamp glow bulb */}
         <mesh position={[0, 0.28, 0]} geometry={geo_sph_54} material={mat_46} />
         {/* Warm light from lamp */}
-        <pointLight position={[0, 0.35, 0]} color="#ffcc80" intensity={3.0} distance={5} castShadow shadow-mapSize-width={256} />
+        <pointLight position={[0, 0.35, 0]} color="#ffcc80" intensity={3.0} distance={5} />
       </group>
 
       {/* ── Remote control on coffee table ── */}

@@ -7,6 +7,7 @@ import { AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, Doubl
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
 import { FloorLamp, PastryCase, Window, Plant } from './lazyInteriorModels';
+import { LightPoolDecal } from './ContactBlobShadow';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createCafeEveningNeonSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { useOwnedBufferGeometry } from '@/hooks/useOwnedBufferGeometry';
@@ -348,11 +349,13 @@ export function CafeVisual({ livePlayerPositionRef }: CafeVisualProps) {
       {/* ── WARM LIGHTING ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* Over bar */}
-      <pointLight position={[0, 2.8, -3.5]} color="#ffcc80" intensity={4.5} distance={10} castShadow shadow-mapSize-width={256} />
+      {/* Over bar — PERF этап 28: cube-тени выключены (6 проходов/кадр), световой пул на полу вместо них */}
+      <pointLight position={[0, 2.8, -3.5]} color="#ffcc80" intensity={4.5} distance={10} />
+      <LightPoolDecal position={[0, 0.02, -3.5]} radius={2.4} color="#ffcc80" opacity={0.3} />
 
       {/* Over Albert's table */}
-      <pointLight position={[-3.0, 2.5, -2.0]} color="#ffbb70" intensity={3.0} distance={7} castShadow shadow-mapSize-width={256} />
+      <pointLight position={[-3.0, 2.5, -2.0]} color="#ffbb70" intensity={3.0} distance={7} />
+      <LightPoolDecal position={[-3.0, 0.02, -2.0]} radius={1.8} color="#ffbb70" opacity={0.26} />
 
       {/* Center */}
       <pointLight position={[0, 2.8, 0]} color="#ffcc80" intensity={3.5} distance={10} />

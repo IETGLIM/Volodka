@@ -3,6 +3,7 @@
 
 import { useLayoutEffect, useMemo, useRef, type MutableRefObject } from 'react';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { LightPoolDecal } from './ContactBlobShadow';
 import { AdditiveBlending, BufferAttribute, BufferGeometry, CanvasTexture, InstancedMesh, Mesh, Object3D, PointLight, Points, PointsMaterial, RepeatWrapping, Vector3 } from 'three';
 import {
   getSharedBoxGeometry,
@@ -236,7 +237,9 @@ export function ChkForestZorgeVisual({
         <mesh ref={fireMeshRef} position={[0, 0.35, 0]} geometry={getSharedConeGeometry(0.25, 0.55, 8)}>
           <meshStandardMaterial color="#ff6622" emissive="#ff4400" emissiveIntensity={2.5} transparent opacity={0.85} />
         </mesh>
-        <pointLight ref={fireLightRef} color="#ff8833" intensity={3.2} distance={14} position={[0, 1.2, 0]} castShadow />
+        <pointLight ref={fireLightRef} color="#ff8833" intensity={3.2} distance={14} position={[0, 1.2, 0]} />
+        {/* PERF этап 28: cube-тени костра заменены световым пулом */}
+        <LightPoolDecal position={[0, 0.02, 0]} radius={3.2} color="#ff8833" opacity={0.34} />
       </group>
 
       {/* Log seats around fire — prop dressing has 1 bench; keep the full ring */}

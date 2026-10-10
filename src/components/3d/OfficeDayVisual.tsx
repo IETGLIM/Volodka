@@ -4,9 +4,9 @@
 import { Suspense, useMemo, type MutableRefObject } from 'react';
 import { useGLTF } from '@react-three/drei';
 import { CanvasTexture, DoubleSide, Mesh, Object3D, RepeatWrapping, Vector3 } from 'three';
-import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { seededRand } from '@/shared/utils/seededRand';
 import { getSharedStandardMaterial, mat } from '@/engine/three/moduleMaterialRegistry';
+import { LightPoolDecal } from './ContactBlobShadow';
 import { Plant, Radiator, Clock } from './lazyInteriorModels';
 import { getEnvironmentLodProfile } from '@/engine/lod/distanceLod';
 import { EnvironmentDetail, SceneClutterGate } from './lod/PropDistanceGate';
@@ -449,7 +449,9 @@ export function OfficeDayVisual({ livePlayerPositionRef }: OfficeDayVisualProps)
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Harsh white overhead */}
-      <pointLight position={[0, 2.8, 0]} color="#e0e8f0" intensity={3.5} distance={16} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
+      <pointLight position={[0, 2.8, 0]} color="#e0e8f0" intensity={3.5} distance={16} />
+      {/* PERF этап 28: cube-тени лампы заменены световым пулом */}
+      <LightPoolDecal position={[0, 0.02, 0]} radius={3.2} color="#e0e8f0" opacity={0.24} />
 
       {/* Blue monitor glow */}
       <pointLight position={[-3, 1.2, -1.0]} color="#4488ff" intensity={2.0} distance={8} />

@@ -1,4 +1,4 @@
-import { useSyncExternalStore, useCallback, useMemo } from 'react';
+import { useSyncExternalStore } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   getGameSnapshot,
@@ -53,12 +53,103 @@ function subscribeSnap(listener: () => void): () => void {
   return subscribeGameSnapshot(() => listener());
 }
 
-function getSnapshot(): GameStoreSnapshot {
-  return getGameSnapshot();
+/**
+ * Z3 (v4.40, этап 29): узкая проекция статистики вместо полного снапшота.
+ *
+ * Раньше useSyncExternalStore получал полный GameStoreSnapshot: вкладка
+ * статистики перерисовывалась на ЛЮБОЕ изменение снапшота (позиция игрока,
+ * уведомления, прогресс квестов — всё заменяет ссылку снапшота). Теперь
+ * getSnapshot возвращает мемоизированную проекцию только тех полей, что
+ * реально читает вкладка: сравнение идёт по примитивам/коллекциям этих
+ * полей — движение игрока (exploration-объект заменяется, а сцена/TOD —
+ * нет) и прочий шум больше не ре-рендерят вкладку.
+ */
+interface StatisticsSnapshot {
+  level: number;
+  act: number;
+  visitedCount: number;
+  sceneId: string;
+  tod: number;
+  poemsCollected: number;
+  poemPowersUsed: number;
+  questsCompleted: number;
+  questsActive: number;
+  combatsWon: number;
+  highStress: boolean;
+  friendlyNpcs: number;
+  karmaVal: number;
+  inventoryCount: number;
+  equippedCount: number;
+  achUnlocked: number;
+  craftCount: number;
 }
 
-function getServerSnapshot(): GameStoreSnapshot {
-  return getGameSnapshot();
+let cachedStatsSnapshot: StatisticsSnapshot | null = null;
+let cachedStatsInputs: unknown[] | null = null;
+
+function buildStatsInputs(snap: GameStoreSnapshot): unknown[] {
+  return [
+    snap.playerState.progression,
+    snap.playerState.visitedNodes.length,
+    snap.playerState.karma,
+    snap.playerState.inventory.length,
+    snap.exploration.currentSceneId,
+    snap.exploration.timeOfDay,
+    snap.collectedPoems.length,
+    snap.trophyTracking?.poemPowersUsedCount ?? 0,
+    snap.trophyTracking?.highStressWin ?? false,
+    snap.trophyTracking?.craftCount ?? 0,
+    snap.quests,
+    snap.achievementProgress?.combatVictories ?? 0,
+    snap.npcRelations,
+    snap.equippedItems,
+    snap.unlockedAchievements.length,
+  ];
+}
+
+function getStatisticsSnapshot(): StatisticsSnapshot {
+  const snap = getGameSnapshot();
+  const inputs = buildStatsInputs(snap);
+  if (cachedStatsSnapshot && cachedStatsInputs) {
+    let equal = cachedStatsInputs.length === inputs.length;
+    if (equal) {
+      for (let i = 0; i < inputs.length; i++) {
+        if (!Object.is(cachedStatsInputs[i], inputs[i])) {
+          equal = false;
+          break;
+        }
+      }
+    }
+    if (equal) return cachedStatsSnapshot;
+  }
+  const prog = snap.playerState.progression;
+  cachedStatsSnapshot = {
+    level: prog.level,
+    act: prog.currentAct,
+    visitedCount: snap.playerState.visitedNodes.length,
+    sceneId: snap.exploration.currentSceneId,
+    tod: snap.exploration.timeOfDay,
+    poemsCollected: snap.collectedPoems.length,
+    poemPowersUsed: snap.trophyTracking?.poemPowersUsedCount ?? 0,
+    questsCompleted: snap.quests.filter((q) => q.status === 'completed').length,
+    questsActive: snap.quests.filter((q) => q.status === 'active').length,
+    combatsWon: snap.achievementProgress?.combatVictories ?? 0,
+    highStress: snap.trophyTracking?.highStressWin ?? false,
+    friendlyNpcs: snap.npcRelations.filter((r) => r.value > 0).length,
+    karmaVal: snap.playerState.karma,
+    inventoryCount: snap.playerState.inventory.length,
+    equippedCount: snap.equippedItems
+      ? Object.values(snap.equippedItems).filter((v) => v !== null && v !== undefined).length
+      : 0,
+    achUnlocked: snap.unlockedAchievements.length,
+    craftCount: snap.trophyTracking?.craftCount ?? 0,
+  };
+  cachedStatsInputs = inputs;
+  return cachedStatsSnapshot;
+}
+
+function getServerSnapshot(): StatisticsSnapshot {
+  return getStatisticsSnapshot();
 }
 
 interface StatisticsTabProps {
@@ -67,71 +158,12 @@ interface StatisticsTabProps {
 
 export function StatisticsTab({ searchQuery: _searchQuery }: StatisticsTabProps) {
   const reducedMotion = useEffectiveReducedMotion();
-  const snap = useSyncExternalStore(subscribeSnap, getSnapshot, getServerSnapshot);
+  const stats = useSyncExternalStore(subscribeSnap, getStatisticsSnapshot, getServerSnapshot);
 
-  const xpForLevel = useCallback((level: number) => Math.floor(100 * Math.pow(1.25, level - 1)), []);
-
-  const stats = useMemo(() => {
-    const prog = snap.playerState.progression;
-    const xpNeeded = xpForLevel(prog.level + 1);
-    const xpPrev = xpForLevel(prog.level);
-    const levelPct = Math.min(100, ((prog.level >= MAX_LEVEL ? 1 : 0.5) * 100));
-
-    const visitedCount = snap.playerState.visitedNodes.length;
-    const sceneId = snap.exploration.currentSceneId;
-    const tod = snap.exploration.timeOfDay;
-
-    const poemsCollected = snap.collectedPoems.length;
-    const poemPct = TOTAL_UNIFIED_POEMS > 0 ? (poemsCollected / TOTAL_UNIFIED_POEMS) * 100 : 0;
-
-    const poemPowersUsed = snap.trophyTracking?.poemPowersUsedCount ?? 0;
-
-    const questsCompleted = snap.quests.filter((q) => q.status === 'completed').length;
-    const questsActive = snap.quests.filter((q) => q.status === 'active').length;
-
-    const combatsWon = snap.achievementProgress.combatVictories;
-    const highStress = snap.trophyTracking?.highStressWin ?? false;
-
-    const friendlyNpcs = snap.npcRelations.filter((r) => r.value > 0).length;
-    const karmaVal = snap.playerState.karma;
-    const kt = karmaTier(karmaVal);
-
-    const inventoryCount = snap.playerState.inventory.length;
-    const equippedCount = snap.equippedItems
-      ? Object.values(snap.equippedItems).filter((v) => v !== null && v !== undefined).length
-      : 0;
-
-    const achUnlocked = snap.unlockedAchievements.length;
-    const achPct = TOTAL_ACHIEVEMENTS > 0 ? (achUnlocked / TOTAL_ACHIEVEMENTS) * 100 : 0;
-    const craftCount = snap.trophyTracking?.craftCount ?? 0;
-
-    return {
-      level: prog.level,
-      act: prog.currentAct,
-      actName: ACT_NAMES[prog.currentAct] ?? `Акт ${prog.currentAct}`,
-      levelPct,
-      xpNeeded,
-      xpPrev,
-      visitedCount,
-      sceneId,
-      tod,
-      poemsCollected,
-      poemPct,
-      poemPowersUsed,
-      questsCompleted,
-      questsActive,
-      combatsWon,
-      highStress,
-      friendlyNpcs,
-      karmaVal,
-      karmaTier: kt,
-      inventoryCount,
-      equippedCount,
-      achUnlocked,
-      achPct,
-      craftCount,
-    };
-  }, [snap, xpForLevel]);
+  const actName = ACT_NAMES[stats.act] ?? `Акт ${stats.act}`;
+  const kt = karmaTier(stats.karmaVal);
+  const poemPct = TOTAL_UNIFIED_POEMS > 0 ? (stats.poemsCollected / TOTAL_UNIFIED_POEMS) * 100 : 0;
+  const achPct = TOTAL_ACHIEVEMENTS > 0 ? (stats.achUnlocked / TOTAL_ACHIEVEMENTS) * 100 : 0;
 
   const barTransition = reducedMotion ? 'none' : 'width 0.6s ease-out';
 
@@ -147,7 +179,7 @@ export function StatisticsTab({ searchQuery: _searchQuery }: StatisticsTabProps)
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <span className="stat-label text-xs text-slate-400">Текущий акт</span>
-              <span className="font-mono text-sm text-slate-200">{stats.actName}</span>
+              <span className="font-mono text-sm text-slate-200">{actName}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="stat-label text-xs text-slate-400">Уровень</span>
@@ -216,7 +248,7 @@ export function StatisticsTab({ searchQuery: _searchQuery }: StatisticsTabProps)
             <div className="data-bar h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
               <div
                 className="data-bar-fill h-full bg-gradient-to-r from-amber-600 to-amber-400 rounded-full"
-                style={{ width: `${stats.poemPct}%`, transition: barTransition }}
+                style={{ width: `${poemPct}%`, transition: barTransition }}
               />
             </div>
             <div className="flex items-center justify-between">
@@ -285,7 +317,7 @@ export function StatisticsTab({ searchQuery: _searchQuery }: StatisticsTabProps)
               <span className="stat-label text-xs text-slate-400">Карма</span>
               <span className="font-mono text-sm text-slate-200">
                 {stats.karmaVal > 0 ? '+' : ''}{stats.karmaVal}
-                <span className={`ml-2 text-xs ${stats.karmaTier.color}`}>({stats.karmaTier.label})</span>
+                <span className={`ml-2 text-xs ${kt.color}`}>({kt.label})</span>
               </span>
             </div>
           </div>
@@ -329,7 +361,7 @@ export function StatisticsTab({ searchQuery: _searchQuery }: StatisticsTabProps)
             <div className="data-bar h-1.5 bg-slate-800/80 rounded-full overflow-hidden">
               <div
                 className="data-bar-fill h-full bg-gradient-to-r from-yellow-600 to-amber-400 rounded-full"
-                style={{ width: `${stats.achPct}%`, transition: barTransition }}
+                style={{ width: `${achPct}%`, transition: barTransition }}
               />
             </div>
             <div className="flex items-center justify-between">

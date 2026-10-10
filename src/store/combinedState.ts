@@ -44,22 +44,46 @@ export function resetSliceMutationSchedulerForTests(): void {
   sliceMutationMicrotaskScheduled = false;
 }
 
-export function subscribeAllStores(listener: () => void): () => void {
+export function subscribeAllStores(
+  listener: (sourceStore: StoreApi<unknown>) => void,
+): () => void {
   let active = true;
   let scheduled = false;
-  const batchedListener = (): void => {
+  let scheduledSource: StoreApi<unknown> | null = null;
+  const batchedListener = (sourceStore: StoreApi<unknown>): void => {
     if (!active) return;
+    // Z4 (v4.40, этап 29): источник запоминается; при изменениях нескольких
+    // слайсов за батч приоритет у фазового (ui/cutscene) — он форсит
+    // синхронный flush фасада в gameStore.
+    if (scheduled && scheduledSource !== sourceStore) {
+      if (isPhaseSyncSlice(sourceStore)) scheduledSource = sourceStore;
+    }
     if (scheduled) return;
     scheduled = true;
+    scheduledSource = sourceStore;
     queueMicrotask(() => {
       scheduled = false;
+      const source = scheduledSource;
+      scheduledSource = null;
       if (!active) return;
-      listener();
+      listener(source ?? sourceStore);
     });
   };
-  const unsubs = SLICE_STORES.map((store) => store.subscribe(batchedListener));
+  const unsubs = SLICE_STORES.map((store) => store.subscribe(() => batchedListener(store)));
   return () => {
     active = false;
     for (const unsub of unsubs) unsub();
   };
+}
+
+/**
+ * Z4 (v4.40, этап 29): фазовые слайсы (меню/интро/бой, катсцены) — их
+ * изменения прокидываются в фасад синхронно, без rAF-ожидания.
+ * Здесь — единственный источник истины по составу, gameStore читает
+ * через этот предикат (без циклического импорта сторов).
+ */
+const PHASE_SYNC_SLICE_IDS: ReadonlySet<StoreApi<unknown>> = new Set([useUIStore, useCutsceneStore]);
+
+export function isPhaseSyncSlice(store: StoreApi<unknown>): boolean {
+  return PHASE_SYNC_SLICE_IDS.has(store);
 }

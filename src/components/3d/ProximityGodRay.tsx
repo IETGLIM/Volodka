@@ -1,120 +1,83 @@
-import { useRef } from 'react';
-import { useFrameTick } from '@/engine/frame/useFrameTick';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 import { AdditiveBlending, DoubleSide, Group, Mesh, MeshBasicMaterial, PointLight, SpotLight } from 'three';
+import type { ProximityGodRayProps } from './ProximityGodRayTypes';
+import { addGodRayBatchEntry, removeGodRayBatchEntry, type GodRayBatchEntry } from './proximityGodRayBatch';
 
-interface ProximityGodRayProps {
-  /** Static active flag — omit when using activeRef */
-  active?: boolean;
-  /** Imperative active flag — avoids React re-renders when toggled from central tick */
-  activeRef?: React.RefObject<boolean>;
-  color?: string;
-  /** Imperative beam color — updated without React re-render */
-  colorRef?: React.RefObject<string>;
-  beamHeight?: number;
-  baseY?: number;
-  /** Per-frame proximity factor (0–1) — avoids React re-renders */
-  proximityRef?: React.RefObject<number>;
-  /** Brief intensity spike on interact — parent sets true for ~200ms */
-  flashRef?: React.RefObject<boolean>;
-  /** Hover pulse phase in radians — synced from parent distance loop */
-  pulsePhaseRef?: React.RefObject<number>;
-  /** Steady glow (no sin pulse) — reduced-motion poem highlights */
-  staticHighlightRef?: React.RefObject<boolean>;
-  /** Base radius of the volumetric cone — widen for area-scale zones (hazard zones). */
-  coneRadius?: number;
-  /** Mount spot/fill lights at all — false keeps the additive cone only.
-   *  PERF (v4.40): default теперь false. Раньше каждая зона/NPC/выход
-   *  монтировала spot+point свет (2 источника × 12-19 инстанций = 25-40
-   *  лишних light-юнитов на сцену): пухлые шейдеры всех материалов,
-   *  пер-кадровый CPU-аплоад light-униформ, риск ре-компиляции при смене
-   *  счётчика света. Аддитивный конус + глинт читаются и без реального света. */
-  enableLights?: boolean;
-  /** Spot cone angle in radians — keep in sync with coneRadius for wide beams. */
-  spotAngle?: number;
-}
+export type { ProximityGodRayProps };
 
-/** Soft spotlight + volumetric cone for nearby interactables (no floor ring). */
-export function ProximityGodRay({
-  active = false,
-  activeRef,
-  color = '#88eeff',
-  colorRef,
-  beamHeight = 2.8,
-  baseY = 0.35,
-  proximityRef,
-  flashRef,
-  pulsePhaseRef,
-  staticHighlightRef,
-  coneRadius = 0.38,
-  enableLights = false,
-  spotAngle = 0.38,
-}: ProximityGodRayProps) {
+/** Soft spotlight + volumetric cone for nearby interactables (no floor ring).
+ *
+ *  PERF (v4.40, этап 27): экземпляр НЕ регистрирует собственный кадровый тик.
+ *  Все лучи сцены обслуживает один центральный тик ProximityGodRayBatch
+ *  (см. proximityGodRayBatch.ts) — компонент лишь публикует в батч ссылки
+ *  на материалы/группу и зеркалирует свежие пропсы. */
+export function ProximityGodRay(props: ProximityGodRayProps) {
+  const {
+    active = false,
+    activeRef,
+    color = '#88eeff',
+    beamHeight = 2.8,
+    baseY = 0.35,
+    coneRadius = 0.38,
+    enableLights = false,
+    spotAngle = 0.38,
+  } = props;
+
   const spotRef = useRef<SpotLight>(null);
   const fillRef = useRef<PointLight>(null);
   const coneMatRef = useRef<MeshBasicMaterial>(null);
-  const coneMeshRef = useRef<Mesh>(null);
   const glintMatRef = useRef<MeshBasicMaterial>(null);
   const glintMeshRef = useRef<Mesh>(null);
-  const pulseRef = useRef(0);
-  const usesActiveRef = activeRef !== undefined;
-  const resolvedColor = colorRef?.current ?? color;
-  // PERF (v4.40): edge-triggered видимость. Неактивный луч — самый частый
-  // случай (17-19 зон на сцену активны максимум по одной). Раньше каждый
-  // неактивный экземпляр КАЖДЫЙ кадр писал 7 свойств (intensity/opacity/
-  // visible) — грязнил scene graph и жёг CPU в critical-фазе. Теперь группа
-  // скрывается ОДИН раз при переходе active→inactive, и тик выходит сразу.
   const rootGroupRef = useRef<Group>(null);
-  const hiddenRef = useRef(true);
 
-  useFrameTick('interaction', ({ delta }) => {
-    const liveActive = usesActiveRef ? (activeRef?.current ?? false) : active;
+  const usesActiveRef = activeRef !== undefined;
+  const resolvedColor = props.colorRef?.current ?? color;
+  const mounted = usesActiveRef || active;
+  const mountedRef = useRef(mounted);
+  mountedRef.current = mounted;
 
-    if (!liveActive) {
-      if (!hiddenRef.current) {
-        hiddenRef.current = true;
-        if (rootGroupRef.current) rootGroupRef.current.visible = false;
-      }
-      return;
-    }
+  const propsRef = useRef(props);
+  propsRef.current = props;
 
-    const liveColor = colorRef?.current ?? color;
-    if (hiddenRef.current) {
-      hiddenRef.current = false;
-      if (rootGroupRef.current) rootGroupRef.current.visible = true;
-    }
-    if (!pulsePhaseRef) pulseRef.current += delta * 3.4;
-    const prox = Math.max(0.25, Math.min(1, proximityRef?.current ?? 1));
-    const phase = pulsePhaseRef?.current ?? pulseRef.current;
-    const hoverPulse = staticHighlightRef?.current ? 0 : Math.sin(phase) * 0.14;
-    const flashBoost = flashRef?.current ? 0.55 : 0;
-    const intensity = (0.4 + hoverPulse + flashBoost) * prox;
+  const entryRef = useRef<GodRayBatchEntry | null>(null);
+  if (entryRef.current === null) {
+    entryRef.current = {
+      props,
+      usesActiveRef,
+      rootGroup: rootGroupRef,
+      spot: spotRef,
+      fill: fillRef,
+      coneMat: coneMatRef,
+      glintMat: glintMatRef,
+      glintMesh: glintMeshRef,
+      hidden: true,
+      pulse: 0,
+    };
+  }
+  // Mirror latest props/flags into the stable entry — no re-registration.
+  entryRef.current.props = propsRef.current;
+  entryRef.current.usesActiveRef = usesActiveRef;
 
-    if (spotRef.current) {
-      spotRef.current.intensity = intensity;
-      spotRef.current.color.set(liveColor);
-    }
-    if (fillRef.current) {
-      fillRef.current.intensity = intensity * 0.62;
-      fillRef.current.color.set(liveColor);
-    }
-    if (coneMatRef.current) {
-      coneMatRef.current.opacity = (0.1 + hoverPulse * 0.04 + flashBoost * 0.06) * prox;
-      coneMatRef.current.color.set(liveColor);
-    }
-    if (glintMatRef.current) {
-      glintMatRef.current.opacity = (0.24 + Math.max(hoverPulse, 0) * 0.22 + flashBoost * 0.16) * prox;
-      glintMatRef.current.color.set(liveColor);
-    }
-    if (glintMeshRef.current) {
-      const scale = 1 + Math.max(hoverPulse, 0) * 0.75 + flashBoost * 0.6;
-      glintMeshRef.current.scale.setScalar(scale);
-    }
-  });
+  useLayoutEffect(() => {
+    const entry = entryRef.current;
+    if (!entry || !mountedRef.current) return;
+    addGodRayBatchEntry(entry);
+    return () => {
+      removeGodRayBatchEntry(entry);
+    };
+  }, [mounted]);
 
-  if (!usesActiveRef && !active) return null;
+  // React StrictMode remounts effects — keep the batch registration alive.
+  useEffect(() => {
+    const entry = entryRef.current;
+    if (!entry || !mountedRef.current) return;
+    addGodRayBatchEntry(entry);
+  }, [mounted]);
+
+  if (!mounted) return null;
 
   return (
-    <group ref={rootGroupRef} position={[0, baseY, 0]} visible={!hiddenRef.current}>
+    <group ref={rootGroupRef} position={[0, baseY, 0]} visible={false}>
       {enableLights && (
         <spotLight
           ref={spotRef}
@@ -130,7 +93,7 @@ export function ProximityGodRay({
           <object3D attach="target" position={[0, 0, 0]} />
         </spotLight>
       )}
-      <mesh ref={coneMeshRef} position={[0, beamHeight * 0.42, 0]} rotation={[Math.PI, 0, 0]}>
+      <mesh position={[0, beamHeight * 0.42, 0]} rotation={[Math.PI, 0, 0]}>
         <coneGeometry args={[coneRadius, beamHeight * 0.9, 16, 1, true]} />
         <meshBasicMaterial
           ref={coneMatRef}

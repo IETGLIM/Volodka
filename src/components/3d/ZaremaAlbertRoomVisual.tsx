@@ -4,8 +4,8 @@
 import { useMemo, type MutableRefObject } from 'react';
 import { BoxGeometry, CanvasTexture, CylinderGeometry, DoubleSide, PlaneGeometry, RepeatWrapping, Vector3 } from 'three';
 import { Desk, Chair, Laptop, Lamp, Radiator, Plant } from './lazyInteriorModels';
+import { LightPoolDecal } from './ContactBlobShadow';
 import { EnvironmentDetail } from './lod/PropDistanceGate';
-import { CANONICAL_SHADOW_BIAS, CANONICAL_SHADOW_NORMAL_BIAS } from '@/components/3d/Lighting';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
 import { createZaremaAlbertWarmSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
 import { registerModuleGeometries } from '@/engine/three/moduleGeometryRegistry';
@@ -415,10 +415,12 @@ export function ZaremaAlbertRoomVisual({ livePlayerPositionRef: _livePlayerPosit
       {/* ═══════════════════════════════════════════════ */}
 
       {/* Warm desk lamp */}
-      <pointLight position={[2.5, 1.5, -2.5]} color="#cc8844" intensity={3.0} distance={7} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
+      <pointLight position={[2.5, 1.5, -2.5]} color="#cc8844" intensity={3.0} distance={7} />
 
       {/* Soft ceiling light */}
-      <pointLight position={[0, 2.8, 0]} color="#ffeedd" intensity={2.5} distance={10} castShadow shadow-mapSize-width={256} shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS} />
+      <pointLight position={[0, 2.8, 0]} color="#ffeedd" intensity={2.5} distance={10} />
+      {/* PERF этап 28: cube-тени потолочной лампы заменены световым пулом */}
+      <LightPoolDecal position={[0, 0.02, 0]} radius={2.6} color="#ffeedd" opacity={0.24} />
 
       {/* Window warm spill */}
       <pointLight position={[3.5, 1.8, 0]} color="#ffaa44" intensity={1.2} distance={6} />
