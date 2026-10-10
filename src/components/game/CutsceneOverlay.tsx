@@ -101,7 +101,7 @@ const LetterboxBars = memo(function LetterboxBars({
   const barStyle: React.CSSProperties = {
     zIndex: 12,
     background: LETTERBOX_GRADIENT,
-    boxShadow: 'inset 0 -1px 0 rgba(0, 255, 200, 0.06)',
+    boxShadow: 'inset 0 -1px 0 rgba(157, 179, 200, 0.06)',
   };
   const barTransition = reducedMotion
     ? { duration: 0 }
@@ -120,7 +120,7 @@ const LetterboxBars = memo(function LetterboxBars({
         style={{
           ...barStyle,
           background: 'linear-gradient(0deg, #000 0%, #050810 70%, #0a1420 100%)',
-          boxShadow: 'inset 0 1px 0 rgba(0, 255, 200, 0.06)',
+          boxShadow: 'inset 0 1px 0 rgba(157, 179, 200, 0.06)',
         }}
         initial={reducedMotion ? false : { scaleY: 0, transformOrigin: 'bottom' }}
         animate={{ scaleY: 1 }}
@@ -158,7 +158,7 @@ const GlitchOverlay = memo(function GlitchOverlay({ intensity = 0.3 }: { intensi
         style={{
           top: '30%',
           height: '2px',
-          background: 'rgba(0, 255, 200, 0.4)',
+          background: 'rgba(157, 179, 200, 0.4)',
         }}
         animate={{
           top: ['30%', '70%', '20%', '60%', '40%'],
@@ -175,7 +175,7 @@ const GlitchOverlay = memo(function GlitchOverlay({ intensity = 0.3 }: { intensi
         style={{
           top: '60%',
           height: '1px',
-          background: 'rgba(255, 0, 100, 0.3)',
+          background: 'rgba(141, 127, 181, 0.3)',
         }}
         animate={{
           top: ['60%', '25%', '80%', '45%', '15%'],

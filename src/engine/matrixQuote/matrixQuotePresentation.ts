@@ -19,13 +19,13 @@ export type MatrixColumnSpec = {
 };
 
 const ACT_THEME_COLORS: Record<number, string> = {
-  1: '#00ffee',
-  2: '#00ff66',
-  3: '#ff6644',
-  4: '#ffcc00',
-  5: '#cc88ff',
-  6: '#ff88cc',
-  7: '#aaddff',
+  1: '#9db3c8',
+  2: '#46b96e',
+  3: '#c65548',
+  4: '#e2a84b',
+  5: '#8d7fb5',
+  6: '#d9992e',
+  7: '#8497ab',
 };
 
 export function getActThemeColor(actNumber: number): string {

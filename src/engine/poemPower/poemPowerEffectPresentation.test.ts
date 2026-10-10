@@ -23,7 +23,7 @@ describe('poemPowerEffectPresentation', () => {
 
   it('resolves act labels and colors', () => {
     expect(resolvePoemPowerActLabel(2)).toBe('АКТ 2');
-    expect(resolvePoemPowerColor('combat')).toBe('#ff4444');
+    expect(resolvePoemPowerColor('combat')).toBe('#c65548');
   });
 
   it('prefers explicit power metadata overrides', () => {
@@ -40,7 +40,7 @@ describe('poemPowerEffectPresentation', () => {
       act: 3,
       colorTheme: 'defense',
       actLabel: 'АКТ 3',
-      color: '#4488ff',
+      color: '#9db3c8',
     });
   });
 });

@@ -46,7 +46,7 @@ export function FloatingActionIndicator() {
         addAction(
           d > 0 ? '🕊' : '⚠',
           d > 0 ? `Карма +${d}` : `Карма ${d}`,
-          d > 0 ? '#57a874' : '#fb7185',
+          d > 0 ? '#57a874' : '#c65548',
         );
       }
     });

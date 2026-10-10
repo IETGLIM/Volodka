@@ -30,9 +30,9 @@ type EmotionTag = 'neutral' | 'tense' | 'warm' | 'mysterious' | 'poem_reveal';
 
 const EMOTION_CONFIG: Record<EmotionTag, { label: string; color: string; bg: string; border: string }> = {
   neutral:      { label: 'Нейтрально',  color: '#94a3b8', bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.2)' },
-  tense:        { label: 'Напряжённо', color: '#f43f5e', bg: 'rgba(244,63,94,0.08)',   border: 'rgba(244,63,94,0.25)' },
-  warm:         { label: 'Тепло',       color: '#fbbf24', bg: 'rgba(251,191,36,0.08)',  border: 'rgba(251,191,36,0.25)' },
-  mysterious:   { label: 'Таинственно', color: '#a78bfa', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.25)' },
+  tense:        { label: 'Напряжённо', color: '#c65548', bg: 'rgba(198,85,72,0.08)',   border: 'rgba(198,85,72,0.25)' },
+  warm:         { label: 'Тепло',       color: '#e2a84b', bg: 'rgba(226,168,75,0.08)',  border: 'rgba(226,168,75,0.25)' },
+  mysterious:   { label: 'Таинственно', color: '#8d7fb5', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.25)' },
   poem_reveal:  { label: 'Стих',        color: '#9db3c8', bg: 'rgba(157, 179, 200,0.08)',   border: 'rgba(157, 179, 200,0.25)' },
 };
 
@@ -222,9 +222,9 @@ function NPCListItem({
               <span
                 className="inline-flex items-center justify-center min-w-[18px] h-4 px-1 rounded-full text-[9px] font-mono font-medium"
                 style={{
-                  background: colors ? `${colors.primary}20` : 'rgba(52,211,153,0.15)',
+                  background: colors ? `${colors.primary}20` : 'rgba(70,185,110,0.15)',
                   color: colors?.primary ?? '#57a874',
-                  border: `1px solid ${colors ? colors.primary + '30' : 'rgba(52,211,153,0.2)'}`,
+                  border: `1px solid ${colors ? colors.primary + '30' : 'rgba(70,185,110,0.2)'}`,
                 }}
               >
                 {entries.length}
@@ -269,11 +269,11 @@ function ConversationEntry({
 
   const accentBg = isPlayer
     ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
-    : (npcColors ? `${npcColors.primary}12` : 'rgba(52,211,153,0.08)');
+    : (npcColors ? `${npcColors.primary}12` : 'rgba(70,185,110,0.08)');
 
   const accentBorder = isPlayer
     ? 'rgb(var(--cyber-cyan-rgb) / 0.25)'
-    : (npcColors ? `${npcColors.primary}30` : 'rgba(52,211,153,0.25)');
+    : (npcColors ? `${npcColors.primary}30` : 'rgba(70,185,110,0.25)');
 
   // Use emotion-based styling for the entry border when not neutral
   const entryBorder = emotion !== 'neutral' ? emotionCfg.border : accentBorder;
@@ -528,9 +528,9 @@ export function DialogueHistoryPanel({ open, onClose }: DialogueHistoryPanelProp
           style={{
             zIndex: UI_LAYERS.PANEL,
             background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
-            borderLeft: '1px solid rgba(52,211,153,0.15)',
+            borderLeft: '1px solid rgba(70,185,110,0.15)',
             backdropFilter: 'blur(20px)',
-            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(52,211,153,0.08)',
+            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(70,185,110,0.08)',
           }}
         >
           <div className="flex flex-col h-full">

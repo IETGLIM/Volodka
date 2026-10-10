@@ -14,9 +14,9 @@ const COLOR_MAP = {
 
 const GLOW_MAP = {
   cyan: 'shadow-[0_0_8px_rgb(var(--cyber-cyan-rgb) / 0.5)]',
-  emerald: 'shadow-[0_0_8px_rgba(52,211,153,0.5)]',
-  rose: 'shadow-[0_0_8px_rgba(251,113,133,0.5)]',
-  amber: 'shadow-[0_0_8px_rgba(251,191,36,0.5)]',
+  emerald: 'shadow-[0_0_8px_rgba(70,185,110,0.5)]',
+  rose: 'shadow-[0_0_8px_rgba(198,85,72,0.5)]',
+  amber: 'shadow-[0_0_8px_rgba(226,168,75,0.5)]',
 } as const;
 
 export function StatPulse({ active, color = 'cyan' }: StatPulseProps) {

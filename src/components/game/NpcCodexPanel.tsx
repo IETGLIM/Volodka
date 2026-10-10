@@ -100,16 +100,16 @@ function getRelationLabel(value: number): { label: string; color: string } {
   if (value >= 60) return { label: 'Союзник', color: '#57a874' };
   if (value >= 20) return { label: 'Дружелюбный', color: '#9db3c8' };
   if (value >= -20) return { label: 'Нейтральный', color: '#a1a1aa' };
-  if (value >= -60) return { label: 'Холодный', color: '#fb923c' };
-  return { label: 'Враждебный', color: '#f87171' };
+  if (value >= -60) return { label: 'Холодный', color: '#e2a84b' };
+  return { label: 'Враждебный', color: '#c65548' };
 }
 
 function getRelationColor(value: number): string {
   if (value >= 60) return '#57a874';
   if (value >= 20) return '#9db3c8';
   if (value >= -20) return '#a1a1aa';
-  if (value >= -60) return '#fb923c';
-  return '#f87171';
+  if (value >= -60) return '#e2a84b';
+  return '#c65548';
 }
 
 /* ─── SVG Avatar Generator ─── */
@@ -432,7 +432,7 @@ function NpcDetailView({
                   className="npc-codex-relation-fill"
                   style={{
                     width: `${Math.max(0, Math.min(100, (relationValue + 100) / 2))}%`,
-                    background: `linear-gradient(90deg, #f87171, ${relColor})`,
+                    background: `linear-gradient(90deg, #c65548, ${relColor})`,
                     boxShadow: `0 0 8px ${relColor}40`,
                   }}
                 />

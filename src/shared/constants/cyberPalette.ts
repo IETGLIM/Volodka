@@ -31,7 +31,7 @@ export function cyberMatrix(alpha: number): string {
 export const CYBERPUNK_COLORS = {
   matrixGreen: CYBER_MATRIX,
   neonCyan: CYBER_CYAN,
-  amberGold: '#d9992e',
+  amberGold: '#e2a84b',
   deepCrimson: '#b23c31',
   mutedOlive: '#6f8a5c',
 } as const;

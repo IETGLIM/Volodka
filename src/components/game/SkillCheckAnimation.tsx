@@ -225,8 +225,8 @@ function ThresholdBar({
           style={{
             background: success
               ? `linear-gradient(90deg, ${color}88, ${color})`
-              : `linear-gradient(90deg, rgba(251,113,133,0.5), rgba(251,113,133,0.9))`,
-            boxShadow: `0 0 8px ${success ? color + '40' : 'rgba(251,113,133,0.3)'}`,
+              : `linear-gradient(90deg, rgba(198,85,72,0.5), rgba(198,85,72,0.9))`,
+            boxShadow: `0 0 8px ${success ? color + '40' : 'rgba(198,85,72,0.3)'}`,
           }}
         />
       </div>
@@ -259,12 +259,12 @@ export function SkillCheckAnimation({
   const degreeColor = successDegree ? getSuccessDegreeColor(successDegree) : null;
 
   const resultColor = degreeColor ?? (criticalSuccess
-    ? '#fbbf24'
+    ? '#e2a84b'
     : criticalFailure
-      ? '#ef4444'
+      ? '#c65548'
       : success
         ? '#10b981'
-        : '#ef4444');
+        : '#c65548');
 
   const resultLabel = degreeLabel ?? (criticalSuccess
     ? 'КРИТИЧЕСКИЙ УСПЕХ'
@@ -478,7 +478,7 @@ export function SkillCheckAnimation({
                   style={{
                     background: success
                       ? 'radial-gradient(ellipse at center, rgba(16,185,129,0.3) 0%, transparent 70%)'
-                      : 'radial-gradient(ellipse at center, rgba(239,68,68,0.35) 0%, transparent 70%)',
+                      : 'radial-gradient(ellipse at center, rgba(198,85,72,0.35) 0%, transparent 70%)',
                   }}
                 />
 

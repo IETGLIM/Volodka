@@ -8,7 +8,7 @@ import { CloudSun, Moon, Sun } from 'lucide-react';
 export function getTimeOfDayShadow(hour: number): string {
   if (hour >= 6 && hour < 10) {
     // Morning: warm amber
-    return '0 0 8px rgba(255, 171, 0, 0.30)';
+    return '0 0 8px rgba(226, 168, 75, 0.30)';
   }
   if (hour >= 10 && hour < 18) {
     // Day: neutral white (no extra shadow)
@@ -16,7 +16,7 @@ export function getTimeOfDayShadow(hour: number): string {
   }
   if (hour >= 18 && hour < 22) {
     // Evening: warm orange
-    return '0 0 8px rgba(255, 109, 0, 0.30)';
+    return '0 0 8px rgba(226, 168, 75, 0.30)';
   }
   // Night (22-6): cool cyan
   return '0 0 6px rgba(157, 179, 200, 0.20)';

@@ -40,7 +40,7 @@ function resolveDisplayMeta(flag: ActiveTTLFlag): {
   const consumer = getPoemTTLConsumer(flag.key);
   return {
     icon: consumer?.icon ?? '✦',
-    color: consumer?.color ?? '#fbbf24',
+    color: consumer?.color ?? '#e2a84b',
     effectSummary: consumer?.effectSummary ?? 'Активная сила стиха.',
   };
 }

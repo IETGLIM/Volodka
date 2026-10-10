@@ -29,7 +29,7 @@ export function TurnPhaseIndicator() {
         <motion.span
           animate={{
             opacity: isPlayerTurn ? 1 : 0.3,
-            textShadow: isPlayerTurn ? '0 0 8px rgba(6,182,212,0.5)' : 'none'
+            textShadow: isPlayerTurn ? '0 0 8px rgba(157,179,200,0.5)' : 'none'
           }}
           className="text-[9px] font-mono font-semibold uppercase tracking-widest text-cyan-400 transition-all duration-300"
         >
@@ -41,7 +41,7 @@ export function TurnPhaseIndicator() {
         <motion.span
           animate={{
             opacity: !isPlayerTurn ? 1 : 0.3,
-            textShadow: !isPlayerTurn ? '0 0 8px rgba(239,68,68,0.5)' : 'none'
+            textShadow: !isPlayerTurn ? '0 0 8px rgba(198,85,72,0.5)' : 'none'
           }}
           className="text-[9px] font-mono font-semibold uppercase tracking-widest text-red-400 transition-all duration-300"
         >
@@ -62,10 +62,10 @@ export function TurnPhaseIndicator() {
           className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full"
           animate={{
             left: isPlayerTurn ? '12%' : '82%',
-            backgroundColor: isPlayerTurn ? '#06b6d4' : '#ef4444',
+            backgroundColor: isPlayerTurn ? '#9db3c8' : '#c65548',
             boxShadow: isPlayerTurn
-              ? '0 0 8px rgba(6,182,212,0.6), 0 0 16px rgba(6,182,212,0.3)'
-              : '0 0 8px rgba(239,68,68,0.6), 0 0 16px rgba(239,68,68,0.3)'
+              ? '0 0 8px rgba(157,179,200,0.6), 0 0 16px rgba(157,179,200,0.3)'
+              : '0 0 8px rgba(198,85,72,0.6), 0 0 16px rgba(198,85,72,0.3)'
           }}
           transition={{ duration: reducedMotion ? 0 : 0.4, ease: [0.4, 0, 0.2, 1] }}
         />

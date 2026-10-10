@@ -225,12 +225,12 @@ const STATUS_STYLES: Record<QuestStatus, {
   completed: {
     tint: 'hue-rotate(90deg)',
     overlayColor: 'rgba(70, 185, 110,0.08)',
-    borderColor: 'rgba(0,200,80,0.6)',
+    borderColor: 'rgba(70,185,110,0.6)',
   },
   failed: {
     tint: '',
-    overlayColor: 'rgba(255,50,50,0.12)',
-    borderColor: 'rgba(255,60,60,0.7)',
+    overlayColor: 'rgba(198,85,72,0.12)',
+    borderColor: 'rgba(198,85,72,0.7)',
   },
   abandoned: { tint: 'grayscale(0.5)', overlayColor: 'rgba(100,100,100,0.1)', borderColor: 'rgba(100,100,100,0.3)' },
 };
@@ -238,10 +238,10 @@ const STATUS_STYLES: Record<QuestStatus, {
 /** Цвета редкости наград / Reward rarity colors */
 const RARITY_COLORS: Record<string, string> = {
   common: '#aaaaaa',
-  uncommon: '#4488cc',
-  rare: '#6644cc',
-  epic: '#cc44aa',
-  legendary: '#ff8800',
+  uncommon: '#9db3c8',
+  rare: '#8d7fb5',
+  epic: '#8d7fb5',
+  legendary: '#e2a84b',
 };
 
 /* ─── Utility Functions ─── */
@@ -332,7 +332,7 @@ const ObjectiveItem = memo(function ObjectiveItem({
       transition={{ delay: index * 0.05 }}
       style={{
         background: objective.isCompleted 
-          ? 'rgba(0,200,80,0.06)' 
+          ? 'rgba(70,185,110,0.06)' 
           : 'rgba(255,255,255,0.02)',
         opacity: objective.isOptional ? 0.75 : 1,
       }}
@@ -357,7 +357,7 @@ const ObjectiveItem = memo(function ObjectiveItem({
         {objective.isCompleted ? (
           <Check
             size={14}
-            style={{ color: '#00cc66' }}
+            style={{ color: '#46b96e' }}
             strokeWidth={3}
           />
         ) : (
@@ -381,7 +381,7 @@ const ObjectiveItem = memo(function ObjectiveItem({
           }`}
           style={{
             color: objective.isCompleted 
-              ? 'rgba(0,200,80,0.9)' 
+              ? 'rgba(70,185,110,0.9)' 
               : '#c8d0d8',
           }}
         >
@@ -596,7 +596,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           <span
             className="text-[10px] font-mono tabular-nums shrink-0 mt-0.5"
             style={{
-              color: isFailed ? '#ff5555' : typeConfig.color,
+              color: isFailed ? '#c65548' : typeConfig.color,
             }}
           >
             {quest.progress}%
@@ -611,7 +611,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           <motion.div
             className="h-full rounded-full"
             style={{
-              backgroundColor: isFailed ? '#ff3333' : typeConfig.color,
+              backgroundColor: isFailed ? '#c65548' : typeConfig.color,
               width: `${quest.progress}%`,
             }}
           />
@@ -623,7 +623,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
             <Timer size={10} />
             <span
               className="text-[10px] font-mono"
-              style={{ color: quest.timeRemaining < 60000 ? '#ff6644' : '#aaa' }}
+              style={{ color: quest.timeRemaining < 60000 ? '#c65548' : '#aaa' }}
             >
               {formatTimeRemaining(quest.timeRemaining)}
             </span>
@@ -683,7 +683,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           aria-hidden="true"
         >
           <div className="absolute top-2 right-2">
-            <X size={16} style={{ color: '#ff4444' }} />
+            <X size={16} style={{ color: '#c65548' }} />
           </div>
         </motion.div>
       )}
@@ -705,7 +705,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
             animate={{ scale: 1, rotate: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 20, delay: 0.2 }}
           >
-            <Check size={20} style={{ color: '#00dd66' }} strokeWidth={3} />
+            <Check size={20} style={{ color: '#46b96e' }} strokeWidth={3} />
           </motion.div>
         </motion.div>
       )}
@@ -780,7 +780,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
         <h3
           className={`text-base font-bold mb-1 ${isActive ? 'hud-filmic-objective-pulse' : ''}`}
           style={{
-            color: isFailed ? '#ff6666' : typeConfig.color,
+            color: isFailed ? '#c65548' : typeConfig.color,
             textShadow: `0 0 12px ${typeConfig.glow}`,
           }}
         >
@@ -802,19 +802,19 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           className="mx-4 mt-2 px-3 py-2 rounded-md flex items-center gap-2"
           style={{
             background: quest.timeRemaining < 60000
-              ? 'rgba(255,50,50,0.12)'
-              : 'rgba(255,200,50,0.08)',
+              ? 'rgba(198,85,72,0.12)'
+              : 'rgba(226,168,75,0.08)',
             border: `1px solid ${
               quest.timeRemaining < 60000
-                ? 'rgba(255,50,50,0.25)'
-                : 'rgba(255,200,50,0.2)'
+                ? 'rgba(198,85,72,0.25)'
+                : 'rgba(226,168,75,0.2)'
             }`,
           }}
         >
           <Clock
             size={14}
             style={{
-              color: quest.timeRemaining < 60000 ? '#ff5555' : '#ffc832',
+              color: quest.timeRemaining < 60000 ? '#c65548' : '#e2a84b',
               ...(quest.timeRemaining < 60000 && !reducedMotion
                 ? { animation: 'pulse 1s infinite' }
                 : {}),
@@ -823,7 +823,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           <span
             className="text-xs font-mono tabular-nums flex-1"
             style={{
-              color: quest.timeRemaining < 60000 ? '#ff7777' : '#ffd666',
+              color: quest.timeRemaining < 60000 ? '#c65548' : '#e2a84b',
             }}
           >
             {formatTimeRemaining(quest.timeRemaining)}
@@ -833,7 +833,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
               className="h-full rounded-full"
               style={{
                 width: `${(quest.timeRemaining / quest.timeLimit) * 100}%`,
-                backgroundColor: quest.timeRemaining < 60000 ? '#ff4444' : '#ffaa00',
+                backgroundColor: quest.timeRemaining < 60000 ? '#c65548' : '#e2a84b',
               }}
             />
           </div>
@@ -912,7 +912,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           }}
         >
           <div className="flex items-center gap-1.5 mb-2">
-            <Trophy size={12} style={{ color: '#ffaa44' }} />
+            <Trophy size={12} style={{ color: '#e2a84b' }} />
             <span
               className="text-[10px] font-mono uppercase tracking-wider"
               style={{ color: 'rgba(180,160,100,0.8)' }}
@@ -941,7 +941,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           type="button"
           className="flex items-center gap-1.5 text-[11px] font-mono px-2 py-1 rounded hover:bg-white/10 transition-colors"
           style={{
-            color: quest.isTracked ? '#ffaa00' : 'rgba(150,165,180,0.6)',
+            color: quest.isTracked ? '#e2a84b' : 'rgba(150,165,180,0.6)',
           }}
           onClick={(e) => {
             e.stopPropagation();

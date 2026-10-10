@@ -122,16 +122,16 @@
 
 /* Accent-colored glow variants */
 @keyframes glow-pulse-emerald {
-  0%, 100% { box-shadow: 0 0 4px rgba(52, 211, 153, 0.1), inset 0 0 2px rgba(52, 211, 153, 0.05); }
-  50% { box-shadow: 0 0 12px rgba(52, 211, 153, 0.25), 0 0 24px rgba(52, 211, 153, 0.08), inset 0 0 6px rgba(52, 211, 153, 0.1); }
+  0%, 100% { box-shadow: 0 0 4px rgba(70, 185, 110, 0.1), inset 0 0 2px rgba(70, 185, 110, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(70, 185, 110, 0.25), 0 0 24px rgba(70, 185, 110, 0.08), inset 0 0 6px rgba(70, 185, 110, 0.1); }
 }
 @keyframes glow-pulse-amber {
-  0%, 100% { box-shadow: 0 0 4px rgba(251, 191, 36, 0.1), inset 0 0 2px rgba(251, 191, 36, 0.05); }
-  50% { box-shadow: 0 0 12px rgba(251, 191, 36, 0.25), 0 0 24px rgba(251, 191, 36, 0.08), inset 0 0 6px rgba(251, 191, 36, 0.1); }
+  0%, 100% { box-shadow: 0 0 4px rgba(226, 168, 75, 0.1), inset 0 0 2px rgba(226, 168, 75, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(226, 168, 75, 0.25), 0 0 24px rgba(226, 168, 75, 0.08), inset 0 0 6px rgba(226, 168, 75, 0.1); }
 }
 @keyframes glow-pulse-fuchsia {
-  0%, 100% { box-shadow: 0 0 4px rgba(217, 70, 239, 0.1), inset 0 0 2px rgba(217, 70, 239, 0.05); }
-  50% { box-shadow: 0 0 12px rgba(217, 70, 239, 0.25), 0 0 24px rgba(217, 70, 239, 0.08), inset 0 0 6px rgba(217, 70, 239, 0.1); }
+  0%, 100% { box-shadow: 0 0 4px rgba(141, 127, 181, 0.1), inset 0 0 2px rgba(141, 127, 181, 0.05); }
+  50% { box-shadow: 0 0 12px rgba(141, 127, 181, 0.25), 0 0 24px rgba(141, 127, 181, 0.08), inset 0 0 6px rgba(141, 127, 181, 0.1); }
 }
 
 .glow-pulse-emerald { animation: glow-pulse-emerald 2.5s ease-in-out infinite; }

@@ -45,13 +45,13 @@ const BOSS_INTRO_DATA: Partial<Record<EnemyType, BossIntroData>> = {
   boss_neuro_sys: {
     name: 'НЕЙРО-СИСТЕМА',
     subtitle: 'Сетевой страж пробудился',
-    accent: '#ff3b6b',
+    accent: '#c65548',
     ariaLabel: 'Босс: Нейро-Система',
   },
   boss_dream_eater: {
     name: 'ПОЖИРАТЕЛЬ СНОВ',
     subtitle: 'Он питается твоими страхами',
-    accent: '#9b5cff',
+    accent: '#8d7fb5',
     ariaLabel: 'Босс: Пожиратель Снов',
   },
   boss_final_code: {
@@ -63,13 +63,13 @@ const BOSS_INTRO_DATA: Partial<Record<EnemyType, BossIntroData>> = {
   boss_catacombs_keeper: {
     name: 'ХРАНИТЕЛЬ КАТАКОМБ',
     subtitle: 'Тысячи лет стражи — за что вы пришли?',
-    accent: '#8b5cf6',
+    accent: '#8d7fb5',
     ariaLabel: 'Босс: Хранитель Катакомб',
   },
   boss_silent_warden: {
     name: 'ТИХИЙ ХРАНИТЕЛЬ',
     subtitle: 'Тишина, которая слушает. Двадцать лет — без единого слова.',
-    accent: '#35f0a0',
+    accent: '#46b96e',
     ariaLabel: 'Босс: Тихий Хранитель',
   },
 };
@@ -248,7 +248,7 @@ const BossTitle = memo(function BossTitle({
        *  CombatIntroSplash boss treatment but with extra chromatic glow. */}
       <motion.div
         className="mt-6 text-[10px] sm:text-xs font-mono tracking-[0.35em] uppercase"
-        style={{ color: '#fb7185', textShadow: `0 0 10px ${data.accent}88` }}
+        style={{ color: '#c65548', textShadow: `0 0 10px ${data.accent}88` }}
         initial={{ opacity: 0 }}
         animate={{ opacity: titleVisible ? 0.7 : 0 }}
         transition={{ delay: reducedMotion ? 0 : 0.85, duration: 0.4 }}

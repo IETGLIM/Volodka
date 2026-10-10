@@ -234,18 +234,18 @@ export function MiniGameHubContent({ onClose }: MiniGameHubContentProps) {
         <div
           className="pointer-events-none absolute -bottom-px -left-px h-8 w-8"
           style={{
-            borderBottom: '2px solid rgba(251, 191, 36, 0.2)',
-            borderLeft: '2px solid rgba(251, 191, 36, 0.2)',
-            boxShadow: '-2px 2px 10px rgba(251, 191, 36, 0.05)',
+            borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
+            borderLeft: '2px solid rgba(226, 168, 75, 0.2)',
+            boxShadow: '-2px 2px 10px rgba(226, 168, 75, 0.05)',
           }}
           aria-hidden="true"
         />
         <div
           className="pointer-events-none absolute -bottom-px -right-px h-8 w-8"
           style={{
-            borderBottom: '2px solid rgba(251, 191, 36, 0.2)',
-            borderRight: '2px solid rgba(251, 191, 36, 0.2)',
-            boxShadow: '2px 2px 10px rgba(251, 191, 36, 0.05)',
+            borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
+            borderRight: '2px solid rgba(226, 168, 75, 0.2)',
+            boxShadow: '2px 2px 10px rgba(226, 168, 75, 0.05)',
           }}
           aria-hidden="true"
         />

@@ -85,7 +85,7 @@ if (!hasWebGl2()) {
       background: #0a0e14; color: #d8dee6; font-family: system-ui, sans-serif; padding: 24px;
     ">
       <div style="max-width: 520px; line-height: 1.6;">
-        <h1 style="font-size: 20px; margin: 0 0 12px; color: #6ee7d8;">Нужна поддержка WebGL&nbsp;2</h1>
+        <h1 style="font-size: 20px; margin: 0 0 12px; color: #9db3c8;">Нужна поддержка WebGL&nbsp;2</h1>
         <p style="margin: 0 0 12px;">«Володька» использует WebGL&nbsp;2 для 3D-графики, но ваш браузер его не предоставляет.</p>
         <ul style="margin: 0 0 12px; padding-left: 20px;">
           <li>Обновите браузер (Chrome, Firefox, Edge или Safari&nbsp;15+)</li>

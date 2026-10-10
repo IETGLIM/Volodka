@@ -18,7 +18,7 @@ function LevelUpTextCard({ levelUp }: { levelUp: LevelUpViewState }) {
       <div
         className="h-px w-[180px]"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(226,168,75,0.6), transparent)',
         }}
       />
 
@@ -26,7 +26,7 @@ function LevelUpTextCard({ levelUp }: { levelUp: LevelUpViewState }) {
         className="px-8 py-3 rounded-xl relative bg-black/60 backdrop-blur-md border border-amber-400/40"
         style={{
           boxShadow:
-            '0 0 40px rgba(251,191,36,0.2), 0 0 80px rgba(251,191,36,0.08), inset 0 0 20px rgba(251,191,36,0.05)',
+            '0 0 40px rgba(226,168,75,0.2), 0 0 80px rgba(226,168,75,0.08), inset 0 0 20px rgba(226,168,75,0.05)',
         }}
       >
         <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-amber-400/40 rounded-tl-md" />
@@ -37,7 +37,7 @@ function LevelUpTextCard({ levelUp }: { levelUp: LevelUpViewState }) {
         <p
           className="text-3xl sm:text-4xl md:text-5xl font-mono font-black tracking-[0.15em] text-center text-amber-400"
           style={{
-            textShadow: '0 0 20px rgba(251,191,36,0.6), 0 0 40px rgba(251,191,36,0.3)',
+            textShadow: '0 0 20px rgba(226,168,75,0.6), 0 0 40px rgba(226,168,75,0.3)',
           }}
         >
           УРОВЕНЬ {levelUp.newLevel}!
@@ -47,7 +47,7 @@ function LevelUpTextCard({ levelUp }: { levelUp: LevelUpViewState }) {
       <div
         className="h-px w-[180px]"
         style={{
-          background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent)',
+          background: 'linear-gradient(90deg, transparent, rgba(226,168,75,0.6), transparent)',
         }}
       />
 
@@ -83,7 +83,7 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
         transition={{ duration: 0.8, ease: 'easeOut' }}
         style={{
           background:
-            'radial-gradient(ellipse at center, rgba(251,191,36,0.4) 0%, rgba(251,191,36,0.15) 40%, rgba(251,191,36,0.05) 70%, transparent 100%)',
+            'radial-gradient(ellipse at center, rgba(226,168,75,0.4) 0%, rgba(226,168,75,0.15) 40%, rgba(226,168,75,0.05) 70%, transparent 100%)',
         }}
       />
 
@@ -94,7 +94,7 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
         transition={{ duration: 2.5, ease: 'easeInOut' }}
         style={{
           background:
-            'radial-gradient(ellipse at center, rgba(251,191,36,0.12) 0%, rgba(251,191,36,0.04) 50%, transparent 80%)',
+            'radial-gradient(ellipse at center, rgba(226,168,75,0.12) 0%, rgba(226,168,75,0.04) 50%, transparent 80%)',
         }}
       />
 
@@ -111,7 +111,7 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
           <motion.div
             className="h-px"
             style={{
-              background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(226,168,75,0.6), transparent)',
             }}
             initial={{ width: 0 }}
             animate={{ width: 180 }}
@@ -122,7 +122,7 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
             className="px-8 py-3 rounded-xl relative bg-black/60 backdrop-blur-md border border-amber-400/40"
             style={{
               boxShadow:
-                '0 0 40px rgba(251,191,36,0.2), 0 0 80px rgba(251,191,36,0.08), inset 0 0 20px rgba(251,191,36,0.05)',
+                '0 0 40px rgba(226,168,75,0.2), 0 0 80px rgba(226,168,75,0.08), inset 0 0 20px rgba(226,168,75,0.05)',
             }}
           >
             <div className="absolute top-0 left-0 w-4 h-4 border-t border-l border-amber-400/40 rounded-tl-md" />
@@ -134,13 +134,13 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
               className="text-3xl sm:text-4xl md:text-5xl font-mono font-black tracking-[0.15em] text-center text-amber-400"
               style={{
                 textShadow:
-                  '0 0 20px rgba(251,191,36,0.6), 0 0 40px rgba(251,191,36,0.3), 0 0 60px rgba(251,191,36,0.15)',
+                  '0 0 20px rgba(226,168,75,0.6), 0 0 40px rgba(226,168,75,0.3), 0 0 60px rgba(226,168,75,0.15)',
               }}
               animate={{
                 textShadow: [
-                  '0 0 20px rgba(251,191,36,0.6), 0 0 40px rgba(251,191,36,0.3)',
-                  '0 0 30px rgba(251,191,36,0.8), 0 0 60px rgba(251,191,36,0.4), 0 0 80px rgba(251,191,36,0.2)',
-                  '0 0 20px rgba(251,191,36,0.6), 0 0 40px rgba(251,191,36,0.3)',
+                  '0 0 20px rgba(226,168,75,0.6), 0 0 40px rgba(226,168,75,0.3)',
+                  '0 0 30px rgba(226,168,75,0.8), 0 0 60px rgba(226,168,75,0.4), 0 0 80px rgba(226,168,75,0.2)',
+                  '0 0 20px rgba(226,168,75,0.6), 0 0 40px rgba(226,168,75,0.3)',
                 ],
               }}
               transition={{ duration: 1.5, repeat: 1, ease: 'easeInOut' }}
@@ -152,7 +152,7 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
           <motion.div
             className="h-px"
             style={{
-              background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.6), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(226,168,75,0.6), transparent)',
             }}
             initial={{ width: 0 }}
             animate={{ width: 180 }}
@@ -167,7 +167,7 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
           >
             <motion.p
               className="text-sm font-mono tracking-wider text-amber-300/60"
-              style={{ textShadow: '0 0 8px rgba(251,191,36,0.3)' }}
+              style={{ textShadow: '0 0 8px rgba(226,168,75,0.3)' }}
             >
               {formatSkillPointsLabel(levelUp.levelsGained)}
             </motion.p>
@@ -190,7 +190,7 @@ export function LevelUpAnimatedOverlay({ levelUp, particles }: LevelUpOverlayCon
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'linear-gradient(180deg, transparent 0%, rgba(251,191,36,0.05) 50%, transparent 100%)',
+            'linear-gradient(180deg, transparent 0%, rgba(226,168,75,0.05) 50%, transparent 100%)',
         }}
         initial={{ y: '-100%' }}
         animate={{ y: '100%' }}

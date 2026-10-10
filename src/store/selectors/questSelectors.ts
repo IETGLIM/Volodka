@@ -188,7 +188,7 @@ export function getNpcQuestMarkerDisplay(npcId: string): NpcQuestMarkerDisplay |
     if (!questDef || !isNpcRelevantToQuest(q.questId, canonicalNpcId)) continue;
     return {
       icon: '✓',
-      color: '#00ff66',
+      color: '#46b96e',
       glowPrefix: 'rgba(0, 255, 102,',
       pulseSpeed: 0.7,
       questName: questDef.title,
@@ -207,7 +207,7 @@ export function getNpcQuestMarkerDisplay(npcId: string): NpcQuestMarkerDisplay |
       if (npcMatchesObjective(q.questId, obj.id, canonicalNpcId)) {
         return {
           icon: '?',
-          color: '#66ccff',
+          color: '#9db3c8',
           glowPrefix: 'rgba(102, 204, 255,',
           pulseSpeed: 1.0,
           questName: questDef.title,
@@ -219,7 +219,7 @@ export function getNpcQuestMarkerDisplay(npcId: string): NpcQuestMarkerDisplay |
     if (isNpcRelevantToQuest(q.questId, canonicalNpcId)) {
       return {
         icon: '?',
-        color: '#66ccff',
+        color: '#9db3c8',
         glowPrefix: 'rgba(102, 204, 255,',
         pulseSpeed: 1.0,
         questName: questDef.title,
@@ -239,7 +239,7 @@ export function getNpcQuestMarkerDisplay(npcId: string): NpcQuestMarkerDisplay |
 
     return {
       icon: '!',
-      color: '#ffdd00',
+      color: '#e2a84b',
       glowPrefix: 'rgba(255, 221, 0,',
       pulseSpeed: 1.5,
       questName: qDef.title,

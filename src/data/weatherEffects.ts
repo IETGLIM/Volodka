@@ -45,7 +45,7 @@ export const WEATHER_EFFECT_CLEAR: WeatherEffect = {
   skillBonus: {},
   description: 'Ясная погода. Идеальные условия для работы и прогулок.',
   icon: 'Sun',
-  color: '#f0c040',
+  color: '#e2a84b',
 };
 
 /** Rain — reduced energy regen, +empathy, reduced visibility */
@@ -117,7 +117,7 @@ export const WEATHER_EFFECT_STORM: WeatherEffect = {
   },
   description: 'Гроза. Энергия убывает быстро, стресс растёт. Но код и логика прорастают в буре. На улице лучше не сражаться.',
   icon: 'CloudLightning',
-  color: '#cc4444',
+  color: '#c65548',
 };
 
 /* ─── Weather Effect Map ─── */

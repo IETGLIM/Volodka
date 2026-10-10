@@ -104,8 +104,8 @@ export function NpcNoDialogueBark() {
               background: 'rgba(0, 8, 16, 0.78)',
               backdropFilter: 'blur(12px)',
               WebkitBackdropFilter: 'blur(12px)',
-              border: '1px solid rgba(100, 180, 200, 0.25)',
-              boxShadow: '0 0 16px rgba(100, 180, 200, 0.08), inset 0 0 12px rgba(0,0,0,0.3)',
+              border: '1px solid rgba(157, 179, 200, 0.25)',
+              boxShadow: '0 0 16px rgba(157, 179, 200, 0.08), inset 0 0 12px rgba(0,0,0,0.3)',
             }}
             initial={reducedMotion ? false : { opacity: 0, y: 14, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -124,34 +124,34 @@ export function NpcNoDialogueBark() {
             {/* Corner brackets */}
             <div
               className="absolute top-0 left-0 w-2 h-2 pointer-events-none"
-              style={{ borderTop: '1px solid rgba(100, 180, 200, 0.3)', borderLeft: '1px solid rgba(100, 180, 200, 0.3)' }}
+              style={{ borderTop: '1px solid rgba(157, 179, 200, 0.3)', borderLeft: '1px solid rgba(157, 179, 200, 0.3)' }}
             />
             <div
               className="absolute top-0 right-0 w-2 h-2 pointer-events-none"
-              style={{ borderTop: '1px solid rgba(100, 180, 200, 0.3)', borderRight: '1px solid rgba(100, 180, 200, 0.3)' }}
+              style={{ borderTop: '1px solid rgba(157, 179, 200, 0.3)', borderRight: '1px solid rgba(157, 179, 200, 0.3)' }}
             />
             <div
               className="absolute bottom-0 left-0 w-2 h-2 pointer-events-none"
-              style={{ borderBottom: '1px solid rgba(100, 180, 200, 0.3)', borderLeft: '1px solid rgba(100, 180, 200, 0.3)' }}
+              style={{ borderBottom: '1px solid rgba(157, 179, 200, 0.3)', borderLeft: '1px solid rgba(157, 179, 200, 0.3)' }}
             />
             <div
               className="absolute bottom-0 right-0 w-2 h-2 pointer-events-none"
-              style={{ borderBottom: '1px solid rgba(100, 180, 200, 0.3)', borderRight: '1px solid rgba(100, 180, 200, 0.3)' }}
+              style={{ borderBottom: '1px solid rgba(157, 179, 200, 0.3)', borderRight: '1px solid rgba(157, 179, 200, 0.3)' }}
             />
 
             {/* Content */}
             <div className="relative z-20 flex items-center gap-2.5 px-4 py-2.5">
               <div
                 className="flex-shrink-0 flex items-center justify-center"
-                style={{ filter: 'drop-shadow(0 0 4px rgba(100, 180, 200, 0.3))' }}
+                style={{ filter: 'drop-shadow(0 0 4px rgba(157, 179, 200, 0.3))' }}
               >
-                <MessageSquareOff size={14} color="rgba(100, 180, 200, 0.7)" />
+                <MessageSquareOff size={14} color="rgba(157, 179, 200, 0.7)" />
               </div>
               <span
                 className="font-mono text-sm tracking-wide"
                 style={{
                   color: 'rgba(180, 210, 220, 0.9)',
-                  textShadow: '0 0 6px rgba(100, 180, 200, 0.2)',
+                  textShadow: '0 0 6px rgba(157, 179, 200, 0.2)',
                 }}
               >
                 {bark.barkText}
@@ -162,7 +162,7 @@ export function NpcNoDialogueBark() {
             <div
               className="absolute bottom-0 left-3 right-3 h-px"
               style={{
-                background: 'linear-gradient(90deg, transparent, rgba(100, 180, 200, 0.25), transparent)',
+                background: 'linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.25), transparent)',
               }}
             />
           </motion.div>

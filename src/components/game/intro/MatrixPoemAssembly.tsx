@@ -133,7 +133,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
         className="absolute inset-0 -z-10 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse at center, rgba(0, 230, 160, 0.10) 0%, transparent 65%)',
+            'radial-gradient(ellipse at center, rgba(70, 185, 110, 0.10) 0%, transparent 65%)',
           filter: 'blur(34px)',
         }}
       />
@@ -151,7 +151,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
           style={{
             fontFamily: '"Courier New", "Consolas", monospace',
             color: 'rgba(190, 255, 225, 0.95)',
-            textShadow: '0 0 22px rgba(0, 230, 160, 0.35)',
+            textShadow: '0 0 22px rgba(70, 185, 110, 0.35)',
           }}
         >
           {poem.title}
@@ -169,7 +169,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
           className="mt-2 mx-auto w-20 h-px"
           style={{
             background:
-              'linear-gradient(90deg, transparent, rgba(0, 230, 160, 0.5), transparent)',
+              'linear-gradient(90deg, transparent, rgba(70, 185, 110, 0.5), transparent)',
           }}
         />
       </motion.div>
@@ -205,7 +205,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
                       style={{
                         color: 'rgba(225, 255, 240, 0.95)',
                         textShadow:
-                          '0 0 12px rgba(0, 230, 160, 0.45), 0 0 24px rgba(0, 200, 140, 0.18)',
+                          '0 0 12px rgba(70, 185, 110, 0.45), 0 0 24px rgba(70, 185, 110, 0.18)',
                         transform: 'translateY(0)',
                         opacity: 1,
                         display: 'inline-block',
@@ -225,8 +225,8 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
                     <span
                       key={key}
                       style={{
-                        color: 'rgba(0, 235, 150, 0.8)',
-                        textShadow: '0 0 10px rgba(0, 230, 150, 0.5)',
+                        color: 'rgba(70, 185, 110, 0.8)',
+                        textShadow: '0 0 10px rgba(70, 185, 110, 0.5)',
                         transform: 'translateY(-0.34em)',
                         opacity: 0.6,
                         display: 'inline-block',

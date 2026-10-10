@@ -2,13 +2,13 @@
    SESSION 7: InteractionHintPopup
    ══════════════════════════════════════════════════════════════ */
 
-/* ─── Key badge pulse animation — stronger glow breathing ─── */
+/* ─── Key badge pulse animation — v4.45.1: матовое дыхание вместо неона ─── */
 @keyframes hint-key-pulse {
   0%, 100% {
-    box-shadow: 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.3), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.08);
+    box-shadow: 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.18), inset 0 0 2px rgb(var(--cyber-cyan-rgb) / 0.06);
   }
   50% {
-    box-shadow: 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.2), inset 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.12);
+    box-shadow: 0 0 7px rgb(var(--cyber-cyan-rgb) / 0.3), inset 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.09);
   }
 }
 
@@ -30,13 +30,13 @@
   }
 }
 
-/* ─── Border glow pulse for the hint card ─── */
+/* ─── Border glow pulse for the hint card — v4.45.1: без 48px-слоя ─── */
 @keyframes hint-border-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.06), inset 0 0 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 12px rgb(var(--cyber-cyan-rgb) / 0.04), inset 0 0 12px rgba(0, 0, 0, 0.3);
   }
   50% {
-    box-shadow: 0 0 14px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 28px rgb(var(--cyber-cyan-rgb) / 0.1), 0 0 48px rgb(var(--cyber-cyan-rgb) / 0.04), inset 0 0 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 10px rgb(var(--cyber-cyan-rgb) / 0.2), 0 0 18px rgb(var(--cyber-cyan-rgb) / 0.07), inset 0 0 12px rgba(0, 0, 0, 0.3);
   }
 }
 
@@ -45,12 +45,12 @@
   0%, 100% {
     opacity: 0.8;
     transform: scale(1);
-    text-shadow: 0 0 8px rgba(255, 184, 40, 0.6), 0 0 16px rgba(255, 184, 40, 0.3);
+    text-shadow: 0 0 8px rgba(226, 168, 75, 0.6), 0 0 16px rgba(226, 168, 75, 0.3);
   }
   50% {
     opacity: 1;
     transform: scale(1.15);
-    text-shadow: 0 0 12px rgba(255, 184, 40, 0.8), 0 0 24px rgba(255, 184, 40, 0.4), 0 0 40px rgba(255, 184, 40, 0.15);
+    text-shadow: 0 0 12px rgba(226, 168, 75, 0.8), 0 0 24px rgba(226, 168, 75, 0.4), 0 0 40px rgba(226, 168, 75, 0.15);
   }
 }
 
@@ -213,7 +213,7 @@
 
 /* ─── NPC dialogue indicator above NPC heads ─── */
 .npc-dialogue-indicator {
-  color: #ffb828;
+  color: #e2a84b;
   font-size: 14px;
   font-family: 'Geist Mono', monospace;
   font-weight: 700;
@@ -312,14 +312,14 @@
   width: 16px;
   height: 14px;
   border-radius: 3px;
-  border: 1px solid rgba(0, 255, 238, 0.4);
-  background: rgba(0, 255, 238, 0.08);
-  color: rgba(0, 255, 238, 0.85);
+  border: 1px solid rgba(157, 179, 200, 0.4);
+  background: rgba(157, 179, 200, 0.08);
+  color: rgba(157, 179, 200, 0.85);
   font-family: 'Geist Mono', monospace;
   font-size: 9px;
   font-weight: 700;
   line-height: 1;
-  text-shadow: 0 0 4px rgba(0, 255, 238, 0.5);
+  text-shadow: 0 0 4px rgba(157, 179, 200, 0.5);
   animation: npc-interact-key-pulse 2s ease-in-out infinite;
 }
 
@@ -327,14 +327,14 @@
   font-family: 'Geist Mono', monospace;
   font-size: 8px;
   font-weight: 500;
-  color: rgba(0, 255, 238, 0.55);
+  color: rgba(157, 179, 200, 0.55);
   letter-spacing: 0.04em;
-  text-shadow: 0 0 4px rgba(0, 255, 238, 0.2);
+  text-shadow: 0 0 4px rgba(157, 179, 200, 0.2);
 }
 
 @keyframes npc-interact-key-pulse {
-  0%, 100% { opacity: 0.75; border-color: rgba(0, 255, 238, 0.35); }
-  50% { opacity: 1; border-color: rgba(0, 255, 238, 0.6); }
+  0%, 100% { opacity: 0.75; border-color: rgba(157, 179, 200, 0.35); }
+  50% { opacity: 1; border-color: rgba(157, 179, 200, 0.6); }
 }
 
 /* ══════════════════════════════════════════════════════════════

@@ -42,7 +42,7 @@ const SkipButton = memo(function SkipButton({
         onClick={onSkip}
         animate={{
           scale: [1, 1.06, 1],
-          borderColor: ['rgba(0,220,180,0.3)', 'rgba(0,220,180,0.7)', 'rgba(0,220,180,0.3)'],
+          borderColor: ['rgba(157,179,200,0.3)', 'rgba(157,179,200,0.7)', 'rgba(157,179,200,0.3)'],
         }}
         transition={{
           scale: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' },
@@ -51,7 +51,7 @@ const SkipButton = memo(function SkipButton({
         className="px-6 py-3 font-mono text-sm tracking-[0.2em] uppercase
                    text-cyan-200/90 hover:text-white border-2 border-cyan-400/50
                    bg-black/60 backdrop-blur-md rounded
-                   shadow-[0_0_18px_rgba(0,220,180,0.25),0_0_40px_rgba(0,220,180,0.1)]
+                   shadow-[0_0_18px_rgba(157,179,200,0.25),0_0_40px_rgba(157,179,200,0.1)]
                    transition-colors duration-200
                    touch-manipulation select-none active:bg-cyan-400/20 active:scale-95"
         style={{ willChange: 'opacity, transform' }}

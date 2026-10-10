@@ -121,12 +121,12 @@ export function CompassPOIMarkers() {
                 ? 'var(--cyber-magenta, #f0abfc)'
                 : m.inScene
                   ? 'var(--cyber-cyan)'
-                  : 'rgba(251,191,36,0.8)',
+                  : 'rgba(226,168,75,0.8)',
               boxShadow: pulsed
                 ? '0 0 10px rgb(240 171 252 / 0.75)'
                 : m.inScene
                   ? '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)'
-                  : '0 0 4px rgba(251,191,36,0.4)',
+                  : '0 0 4px rgba(226,168,75,0.4)',
             }}
             title={`${m.label}${m.inScene ? ` · ${Math.round(m.distance)}м` : ''}`}
           />

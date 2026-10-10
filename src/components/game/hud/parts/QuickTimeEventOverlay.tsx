@@ -116,36 +116,36 @@ const DIFFICULTY_CONFIG: Record<QTEDifficulty, {
   easy: {
     speedMult: 0.7,
     windowSize: 0.5,
-    color: '#44cc66',
-    glowColor: 'rgba(68,204,102,0.5)',
+    color: '#46b96e',
+    glowColor: 'rgba(70,185,110,0.5)',
     label: 'ЛЁГКО',
   },
   normal: {
     speedMult: 1.0,
     windowSize: 0.35,
-    color: '#44aacc',
-    glowColor: 'rgba(68,170,204,0.5)',
+    color: '#9db3c8',
+    glowColor: 'rgba(157,179,200,0.5)',
     label: 'НОРМАЛЬ',
   },
   hard: {
     speedMult: 1.3,
     windowSize: 0.22,
-    color: '#ccaa44',
-    glowColor: 'rgba(204,170,68,0.5)',
+    color: '#e2a84b',
+    glowColor: 'rgba(226,168,75,0.5)',
     label: 'СЛОЖНО',
   },
   extreme: {
     speedMult: 1.6,
     windowSize: 0.15,
-    color: '#cc5544',
-    glowColor: 'rgba(204,85,68,0.6)',
+    color: '#c65548',
+    glowColor: 'rgba(198,85,72,0.6)',
     label: 'ЭКСТРЕМ',
   },
   impossible: {
     speedMult: 2.0,
     windowSize: 0.08,
-    color: '#ff0066',
-    glowColor: 'rgba(255,0,102,0.7)',
+    color: '#8d7fb5',
+    glowColor: 'rgba(141,127,181,0.7)',
     label: 'НЕВОЗМ.',
   },
 };
@@ -276,20 +276,20 @@ const KeyDisplay = memo(function KeyDisplay({
         fontSize: size * 0.35,
         fontFamily: "'JetBrains Mono', monospace",
         backgroundColor: isFailure
-          ? 'rgba(255,50,50,0.2)'
+          ? 'rgba(198,85,72,0.2)'
           : isSuccess
-            ? 'rgba(50,255,100,0.15)'
+            ? 'rgba(70,185,110,0.15)'
             : 'rgba(10,14,24,0.9)',
         border: `3px solid ${
-          isFailure ? '#ff3333' : isSuccess ? '#33dd66' : accentColor
+          isFailure ? '#c65548' : isSuccess ? '#46b96e' : accentColor
         }`,
-        color: isFailure ? '#ff5555' : isSuccess ? '#44ff88' : '#ffffff',
+        color: isFailure ? '#c65548' : isSuccess ? '#46b96e' : '#ffffff',
         boxShadow: `
           0 0 ${isSuccess || isFailure ? 30 : 20}px ${
-            isFailure ? 'rgba(255,50,50,0.4)' : isSuccess ? 'rgba(50,255,100,0.4)' : glowColor
+            isFailure ? 'rgba(198,85,72,0.4)' : isSuccess ? 'rgba(70,185,110,0.4)' : glowColor
           },
           inset 0 0 20px ${
-            isFailure ? 'rgba(255,50,50,0.15)' : isSuccess ? 'rgba(50,255,100,0.1)' : 'transparent'
+            isFailure ? 'rgba(198,85,72,0.15)' : isSuccess ? 'rgba(70,185,110,0.1)' : 'transparent'
           }
         `,
         textShadow: `0 0 10px ${glowColor}`,
@@ -374,7 +374,7 @@ const TimerRing = memo(function TimerRing({
           cy={outerSize / 2}
           r={radius}
           fill="none"
-          stroke={isWarning ? '#ff4444' : accentColor}
+          stroke={isWarning ? '#c65548' : accentColor}
           strokeWidth="6"
           strokeLinecap="round"
           strokeDasharray={circumference}
@@ -386,7 +386,7 @@ const TimerRing = memo(function TimerRing({
               : { duration: 0.1, ease: 'linear' }
           }
           style={{
-            filter: `drop-shadow(0 0 8px ${isWarning ? 'rgba(255,68,68,0.6)' : glowColor})`,
+            filter: `drop-shadow(0 0 8px ${isWarning ? 'rgba(198,85,72,0.6)' : glowColor})`,
           }}
         />
 
@@ -404,7 +404,7 @@ const TimerRing = memo(function TimerRing({
           }}
           transition={{ duration: 0.5, repeat: Infinity }}
           style={{
-            background: `radial-gradient(circle, transparent 60%, rgba(255,50,50,0.15) 100%)`,
+            background: `radial-gradient(circle, transparent 60%, rgba(198,85,72,0.15) 100%)`,
           }}
         />
       )}
@@ -925,7 +925,7 @@ export function QuickTimeEventOverlay({
                 <motion.div
                   className="fixed inset-0 pointer-events-none"
                   style={{
-                    background: `radial-gradient(circle at center, transparent 40%, rgba(255,200,50,0.3) 100%)`,
+                    background: `radial-gradient(circle at center, transparent 40%, rgba(226,168,75,0.3) 100%)`,
                   }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -1027,7 +1027,7 @@ export function QuickTimeEventOverlay({
                   <p
                     className="text-xs font-mono tabular-nums"
                     style={{
-                      color: isWarning ? '#ff6644' : 'rgba(180,190,200,0.6)',
+                      color: isWarning ? '#c65548' : 'rgba(180,190,200,0.6)',
                     }}
                   >
                     {formatTimeMs(state.timeRemaining)}
@@ -1055,9 +1055,9 @@ export function QuickTimeEventOverlay({
                         <motion.span
                           className="text-xs font-mono px-1.5 py-0.5 rounded ml-2"
                           style={{
-                            color: '#ffaa00',
-                            backgroundColor: 'rgba(255,170,0,0.2)',
-                            border: '1px solid rgba(255,170,0,0.4)',
+                            color: '#e2a84b',
+                            backgroundColor: 'rgba(226,168,75,0.2)',
+                            border: '1px solid rgba(226,168,75,0.4)',
                           }}
                           initial={false}
                           animate={{ scale: [1, 1.2, 1] }}
@@ -1126,8 +1126,8 @@ export function QuickTimeEventOverlay({
                         <Check
                           size={64}
                           style={{
-                            color: '#33ff77',
-                            filter: 'drop-shadow(0 0 20px rgba(51,255,119,0.6))',
+                            color: '#46b96e',
+                            filter: 'drop-shadow(0 0 20px rgba(70,185,110,0.6))',
                           }}
                         />
                       </motion.div>
@@ -1140,8 +1140,8 @@ export function QuickTimeEventOverlay({
                         <X
                           size={64}
                           style={{
-                            color: '#ff3344',
-                            filter: 'drop-shadow(0 0 20px rgba(255,51,68,0.6))',
+                            color: '#c65548',
+                            filter: 'drop-shadow(0 0 20px rgba(198,85,72,0.6))',
                           }}
                         />
                       </motion.div>
@@ -1151,8 +1151,8 @@ export function QuickTimeEventOverlay({
                     <motion.p
                       className="text-2xl font-bold tracking-wider uppercase"
                       style={{
-                        color: isSuccess ? '#33ff88' : '#ff4455',
-                        textShadow: `0 0 20px ${isSuccess ? 'rgba(51,255,136,0.5)' : 'rgba(255,68,85,0.5)'}`,
+                        color: isSuccess ? '#46b96e' : '#c65548',
+                        textShadow: `0 0 20px ${isSuccess ? 'rgba(70,185,110,0.5)' : 'rgba(198,85,72,0.5)'}`,
                       }}
                       initial={reducedMotion ? {} : { opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -1165,7 +1165,7 @@ export function QuickTimeEventOverlay({
                     {eventType !== 'press' && state.comboMultiplier > 1 && (
                       <p
                         className="text-sm font-mono"
-                        style={{ color: '#ffaa00' }}
+                        style={{ color: '#e2a84b' }}
                       >
                         Комбо ×{state.comboMultiplier.toFixed(1)}
                       </p>

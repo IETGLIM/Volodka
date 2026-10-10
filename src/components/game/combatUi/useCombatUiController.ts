@@ -111,14 +111,14 @@ export function useCombatUiController() {
 
           if (isCrit) {
             setScreenShake(true);
-            setFlashColor('rgba(255,255,100,0.15)');
+            setFlashColor('rgba(226,168,75,0.15)');
             scheduleTimeout(() => {
               setScreenShake(false);
               setFlashColor(null);
             }, 300);
           } else if (entry.type === 'enemy_attack' || entry.type === 'enemy_special') {
             setScreenShake(true);
-            setFlashColor('rgba(239,68,68,0.1)');
+            setFlashColor('rgba(198,85,72,0.1)');
             scheduleTimeout(() => {
               setScreenShake(false);
               setFlashColor(null);

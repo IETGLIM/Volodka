@@ -17,47 +17,47 @@ export interface TransitionProgressVisual {
 const INTERACTION_HINT_VISUAL: Record<InteractionHintType, InteractionHintVisual> = {
   npc: {
     color: 'var(--cyber-cyan)',
-    glow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.4), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.2)',
-    border: 'rgb(var(--cyber-cyan-rgb) / 0.35)',
-    bg: 'rgb(var(--cyber-cyan-rgb) / 0.08)',
+    glow: '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.22)',
+    border: 'rgb(var(--cyber-cyan-rgb) / 0.3)',
+    bg: 'rgb(var(--cyber-cyan-rgb) / 0.07)',
   },
   object: {
-    color: '#fbbf24',
-    glow: '0 0 8px rgba(251,191,36,0.4), 0 0 16px rgba(251,191,36,0.2)',
-    border: 'rgba(251,191,36,0.35)',
-    bg: 'rgba(251,191,36,0.08)',
+    color: '#e2a84b',
+    glow: '0 0 6px rgba(226,168,75,0.22)',
+    border: 'rgba(226,168,75,0.3)',
+    bg: 'rgba(226,168,75,0.07)',
   },
   exit: {
     color: '#57a874',
-    glow: '0 0 8px rgba(52,211,153,0.4), 0 0 16px rgba(52,211,153,0.2)',
-    border: 'rgba(52,211,153,0.35)',
-    bg: 'rgba(52,211,153,0.08)',
+    glow: '0 0 6px rgba(70,185,110,0.22)',
+    border: 'rgba(70,185,110,0.3)',
+    bg: 'rgba(70,185,110,0.07)',
   },
   item: {
-    color: '#a78bfa',
-    glow: '0 0 8px rgba(167,139,250,0.4), 0 0 16px rgba(167,139,250,0.2)',
-    border: 'rgba(167,139,250,0.35)',
-    bg: 'rgba(167,139,250,0.08)',
+    color: '#8d7fb5',
+    glow: '0 0 6px rgba(141,127,181,0.22)',
+    border: 'rgba(141,127,181,0.3)',
+    bg: 'rgba(141,127,181,0.07)',
   },
 };
 
 const TRANSITION_ACCENT: Record<SceneTransitionStyle, string> = {
-  flash: 'rgba(255, 200, 100, 1)',
+  flash: 'rgba(226, 168, 75, 1)',
   darken: 'rgba(100, 130, 180, 1)',
-  ripple: 'rgba(180, 100, 255, 1)',
+  ripple: 'rgba(141, 127, 181, 1)',
   dissolve: 'rgba(200, 180, 255, 1)',
   wipe: 'rgba(157, 179, 200, 1)',
-  film_burn: 'rgba(255, 120, 40, 1)',
+  film_burn: 'rgba(226, 168, 75, 1)',
   glitch_cut: 'rgba(70, 185, 110, 1)',
   breathe: 'rgba(140, 200, 255, 1)',
   // Session 9: crossfade — the smooth, no-cut transition. Soft warm-neutral accent.
   crossfade: 'rgba(180, 190, 210, 1)',
   // Breathe zoom — organic, dreamy. Cool blue-white.
-  breathe_zoom: 'rgba(120, 200, 255, 1)',
+  breathe_zoom: 'rgba(157, 179, 200, 1)',
   // Data stream — matrix cascade. Bright cyan.
   data_stream: 'rgba(157, 179, 200, 1)',
   // Glitch reveal — cyberpunk digital corruption. Neon magenta.
-  glitch_reveal: 'rgba(255, 0, 170, 1)',
+  glitch_reveal: 'rgba(141, 127, 181, 1)',
   // Poem dissolve — ethereal text fade. Soft lavender.
   poem_dissolve: 'rgba(200, 180, 255, 1)',
 };
@@ -69,7 +69,7 @@ const PROGRESS_ACTIVE: TransitionProgressVisual = {
 
 const PROGRESS_COMPLETE: TransitionProgressVisual = {
   primary: '#57a874',
-  glow: 'rgba(52, 211, 153, 0.35)',
+  glow: 'rgba(70, 185, 110, 0.35)',
 };
 
 export function getInteractionHintVisual(type: InteractionHintType): InteractionHintVisual {

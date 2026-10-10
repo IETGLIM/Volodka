@@ -183,7 +183,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       overlay: {
         text: 'Володька.',
         letterboxStyle: 'thin',
-        accentColor: '#ffaa55',
+        accentColor: '#e2a84b',
       },
     },
   ],

@@ -69,11 +69,11 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
   if (!questDef) return null
 
   const questTypeBadgeColor = questDef.questType === 'main'
-    ? '#ffcc00'
+    ? '#e2a84b'
     : questDef.questType === 'side'
-      ? '#66ffaa'
+      ? '#46b96e'
       : questDef.questType === 'hidden'
-        ? '#cc88ff'
+        ? '#8d7fb5'
         : '#aaaaaa'
 
   const questTypeLabel = questDef.questType === 'main'
@@ -99,7 +99,7 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,102,0.01) 2px, rgba(0,255,102,0.01) 4px)',
+              background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(70,185,110,0.01) 2px, rgba(70,185,110,0.01) 4px)',
             }}
           />
 
@@ -112,25 +112,25 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
             className="relative flex flex-col md:flex-row w-[95vw] max-w-[900px] max-h-[85vh] overflow-hidden"
             style={{
               background: 'linear-gradient(135deg, rgba(0,16,8,0.97), rgba(0,24,12,0.95))',
-              border: '1px solid rgba(0,255,102,0.3)',
+              border: '1px solid rgba(70,185,110,0.3)',
               borderRadius: '8px',
-              boxShadow: '0 0 30px rgba(0,255,102,0.1), 0 0 8px rgba(255,204,0,0.05), inset 0 0 15px rgba(0,255,102,0.03)',
+              boxShadow: '0 0 30px rgba(70,185,110,0.1), 0 0 8px rgba(226,168,75,0.05), inset 0 0 15px rgba(70,185,110,0.03)',
             }}
           >
             {/* Corner brackets - gold */}
             <>
-              <div className="absolute pointer-events-none" style={{ top: 0, left: 0, width: 6, height: 6, borderTop: '2px solid rgba(255,204,0,0.5)', borderLeft: '2px solid rgba(255,204,0,0.5)' }} />
-              <div className="absolute pointer-events-none" style={{ top: 0, right: 0, width: 6, height: 6, borderTop: '2px solid rgba(255,204,0,0.5)', borderRight: '2px solid rgba(255,204,0,0.5)' }} />
-              <div className="absolute pointer-events-none" style={{ bottom: 0, left: 0, width: 6, height: 6, borderBottom: '2px solid rgba(255,204,0,0.5)', borderLeft: '2px solid rgba(255,204,0,0.5)' }} />
-              <div className="absolute pointer-events-none" style={{ bottom: 0, right: 0, width: 6, height: 6, borderBottom: '2px solid rgba(255,204,0,0.5)', borderRight: '2px solid rgba(255,204,0,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ top: 0, left: 0, width: 6, height: 6, borderTop: '2px solid rgba(226,168,75,0.5)', borderLeft: '2px solid rgba(226,168,75,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ top: 0, right: 0, width: 6, height: 6, borderTop: '2px solid rgba(226,168,75,0.5)', borderRight: '2px solid rgba(226,168,75,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ bottom: 0, left: 0, width: 6, height: 6, borderBottom: '2px solid rgba(226,168,75,0.5)', borderLeft: '2px solid rgba(226,168,75,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ bottom: 0, right: 0, width: 6, height: 6, borderBottom: '2px solid rgba(226,168,75,0.5)', borderRight: '2px solid rgba(226,168,75,0.5)' }} />
             </>
 
             {/* Left side: NPC portrait + completion header */}
             <div
               className="flex-shrink-0 w-full md:w-[240px] flex flex-col items-center p-4 md:p-6"
               style={{
-                borderRight: '1px solid rgba(0,255,102,0.15)',
-                borderBottom: '1px solid rgba(0,255,102,0.15)',
+                borderRight: '1px solid rgba(70,185,110,0.15)',
+                borderBottom: '1px solid rgba(70,185,110,0.15)',
                 background: 'linear-gradient(180deg, rgba(0,24,12,0.5), rgba(0,16,8,0.3))',
               }}
             >
@@ -147,8 +147,8 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                 <div
                   className="text-lg font-mono font-bold tracking-wider"
                   style={{
-                    color: '#66ffaa',
-                    textShadow: '0 0 16px rgba(0,255,102,0.4), 0 0 32px rgba(0,255,102,0.15)',
+                    color: '#46b96e',
+                    textShadow: '0 0 16px rgba(70,185,110,0.4), 0 0 32px rgba(70,185,110,0.15)',
                   }}
                 >
                   Задание
@@ -156,8 +156,8 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                 <div
                   className="text-lg font-mono font-bold tracking-wider"
                   style={{
-                    color: '#88ffcc',
-                    textShadow: '0 0 16px rgba(0,255,102,0.5), 0 0 32px rgba(0,255,102,0.2)',
+                    color: '#57a874',
+                    textShadow: '0 0 16px rgba(70,185,110,0.5), 0 0 32px rgba(70,185,110,0.2)',
                   }}
                 >
                   выполнено!
@@ -194,7 +194,7 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                   className="text-xl font-mono font-bold tracking-wide"
                   style={{
                     color: '#f0ffe0',
-                    textShadow: '0 0 12px rgba(0,255,102,0.2)',
+                    textShadow: '0 0 12px rgba(70,185,110,0.2)',
                   }}
                 >
                   {questDef.title}
@@ -234,7 +234,7 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                         animate={{ scale: 1 }}
                         transition={{ delay: 0.2 + i * 0.08, type: 'spring' }}
                         className="text-sm flex-shrink-0 mt-0.5"
-                        style={{ color: '#00ff66' }}
+                        style={{ color: '#46b96e' }}
                       >
                         ✓
                       </motion.span>
@@ -265,18 +265,18 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                       className="flex items-center gap-2 px-3 py-1.5 rounded"
                       style={{
                         background: i < revealedRewards
-                          ? 'rgba(255,204,0,0.08)'
-                          : 'rgba(255,204,0,0.03)',
+                          ? 'rgba(226,168,75,0.08)'
+                          : 'rgba(226,168,75,0.03)',
                         border: i < revealedRewards
-                          ? '1px solid rgba(255,204,0,0.2)'
-                          : '1px solid rgba(255,204,0,0.08)',
+                          ? '1px solid rgba(226,168,75,0.2)'
+                          : '1px solid rgba(226,168,75,0.08)',
                         boxShadow: i < revealedRewards
-                          ? '0 0 8px rgba(255,204,0,0.08)'
+                          ? '0 0 8px rgba(226,168,75,0.08)'
                           : 'none',
                       }}
                     >
                       <span className="text-sm">{getRewardIcon(reward.type)}</span>
-                      <span className="text-[12px] font-mono" style={{ color: '#ffcc66' }}>
+                      <span className="text-[12px] font-mono" style={{ color: '#e2a84b' }}>
                         {getRewardLabel(reward)}
                       </span>
                     </motion.div>
@@ -299,18 +299,18 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                         className="flex items-center gap-2 px-3 py-1.5 rounded"
                         style={{
                           background: index < revealedRewards
-                            ? 'rgba(255,204,0,0.08)'
-                            : 'rgba(255,204,0,0.03)',
+                            ? 'rgba(226,168,75,0.08)'
+                            : 'rgba(226,168,75,0.03)',
                           border: index < revealedRewards
-                            ? '1px solid rgba(255,204,0,0.2)'
-                            : '1px solid rgba(255,204,0,0.08)',
+                            ? '1px solid rgba(226,168,75,0.2)'
+                            : '1px solid rgba(226,168,75,0.08)',
                           boxShadow: index < revealedRewards
-                            ? '0 0 8px rgba(255,204,0,0.08)'
+                            ? '0 0 8px rgba(226,168,75,0.08)'
                             : 'none',
                         }}
                       >
                         <span className="text-sm">{getRewardIcon(bonus.type)}</span>
-                        <span className="text-[12px] font-mono" style={{ color: '#ffcc66' }}>
+                        <span className="text-[12px] font-mono" style={{ color: '#e2a84b' }}>
                           {bonus.label}
                         </span>
                       </motion.div>
@@ -323,20 +323,20 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
             {/* Bottom button */}
             <div
               className="p-4 md:p-6"
-              style={{ borderTop: '1px solid rgba(0,255,102,0.15)' }}
+              style={{ borderTop: '1px solid rgba(70,185,110,0.15)' }}
             >
               <motion.button
                 onClick={handleComplete}
                 className="w-full py-2.5 rounded font-mono text-sm tracking-wider font-bold"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(0,255,102,0.15), rgba(255,204,0,0.1))',
-                  color: '#88ffcc',
-                  border: '1px solid rgba(0,255,102,0.4)',
-                  textShadow: '0 0 8px rgba(0,255,102,0.3)',
+                  background: 'linear-gradient(135deg, rgba(70,185,110,0.15), rgba(226,168,75,0.1))',
+                  color: '#57a874',
+                  border: '1px solid rgba(70,185,110,0.4)',
+                  textShadow: '0 0 8px rgba(70,185,110,0.3)',
                 }}
                 whileHover={{
-                  background: 'linear-gradient(135deg, rgba(0,255,102,0.25), rgba(255,204,0,0.15))',
-                  boxShadow: '0 0 15px rgba(0,255,102,0.2)',
+                  background: 'linear-gradient(135deg, rgba(70,185,110,0.25), rgba(226,168,75,0.15))',
+                  boxShadow: '0 0 15px rgba(70,185,110,0.2)',
                 }}
                 whileTap={{ scale: 0.97 }}
               >
@@ -380,21 +380,21 @@ function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
         <div
           className="absolute inset-0 rounded-lg"
           style={{
-            background: 'radial-gradient(circle, rgba(0,255,102,0.08) 0%, transparent 70%)',
+            background: 'radial-gradient(circle, rgba(70,185,110,0.08) 0%, transparent 70%)',
           }}
         />
         <svg viewBox="0 0 200 200" className="w-full h-full">
-          <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(0,255,102,0.3)" strokeWidth="1" />
-          <circle cx="100" cy="100" r="90" fill="rgba(0,255,102,0.05)" />
+          <circle cx="100" cy="100" r="95" fill="none" stroke="rgba(70,185,110,0.3)" strokeWidth="1" />
+          <circle cx="100" cy="100" r="90" fill="rgba(70,185,110,0.05)" />
           {/* Generic silhouette */}
-          <ellipse cx="100" cy="160" rx="40" ry="30" fill="rgba(0,255,102,0.2)" />
-          <rect x="90" y="120" width="20" height="25" fill="rgba(0,255,102,0.25)" rx="4" />
-          <ellipse cx="100" cy="90" rx="35" ry="40" fill="rgba(0,255,102,0.3)" />
+          <ellipse cx="100" cy="160" rx="40" ry="30" fill="rgba(70,185,110,0.2)" />
+          <rect x="90" y="120" width="20" height="25" fill="rgba(70,185,110,0.25)" rx="4" />
+          <ellipse cx="100" cy="90" rx="35" ry="40" fill="rgba(70,185,110,0.3)" />
           {/* Success checkmark */}
           <motion.path
             d="M 70 95 L 90 115 L 135 70"
             fill="none"
-            stroke="#00ff66"
+            stroke="#46b96e"
             strokeWidth="6"
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -406,8 +406,8 @@ function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
         <div
           className="absolute inset-0 rounded-lg pointer-events-none"
           style={{
-            boxShadow: 'inset 0 0 20px rgba(0,255,102,0.06), 0 0 10px rgba(0,255,102,0.04)',
-            border: '1px solid rgba(0,255,102,0.25)',
+            boxShadow: 'inset 0 0 20px rgba(70,185,110,0.06), 0 0 10px rgba(70,185,110,0.04)',
+            border: '1px solid rgba(70,185,110,0.25)',
             borderRadius: '8px',
           }}
         />
@@ -424,7 +424,7 @@ function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
       <div
         className="absolute inset-0 rounded-lg"
         style={{
-          background: `radial-gradient(circle, ${glowColor}11 0%, rgba(0,255,102,0.06) 40%, transparent 70%)`,
+          background: `radial-gradient(circle, ${glowColor}11 0%, rgba(70,185,110,0.06) 40%, transparent 70%)`,
         }}
       />
 
@@ -432,7 +432,7 @@ function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(105deg, transparent 40%, rgba(0,255,102,0.1) 45%, rgba(0,255,102,0.03) 50%, transparent 55%)',
+          background: 'linear-gradient(105deg, transparent 40%, rgba(70,185,110,0.1) 45%, rgba(70,185,110,0.03) 50%, transparent 55%)',
           animation: 'completion-holo-shimmer 5s ease-in-out infinite',
           zIndex: 2,
         }}
@@ -450,8 +450,8 @@ function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
         {/* Eyes - green glow for completion */}
         <ellipse cx="87" cy="85" rx="5" ry="3" fill={accentColor} opacity="0.9" />
         <ellipse cx="113" cy="85" rx="5" ry="3" fill={accentColor} opacity="0.9" />
-        <ellipse cx="87" cy="85" rx="3" ry="2" fill="#00ff66" opacity="0.5" />
-        <ellipse cx="113" cy="85" rx="3" ry="2" fill="#00ff66" opacity="0.5" />
+        <ellipse cx="87" cy="85" rx="3" ry="2" fill="#46b96e" opacity="0.5" />
+        <ellipse cx="113" cy="85" rx="3" ry="2" fill="#46b96e" opacity="0.5" />
 
         {/* Accessories */}
         {accessory === 'glasses' && (
@@ -488,14 +488,14 @@ function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
         <motion.path
           d="M 65 95 L 85 115 L 135 65"
           fill="none"
-          stroke="#00ff66"
+          stroke="#46b96e"
           strokeWidth="5"
           strokeLinecap="round"
           strokeLinejoin="round"
           initial={{ pathLength: 0, opacity: 0 }}
           animate={{ pathLength: 1, opacity: 0.6 }}
           transition={{ duration: 0.8, delay: 0.5 }}
-          style={{ filter: 'drop-shadow(0 0 6px rgba(0,255,102,0.5))' }}
+          style={{ filter: 'drop-shadow(0 0 6px rgba(70,185,110,0.5))' }}
         />
       </svg>
 
@@ -503,8 +503,8 @@ function CompletionNpcPortrait({ npcDef }: { npcDef: NPCDefinition | null }) {
       <div
         className="absolute inset-0 rounded-lg pointer-events-none"
         style={{
-          boxShadow: 'inset 0 0 20px rgba(0,255,102,0.08), 0 0 10px rgba(0,255,102,0.04)',
-          border: '1px solid rgba(0,255,102,0.25)',
+          boxShadow: 'inset 0 0 20px rgba(70,185,110,0.08), 0 0 10px rgba(70,185,110,0.04)',
+          border: '1px solid rgba(70,185,110,0.25)',
           borderRadius: '8px',
           zIndex: 3,
         }}

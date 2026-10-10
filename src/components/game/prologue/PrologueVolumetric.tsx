@@ -19,7 +19,7 @@ export function PrologueVolumetric({ phase }: { phase: string }) {
         className="absolute -top-[20%] left-[18%] w-[70%] h-[130%] blur-[28px]"
         style={{
           background:
-            'conic-gradient(from 18deg at 20% 10%, rgba(120,200,255,0.18) 0%, rgba(0,255,200,0.06) 28%, transparent 62%)',
+            'conic-gradient(from 18deg at 20% 10%, rgba(157,179,200,0.18) 0%, rgba(157,179,200,0.06) 28%, transparent 62%)',
           transform: 'rotate(-12deg)',
         }}
       />
@@ -31,7 +31,7 @@ export function PrologueVolumetric({ phase }: { phase: string }) {
         transition={{ duration: 2.2, delay: 0.4 }}
         className="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] blur-[32px] rounded-full"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(255,180,80,0.22) 0%, rgba(255,120,40,0.06) 38%, transparent 70%)',
+          background: 'radial-gradient(ellipse at center, rgba(226,168,75,0.22) 0%, rgba(226,168,75,0.06) 38%, transparent 70%)',
         }}
       />
 
@@ -48,7 +48,7 @@ export function PrologueVolumetric({ phase }: { phase: string }) {
       {/* Subtle chromatic edge on title */}
       {isTitle && (
         <>
-          <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(90deg,rgba(255,0,80,0.35)_0%,transparent_6%,transparent_94%,rgba(157, 179, 200,0.35)_100%)] mix-blend-screen" />
+          <div className="absolute inset-0 opacity-[0.06] bg-[linear-gradient(90deg,rgba(141,127,181,0.35)_0%,transparent_6%,transparent_94%,rgba(157, 179, 200,0.35)_100%)] mix-blend-screen" />
           <motion.div
             initial={{ opacity: 0, x: -12 }}
             animate={{ opacity: 0.08, x: 0 }}

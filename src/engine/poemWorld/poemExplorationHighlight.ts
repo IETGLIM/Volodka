@@ -71,7 +71,7 @@ export function resolvePoemExplorationHighlight(
     return {
       mode: 'exploration',
       pulse: !reducedMotion,
-      color: '#ffd866',
+      color: '#e2a84b',
     };
   }
 
@@ -96,7 +96,7 @@ export function resolvePoemExplorationHighlight(
     }
   }
 
-  return { mode: 'none', pulse: false, color: '#88eeff' };
+  return { mode: 'none', pulse: false, color: '#9db3c8' };
 }
 
 export interface PoemHighlightZoneShape {

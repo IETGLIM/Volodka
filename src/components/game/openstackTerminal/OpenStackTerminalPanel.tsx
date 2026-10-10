@@ -49,11 +49,11 @@ function OpenStackTerminalGameInner({ onClose }: OpenStackTerminalGameProps) {
         >
           <div className="openstack-terminal-header px-5 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Monitor className="size-5" style={{ color: '#44ff88' }} aria-hidden="true" />
+              <Monitor className="size-5" style={{ color: '#46b96e' }} aria-hidden="true" />
               <h2
                 {...titleProps}
                 className="text-sm font-bold tracking-widest uppercase font-mono"
-                style={{ color: '#44ff88' }}
+                style={{ color: '#46b96e' }}
               >
                 {OPENSTACK_TERMINAL_LABELS.headerTitle}
               </h2>
@@ -68,9 +68,9 @@ function OpenStackTerminalGameInner({ onClose }: OpenStackTerminalGameProps) {
                   <span
                     className="text-[10px] font-mono px-2 py-0.5 rounded"
                     style={{
-                      color: '#ffcc00',
-                      background: 'rgba(255, 204, 0, 0.1)',
-                      border: '1px solid rgba(255, 204, 0, 0.25)',
+                      color: '#e2a84b',
+                      background: 'rgba(226, 168, 75, 0.1)',
+                      border: '1px solid rgba(226, 168, 75, 0.25)',
                     }}
                     aria-label={`Фаза ${game.phaseIndex + 1} из 3`}
                   >

@@ -86,14 +86,14 @@
 }
 
 .cp-glitch-text::before {
-  color: #ff0055;
+  color: #8d7fb5;
   animation: cp-glitch-1 3s infinite linear alternate-reverse,
              cp-glitch-clip 3s infinite linear;
   z-index: -1;
 }
 
 .cp-glitch-text::after {
-  color: #00ffff;
+  color: #9db3c8;
   animation: cp-glitch-2 2s infinite linear alternate-reverse,
              cp-glitch-clip 2.3s infinite linear;
   z-index: -2;
@@ -104,7 +104,7 @@
   display: inline-block;
   width: 8px;
   height: 1em;
-  background: #00ff41;
+  background: #46b96e;
   animation: cursor-blink 1s step-end infinite;
   vertical-align: text-bottom;
   margin-left: 2px;
@@ -137,7 +137,7 @@
   left: 0;
   right: 0;
   height: 2px;
-  background: rgba(0, 255, 65, 0.15);
+  background: rgba(70, 185, 110, 0.15);
   pointer-events: none;
   animation: cp-scanline-sweep 4s linear infinite;
 }
@@ -189,11 +189,11 @@
   padding: 40px 36px 32px;
   overflow-y: auto;
   font-family: 'Courier New', 'Consolas', 'Monaco', monospace;
-  color: #00ff41;
-  border: 1px solid rgba(0, 255, 65, 0.2);
+  color: #46b96e;
+  border: 1px solid rgba(70, 185, 110, 0.2);
   box-shadow:
-    0 0 30px rgba(0, 255, 65, 0.08),
-    inset 0 0 30px rgba(0, 255, 65, 0.03);
+    0 0 30px rgba(70, 185, 110, 0.08),
+    inset 0 0 30px rgba(70, 185, 110, 0.03);
   background: rgba(0, 8, 4, 0.92);
 }
 
@@ -207,10 +207,10 @@
   justify-content: space-between;
   padding-bottom: 16px;
   margin-bottom: 24px;
-  border-bottom: 1px solid rgba(0, 255, 65, 0.15);
+  border-bottom: 1px solid rgba(70, 185, 110, 0.15);
   background: rgba(0, 8, 4, 0.92);
   font-size: 11px;
-  color: rgba(0, 255, 65, 0.5);
+  color: rgba(70, 185, 110, 0.5);
   text-transform: uppercase;
   letter-spacing: 3px;
 }
@@ -226,30 +226,30 @@
   border-radius: 50%;
 }
 
-.cp-terminal-dot--red { background: #ff5f56; }
-.cp-terminal-dot--yellow { background: #ffbd2e; }
-.cp-terminal-dot--green { background: #27c93f; }
+.cp-terminal-dot--red { background: #c65548; }
+.cp-terminal-dot--yellow { background: #e2a84b; }
+.cp-terminal-dot--green { background: #46b96e; }
 
 /* ─── Poem Title ─── */
 .cp-poem-title {
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 8px;
-  color: #ffd700;
-  text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+  color: #e2a84b;
+  text-shadow: 0 0 10px rgba(226, 168, 75, 0.4);
   letter-spacing: 2px;
 }
 
 .cp-poem-author {
   font-size: 13px;
-  color: rgba(0, 255, 65, 0.5);
+  color: rgba(70, 185, 110, 0.5);
   margin-bottom: 24px;
   font-style: italic;
 }
 
 .cp-poem-author::before {
   content: '> ';
-  color: #00ff41;
+  color: #46b96e;
 }
 
 /* ─── Poem lines ─── */
@@ -260,7 +260,7 @@
   min-height: 1.4em;
   white-space: pre-wrap;
   padding-left: 16px;
-  border-left: 1px solid rgba(0, 255, 65, 0.1);
+  border-left: 1px solid rgba(70, 185, 110, 0.1);
 }
 
 .cp-poem-line--empty {
@@ -276,67 +276,67 @@
   z-index: 2;
   padding-top: 16px;
   margin-top: 24px;
-  border-top: 1px solid rgba(0, 255, 65, 0.1);
+  border-top: 1px solid rgba(70, 185, 110, 0.1);
   background: rgba(0, 8, 4, 0.92);
   text-align: center;
   font-size: 13px;
-  color: rgba(0, 255, 65, 0.6);
+  color: rgba(70, 185, 110, 0.6);
 }
 
 .cp-poem-prompt kbd {
   display: inline-block;
   padding: 2px 8px;
-  border: 1px solid rgba(0, 255, 65, 0.3);
+  border: 1px solid rgba(70, 185, 110, 0.3);
   border-radius: 3px;
   font-family: inherit;
   font-size: 12px;
-  color: #00ff41;
-  background: rgba(0, 255, 65, 0.05);
+  color: #46b96e;
+  background: rgba(70, 185, 110, 0.05);
 }
 
 /* ─── Theme-based color overrides ─── */
 .cp-theme-death {
-  color: #ff4444;
+  color: #c65548;
 }
 .cp-theme-death .cp-poem-title {
-  color: #ff6666;
-  text-shadow: 0 0 10px rgba(255, 100, 100, 0.4);
+  color: #c65548;
+  text-shadow: 0 0 10px rgba(198, 85, 72, 0.4);
 }
 
 .cp-theme-love {
-  color: #ff69b4;
+  color: #8d7fb5;
 }
 .cp-theme-love .cp-poem-title {
-  color: #ff99cc;
-  text-shadow: 0 0 10px rgba(255, 105, 180, 0.4);
+  color: #8d7fb5;
+  text-shadow: 0 0 10px rgba(141, 127, 181, 0.4);
 }
 
 .cp-theme-hope {
-  color: #44ddff;
+  color: #9db3c8;
 }
 .cp-theme-hope .cp-poem-title {
-  color: #88eeff;
-  text-shadow: 0 0 10px rgba(68, 221, 255, 0.4);
+  color: #9db3c8;
+  text-shadow: 0 0 10px rgba(157, 179, 200, 0.4);
 }
 
 .cp-theme-desperation,
 .cp-theme-despair {
-  color: #ff8844;
+  color: #e2a84b;
 }
 .cp-theme-desperation .cp-poem-title,
 .cp-theme-despair .cp-poem-title {
-  color: #ffaa66;
-  text-shadow: 0 0 10px rgba(255, 136, 68, 0.4);
+  color: #e2a84b;
+  text-shadow: 0 0 10px rgba(226, 168, 75, 0.4);
 }
 
 .cp-theme-tech,
 .cp-theme-code {
-  color: #00ff41;
+  color: #46b96e;
 }
 .cp-theme-tech .cp-poem-title,
 .cp-theme-code .cp-poem-title {
-  color: #33ff66;
-  text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+  color: #46b96e;
+  text-shadow: 0 0 10px rgba(70, 185, 110, 0.5);
 }
 
 .cp-theme-noir {

@@ -93,7 +93,7 @@ export function ExaminePanel({
   if (!open || !data) return null;
 
   const icon = data.icon || '🔍';
-  const presentation = resolveExaminePresentation('#66ddcc');
+  const presentation = resolveExaminePresentation('#9db3c8');
 
   if (compact) {
     return (
@@ -137,7 +137,7 @@ export function ExaminePanel({
                     key={chip.id}
                     type="button"
                     onClick={() => handleLoreChipClick(chip.id)}
-                    whileHover={{ scale: 1.05, borderColor: 'rgba(34,211,238,0.6)' }}
+                    whileHover={{ scale: 1.05, borderColor: 'rgba(157,179,200,0.6)' }}
                     whileTap={{ scale: 0.95 }}
                     className="text-[10px] font-mono text-cyan-300/80 rounded-full px-2 py-0.5
                                border border-cyan-500/20 bg-white/5 backdrop-blur-sm

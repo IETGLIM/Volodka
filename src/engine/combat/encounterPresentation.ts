@@ -81,7 +81,7 @@ export function startEncounter(ctx: EncounterContext): boolean {
   audioEngine.playSfx('combat_engage');
   audioEngine.playStinger('mystery');
   eventBus.emit('fx:glitch', { intensity: 0.55, duration: 480 });
-  eventBus.emit('fx:flash', { color: 'rgba(255,40,60,0.28)', opacity: 0.28, duration: 360 });
+  eventBus.emit('fx:flash', { color: 'rgba(198,85,72,0.28)', opacity: 0.28, duration: 360 });
   eventBus.emit('camera:combat_impact', { intensity: 0.62 });
 
   presentationTimer = setTimeout(() => {

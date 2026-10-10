@@ -67,7 +67,7 @@ export const CinematicLetterboxBars = memo(function CinematicLetterboxBars({
   const barStyle: React.CSSProperties = {
     zIndex: 12,
     background: LETTERBOX_GRADIENT,
-    boxShadow: 'inset 0 -1px 0 rgba(0, 255, 200, 0.06)',
+    boxShadow: 'inset 0 -1px 0 rgba(157, 179, 200, 0.06)',
   };
   // Reduced motion: snap bars to final state instantly (no scaleY animation).
   const duration = reducedMotion ? 0 : 0.7;
@@ -86,7 +86,7 @@ export const CinematicLetterboxBars = memo(function CinematicLetterboxBars({
         style={{
           ...barStyle,
           background: 'linear-gradient(0deg, #000 0%, #050810 70%, #0a1420 100%)',
-          boxShadow: 'inset 0 1px 0 rgba(0, 255, 200, 0.06)',
+          boxShadow: 'inset 0 1px 0 rgba(157, 179, 200, 0.06)',
           transformOrigin: 'bottom',
         }}
         initial={initial}

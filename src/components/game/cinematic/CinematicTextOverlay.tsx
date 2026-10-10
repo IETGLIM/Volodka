@@ -62,9 +62,9 @@ const SPEED_MS: Record<TextSpeedProfile, number> = {
 function getMoodShadow(mood: TextMood, accent: string): string {
   switch (mood) {
     case 'tense':
-      return '0 0 20px rgba(255, 50, 50, 0.3), 0 2px 8px rgba(0, 0, 0, 0.8)';
+      return '0 0 20px rgba(198, 85, 72, 0.3), 0 2px 8px rgba(0, 0, 0, 0.8)';
     case 'warm':
-      return '0 0 20px rgba(255, 180, 50, 0.2), 0 2px 8px rgba(0, 0, 0, 0.75)';
+      return '0 0 20px rgba(226, 168, 75, 0.2), 0 2px 8px rgba(0, 0, 0, 0.75)';
     case 'cold':
       return `0 0 20px ${accent}30, 0 0 40px ${accent}15, 0 2px 8px rgba(0, 0, 0, 0.8)`;
     case 'mysterious':
@@ -79,8 +79,8 @@ function getMoodShadow(mood: TextMood, accent: string): string {
 
 function getMoodGlow(mood: TextMood, accent: string): string {
   switch (mood) {
-    case 'tense': return 'rgba(255, 50, 50, 0.15)';
-    case 'warm': return 'rgba(255, 180, 50, 0.1)';
+    case 'tense': return 'rgba(198, 85, 72, 0.15)';
+    case 'warm': return 'rgba(226, 168, 75, 0.1)';
     case 'cold': return `${accent}15`;
     case 'mysterious': return `${accent}12`;
     case 'epic': return `${accent}20`;

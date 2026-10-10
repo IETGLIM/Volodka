@@ -26,8 +26,8 @@ interface NearbyNPC {
 
 function relationColor(r: number): string {
   if (r >= 70) return 'rgb(var(--cyber-cyan-rgb) / 0.9)';
-  if (r >= 40) return 'rgba(251, 191, 36, 0.9)';
-  return 'rgba(251, 113, 133, 0.9)';
+  if (r >= 40) return 'rgba(226, 168, 75, 0.9)';
+  return 'rgba(198, 85, 72, 0.9)';
 }
 
 function relationLabel(r: number): string {

@@ -20,9 +20,9 @@
 }
 
 .choice-consequence-chip.negative {
-  color: #fb7185;
-  background: rgba(244, 63, 94, 0.1);
-  border: 1px solid rgba(244, 63, 94, 0.2);
+  color: #c65548;
+  background: rgba(198, 85, 72, 0.1);
+  border: 1px solid rgba(198, 85, 72, 0.2);
 }
 
 .choice-consequence-chip.neutral {
@@ -52,17 +52,17 @@
 }
 
 .choice-difficulty-badge.medium {
-  color: #fbbf24;
-  background: rgba(245, 158, 11, 0.12);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  text-shadow: 0 0 4px rgba(245, 158, 11, 0.3);
+  color: #e2a84b;
+  background: rgba(226, 168, 75, 0.12);
+  border: 1px solid rgba(226, 168, 75, 0.25);
+  text-shadow: 0 0 4px rgba(226, 168, 75, 0.3);
 }
 
 .choice-difficulty-badge.hard {
-  color: #fb7185;
-  background: rgba(244, 63, 94, 0.12);
-  border: 1px solid rgba(244, 63, 94, 0.25);
-  text-shadow: 0 0 4px rgba(244, 63, 94, 0.3);
+  color: #c65548;
+  background: rgba(198, 85, 72, 0.12);
+  border: 1px solid rgba(198, 85, 72, 0.25);
+  text-shadow: 0 0 4px rgba(198, 85, 72, 0.3);
 }
 
 /* Previous choice indicator */
@@ -74,9 +74,9 @@
   border-radius: 3px;
   font-size: 9px;
   font-family: var(--font-mono, ui-monospace, monospace);
-  color: #a78bfa;
-  background: rgba(139, 92, 246, 0.1);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  color: #8d7fb5;
+  background: rgba(141, 127, 181, 0.1);
+  border: 1px solid rgba(141, 127, 181, 0.2);
 }
 
 /* Choice timer bar */
@@ -98,15 +98,15 @@
 }
 
 .choice-timer-fill.safe {
-  background: linear-gradient(90deg, #06b6d4, #9db3c8);
+  background: linear-gradient(90deg, #9db3c8, #9db3c8);
 }
 
 .choice-timer-fill.warning {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
+  background: linear-gradient(90deg, #e2a84b, #e2a84b);
 }
 
 .choice-timer-fill.danger {
-  background: linear-gradient(90deg, #ef4444, #fb7185);
+  background: linear-gradient(90deg, #c65548, #c65548);
   animation: choice-timer-pulse 0.5s ease-in-out infinite;
 }
 
@@ -131,8 +131,8 @@
 
 /* Previous choice highlight on the card itself */
 .choice-card-was-selected {
-  border-color: rgba(139, 92, 246, 0.35) !important;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.08), inset 0 0 20px rgba(139, 92, 246, 0.04) !important;
+  border-color: rgba(141, 127, 181, 0.35) !important;
+  box-shadow: 0 0 12px rgba(141, 127, 181, 0.08), inset 0 0 20px rgba(141, 127, 181, 0.04) !important;
 }
 
 /* Reduced motion */

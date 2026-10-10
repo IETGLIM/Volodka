@@ -20,7 +20,7 @@ export const StatChangeIndicator = memo(function StatChangeIndicator({
   reducedMotion,
 }: StatChangeIndicatorProps) {
   const isPositive = value > 0;
-  const resolvedColor = color ?? (isPositive ? '#57a874' : '#f43f5e');
+  const resolvedColor = color ?? (isPositive ? '#57a874' : '#c65548');
   const sign = isPositive ? '+' : '';
   const announcement = buildStatChangeAnnouncement(statName, value);
 

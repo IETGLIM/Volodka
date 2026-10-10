@@ -33,9 +33,9 @@
 
 /* Rest complete flash */
 @keyframes rest-complete-flash {
-  0% { background-color: rgba(52, 211, 153, 0); }
-  50% { background-color: rgba(52, 211, 153, 0.08); }
-  100% { background-color: rgba(52, 211, 153, 0); }
+  0% { background-color: rgba(70, 185, 110, 0); }
+  50% { background-color: rgba(70, 185, 110, 0.08); }
+  100% { background-color: rgba(70, 185, 110, 0); }
 }
 
 .rest-complete-flash {

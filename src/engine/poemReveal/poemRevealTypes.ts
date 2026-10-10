@@ -35,7 +35,7 @@ export const POEM_REVEAL_STAGE_FLAGS: Record<PoemRevealMode, PoemRevealStageFlag
     showBookHint: true,
     emitCameraDolly: false,
     muffleAudio: false,
-    accentColor: '#66ffaa',
+    accentColor: '#46b96e',
     testId: 'poem-discovery-reveal',
   },
   power_ritual: {
@@ -61,7 +61,7 @@ export const POEM_REVEAL_STAGE_FLAGS: Record<PoemRevealMode, PoemRevealStageFlag
     showBookHint: true,
     emitCameraDolly: false,
     muffleAudio: false,
-    accentColor: '#66ffaa',
+    accentColor: '#46b96e',
     testId: 'poem-explicit-read',
   },
 };

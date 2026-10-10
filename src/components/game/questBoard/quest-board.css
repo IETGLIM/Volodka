@@ -64,13 +64,13 @@
 }
 
 .quest-board-header-badge--full {
-  border-color: rgba(251, 191, 36, 0.35);
-  background: rgba(251, 191, 36, 0.08);
+  border-color: rgba(226, 168, 75, 0.35);
+  background: rgba(226, 168, 75, 0.08);
 }
 
 .quest-board-header-badge--full .quest-board-header-badge-count {
-  color: #fbbf24;
-  text-shadow: 0 0 6px rgba(251, 191, 36, 0.35);
+  color: #e2a84b;
+  text-shadow: 0 0 6px rgba(226, 168, 75, 0.35);
 }
 
 .quest-board-header-badge-count {
@@ -92,9 +92,9 @@
 }
 
 .quest-board-btn--abandon {
-  background: rgba(251, 113, 133, 0.08);
-  border: 1px solid rgba(251, 113, 133, 0.25);
-  color: #fb7185;
+  background: rgba(198, 85, 72, 0.08);
+  border: 1px solid rgba(198, 85, 72, 0.25);
+  color: #c65548;
 }
 
 .quest-board-btn--disabled,

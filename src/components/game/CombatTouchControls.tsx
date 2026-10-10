@@ -106,7 +106,7 @@ export function CombatTouchControls({
       <TouchActionButton
         label="Атака"
         icon={<Sword className="size-5" aria-hidden />}
-        accent="#22d3ee"
+        accent="#9db3c8"
         disabled={disabled}
         onPress={onAttack}
         haptic="heavy"
@@ -122,7 +122,7 @@ export function CombatTouchControls({
       <TouchActionButton
         label={poemOpen ? 'Стих ▲' : 'Стих'}
         icon={<Sparkles className="size-5" aria-hidden />}
-        accent="#fbbf24"
+        accent="#e2a84b"
         disabled={disabled || poemDisabled}
         onPress={onPoemToggle}
         haptic="medium"
@@ -130,7 +130,7 @@ export function CombatTouchControls({
       <TouchActionButton
         label="Бежать"
         icon={<LogOut className="size-5" aria-hidden />}
-        accent="#fb7185"
+        accent="#c65548"
         disabled={disabled}
         onPress={onFlee}
       />

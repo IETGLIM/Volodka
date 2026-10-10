@@ -69,7 +69,7 @@ export function SprintDrainOverlay() {
           <div
             className="absolute inset-0 sprint-drain-vignette hud-filmic-vignette-pulse"
             style={{
-              background: 'radial-gradient(ellipse at center, transparent 50%, rgba(251, 146, 60, 0.04) 70%, rgba(244, 63, 94, 0.06) 100%)',
+              background: 'radial-gradient(ellipse at center, transparent 50%, rgba(226, 168, 75, 0.04) 70%, rgba(198, 85, 72, 0.06) 100%)',
             }}
           />
           {/* Speed lines — top and bottom edges */}
@@ -83,7 +83,7 @@ export function SprintDrainOverlay() {
           <div
             className="absolute inset-0 sprint-edge-pulse"
             style={{
-              boxShadow: 'inset 0 0 60px rgba(251, 146, 60, 0.06), inset 0 0 120px rgba(244, 63, 94, 0.03)',
+              boxShadow: 'inset 0 0 60px rgba(226, 168, 75, 0.06), inset 0 0 120px rgba(198, 85, 72, 0.03)',
             }}
           />
         </motion.div>

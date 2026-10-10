@@ -117,7 +117,7 @@ export const InventoryCard = memo(function InventoryCard({
               <Lock className="size-2.5 text-cyan-400 drop-shadow-[0_0_3px_rgb(var(--cyber-cyan-rgb) / 0.5)]" aria-hidden />
             )}
             {def?.category === 'equipment' && (
-              <Shield className="size-2.5 text-amber-400 drop-shadow-[0_0_3px_rgba(251,191,36,0.5)]" aria-hidden />
+              <Shield className="size-2.5 text-amber-400 drop-shadow-[0_0_3px_rgba(226,168,75,0.5)]" aria-hidden />
             )}
             {item.quantity > 1 && (
               <span key={`count-${item.quantity}`} className="inv-count-badge-cyber inv-count-badge-animated inv-count-pop">{item.quantity}</span>

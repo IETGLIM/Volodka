@@ -26,7 +26,7 @@ textarea:focus-visible,
 select:focus-visible {
   outline: 2px solid rgb(var(--cyber-cyan-rgb));
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.2);
+  box-shadow: 0 0 0 4px rgba(157, 179, 200, 0.2);
 }
 
 /* ── High Contrast Mode (data-attribute based — toggle in settings) ── */
@@ -69,7 +69,7 @@ select:focus-visible {
   input:focus-visible,
   textarea:focus-visible,
   select:focus-visible {
-    outline: 3px solid #00ffff !important;
+    outline: 3px solid #9db3c8 !important;
     outline-offset: 2px;
     box-shadow: 0 0 0 6px rgba(157, 179, 200, 0.3) !important;
   }
@@ -171,22 +171,22 @@ select:focus-visible {
 [data-color-blind-mode="protanopia"] {
   /* Red-weak: Adjust red-based colors */
   --cb-red: #6b8fce;
-  --cb-green: #4ade80;
-  --cb-amber: #fbbf24;
+  --cb-green: #46b96e;
+  --cb-amber: #e2a84b;
 }
 
 [data-color-blind-mode="deuteranopia"] {
   /* Green-weak: Adjust green-based colors */
-  --cb-red: #f87171;
+  --cb-red: #c65548;
   --cb-green: #a78bfa;
-  --cb-amber: #fbbf24;
+  --cb-amber: #e2a84b;
 }
 
 [data-color-blind-mode="tritanopia"] {
   /* Blue-weak: Adjust blue-based colors */
-  --cb-red: #f87171;
-  --cb-green: #4ade80;
-  --cb-amber: #f97316;
+  --cb-red: #c65548;
+  --cb-green: #46b96e;
+  --cb-amber: #e2a84b;
 }
 
 [data-reduced-motion="true"] *,
@@ -202,32 +202,32 @@ select:focus-visible {
   /* Apply color-blind friendly palette */
   .text-rose-400,
   .text-red-400 {
-    color: var(--cb-red, #f87171) !important;
+    color: var(--cb-red, #c65548) !important;
   }
 
   .bg-rose-400,
   .bg-red-400 {
-    background-color: var(--cb-red, #f87171) !important;
+    background-color: var(--cb-red, #c65548) !important;
   }
 
   .text-emerald-400,
   .text-green-400 {
-    color: var(--cb-green, #4ade80) !important;
+    color: var(--cb-green, #46b96e) !important;
   }
 
   .bg-emerald-400,
   .bg-green-400 {
-    background-color: var(--cb-green, #4ade80) !important;
+    background-color: var(--cb-green, #46b96e) !important;
   }
 
   .text-amber-400,
   .text-yellow-400 {
-    color: var(--cb-amber, #fbbf24) !important;
+    color: var(--cb-amber, #e2a84b) !important;
   }
 
   .bg-amber-400,
   .bg-yellow-400 {
-    background-color: var(--cb-amber, #fbbf24) !important;
+    background-color: var(--cb-amber, #e2a84b) !important;
   }
 
   /* Health bars with patterns for additional distinction */
@@ -380,8 +380,8 @@ button {
   padding: 2px 6px;
   font-size: 10px;
   font-family: monospace;
-  background: rgba(6, 182, 212, 0.2);
-  border: 1px solid rgba(6, 182, 212, 0.4);
+  background: rgba(157, 179, 200, 0.2);
+  border: 1px solid rgba(157, 179, 200, 0.4);
   border-radius: 3px;
   opacity: 0;
   transition: opacity 0.2s;
@@ -481,7 +481,7 @@ button:hover [data-keyboard-hint]::after {
 [data-inventory-item]:focus-visible {
   outline: 2px solid rgb(var(--cyber-cyan-rgb));
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(6, 182, 212, 0.15);
+  box-shadow: 0 0 0 4px rgba(157, 179, 200, 0.15);
 }
 
 /* Minigame cards: distinct focus ring for grid navigation */
@@ -498,7 +498,7 @@ button:hover [data-keyboard-hint]::after {
 
 [data-high-contrast="true"] [role="listitem"]:hover,
 [data-high-contrast="true"] [role="listitem"][aria-selected="true"] {
-  border-color: #00ffff !important;
+  border-color: #9db3c8 !important;
   box-shadow: 0 0 0 1px rgba(157, 179, 200, 0.3) !important;
 }
 
@@ -536,7 +536,7 @@ button:hover [data-keyboard-hint]::after {
 
 [data-high-contrast="true"] [data-narrative-choice]:hover,
 [data-high-contrast="true"] [data-narrative-choice]:focus-visible {
-  border-color: #00ffff !important;
+  border-color: #9db3c8 !important;
   background-color: rgba(157, 179, 200, 0.05) !important;
 }
 
@@ -640,11 +640,11 @@ button:hover [data-keyboard-hint]::after {
    make those settings actually do something visible. */
 
 /* ── Global focus-visible ring ──
-   Per task spec. The fallback `#22d3ee` matches the cyber-cyan family
+   Per task spec. The fallback `#9db3c8` matches the cyber-cyan family
    used throughout the design system; the existing `--cyber-cyan`
    variable (defined in tokens.css) overrides it on supported browsers. */
 :focus-visible {
-  outline: 2px solid var(--cyber-cyan, #22d3ee);
+  outline: 2px solid var(--cyber-cyan, #9db3c8);
   outline-offset: 2px;
 }
 

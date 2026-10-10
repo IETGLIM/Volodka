@@ -57,9 +57,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(251, 191, 36, 0.08) 25%,
-    rgba(251, 191, 36, 0.18) 50%,
-    rgba(251, 191, 36, 0.08) 75%,
+    rgba(226, 168, 75, 0.08) 25%,
+    rgba(226, 168, 75, 0.18) 50%,
+    rgba(226, 168, 75, 0.08) 75%,
     transparent 100%
   );
   background-size: 200% 100%;
@@ -85,10 +85,10 @@
 
 @keyframes inv-legendary-border-pulse {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2), 0 0 24px rgba(251, 191, 36, 0.08), inset 0 0 8px rgba(251, 191, 36, 0.06);
+    box-shadow: 0 0 10px rgba(226, 168, 75, 0.2), 0 0 24px rgba(226, 168, 75, 0.08), inset 0 0 8px rgba(226, 168, 75, 0.06);
   }
   50% {
-    box-shadow: 0 0 16px rgba(251, 191, 36, 0.35), 0 0 36px rgba(251, 191, 36, 0.12), inset 0 0 12px rgba(251, 191, 36, 0.1);
+    box-shadow: 0 0 16px rgba(226, 168, 75, 0.35), 0 0 36px rgba(226, 168, 75, 0.12), inset 0 0 12px rgba(226, 168, 75, 0.1);
   }
 }
 
@@ -107,14 +107,14 @@
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
-  animation: inv-bar-shimmer 2s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.05) 50%, transparent 100%);
+  animation: inv-bar-shimmer 3.2s ease-in-out infinite;
 }
 
-/* Equipped badge glow */
+/* Equipped badge glow — v4.45.1: приглушено */
 @keyframes inv-equipped-badge-pulse {
-  0%, 100% { opacity: 0.8; }
-  50% { opacity: 1; text-shadow: 0 0 4px rgba(52, 211, 153, 0.5); }
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; text-shadow: 0 0 3px rgba(70, 185, 110, 0.28); }
 }
 
 .inv-equipped-badge {
@@ -144,24 +144,24 @@
 
 /* Rarity text glow for item names */
 .inv-glow-uncommon {
-  text-shadow: 0 0 6px rgba(52, 211, 153, 0.25);
+  text-shadow: 0 0 6px rgba(70, 185, 110, 0.25);
 }
 .inv-glow-rare {
   text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1);
 }
 .inv-glow-legendary {
-  text-shadow: 0 0 8px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.15), 0 0 40px rgba(251, 191, 36, 0.05);
+  text-shadow: 0 0 8px rgba(226, 168, 75, 0.4), 0 0 20px rgba(226, 168, 75, 0.15), 0 0 40px rgba(226, 168, 75, 0.05);
   animation: inv-legendary-text-pulse 3s ease-in-out infinite;
 }
 
 @keyframes inv-legendary-text-pulse {
-  0%, 100% { text-shadow: 0 0 8px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.15); }
-  50% { text-shadow: 0 0 12px rgba(251, 191, 36, 0.6), 0 0 28px rgba(251, 191, 36, 0.25), 0 0 48px rgba(251, 191, 36, 0.08); }
+  0%, 100% { text-shadow: 0 0 8px rgba(226, 168, 75, 0.4), 0 0 20px rgba(226, 168, 75, 0.15); }
+  50% { text-shadow: 0 0 12px rgba(226, 168, 75, 0.6), 0 0 28px rgba(226, 168, 75, 0.25), 0 0 48px rgba(226, 168, 75, 0.08); }
 }
 
 /* Card border glow by rarity */
 .inv-border-glow-uncommon {
-  box-shadow: 0 0 4px rgba(52, 211, 153, 0.1), inset 0 0 3px rgba(52, 211, 153, 0.03);
+  box-shadow: 0 0 4px rgba(70, 185, 110, 0.1), inset 0 0 3px rgba(70, 185, 110, 0.03);
 }
 .inv-border-glow-rare {
   animation: inv-rare-border-pulse 2.5s ease-in-out infinite;
@@ -195,10 +195,10 @@
 
 @keyframes inv-slot-drop-ok-pulse {
   0%, 100% {
-    box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.5), 0 0 12px rgba(34, 211, 238, 0.25);
+    box-shadow: 0 0 0 1px rgba(157, 179, 200, 0.5), 0 0 12px rgba(157, 179, 200, 0.25);
   }
   50% {
-    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.85), 0 0 22px rgba(34, 211, 238, 0.45);
+    box-shadow: 0 0 0 2px rgba(157, 179, 200, 0.85), 0 0 22px rgba(157, 179, 200, 0.45);
   }
 }
 
@@ -208,14 +208,14 @@
 }
 
 @keyframes inv-slot-drop-reject-shake {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.55); }
-  50% { box-shadow: 0 0 0 2px rgba(244, 63, 94, 0.9), 0 0 14px rgba(244, 63, 94, 0.35); }
+  0%, 100% { box-shadow: 0 0 0 1px rgba(198, 85, 72, 0.55); }
+  50% { box-shadow: 0 0 0 2px rgba(198, 85, 72, 0.9), 0 0 14px rgba(198, 85, 72, 0.35); }
 }
 
 /* Зона инвентаря при дропе надетого предмета — мягкий cyan-орел */
 [data-dnd-inventory='true'].inv-grid-drop-ok {
   border-radius: 0.5rem;
-  outline: 1px dashed rgba(34, 211, 238, 0.35);
+  outline: 1px dashed rgba(157, 179, 200, 0.35);
   outline-offset: 4px;
 }
 

@@ -29,7 +29,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'start',
     act: 1,
     mood: 'hope',
-    color: '#00ff41',
+    color: '#46b96e',
   },
   {
     id: 'mq_first_reading',
@@ -45,7 +45,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'incident_scroll_4729',
     act: 1,
     mood: 'danger',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'mq_vault',
@@ -65,7 +65,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'network_initiation',
     act: 2,
     mood: 'hope',
-    color: '#00ff41',
+    color: '#46b96e',
   },
   {
     id: 'mq_dmitry',
@@ -73,7 +73,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'dmitry_defection',
     act: 2,
     mood: 'loss',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_smuggling',
@@ -81,7 +81,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'poetry_smuggling',
     act: 2,
     mood: 'revelation',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
 
   /* ═══════════════════════════════════════════════════════════
@@ -93,7 +93,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'zarema_rescue',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_defense',
@@ -101,7 +101,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'vault_defense',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_maria_truth',
@@ -121,7 +121,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'guild_infiltration',
     act: 4,
     mood: 'triumph',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'mq_broadcast',
@@ -129,7 +129,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'poetry_broadcast',
     act: 4,
     mood: 'triumph',
-    color: '#00ff41',
+    color: '#46b96e',
   },
 
   /* ═══════════════════════════════════════════════════════════
@@ -141,7 +141,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ending_creator',
     act: 5,
     mood: 'triumph',
-    color: '#00ff41',
+    color: '#46b96e',
   },
   {
     id: 'mq_poet',
@@ -149,7 +149,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ending_poet',
     act: 5,
     mood: 'triumph',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'mq_rebel',
@@ -157,7 +157,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ending_rebel',
     act: 5,
     mood: 'triumph',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_exile',
@@ -165,7 +165,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ending_exile',
     act: 5,
     mood: 'loss',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_machine',
@@ -189,7 +189,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws18d_code_poetry',
     act: 1,
     mood: 'hope',
-    color: '#00ff41',
+    color: '#46b96e',
   },
   {
     id: 'mq_ws18d_sleep_defrag',
@@ -213,7 +213,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws18d_memory_currency',
     act: 2,
     mood: 'revelation',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'mq_ws18d_errors_prophecy',
@@ -221,7 +221,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws18d_errors_prophecy',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_ws18d_tree_choice',
@@ -245,7 +245,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws18d_kolyadka',
     act: 4,
     mood: 'revelation',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'mq_ws18d_rain_corpuscles',
@@ -253,7 +253,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws18d_rain_corpuscles',
     act: 4,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_ws18d_recursion_dream',
@@ -261,7 +261,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws18d_recursion_dream',
     act: 5,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_ws18d_ash_variables',
@@ -284,7 +284,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws19d_phantom_process',
     act: 2,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_ws19d_null_reference',
@@ -300,7 +300,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws19d_dead_lock',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_ws19d_memory_leak',
@@ -324,7 +324,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws19d_zombie_thread',
     act: 4,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'mq_ws19d_signal_decay',
@@ -340,7 +340,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws19d_bit_rot',
     act: 5,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
 
   /* ═══════════════════════════════════════════════════════════
@@ -362,7 +362,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws20d_kernel_panic',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws20d_mq_zombie_process',
@@ -378,7 +378,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws20d_orphan_inode',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws20d_mq_stack_overflow',
@@ -386,7 +386,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws20d_stack_overflow',
     act: 4,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws20d_mq_buffer_underrun',
@@ -410,7 +410,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws20d_dead_channel',
     act: 5,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
 
   /* ═══════════════════════════════════════════════════════════
@@ -441,7 +441,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws21d_phantom_compiler',
     act: 3,
     mood: 'revelation',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'ws21d_mq_signal_ghost',
@@ -449,7 +449,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws21d_signal_ghost',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws21d_mq_memory_palace',
@@ -465,7 +465,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws21d_code_exorcism',
     act: 4,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws21d_mq_digital_grief',
@@ -512,7 +512,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws22d_corridor_echo',
     act: 3,
     mood: 'revelation',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'ws22d_mq_phantom_repository',
@@ -520,7 +520,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws22d_phantom_repository',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws22d_mq_silent_protocol',
@@ -536,7 +536,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws22d_resonant_frequency',
     act: 4,
     mood: 'triumph',
-    color: '#00ff41',
+    color: '#46b96e',
   },
   {
     id: 'ws22d_mq_future_handwriting',
@@ -552,7 +552,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws22d_ghost_transmission',
     act: 5,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
 
   /* ═══════════════════════════════════════════════════════════
@@ -567,7 +567,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws23d_analog_freedom',
     act: 2,
     mood: 'revelation',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'ws23d_mq_antenna_resonance',
@@ -591,7 +591,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws23d_frozen_heartbeat',
     act: 3,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws23d_mq_ink_computation',
@@ -599,7 +599,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws23d_ink_computation',
     act: 4,
     mood: 'triumph',
-    color: '#00ff41',
+    color: '#46b96e',
   },
   {
     id: 'ws23d_mq_memory_archaeology',
@@ -623,7 +623,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws23d_winter_protocol',
     act: 5,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
 
   /* ═══════════════════════════════════════════════════════════
@@ -646,7 +646,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws26_deja_vu',
     act: 2,
     mood: 'danger',
-    color: '#cc2020',
+    color: '#c65548',
   },
   {
     id: 'ws26_mq_choice_fate',
@@ -654,7 +654,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws26_choice_fate',
     act: 3,
     mood: 'revelation',
-    color: '#d4920a',
+    color: '#e2a84b',
   },
   {
     id: 'ws26_mq_consciousness',
@@ -678,7 +678,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws26_observer_effect',
     act: 4,
     mood: 'hope',
-    color: '#00ff41',
+    color: '#46b96e',
   },
   {
     id: 'ws26_mq_loop_repetition',
@@ -694,7 +694,7 @@ export const MATRIX_QUOTES: MatrixQuote[] = [
     trigger: 'ws26_two_pills',
     act: 5,
     mood: 'triumph',
-    color: '#00ff41',
+    color: '#46b96e',
   },
 ]
 

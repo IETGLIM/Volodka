@@ -90,8 +90,8 @@ export function SkillCheckDisplay() {
 
   if (!check) return null;
 
-  const passColor = '#22d3ee'; /* cyan for pass */
-  const failColor = '#ef4444'; /* red for fail */
+  const passColor = '#9db3c8'; /* cyan for pass */
+  const failColor = '#c65548'; /* red for fail */
   const accentColor = check.passed ? passColor : failColor;
   const barWidth = Math.min(check.actual / MAX_DISPLAY_LEVEL, 1) * 100;
   const thresholdPosition = Math.min(check.required / MAX_DISPLAY_LEVEL, 1) * 100;

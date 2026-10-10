@@ -50,14 +50,14 @@ export const RELATION_LEVEL_COLORS: Record<
     bg: 'bg-amber-950/30',
     text: 'text-amber-400',
     border: 'border-amber-700/40',
-    glow: 'rgba(245,158,11,0.15)',
+    glow: 'rgba(226,168,75,0.15)',
   },
   enemy: {
     bar: 'bg-red-500',
     bg: 'bg-red-950/30',
     text: 'text-red-400',
     border: 'border-red-700/40',
-    glow: 'rgba(239,68,68,0.15)',
+    glow: 'rgba(198,85,72,0.15)',
   },
 };
 

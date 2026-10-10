@@ -48,7 +48,7 @@ export function HackingGameResults({
       <h3
         className="text-lg font-bold font-mono tracking-widest uppercase mb-2"
         style={{
-          color: isWin ? 'rgba(34, 197, 94, 0.9)' : HACKING_ACCENT_COLOR,
+          color: isWin ? 'rgba(70, 185, 110, 0.9)' : HACKING_ACCENT_COLOR,
         }}
       >
         {isWin ? 'Взлом завершён' : 'Обнаружен сканером'}
@@ -119,8 +119,8 @@ export function HackingGameResults({
               Награды
             </span>
             <div className="flex items-center justify-center gap-4 text-xs font-mono">
-              <span style={{ color: '#00ffee' }}>+{rewards.totalXP} XP</span>
-              <span style={{ color: '#ffcc00' }}>+{rewards.karmaReward} карма</span>
+              <span style={{ color: '#9db3c8' }}>+{rewards.totalXP} XP</span>
+              <span style={{ color: '#e2a84b' }}>+{rewards.karmaReward} карма</span>
               <span style={{ color: HACKING_ACCENT_COLOR }}>+1 код</span>
             </div>
           </motion.div>

@@ -89,7 +89,7 @@ export function OrchestratorCanvasLayer({
               className="absolute inset-0 opacity-[0.07]"
               style={{
                 background:
-                  'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,238,0.15) 2px, rgba(0,255,238,0.15) 4px)',
+                  'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157,179,200,0.15) 2px, rgba(157,179,200,0.15) 4px)',
               }}
             />
           </motion.div>

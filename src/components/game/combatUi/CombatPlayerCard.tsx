@@ -28,7 +28,7 @@ export function CombatPlayerCard({
   return (
     <div
       className="glass-panel bg-black/60 backdrop-blur-sm border border-cyan-900/30 rounded-lg p-3 mb-2 data-pulse"
-      style={{ boxShadow: '0 0 20px rgba(6,182,212,0.08)' }}
+      style={{ boxShadow: '0 0 20px rgba(157,179,200,0.08)' }}
     >
       <div className="flex items-center gap-2 mb-2">
         <Heart className="size-4 text-cyan-500 shrink-0" />

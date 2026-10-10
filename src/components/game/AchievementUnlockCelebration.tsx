@@ -11,11 +11,11 @@ import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 const AUTO_DISMISS_MS = 5000;
 
 const CATEGORY_META: Record<TrophyCategory, { label: string; color: string }> = {
-  story:       { label: 'Сюжет',       color: '#a78bfa' },
-  combat:      { label: 'Бой',         color: '#f87171' },
+  story:       { label: 'Сюжет',       color: '#8d7fb5' },
+  combat:      { label: 'Бой',         color: '#c65548' },
   exploration: { label: 'Исследование', color: '#57a874' },
-  poetry:      { label: 'Поэзия',      color: '#fbbf24' },
-  social:      { label: 'Социальные',  color: '#60a5fa' },
+  poetry:      { label: 'Поэзия',      color: '#e2a84b' },
+  social:      { label: 'Социальные',  color: '#9db3c8' },
 };
 
 /* ─── Particle burst (CSS-only) ─── */

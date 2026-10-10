@@ -8,7 +8,7 @@ export interface CanvasMatrixRainProps {
   className?: string;
   /** Overall opacity of the canvas (default: 0.15) */
   opacity?: number;
-  /** Fill color for rain characters (default: '#00ff41') */
+  /** Fill color for rain characters (default: '#46b96e') */
   color?: string;
   /** Minimum milliseconds between frames — controls speed (default: 33 ≈ 30fps) */
   speed?: number;
@@ -26,7 +26,7 @@ const DEFAULT_CHARS =
 export const CanvasMatrixRain = memo(function CanvasMatrixRain({
   className = 'absolute inset-0 pointer-events-none',
   opacity = 0.15,
-  color = '#00ff41',
+  color = '#46b96e',
   speed = 33,
   fontSize = 14,
   chars = DEFAULT_CHARS,

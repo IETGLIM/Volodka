@@ -66,8 +66,8 @@ function injectAchievementStyles() {
       50% { border-color: rgba(157, 179, 200,0.6); }
     }
     @keyframes achievement-glow-pulse {
-      0%, 100% { box-shadow: 0 0 20px rgba(251,191,36,0.1), 0 0 40px rgba(251,191,36,0.05); }
-      50% { box-shadow: 0 0 25px rgba(251,191,36,0.2), 0 0 50px rgba(251,191,36,0.08); }
+      0%, 100% { box-shadow: 0 0 20px rgba(226,168,75,0.1), 0 0 40px rgba(226,168,75,0.05); }
+      50% { box-shadow: 0 0 25px rgba(226,168,75,0.2), 0 0 50px rgba(226,168,75,0.08); }
     }
     .ach-card-shine::after {
       content: '';
@@ -80,7 +80,7 @@ function injectAchievementStyles() {
         90deg,
         transparent,
         rgba(255,255,255,0.08),
-        rgba(251,191,36,0.12),
+        rgba(226,168,75,0.12),
         rgba(255,255,255,0.08),
         transparent
       );
@@ -151,8 +151,8 @@ function AchievementCard({
       `}
       style={{
         width: 300,
-        borderColor: `${catMeta?.color ?? '#fbbf24'}40`,
-        boxShadow: `0 0 20px ${catMeta?.color ?? '#fbbf24'}15, 0 0 40px ${catMeta?.color ?? '#fbbf24'}08`,
+        borderColor: `${catMeta?.color ?? '#e2a84b'}40`,
+        boxShadow: `0 0 20px ${catMeta?.color ?? '#e2a84b'}15, 0 0 40px ${catMeta?.color ?? '#e2a84b'}08`,
       }}
       onClick={() => onDismiss(notification.id)}
     >
@@ -168,7 +168,7 @@ function AchievementCard({
             style={{
               width: 2,
               height: 3,
-              backgroundColor: `${catMeta?.color ?? '#fbbf24'}99`,
+              backgroundColor: `${catMeta?.color ?? '#e2a84b'}99`,
               animationDelay: `${i * 0.1}s`,
             }}
           />
@@ -183,9 +183,9 @@ function AchievementCard({
           style={{
             width: 40,
             height: 40,
-            background: `${catMeta?.color ?? '#fbbf24'}15`,
+            background: `${catMeta?.color ?? '#e2a84b'}15`,
             fontSize: uiTextScaledPx(20),
-            boxShadow: `0 0 12px ${catMeta?.color ?? '#fbbf24'}25`,
+            boxShadow: `0 0 12px ${catMeta?.color ?? '#e2a84b'}25`,
           }}
         >
           {icon}
@@ -196,7 +196,7 @@ function AchievementCard({
           <div className="flex items-center gap-1.5">
             <span
               className="text-sm font-semibold leading-tight truncate"
-              style={{ color: catMeta?.color ?? '#fbbf24' }}
+              style={{ color: catMeta?.color ?? '#e2a84b' }}
             >
               {title}
             </span>
@@ -206,7 +206,7 @@ function AchievementCard({
           </span>
           <span
             className="text-[9px] font-mono mt-0.5 opacity-50"
-            style={{ color: rarityMeta?.color ?? catMeta?.color ?? '#fbbf24' }}
+            style={{ color: rarityMeta?.color ?? catMeta?.color ?? '#e2a84b' }}
           >
             {rarityMeta?.label ?? 'Обычное'} · {catMeta?.label}
           </span>
@@ -215,7 +215,7 @@ function AchievementCard({
         {/* Trophy badge */}
         <div
           className="shrink-0 ml-auto text-lg"
-          style={{ filter: `drop-shadow(0 0 4px ${catMeta?.color ?? '#fbbf24'}80)` }}
+          style={{ filter: `drop-shadow(0 0 4px ${catMeta?.color ?? '#e2a84b'}80)` }}
         >
           🏆
         </div>
@@ -225,7 +225,7 @@ function AchievementCard({
       <motion.div
         className="h-0.5"
         style={{
-          background: `linear-gradient(90deg, ${catMeta?.color ?? '#fbbf24'}, transparent)`,
+          background: `linear-gradient(90deg, ${catMeta?.color ?? '#e2a84b'}, transparent)`,
         }}
         initial={{ width: '100%' }}
         animate={{ width: '0%' }}

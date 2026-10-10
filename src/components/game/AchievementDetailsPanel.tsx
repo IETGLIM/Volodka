@@ -107,7 +107,7 @@ function AchievementCard({
         <div
           className="absolute inset-0 rounded-xl pointer-events-none"
           style={{
-            boxShadow: 'inset 0 0 20px rgba(251,191,36,0.05)' }}
+            boxShadow: 'inset 0 0 20px rgba(226,168,75,0.05)' }}
         />
       )}
       {/* Unlock particle burst animation */}
@@ -232,7 +232,7 @@ function AchievementDetailPopup({
         className="relative z-10 w-[90vw] max-w-md rounded-2xl border border-amber-500/20 overflow-hidden"
         style={{
           background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
-          boxShadow: '0 0 40px rgba(251,191,36,0.1), -20px 0 40px rgba(0,0,0,0.5)' }}
+          boxShadow: '0 0 40px rgba(226,168,75,0.1), -20px 0 40px rgba(0,0,0,0.5)' }}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -243,8 +243,8 @@ function AchievementDetailPopup({
               width: 56,
               height: 56,
               fontSize: uiTextScaledPx(28),
-              background: unlocked ? 'rgba(251,191,36,0.1)' : 'rgba(30,41,59,0.4)',
-              boxShadow: unlocked ? '0 0 20px rgba(251,191,36,0.2)' : 'none',
+              background: unlocked ? 'rgba(226,168,75,0.1)' : 'rgba(30,41,59,0.4)',
+              boxShadow: unlocked ? '0 0 20px rgba(226,168,75,0.2)' : 'none',
               filter: unlocked ? 'none' : 'grayscale(1) brightness(0.4)' }}
           >
             {isHidden ? '❓' : achievement.icon}
@@ -487,9 +487,9 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
           style={{
             zIndex: UI_LAYERS.PANEL,
             background: 'linear-gradient(180deg, rgba(8,12,28,0.97) 0%, rgba(4,8,18,0.98) 100%)',
-            borderLeft: '1px solid rgba(251,191,36,0.15)',
+            borderLeft: '1px solid rgba(226,168,75,0.15)',
             backdropFilter: 'blur(20px)',
-            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(251,191,36,0.08)' }}
+            boxShadow: '-20px 0 40px rgba(0,0,0,0.5), inset 1px 0 0 rgba(226,168,75,0.08)' }}
         >
           <div className="flex flex-col h-full">
             {/* Header */}
@@ -524,8 +524,8 @@ export function AchievementDetailsPanel({ open, onClose }: AchievementDetailsPan
                 <motion.div
                   className="h-full rounded-full"
                   style={{
-                    background: 'linear-gradient(90deg, #b45309, #f59e0b, #fbbf24)',
-                    boxShadow: '0 0 8px rgba(251,191,36,0.3)' }}
+                    background: 'linear-gradient(90deg, #b45309, #e2a84b, #e2a84b)',
+                    boxShadow: '0 0 8px rgba(226,168,75,0.3)' }}
                   initial={false}
                   animate={{ width: `${progressPct}%` }}
                   transition={{ duration: 0.5, ease: 'easeOut' }}

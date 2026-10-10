@@ -41,8 +41,8 @@
 
 /* ─── 2. Rarity glow border via data-rarity attribute ─── */
 [data-rarity="uncommon"] {
-  border-color: rgba(52, 211, 153, 0.35) !important;
-  box-shadow: 0 0 6px rgba(52, 211, 153, 0.1), inset 0 0 4px rgba(52, 211, 153, 0.03);
+  border-color: rgba(70, 185, 110, 0.35) !important;
+  box-shadow: 0 0 6px rgba(70, 185, 110, 0.1), inset 0 0 4px rgba(70, 185, 110, 0.03);
 }
 
 [data-rarity="rare"] {
@@ -51,8 +51,8 @@
 }
 
 [data-rarity="legendary"] {
-  border-color: rgba(251, 191, 36, 0.45) !important;
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.2), 0 0 24px rgba(251, 191, 36, 0.08), inset 0 0 8px rgba(251, 191, 36, 0.06);
+  border-color: rgba(226, 168, 75, 0.45) !important;
+  box-shadow: 0 0 10px rgba(226, 168, 75, 0.2), 0 0 24px rgba(226, 168, 75, 0.08), inset 0 0 8px rgba(226, 168, 75, 0.06);
   animation: inv-legendary-border-pulse 2.5s ease-in-out infinite;
 }
 
@@ -238,7 +238,7 @@
   inset: 0;
   border-radius: inherit;
   padding: 1.5px;
-  background: linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgba(52, 211, 153, 0.6), rgb(var(--cyber-cyan-rgb) / 0.6));
+  background: linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.6), rgba(70, 185, 110, 0.6), rgb(var(--cyber-cyan-rgb) / 0.6));
   background-size: 200% 100%;
   animation: craft-btn-gradient 3s linear infinite;
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
@@ -285,7 +285,7 @@
     box-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15), 0 0 3px rgb(var(--cyber-cyan-rgb) / 0.1);
   }
   50% {
-    box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 8px rgba(52, 211, 153, 0.15), 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
+    box-shadow: 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 8px rgba(70, 185, 110, 0.15), 0 0 4px rgb(var(--cyber-cyan-rgb) / 0.2);
   }
 }
 
@@ -302,15 +302,15 @@
 /* ─── Crafting: Ingredient list enhanced icons ─── */
 .ingredient-check {
   color: #57a874;
-  text-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
+  text-shadow: 0 0 6px rgba(70, 185, 110, 0.4);
   font-weight: 700;
   font-size: 11px;
   line-height: 1;
 }
 
 .ingredient-cross {
-  color: #fb7185;
-  text-shadow: 0 0 6px rgba(251, 113, 133, 0.4);
+  color: #c65548;
+  text-shadow: 0 0 6px rgba(198, 85, 72, 0.4);
   font-weight: 700;
   font-size: 11px;
   line-height: 1;
@@ -323,7 +323,7 @@
 }
 
 .ingredient-count-missing {
-  color: #fb7185;
+  color: #c65548;
   font-family: 'Geist Mono', monospace;
   font-size: 10px;
 }

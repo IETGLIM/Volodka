@@ -66,7 +66,7 @@ const DIFFICULTY_CONFIG: Record<Difficulty, {
     noteSpeed: 250,
     spawnInterval: 800,
     songDuration: 30,
-    accentColor: 'rgba(52, 211, 153, 0.9)',
+    accentColor: 'rgba(70, 185, 110, 0.9)',
   },
   operator: {
     label: 'Оператор',
@@ -74,7 +74,7 @@ const DIFFICULTY_CONFIG: Record<Difficulty, {
     noteSpeed: 350,
     spawnInterval: 600,
     songDuration: 45,
-    accentColor: 'rgba(56, 189, 248, 0.9)',
+    accentColor: 'rgba(157, 179, 200, 0.9)',
   },
   master: {
     label: 'Мастер',
@@ -82,7 +82,7 @@ const DIFFICULTY_CONFIG: Record<Difficulty, {
     noteSpeed: 480,
     spawnInterval: 420,
     songDuration: 60,
-    accentColor: 'rgba(244, 63, 94, 0.9)',
+    accentColor: 'rgba(198, 85, 72, 0.9)',
   },
 };
 
@@ -97,8 +97,8 @@ const SCORE_MAP = { perfect: 300, great: 200, good: 100, miss: 0 };
 /* ─── Rating calculation ─── */
 function getRating(accuracy: number, maxCombo: number): { label: string; color: string; icon: string } {
   if (accuracy >= 95 && maxCombo >= 30) return { label: 'Виртуоз', color: `rgba(${ACCENT_RGB}, 0.95)`, icon: '🎵' };
-  if (accuracy >= 80) return { label: 'Маэстро', color: 'rgba(56, 189, 248, 0.9)', icon: '🎶' };
-  if (accuracy >= 60) return { label: 'Оператор', color: 'rgba(251, 191, 36, 0.9)', icon: '🎧' };
+  if (accuracy >= 80) return { label: 'Маэстро', color: 'rgba(157, 179, 200, 0.9)', icon: '🎶' };
+  if (accuracy >= 60) return { label: 'Оператор', color: 'rgba(226, 168, 75, 0.9)', icon: '🎧' };
   return { label: 'Новичок', color: 'rgba(148, 163, 184, 0.7)', icon: '🎼' };
 }
 
@@ -217,10 +217,10 @@ function HitLane({
               color: feedback.result === 'perfect'
                 ? `rgba(${lane.rgb}, 1)`
                 : feedback.result === 'great'
-                  ? 'rgba(56, 189, 248, 0.9)'
+                  ? 'rgba(157, 179, 200, 0.9)'
                   : feedback.result === 'good'
-                    ? 'rgba(251, 191, 36, 0.9)'
-                    : 'rgba(244, 63, 94, 0.9)',
+                    ? 'rgba(226, 168, 75, 0.9)'
+                    : 'rgba(198, 85, 72, 0.9)',
               textShadow: `0 0 10px currentColor`,
             }}
             initial={{ opacity: 1, y: 0, scale: 1.2 }}
@@ -814,9 +814,9 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
                           <span
                             className="font-mono text-xs font-bold"
                             style={{
-                              color: combo >= 30 ? 'rgba(236, 72, 153, 0.9)' :
-                                     combo >= 20 ? 'rgba(251, 191, 36, 0.9)' :
-                                     combo >= 10 ? 'rgba(56, 189, 248, 0.9)' :
+                              color: combo >= 30 ? 'rgba(141, 127, 181, 0.9)' :
+                                     combo >= 20 ? 'rgba(226, 168, 75, 0.9)' :
+                                     combo >= 10 ? 'rgba(157, 179, 200, 0.9)' :
                                      'rgba(148, 163, 184, 0.7)',
                               textShadow: combo >= 20 ? `0 0 8px currentColor` : 'none',
                             }}
@@ -837,7 +837,7 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
                     <div className="flex items-center gap-2">
                       <span
                         className="font-mono text-xs"
-                        style={{ color: timeRemaining <= 5 ? 'rgba(244, 63, 94, 0.9)' : 'rgba(148, 163, 184, 0.7)' }}
+                        style={{ color: timeRemaining <= 5 ? 'rgba(198, 85, 72, 0.9)' : 'rgba(148, 163, 184, 0.7)' }}
                       >
                         {Math.ceil(timeRemaining)}с
                       </span>
@@ -878,7 +878,7 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
                       style={{
                         top: `${hitZoneY}px`,
                         height: '1px',
-                        background: `linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgba(236, 72, 153, 0.3), rgba(251, 191, 36, 0.3), rgba(52, 211, 153, 0.3))`,
+                        background: `linear-gradient(90deg, rgb(var(--cyber-cyan-rgb) / 0.3), rgba(141, 127, 181, 0.3), rgba(226, 168, 75, 0.3), rgba(70, 185, 110, 0.3))`,
                         boxShadow: `0 0 10px rgba(${ACCENT_RGB}, 0.15)`,
                       }}
                     />
@@ -1013,45 +1013,45 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
                         >
                           <div
                             className="rounded-md p-2.5 text-center"
-                            style={{ background: 'rgba(236, 72, 153, 0.06)', border: '1px solid rgba(236, 72, 153, 0.15)' }}
+                            style={{ background: 'rgba(141, 127, 181, 0.06)', border: '1px solid rgba(141, 127, 181, 0.15)' }}
                           >
-                            <div className="text-sm font-bold" style={{ color: 'rgba(236, 72, 153, 0.9)' }}>
+                            <div className="text-sm font-bold" style={{ color: 'rgba(141, 127, 181, 0.9)' }}>
                               {perfectCount}
                             </div>
-                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(236, 72, 153, 0.5)' }}>
+                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(141, 127, 181, 0.5)' }}>
                               Идеально
                             </div>
                           </div>
                           <div
                             className="rounded-md p-2.5 text-center"
-                            style={{ background: 'rgba(56, 189, 248, 0.06)', border: '1px solid rgba(56, 189, 248, 0.15)' }}
+                            style={{ background: 'rgba(157, 179, 200, 0.06)', border: '1px solid rgba(157, 179, 200, 0.15)' }}
                           >
-                            <div className="text-sm font-bold" style={{ color: 'rgba(56, 189, 248, 0.9)' }}>
+                            <div className="text-sm font-bold" style={{ color: 'rgba(157, 179, 200, 0.9)' }}>
                               {greatCount}
                             </div>
-                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(56, 189, 248, 0.5)' }}>
+                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(157, 179, 200, 0.5)' }}>
                               Отлично
                             </div>
                           </div>
                           <div
                             className="rounded-md p-2.5 text-center"
-                            style={{ background: 'rgba(251, 191, 36, 0.06)', border: '1px solid rgba(251, 191, 36, 0.15)' }}
+                            style={{ background: 'rgba(226, 168, 75, 0.06)', border: '1px solid rgba(226, 168, 75, 0.15)' }}
                           >
-                            <div className="text-sm font-bold" style={{ color: 'rgba(251, 191, 36, 0.9)' }}>
+                            <div className="text-sm font-bold" style={{ color: 'rgba(226, 168, 75, 0.9)' }}>
                               {goodCount}
                             </div>
-                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(251, 191, 36, 0.5)' }}>
+                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(226, 168, 75, 0.5)' }}>
                               Хорошо
                             </div>
                           </div>
                           <div
                             className="rounded-md p-2.5 text-center"
-                            style={{ background: 'rgba(244, 63, 94, 0.06)', border: '1px solid rgba(244, 63, 94, 0.15)' }}
+                            style={{ background: 'rgba(198, 85, 72, 0.06)', border: '1px solid rgba(198, 85, 72, 0.15)' }}
                           >
-                            <div className="text-sm font-bold" style={{ color: 'rgba(244, 63, 94, 0.9)' }}>
+                            <div className="text-sm font-bold" style={{ color: 'rgba(198, 85, 72, 0.9)' }}>
                               {missCount}
                             </div>
-                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(244, 63, 94, 0.5)' }}>
+                            <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(198, 85, 72, 0.5)' }}>
                               Промах
                             </div>
                           </div>
@@ -1074,11 +1074,11 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
                           </div>
                           <div className="flex items-center justify-between text-xs font-mono">
                             <span style={{ color: 'rgba(148, 163, 184, 0.5)' }}>Макс. комбо</span>
-                            <span style={{ color: 'rgba(251, 146, 60, 0.9)' }}>{maxCombo}</span>
+                            <span style={{ color: 'rgba(226, 168, 75, 0.9)' }}>{maxCombo}</span>
                           </div>
                           <div className="flex items-center justify-between text-xs font-mono">
                             <span style={{ color: 'rgba(148, 163, 184, 0.5)' }}>Множитель (макс.)</span>
-                            <span style={{ color: 'rgba(56, 189, 248, 0.9)' }}>
+                            <span style={{ color: 'rgba(157, 179, 200, 0.9)' }}>
                               ×{(1 + Math.floor(maxCombo / 10) * 0.5).toFixed(1)}
                             </span>
                           </div>
@@ -1102,8 +1102,8 @@ export function RhythmGame({ onClose }: RhythmGameProps) {
                             Награды
                           </span>
                           <div className="flex items-center justify-center gap-4 text-xs font-mono">
-                            <span style={{ color: '#00ffee' }}>+{rewards.xpReward} XP</span>
-                            <span style={{ color: '#ffcc00' }}>+{rewards.karmaReward} карма</span>
+                            <span style={{ color: '#9db3c8' }}>+{rewards.xpReward} XP</span>
+                            <span style={{ color: '#e2a84b' }}>+{rewards.karmaReward} карма</span>
                             <span style={{ color: ACCENT_COLOR }}>+{rewards.rhythmSkill} ритм</span>
                           </div>
                         </motion.div>

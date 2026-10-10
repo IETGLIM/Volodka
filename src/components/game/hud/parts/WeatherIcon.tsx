@@ -10,7 +10,7 @@ interface WeatherIconProps {
 
 function WeatherIconInner({ type, className = 'size-4' }: WeatherIconProps) {
   const weatherEffect = WEATHER_EFFECTS[type];
-  const color = weatherEffect?.color ?? '#f0c040';
+  const color = weatherEffect?.color ?? '#e2a84b';
 
   switch (type) {
     case 'rain':

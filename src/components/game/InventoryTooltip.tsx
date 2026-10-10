@@ -25,16 +25,16 @@ export interface InventoryTooltipProps {
 
 const RARITY_BORDER: Record<ItemRarity, string> = {
   common: 'rgba(148, 163, 184, 0.2)',
-  uncommon: 'rgba(52, 211, 153, 0.4)',
+  uncommon: 'rgba(70, 185, 110, 0.4)',
   rare: 'rgb(var(--cyber-cyan-rgb) / 0.4)',
-  legendary: 'rgba(251, 191, 36, 0.5)',
+  legendary: 'rgba(226, 168, 75, 0.5)',
 };
 
 const RARITY_GLOW: Record<ItemRarity, string> = {
   common: '',
-  uncommon: '0 0 8px rgba(52, 211, 153, 0.15)',
+  uncommon: '0 0 8px rgba(70, 185, 110, 0.15)',
   rare: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.2)',
-  legendary: '0 0 16px rgba(251, 191, 36, 0.3)',
+  legendary: '0 0 16px rgba(226, 168, 75, 0.3)',
 };
 
 const RARITY_TEXT: Record<ItemRarity, string> = {
@@ -187,7 +187,7 @@ export const InventoryTooltip = memo(function InventoryTooltip({
                   className="h-[1px] mx-3"
                   aria-hidden
                   style={{
-                    background: 'linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.2), transparent)',
+                    background: 'linear-gradient(90deg, transparent, rgba(226, 168, 75, 0.2), transparent)',
                   }}
                 />
                 <div className="px-3 py-2">

@@ -282,7 +282,7 @@ export function InventoryDetailPanel({
               <Button
                 size="sm"
                 variant="outline"
-                className="border-amber-500/40 text-amber-400 hover:bg-amber-900/30 hover:shadow-[0_0_12px_rgba(251,191,36,0.2)] transition-all duration-200"
+                className="border-amber-500/40 text-amber-400 hover:bg-amber-900/30 hover:shadow-[0_0_12px_rgba(226,168,75,0.2)] transition-all duration-200"
                 onClick={onEquip}
                 disabled={!canEquip || isPending}
                 aria-busy={isPending}
@@ -296,7 +296,7 @@ export function InventoryDetailPanel({
               <Button
                 size="sm"
                 variant="outline"
-                className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-900/30 hover:shadow-[0_0_12px_rgba(52,211,153,0.2)] transition-all duration-200"
+                className="border-emerald-500/40 text-emerald-400 hover:bg-emerald-900/30 hover:shadow-[0_0_12px_rgba(70,185,110,0.2)] transition-all duration-200"
                 onClick={onUnequip}
                 disabled={isPending}
                 aria-busy={isPending}
@@ -310,7 +310,7 @@ export function InventoryDetailPanel({
               <Button
                 size="sm"
                 variant="outline"
-                className="border-rose-500/30 text-rose-400 hover:bg-rose-900/30 hover:shadow-[0_0_8px_rgba(251,113,133,0.15)] transition-all duration-200"
+                className="border-rose-500/30 text-rose-400 hover:bg-rose-900/30 hover:shadow-[0_0_8px_rgba(198,85,72,0.15)] transition-all duration-200"
                 onClick={onDrop}
                 disabled={!canDrop || isPending}
                 aria-busy={isPending}

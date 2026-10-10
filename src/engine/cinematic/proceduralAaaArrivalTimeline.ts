@@ -61,7 +61,7 @@ export const PROCEDURAL_AAA_ARRIVAL_TIMELINE: CinematicTimelineDef = {
       overlay: {
         text: 'Арка. Мост. Чужой силуэт на гребне.',
         letterboxStyle: 'thin',
-        accentColor: '#66e0ff',
+        accentColor: '#9db3c8',
       },
     },
     {

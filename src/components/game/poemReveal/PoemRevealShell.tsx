@@ -175,7 +175,7 @@ export const PoemRevealShell = memo(function PoemRevealShell({
                 <span
                   className="text-[10px] font-mono tracking-widest uppercase px-2.5 py-1 rounded-full border backdrop-blur-md"
                   style={{
-                    color: excerpt.isFragment ? '#fde68a' : '#86efac',
+                    color: excerpt.isFragment ? '#e2a84b' : '#57a874',
                     borderColor: excerpt.isFragment
                       ? 'rgba(253, 230, 138, 0.32)'
                       : 'rgba(134, 239, 172, 0.32)',

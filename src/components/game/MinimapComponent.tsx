@@ -88,9 +88,9 @@ const RELATION_FRIENDLY = 60;
 /** Максимум квест-маркеров на миникарте одновременно (как в компасе) */
 const MAX_QUEST_MARKERS = 4;
 /** Цвет маркера активной цели квеста (жёлтый) */
-const QUEST_ACTIVE_COLOR = '#fbbf24';
+const QUEST_ACTIVE_COLOR = '#e2a84b';
 /** Цвет маркера квеста, готового к сдаче (зелёный) */
-const QUEST_READY_COLOR = '#00ff66';
+const QUEST_READY_COLOR = '#46b96e';
 /** Размер свёрнутой «таблетки» — тапабельная зона (px) */
 const PILL_SIZE = 44;
 /** Частота обновления свёрнутой «таблетки» (мс) — дешевле rAF-цикла */
@@ -110,12 +110,12 @@ type NPCDisposition = 'friendly' | 'hostile' | 'neutral';
 /** Returns a fill color string based on NPC relation value */
 function getDispositionColor(relation: number): { fill: string; glow: string } {
   if (relation < RELATION_HOSTILE) {
-    return { fill: '#ff3355', glow: 'rgba(255, 51, 85, 0.6)' };
+    return { fill: '#c65548', glow: 'rgba(198, 85, 72, 0.6)' };
   }
   if (relation > RELATION_FRIENDLY) {
-    return { fill: '#57a874', glow: 'rgba(57, 255, 20, 0.6)' };
+    return { fill: '#57a874', glow: 'rgba(70, 185, 110, 0.6)' };
   }
-  return { fill: '#ffcc00', glow: 'rgba(255, 204, 0, 0.6)' };
+  return { fill: '#e2a84b', glow: 'rgba(226, 168, 75, 0.6)' };
 }
 
 /* ─── NPC data for the minimap ─── */
@@ -554,7 +554,7 @@ export function MinimapComponent() {
       for (const exit of sceneExitsRef.current) {
         const [ex, ey] = worldToMap(exit.worldX, exit.worldZ, playerX, playerZ, yaw);
         const [clx, cly] = clampToCircle(ex, ey);
-        ctx.fillStyle = 'rgba(251, 191, 36, 0.5)';
+        ctx.fillStyle = 'rgba(226, 168, 75, 0.5)';
         ctx.beginPath();
         ctx.arc(clx, cly, 3, 0, Math.PI * 2);
         ctx.fill();
@@ -603,13 +603,13 @@ export function MinimapComponent() {
         if (!visualLite) {
           ctx.fillStyle = resting
             ? 'rgba(120, 60, 70, 0.25)'
-            : 'rgba(255, 51, 85, 0.25)';
+            : 'rgba(198, 85, 72, 0.25)';
           ctx.beginPath();
           ctx.arc(clx, cly, tri + 1.5, 0, Math.PI * 2);
           ctx.fill();
         }
         // Треугольник остриём вверх
-        ctx.fillStyle = resting ? '#8a5560' : hostile ? '#ff3355' : '#c93a4e';
+        ctx.fillStyle = resting ? '#8a5560' : hostile ? '#c65548' : '#c65548';
         ctx.beginPath();
         ctx.moveTo(clx, cly - tri);
         ctx.lineTo(clx - tri * 0.87, cly + tri * 0.6);

@@ -45,11 +45,11 @@ const MOOD_KEYWORDS: Record<PoemMood, string[]> = {
 };
 
 const MOOD_COLORS: Record<PoemMood, { bg: string; text: string; dot: string; glow: string }> = {
-  melancholy: { bg: 'poem-mood-melancholy', text: '#93c5fd', dot: '#60a5fa', glow: 'rgba(96,165,250,0.15)' },
-  hope:      { bg: 'poem-mood-hope',      text: '#fde68a', dot: '#f59e0b', glow: 'rgba(245,158,11,0.15)' },
-  rage:      { bg: 'poem-mood-rage',       text: '#fca5a5', dot: '#f43f5e', glow: 'rgba(244,63,94,0.15)' },
-  wonder:    { bg: 'poem-mood-wonder',     text: '#d8b4fe', dot: '#a78bfa', glow: 'rgba(167,139,250,0.15)' },
-  love:      { bg: 'poem-mood-love',       text: '#f9a8d4', dot: '#f472b6', glow: 'rgba(244,114,182,0.15)' },
+  melancholy: { bg: 'poem-mood-melancholy', text: '#9db3c8', dot: '#9db3c8', glow: 'rgba(157,179,200,0.15)' },
+  hope:      { bg: 'poem-mood-hope',      text: '#e2a84b', dot: '#e2a84b', glow: 'rgba(226,168,75,0.15)' },
+  rage:      { bg: 'poem-mood-rage',       text: '#fca5a5', dot: '#c65548', glow: 'rgba(198,85,72,0.15)' },
+  wonder:    { bg: 'poem-mood-wonder',     text: '#d8b4fe', dot: '#8d7fb5', glow: 'rgba(167,139,250,0.15)' },
+  love:      { bg: 'poem-mood-love',       text: '#f9a8d4', dot: '#8d7fb5', glow: 'rgba(141,127,181,0.15)' },
   default:   { bg: 'poem-mood-default',    text: '#a5f3fc', dot: '#9db3c8', glow: 'rgba(157, 179, 200,0.1)' },
 };
 

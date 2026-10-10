@@ -544,8 +544,8 @@ function QuickUseBarWithDnd() {
                           aria-hidden="true"
                           className="absolute top-0.5 right-1 size-1.5 rounded-full"
                           style={{
-                            background: '#fbbf24',
-                            boxShadow: '0 0 4px rgba(251, 191, 36, 0.7)',
+                            background: '#e2a84b',
+                            boxShadow: '0 0 4px rgba(226, 168, 75, 0.7)',
                           }}
                           animate={reducedMotion ? undefined : { opacity: [1, 0.35, 1] }}
                           transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}

@@ -47,7 +47,7 @@ export function StressIndicator() {
         className="absolute inset-0"
         style={{
           background:
-            'radial-gradient(ellipse at center, transparent 50%, rgba(244,63,94,0.15) 100%)',
+            'radial-gradient(ellipse at center, transparent 50%, rgba(198,85,72,0.15) 100%)',
         }}
       />
 
@@ -64,7 +64,7 @@ export function StressIndicator() {
         className="absolute inset-0"
         style={{
           opacity: 0.03 * intensity,
-          background: 'linear-gradient(transparent 40%, rgba(244,63,94,0.1) 42%, rgba(244,63,94,0.1) 44%, transparent 46%)',
+          background: 'linear-gradient(transparent 40%, rgba(198,85,72,0.1) 42%, rgba(198,85,72,0.1) 44%, transparent 46%)',
         }}
       />
     </div>

@@ -42,5 +42,5 @@ export function buildPickupCollectBurst(
   return particles;
 }
 
-export const PICKUP_COLLECT_BURST_COLOR = '#fbbf24';
+export const PICKUP_COLLECT_BURST_COLOR = '#e2a84b';
 export const PICKUP_COLLECT_BURST_DURATION_MS = 480;

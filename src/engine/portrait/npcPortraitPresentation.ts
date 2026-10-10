@@ -90,7 +90,7 @@ export function adaptPortraitAppearance(
   if (colorBlindMode === 'none') return appearance;
   return {
     ...appearance,
-    glowColor: '#facc15',
+    glowColor: '#e2a84b',
     accentColor: '#f5f5f5',
   };
 }

@@ -31,7 +31,7 @@ export function OpenStackTerminalAlert({ reducedMotion }: OpenStackTerminalAlert
             className="text-2xl font-bold font-mono"
             style={{
               color: OPENSTACK_TERMINAL_COLORS.alert,
-              textShadow: '0 0 20px rgba(255, 68, 68, 0.5)',
+              textShadow: '0 0 20px rgba(198, 85, 72, 0.5)',
             }}
           >
             {OPENSTACK_TERMINAL_LABELS.alertTitle}

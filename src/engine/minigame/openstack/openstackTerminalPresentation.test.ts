@@ -12,9 +12,9 @@ import {
 
 describe('openstackTerminalPresentation', () => {
   it('getTimeLeftColor reflects urgency thresholds', () => {
-    expect(getTimeLeftColor(45)).toBe('#44ff88');
-    expect(getTimeLeftColor(20)).toBe('#ffcc00');
-    expect(getTimeLeftColor(5)).toBe('#ff4444');
+    expect(getTimeLeftColor(45)).toBe('#46b96e');
+    expect(getTimeLeftColor(20)).toBe('#e2a84b');
+    expect(getTimeLeftColor(5)).toBe('#c65548');
   });
 
   it('formatPhaseHeader builds localized phase banner', () => {

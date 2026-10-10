@@ -519,7 +519,7 @@ export function TradingPanel({ open, onClose, initialNpcId }: TradingPanelProps)
                             className={`
                               rounded-xl border p-3 cursor-pointer transition-all
                               ${isItemSelected
-                                ? 'border-amber-500/40 bg-amber-950/20 shadow-[0_0_12px_rgba(251,191,36,0.1)]'
+                                ? 'border-amber-500/40 bg-amber-950/20 shadow-[0_0_12px_rgba(226,168,75,0.1)]'
                                 : 'border-slate-700/25 bg-slate-900/30 hover:border-slate-600/35 hover:bg-slate-800/30'
                               }
                             `}

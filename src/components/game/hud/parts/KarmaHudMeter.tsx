@@ -3,7 +3,7 @@
 /* ─── Volodka RPG – Karma HUD Meter ───
    Small karma indicator always visible during gameplay.
    Shows karma value, tier label, and flash effect on karma changes.
-   Blue gradient (#3b82f6 → #6366f1), numeric display, 300ms smooth animation. */
+   Blue gradient (#9db3c8 → #9db3c8), numeric display, 300ms smooth animation. */
 
 import { memo, useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
@@ -46,8 +46,8 @@ export const KarmaHudMeter = memo(function KarmaHudMeter() {
   const color = karma >= 60
     ? 'var(--cyber-cyan, #9db3c8)'
     : karma <= 40
-      ? '#fb7185'
-      : '#fbbf24';
+      ? '#c65548'
+      : '#e2a84b';
 
   return (
     <div
@@ -65,10 +65,10 @@ export const KarmaHudMeter = memo(function KarmaHudMeter() {
         <motion.div
           className="h-full rounded-full"
           style={{
-            background: 'linear-gradient(90deg, #3b82f6, #6366f1)',
+            background: 'linear-gradient(90deg, #9db3c8, #9db3c8)',
             boxShadow: damageFlash
-              ? '0 0 8px rgba(239, 68, 68, 0.6)'
-              : '0 0 4px rgba(99, 102, 241, 0.3)',
+              ? '0 0 8px rgba(198, 85, 72, 0.6)'
+              : '0 0 4px rgba(157, 179, 200, 0.3)',
           }}
           initial={false}
           animate={{ width: `${displayValue}%` }}

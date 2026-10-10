@@ -130,7 +130,7 @@ export function PoemPowerEffectView({
   reducedMotion,
   powerActivatedLabel,
 }: PoemPowerEffectViewProps) {
-  const color = notification?.color ?? '#00ffee';
+  const color = notification?.color ?? '#9db3c8';
   const colorRgba = (alpha: number) => hexToRgba(color, alpha);
   const titleMotion = getTitleMotion(reducedMotion);
   const actMotion = getSubtitleMotion(reducedMotion, 0.1);

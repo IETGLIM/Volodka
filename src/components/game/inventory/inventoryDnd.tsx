@@ -382,7 +382,7 @@ const DragGhost = memo(function DragGhost({ payload, ghostRef }: GhostProps) {
         `}
         style={{
           transform: 'translate(14px, -50%) rotate(-2.5deg) scale(1.06)',
-          boxShadow: '0 12px 32px rgba(0,0,0,0.6), 0 0 18px rgba(6,182,212,0.25)',
+          boxShadow: '0 12px 32px rgba(0,0,0,0.6), 0 0 18px rgba(157,179,200,0.25)',
         }}
       >
         {payload.icon ? (

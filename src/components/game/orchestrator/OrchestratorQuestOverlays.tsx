@@ -95,17 +95,17 @@ export function OrchestratorQuestOverlays({
               style={{
                 background:
                   'linear-gradient(135deg, rgba(0,16,8,0.95) 0%, rgba(0,40,30,0.92) 50%, rgba(0,16,8,0.88) 100%)',
-                borderColor: 'rgba(0,255,238,0.4)',
+                borderColor: 'rgba(157,179,200,0.4)',
                 boxShadow:
-                  '0 0 40px rgba(0,255,238,0.15), 0 0 15px rgba(0,255,238,0.08), 0 8px 32px rgba(0,0,0,0.5)',
+                  '0 0 40px rgba(157,179,200,0.15), 0 0 15px rgba(157,179,200,0.08), 0 8px 32px rgba(0,0,0,0.5)',
               }}
             >
               <div
                 className="flex items-center justify-center w-12 h-12 rounded-lg text-xl"
                 style={{
-                  background: 'rgba(0,255,238,0.12)',
-                  border: '1px solid rgba(0,255,238,0.3)',
-                  boxShadow: '0 0 12px rgba(0,255,238,0.15)',
+                  background: 'rgba(157,179,200,0.12)',
+                  border: '1px solid rgba(157,179,200,0.3)',
+                  boxShadow: '0 0 12px rgba(157,179,200,0.15)',
                 }}
               >
                 ⚑
@@ -114,7 +114,7 @@ export function OrchestratorQuestOverlays({
                 <div className="flex items-center gap-2">
                   <span
                     className="text-[10px] font-mono tracking-wider font-bold"
-                    style={{ color: '#00ffee', textShadow: '0 0 8px rgba(0,255,238,0.4)' }}
+                    style={{ color: '#9db3c8', textShadow: '0 0 8px rgba(157,179,200,0.4)' }}
                   >
                     НОВОЕ ЗАДАНИЕ ДОСТУПНО
                   </span>
@@ -122,9 +122,9 @@ export function OrchestratorQuestOverlays({
                     <span
                       className="text-[9px] font-mono tracking-wider px-1.5 py-0.5 rounded"
                       style={{
-                        color: '#ff6644',
-                        background: 'rgba(255,102,68,0.1)',
-                        border: '1px solid rgba(255,102,68,0.3)',
+                        color: '#c65548',
+                        background: 'rgba(198,85,72,0.1)',
+                        border: '1px solid rgba(198,85,72,0.3)',
                       }}
                     >
                       ОСНОВНОЕ
@@ -133,16 +133,16 @@ export function OrchestratorQuestOverlays({
                 </div>
                 <span
                   className="text-sm font-mono font-bold"
-                  style={{ color: '#e0f8f8', textShadow: '0 0 6px rgba(0,255,238,0.2)' }}
+                  style={{ color: '#eae4d6', textShadow: '0 0 6px rgba(157,179,200,0.2)' }}
                 >
                   {questChainUnlock.nextQuestTitle}
                 </span>
-                <span className="text-[11px] font-mono" style={{ color: '#88aaaa' }}>
+                <span className="text-[11px] font-mono" style={{ color: '#8a98a8' }}>
                   После «{questChainUnlock.completedQuestTitle}»
                   {questChainUnlock.actNumber > 1 && ` · Акт ${questChainUnlock.actNumber}`}
                 </span>
               </div>
-              <span className="text-[9px] font-mono ml-2" style={{ color: 'rgba(0,255,238,0.3)' }}>
+              <span className="text-[9px] font-mono ml-2" style={{ color: 'rgba(157,179,200,0.3)' }}>
                 ✕
               </span>
             </div>

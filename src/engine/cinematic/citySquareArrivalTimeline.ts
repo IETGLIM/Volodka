@@ -63,7 +63,7 @@ export const CITY_SQUARE_ARRIVAL_TIMELINE: CinematicTimelineDef = {
       overlay: {
         text: 'У обелиска шевелится неон. Город смотрит первым.',
         letterboxStyle: 'thin',
-        accentColor: '#44ffff',
+        accentColor: '#9db3c8',
         fadeInMs: 320,
         fadeOutMs: 620,
       },

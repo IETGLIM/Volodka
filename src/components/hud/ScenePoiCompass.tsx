@@ -23,22 +23,22 @@ const MARKER_SIZE = 5;
 const PLAYER_DOT_SIZE = 6;
 const SCAN_PERIOD = 4; // seconds per full rotation
 
-const QUEST_COLOR = '#d946ef'; // fuchsia-500 — quest objectives
+const QUEST_COLOR = '#8d7fb5'; // fuchsia-500 — quest objectives
 
 /* ── Color helpers ── */
 function markerColor(zone: TriggerZone): string {
   if (zone.containerContents) return '#57a874'; // emerald-400 — containers/loot
-  if (zone.interactionType === 'talk' || zone.linkedNpcId) return '#fbbf24'; // amber-400 — NPCs
-  if (zone.autoTrigger) return '#f87171'; // red-400 — combat/danger
+  if (zone.interactionType === 'talk' || zone.linkedNpcId) return '#e2a84b'; // amber-400 — NPCs
+  if (zone.autoTrigger) return '#c65548'; // red-400 — combat/danger
   // examine, read, take, hack, open, use, push, default
-  return '#22d3ee'; // cyan-400 — interactable objects
+  return '#9db3c8'; // cyan-400 — interactable objects
 }
 
 function markerGlow(zone: TriggerZone): string {
-  if (zone.containerContents) return 'rgba(52,211,153,0.5)';
-  if (zone.interactionType === 'talk' || zone.linkedNpcId) return 'rgba(251,191,36,0.5)';
-  if (zone.autoTrigger) return 'rgba(248,113,113,0.5)';
-  return 'rgba(34,211,238,0.5)';
+  if (zone.containerContents) return 'rgba(70,185,110,0.5)';
+  if (zone.interactionType === 'talk' || zone.linkedNpcId) return 'rgba(226,168,75,0.5)';
+  if (zone.autoTrigger) return 'rgba(198,85,72,0.5)';
+  return 'rgba(157,179,200,0.5)';
 }
 
 /** Short label for a zone — first 8 chars of interaction label, examine title, or truncated id */
@@ -216,8 +216,8 @@ const RadarInner = memo(function RadarInner({
           height: COMPASS_SIZE,
           position: 'relative',
           background: 'radial-gradient(circle, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.75) 100%)',
-          border: '1px solid rgba(34,211,238,0.2)',
-          boxShadow: '0 0 12px rgba(34,211,238,0.08), inset 0 0 8px rgba(0,0,0,0.4)',
+          border: '1px solid rgba(157,179,200,0.2)',
+          boxShadow: '0 0 12px rgba(157,179,200,0.08), inset 0 0 8px rgba(0,0,0,0.4)',
           backdropFilter: 'blur(4px)',
           overflow: 'hidden',
         }}
@@ -230,7 +230,7 @@ const RadarInner = memo(function RadarInner({
             height: RADIUS * 2 * 0.5,
             top: CENTER - RADIUS * 0.5,
             left: CENTER - RADIUS * 0.5,
-            border: '1px solid rgba(34,211,238,0.07)',
+            border: '1px solid rgba(157,179,200,0.07)',
             pointerEvents: 'none',
           }}
         />
@@ -241,7 +241,7 @@ const RadarInner = memo(function RadarInner({
             height: RADIUS * 2 * 0.8,
             top: CENTER - RADIUS * 0.8,
             left: CENTER - RADIUS * 0.8,
-            border: '1px solid rgba(34,211,238,0.07)',
+            border: '1px solid rgba(157,179,200,0.07)',
             pointerEvents: 'none',
           }}
         />
@@ -254,7 +254,7 @@ const RadarInner = memo(function RadarInner({
             height: RADIUS * 2,
             top: CENTER - RADIUS,
             left: CENTER - RADIUS,
-            border: '1px dashed rgba(34,211,238,0.06)',
+            border: '1px dashed rgba(157,179,200,0.06)',
             pointerEvents: 'none',
           }}
         />
@@ -267,7 +267,7 @@ const RadarInner = memo(function RadarInner({
             height: COMPASS_SIZE,
             left: CENTER - 0.5,
             top: 0,
-            background: 'linear-gradient(to bottom, transparent 10%, rgba(34,211,238,0.06) 50%, transparent 90%)',
+            background: 'linear-gradient(to bottom, transparent 10%, rgba(157,179,200,0.06) 50%, transparent 90%)',
             pointerEvents: 'none',
           }}
         />
@@ -278,7 +278,7 @@ const RadarInner = memo(function RadarInner({
             height: 1,
             top: CENTER - 0.5,
             left: 0,
-            background: 'linear-gradient(to right, transparent 10%, rgba(34,211,238,0.06) 50%, transparent 90%)',
+            background: 'linear-gradient(to right, transparent 10%, rgba(157,179,200,0.06) 50%, transparent 90%)',
             pointerEvents: 'none',
           }}
         />
@@ -293,7 +293,7 @@ const RadarInner = memo(function RadarInner({
               top: CENTER - 1,
               left: CENTER,
               transformOrigin: '0 1px',
-              background: 'linear-gradient(90deg, rgba(34,211,238,0.35), transparent)',
+              background: 'linear-gradient(90deg, rgba(157,179,200,0.35), transparent)',
               pointerEvents: 'none',
             }}
           />
@@ -307,8 +307,8 @@ const RadarInner = memo(function RadarInner({
             height: PLAYER_DOT_SIZE,
             top: CENTER - PLAYER_DOT_SIZE / 2,
             left: CENTER - PLAYER_DOT_SIZE / 2,
-            backgroundColor: '#22d3ee',
-            boxShadow: '0 0 6px rgba(34,211,238,0.7)',
+            backgroundColor: '#9db3c8',
+            boxShadow: '0 0 6px rgba(157,179,200,0.7)',
             zIndex: 2,
             pointerEvents: 'none',
           }}
@@ -350,11 +350,11 @@ const RadarInner = memo(function RadarInner({
         className="hud-minimap-legend flex items-center justify-center gap-2 mt-1"
         style={{ pointerEvents: 'none' }}
       >
-        <span className="legend-dot" style={{ backgroundColor: '#22d3ee' }} />
+        <span className="legend-dot" style={{ backgroundColor: '#9db3c8' }} />
         <span className="text-[7px] font-mono text-cyan-400/50 tracking-wider data-badge">
           Объекты
         </span>
-        <span className="legend-dot" style={{ backgroundColor: '#fbbf24' }} />
+        <span className="legend-dot" style={{ backgroundColor: '#e2a84b' }} />
         <span className="text-[7px] font-mono text-amber-400/50 tracking-wider data-badge">
           NPC
         </span>

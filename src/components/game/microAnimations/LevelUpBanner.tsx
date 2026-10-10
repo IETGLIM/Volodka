@@ -68,7 +68,7 @@ function LevelUpBannerPanel({ level, visible, onHide }: LevelUpBannerProps) {
       return {
         id: i,
         delay: 0.1 + i * 0.05,
-        color: i % 2 === 0 ? '#fbbf24' : 'var(--cyber-cyan)',
+        color: i % 2 === 0 ? '#e2a84b' : 'var(--cyber-cyan)',
         angle,
         distance,
       };
@@ -106,9 +106,9 @@ function LevelUpBannerPanel({ level, visible, onHide }: LevelUpBannerProps) {
             className="relative flex flex-col items-center px-10 py-6 rounded-xl border backdrop-blur-md overflow-hidden"
             style={{
               background:
-                'linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(0,0,0,0.9) 50%, rgba(251,191,36,0.1) 100%)',
-              borderColor: 'rgba(251,191,36,0.5)',
-              boxShadow: '0 0 50px rgba(251,191,36,0.2), 0 16px 48px rgba(0,0,0,0.6)',
+                'linear-gradient(135deg, rgba(226,168,75,0.15) 0%, rgba(0,0,0,0.9) 50%, rgba(226,168,75,0.1) 100%)',
+              borderColor: 'rgba(226,168,75,0.5)',
+              boxShadow: '0 0 50px rgba(226,168,75,0.2), 0 16px 48px rgba(0,0,0,0.6)',
             }}
           >
             {!reducedMotion && particles.length > 0 ? (
@@ -124,7 +124,7 @@ function LevelUpBannerPanel({ level, visible, onHide }: LevelUpBannerProps) {
             </span>
             <div
               className="text-4xl font-black font-mono text-amber-300"
-              style={{ textShadow: '0 0 20px rgba(251,191,36,0.6)' }}
+              style={{ textShadow: '0 0 20px rgba(226,168,75,0.6)' }}
             >
               {level}
             </div>

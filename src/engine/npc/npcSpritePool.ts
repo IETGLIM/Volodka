@@ -106,8 +106,8 @@ export function drawNpcSpeechBubbleCanvas(
 ): void {
   ctx.clearRect(0, 0, BUBBLE_CANVAS_W, BUBBLE_CANVAS_H);
   const isThinking = phase === 'thinking';
-  const borderColor = isThinking ? 'rgba(0, 255, 238, 0.7)' : 'rgba(255, 180, 40, 0.7)';
-  const textColor = isThinking ? '#00ffee' : '#f0f0f0';
+  const borderColor = isThinking ? 'rgba(157, 179, 200, 0.7)' : 'rgba(226, 168, 75, 0.7)';
+  const textColor = isThinking ? '#9db3c8' : '#f0f0f0';
 
   ctx.fillStyle = 'rgba(8, 8, 18, 0.95)';
   ctx.strokeStyle = borderColor;

@@ -34,9 +34,9 @@ export interface PoemWorldEffectProfile {
 
 /** Per-hint exploration beam colors — synced with InteractiveTriggers. */
 export const POEM_WORLD_HINT_HIGHLIGHT_COLORS: Record<Exclude<PoemWorldHint, 'none'>, string> = {
-  exit_glow: '#ffd866',
+  exit_glow: '#e2a84b',
   npc_shimmer: '#a8e6ff',
-  interaction_pulse: '#66ffcc',
+  interaction_pulse: '#46b96e',
 };
 
 export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEffectProfile> = {
@@ -45,7 +45,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     visualPreset: 'god_rays_gold',
     audioCue: 'discovery',
     durationMs: 4500,
-    worldTint: 'rgba(255, 215, 100, 0.12)',
+    worldTint: 'rgba(226, 168, 75, 0.12)',
     narrationLine: 'Мир приоткрывает дверь. Ты видишь то, чего не замечал.',
     worldHint: 'exit_glow',
   },
@@ -63,7 +63,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     visualPreset: 'storm_break',
     audioCue: 'danger',
     durationMs: 3500,
-    worldTint: 'rgba(255, 60, 60, 0.14)',
+    worldTint: 'rgba(198, 85, 72, 0.14)',
     narrationLine: 'Код — это тоже стихия. Просто рифма измеряется в наносекундах.',
     worldHint: 'none',
   },
@@ -72,7 +72,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     visualPreset: 'shield_pulse',
     audioCue: 'tension',
     durationMs: 4000,
-    worldTint: 'rgba(80, 140, 255, 0.12)',
+    worldTint: 'rgba(157, 179, 200, 0.12)',
     narrationLine: 'Любовь — единственный баг, который не хочется фиксить.',
     worldHint: 'none',
   },
@@ -81,7 +81,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     visualPreset: 'warm_echo',
     audioCue: 'emotional',
     durationMs: 4000,
-    worldTint: 'rgba(255, 180, 120, 0.10)',
+    worldTint: 'rgba(226, 168, 75, 0.10)',
     narrationLine: 'Эхо чужих слов — как Wi-Fi из соседней комнаты: ловишь обрывки, но подключиться не можешь.',
     worldHint: 'npc_shimmer',
   },
@@ -90,7 +90,7 @@ export const POEM_WORLD_CATEGORY_DEFAULTS: Record<PoemWorldCategory, PoemWorldEf
     visualPreset: 'matrix_pulse',
     audioCue: 'mystery',
     durationMs: 3500,
-    worldTint: 'rgba(0, 255, 200, 0.08)',
+    worldTint: 'rgba(157, 179, 200, 0.08)',
     worldHint: 'interaction_pulse',
   },
 };
@@ -111,7 +111,7 @@ export const POEM_WORLD_EFFECT_OVERRIDES: Partial<Record<string, Partial<PoemWor
     visualPreset: 'god_rays_gold',
     audioCue: 'discovery',
     durationMs: 5500,
-    worldTint: 'rgba(255, 220, 80, 0.18)',
+    worldTint: 'rgba(226, 168, 75, 0.18)',
     narrationLine: '«Звезда вспыхивает сквозь неон — путь проступает из тьмы.»',
     worldHint: 'exit_glow',
   },
@@ -120,7 +120,7 @@ export const POEM_WORLD_EFFECT_OVERRIDES: Partial<Record<string, Partial<PoemWor
     visualPreset: 'storm_break',
     audioCue: 'danger',
     durationMs: 3800,
-    worldTint: 'rgba(255, 80, 40, 0.16)',
+    worldTint: 'rgba(198, 85, 72, 0.16)',
     narrationLine: '«Штормовой ветер срывает преграды — мир дрожит от напора слова.»',
     worldHint: 'interaction_pulse',
   },
@@ -129,7 +129,7 @@ export const POEM_WORLD_EFFECT_OVERRIDES: Partial<Record<string, Partial<PoemWor
     visualPreset: 'shield_pulse',
     audioCue: 'tension',
     durationMs: 4500,
-    worldTint: 'rgba(100, 160, 255, 0.15)',
+    worldTint: 'rgba(157, 179, 200, 0.15)',
     narrationLine: '«Каменная кожа — стих становится бронёй вокруг тела.»',
     worldHint: 'none',
   },

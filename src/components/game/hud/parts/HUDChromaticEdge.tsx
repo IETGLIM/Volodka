@@ -38,7 +38,7 @@ export function HUDChromaticEdge() {
         className="absolute top-0 left-0 bottom-0 chromatic-edge-red"
         style={{
           width: 3,
-          background: 'linear-gradient(90deg, rgba(255, 60, 60, 0.12), transparent)',
+          background: 'linear-gradient(90deg, rgba(198, 85, 72, 0.12), transparent)',
           opacity: intensity,
         }}
         animate={{ opacity: [intensity * 0.7, intensity, intensity * 0.7] }}
@@ -49,7 +49,7 @@ export function HUDChromaticEdge() {
         className="absolute top-0 right-0 bottom-0 chromatic-edge-blue"
         style={{
           width: 3,
-          background: 'linear-gradient(270deg, rgba(60, 100, 255, 0.12), transparent)',
+          background: 'linear-gradient(270deg, rgba(157, 179, 200, 0.12), transparent)',
           opacity: intensity,
         }}
         animate={{ opacity: [intensity * 0.7, intensity, intensity * 0.7] }}
@@ -60,7 +60,7 @@ export function HUDChromaticEdge() {
         className="absolute top-0 left-0 right-0 chromatic-edge-green"
         style={{
           height: 2,
-          background: 'linear-gradient(180deg, rgba(60, 255, 120, 0.08), transparent)',
+          background: 'linear-gradient(180deg, rgba(70, 185, 110, 0.08), transparent)',
           opacity: intensity * 0.5,
         }}
         animate={{ opacity: [intensity * 0.3, intensity * 0.5, intensity * 0.3] }}

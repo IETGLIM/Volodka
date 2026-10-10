@@ -56,5 +56,5 @@
 
 .craft-fav-star:hover {
   transform: scale(1.2);
-  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4));
+  filter: drop-shadow(0 0 4px rgba(226, 168, 75, 0.4));
 }

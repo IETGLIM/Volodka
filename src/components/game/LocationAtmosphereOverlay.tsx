@@ -45,22 +45,22 @@ function classifyScene(sceneId: SceneId): SceneCategory {
 const PALETTES: Record<SceneCategory, AtmospherePalette> = {
   street_night: {
     category: 'street_night',
-    gradient: 'linear-gradient(180deg, rgba(157, 179, 200,0.08) 0%, rgba(0,150,200,0.04) 40%, transparent 100%)',
+    gradient: 'linear-gradient(180deg, rgba(157, 179, 200,0.08) 0%, rgba(157,179,200,0.04) 40%, transparent 100%)',
     peakOpacity: 0.6,
   },
   indoor_warm: {
     category: 'indoor_warm',
-    gradient: 'linear-gradient(180deg, rgba(255,170,50,0.06) 0%, rgba(255,120,30,0.03) 40%, transparent 100%)',
+    gradient: 'linear-gradient(180deg, rgba(226,168,75,0.06) 0%, rgba(226,168,75,0.03) 40%, transparent 100%)',
     peakOpacity: 0.5,
   },
   underground: {
     category: 'underground',
-    gradient: 'linear-gradient(180deg, rgba(120,60,200,0.07) 0%, rgba(80,30,160,0.04) 40%, transparent 100%)',
+    gradient: 'linear-gradient(180deg, rgba(141,127,181,0.07) 0%, rgba(80,30,160,0.04) 40%, transparent 100%)',
     peakOpacity: 0.7,
   },
   dream: {
     category: 'dream',
-    gradient: 'linear-gradient(180deg, rgba(200,50,255,0.06) 0%, rgba(255,50,150,0.04) 40%, transparent 100%)',
+    gradient: 'linear-gradient(180deg, rgba(141,127,181,0.06) 0%, rgba(141,127,181,0.04) 40%, transparent 100%)',
     peakOpacity: 0.8,
   },
   day_outdoor: {

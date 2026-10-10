@@ -43,13 +43,13 @@ export function GlitchTitle({ text, animate }: GlitchTitleProps) {
   const titleClassName = `relative text-5xl sm:text-6xl lg:text-7xl xl:text-8xl font-black tracking-[0.12em] sm:tracking-[0.15em] lg:tracking-[0.2em] whitespace-nowrap ${glitching ? 'title-glitch' : ''}`;
   const titleStyle = {
     textShadow: glitching
-      ? '-3px 0 #ff0000, 3px 0 #00ffff, 0 0 80px rgba(157, 179, 200,0.7)'
-      : '0 0 60px rgba(157, 179, 200,0.5), 0 0 120px rgba(157, 179, 200,0.3), 0 0 200px rgba(255,140,0,0.1)',
+      ? '-3px 0 #c65548, 3px 0 #9db3c8, 0 0 80px rgba(157, 179, 200,0.7)'
+      : '0 0 60px rgba(157, 179, 200,0.5), 0 0 120px rgba(157, 179, 200,0.3), 0 0 200px rgba(226,168,75,0.1)',
   } as const;
 
   return (
     <div className="text-center relative">
-      <div className="absolute inset-0 blur-3xl pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(157, 179, 200,0.15)_0%,rgba(255,140,0,0.05)_40%,transparent_60%)]" />
+      <div className="absolute inset-0 blur-3xl pointer-events-none bg-[radial-gradient(ellipse_at_center,rgba(157, 179, 200,0.15)_0%,rgba(226,168,75,0.05)_40%,transparent_60%)]" />
 
       {animate ? (
         <motion.h1

@@ -123,7 +123,7 @@ export const QuestBoardMissionCard = memo(
                 className="text-xs font-semibold font-mono truncate"
                 style={{
                   color: isClaimed ? '#64748b' : isCompleted ? '#57a874' : '#e2e8f0',
-                  textShadow: isCompleted ? '0 0 6px rgba(52,211,153,0.3)' : 'none',
+                  textShadow: isCompleted ? '0 0 6px rgba(70,185,110,0.3)' : 'none',
                 }}
               >
                 {mission.title}
@@ -218,17 +218,17 @@ export const QuestBoardMissionCard = memo(
                     width: `${resetFraction * 100}%`,
                     background:
                       resetFraction > 0.5
-                        ? 'rgba(52, 211, 153, 0.8)'
+                        ? 'rgba(70, 185, 110, 0.8)'
                         : resetFraction > 0.25
-                          ? 'rgba(251, 191, 36, 0.8)'
-                          : 'rgba(244, 63, 94, 0.8)',
+                          ? 'rgba(226, 168, 75, 0.8)'
+                          : 'rgba(198, 85, 72, 0.8)',
                     transition: 'width 1s linear, background 1s ease',
                     boxShadow:
                       resetFraction > 0.5
-                        ? '0 0 4px rgba(52, 211, 153, 0.3)'
+                        ? '0 0 4px rgba(70, 185, 110, 0.3)'
                         : resetFraction > 0.25
-                          ? '0 0 4px rgba(251, 191, 36, 0.3)'
-                          : '0 0 4px rgba(244, 63, 94, 0.3)',
+                          ? '0 0 4px rgba(226, 168, 75, 0.3)'
+                          : '0 0 4px rgba(198, 85, 72, 0.3)',
                   }}
                 />
               </div>

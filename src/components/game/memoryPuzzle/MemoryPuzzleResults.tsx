@@ -108,8 +108,8 @@ export function MemoryPuzzleResults({
           Награды
         </span>
         <div className="flex items-center justify-center gap-4 text-xs font-mono">
-          <span style={{ color: '#00ffee' }}>+{rewards.xpReward} XP</span>
-          <span style={{ color: '#ffcc00' }}>+{rewards.karmaReward} карма</span>
+          <span style={{ color: '#9db3c8' }}>+{rewards.xpReward} XP</span>
+          <span style={{ color: '#e2a84b' }}>+{rewards.karmaReward} карма</span>
           <span style={{ color: ACCENT_COLOR }}>+1 код</span>
         </div>
       </motion.div>

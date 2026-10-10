@@ -56,10 +56,10 @@ interface QuestNotifStyle {
 const QUEST_NOTIF_STYLES: Record<QuestNotifType, QuestNotifStyle> = {
   available: {
     icon: '⚑',
-    borderColor: '#ca8a04',
-    glowColor: 'rgba(202, 138, 4, 0.4)',
-    textColor: '#facc15',
-    iconBg: 'rgba(202, 138, 4, 0.15)',
+    borderColor: '#e2a84b',
+    glowColor: 'rgba(226, 168, 75, 0.4)',
+    textColor: '#e2a84b',
+    iconBg: 'rgba(226, 168, 75, 0.15)',
     label: 'Новый квест доступен!',
   },
   started: {
@@ -74,24 +74,24 @@ const QUEST_NOTIF_STYLES: Record<QuestNotifType, QuestNotifStyle> = {
     icon: '✓',
     borderColor: '#16a34a',
     glowColor: 'rgba(22, 163, 74, 0.4)',
-    textColor: '#4ade80',
+    textColor: '#46b96e',
     iconBg: 'rgba(22, 163, 74, 0.15)',
     label: 'Цель выполнена!',
   },
   complete: {
     icon: '★',
-    borderColor: '#d97706',
-    glowColor: 'rgba(217, 119, 6, 0.4)',
-    textColor: '#fbbf24',
-    iconBg: 'rgba(217, 119, 6, 0.15)',
+    borderColor: '#e2a84b',
+    glowColor: 'rgba(226, 168, 75, 0.4)',
+    textColor: '#e2a84b',
+    iconBg: 'rgba(226, 168, 75, 0.15)',
     label: 'Квест выполнен!',
   },
   failed: {
     icon: '✕',
-    borderColor: '#dc2626',
-    glowColor: 'rgba(220, 38, 38, 0.4)',
-    textColor: '#f87171',
-    iconBg: 'rgba(220, 38, 38, 0.15)',
+    borderColor: '#c65548',
+    glowColor: 'rgba(198, 85, 72, 0.4)',
+    textColor: '#c65548',
+    iconBg: 'rgba(198, 85, 72, 0.15)',
     label: 'Квест провален',
   },
 }
@@ -124,7 +124,7 @@ function ProgressBar({
     <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden mt-1.5">
       <motion.div
         className="h-full rounded-full"
-        style={{ background: 'linear-gradient(90deg, #4ade80, var(--cyber-cyan))' }}
+        style={{ background: 'linear-gradient(90deg, #46b96e, var(--cyber-cyan))' }}
         initial={reducedMotion ? false : { width: 0 }}
         animate={{ width: `${pct}%` }}
         transition={reducedMotion ? { duration: 0 } : { duration: 0.6, ease: 'easeOut' }}
@@ -140,7 +140,7 @@ function AnimatedCheckmark({ reducedMotion }: { reducedMotion: boolean }) {
         <path
           d="M3 8.5L6.5 12L13 4"
           fill="none"
-          stroke="#4ade80"
+          stroke="#46b96e"
           strokeWidth="2"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -161,7 +161,7 @@ function AnimatedCheckmark({ reducedMotion }: { reducedMotion: boolean }) {
       <motion.path
         d="M3 8.5L6.5 12L13 4"
         fill="none"
-        stroke="#4ade80"
+        stroke="#46b96e"
         strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -532,7 +532,7 @@ export function QuestNotificationSystem() {
               totalObjectives: totalCount,
             })
             // Subtle green pulse on objective completion
-            eventBus.emit('fx:flash', { color: 'rgba(52,211,153,0.08)', opacity: 1, duration: 400 });
+            eventBus.emit('fx:flash', { color: 'rgba(70,185,110,0.08)', opacity: 1, duration: 400 });
           }
         }
       }
@@ -546,7 +546,7 @@ export function QuestNotificationSystem() {
           rewards: formatQuestCompletionRewards(def),
         })
         // Celebration flash — brief gold vignette to mark the achievement
-        eventBus.emit('fx:flash', { color: 'rgba(251,191,36,0.12)', opacity: 1, duration: 600 });
+        eventBus.emit('fx:flash', { color: 'rgba(226,168,75,0.12)', opacity: 1, duration: 600 });
       }
 
       // Quest failed toast — covered by quest:failed event from store emit

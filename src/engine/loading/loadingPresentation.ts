@@ -53,10 +53,10 @@ export function getBootTextDismissMs(): number {
 }
 
 export function getBootLineColor(line: string): string {
-  if (line.includes('OK')) return 'rgba(52,211,153,0.5)';
+  if (line.includes('OK')) return 'rgba(70,185,110,0.5)';
   if (line.includes('██')) return 'rgb(var(--cyber-cyan-rgb) / 0.7)';
-  if (line.includes('error') || line.includes('FAIL')) return 'rgba(251,113,133,0.5)';
-  return 'rgba(0,255,65,0.3)';
+  if (line.includes('error') || line.includes('FAIL')) return 'rgba(198,85,72,0.5)';
+  return 'rgba(70,185,110,0.3)';
 }
 
 export function getBootLineShadow(line: string): string {

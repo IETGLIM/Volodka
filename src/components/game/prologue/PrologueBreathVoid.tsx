@@ -122,7 +122,7 @@ export function PrologueBreathVoid({ onComplete, innerText }: Props) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.14 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 pointer-events-none mix-blend-screen bg-[linear-gradient(90deg,rgba(255,0,80,0.08)_0%,transparent_8%,transparent_92%,rgba(157, 179, 200,0.08)_100%)]"
+          className="absolute inset-0 pointer-events-none mix-blend-screen bg-[linear-gradient(90deg,rgba(141,127,181,0.08)_0%,transparent_8%,transparent_92%,rgba(157, 179, 200,0.08)_100%)]"
           aria-hidden
         />
       )}

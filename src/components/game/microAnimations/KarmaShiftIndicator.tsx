@@ -17,7 +17,7 @@ export const KarmaShiftIndicator = memo(function KarmaShiftIndicator({
 }: KarmaShiftIndicatorProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const isPositive = delta > 0;
-  const color = isPositive ? 'var(--cyber-cyan)' : '#fb7185';
+  const color = isPositive ? 'var(--cyber-cyan)' : '#c65548';
   const label = buildKarmaShiftLabel(delta, currentKarma);
   const announcement = buildKarmaShiftAnnouncement(delta, currentKarma);
 

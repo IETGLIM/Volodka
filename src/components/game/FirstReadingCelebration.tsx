@@ -25,7 +25,7 @@ const EXIT_DURATION_S = 0.45;
 const TYPEWRITER_MS_PER_CHAR = 28;
 const AUTO_ADVANCE_PADDING_MS = 1600;
 const AUTO_ADVANCE_MAX_MS = 6000;
-const THEME_COLOR = '#00ffee';
+const THEME_COLOR = '#9db3c8';
 
 export function FirstReadingCelebrationView({
   quoteText,
@@ -153,7 +153,7 @@ export function FirstReadingCelebrationView({
             className="absolute inset-0 pointer-events-none opacity-20"
             style={{
               background:
-                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,238,0.08) 2px, rgba(0,255,238,0.08) 4px)',
+                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157,179,200,0.08) 2px, rgba(157,179,200,0.08) 4px)',
             }}
           />
 
@@ -182,10 +182,10 @@ export function FirstReadingCelebrationView({
                   <span
                     className="text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 rounded border"
                     style={{
-                      color: isFragment ? '#fbbf24' : '#66ffaa',
+                      color: isFragment ? '#e2a84b' : '#46b96e',
                       borderColor: isFragment
-                        ? 'rgba(251,191,36,0.35)'
-                        : 'rgba(102,255,170,0.35)',
+                        ? 'rgba(226,168,75,0.35)'
+                        : 'rgba(70,185,110,0.35)',
                       background: isFragment
                         ? 'rgba(120,60,10,0.25)'
                         : 'rgba(0,40,24,0.35)',
@@ -241,8 +241,8 @@ export function FirstReadingCelebrationView({
                 style={{
                   background:
                     'linear-gradient(145deg, rgba(0,24,18,0.96) 0%, rgba(0,12,8,0.94) 55%, rgba(20,12,0,0.92) 100%)',
-                  borderColor: 'rgba(0,255,170,0.35)',
-                  boxShadow: '0 0 40px rgba(0,255,170,0.12), 0 24px 64px rgba(0,0,0,0.55)',
+                  borderColor: 'rgba(70,185,110,0.35)',
+                  boxShadow: '0 0 40px rgba(70,185,110,0.12), 0 24px 64px rgba(0,0,0,0.55)',
                 }}
                 onClick={(e) => e.stopPropagation()}
                 aria-label="Награда за задание Первое чтение"
@@ -253,7 +253,7 @@ export function FirstReadingCelebrationView({
                   </span>
                   <span
                     className="text-[11px] font-mono font-bold tracking-[0.2em] uppercase"
-                    style={{ color: '#66ffaa' }}
+                    style={{ color: '#46b96e' }}
                   >
                     Задание выполнено
                   </span>
@@ -264,7 +264,7 @@ export function FirstReadingCelebrationView({
                   <div
                     className="mb-4 rounded-lg border px-4 py-3"
                     style={{
-                      borderColor: 'rgba(251,191,36,0.35)',
+                      borderColor: 'rgba(226,168,75,0.35)',
                       background: 'rgba(120,60,10,0.18)',
                     }}
                   >
@@ -309,9 +309,9 @@ export function FirstReadingCelebrationView({
                   onClick={finish}
                   className="w-full py-3 rounded-lg font-mono font-bold text-sm tracking-wide transition-transform hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70"
                   style={{
-                    background: 'linear-gradient(90deg, rgba(0,180,120,0.85), rgba(0,255,170,0.75))',
+                    background: 'linear-gradient(90deg, rgba(0,180,120,0.85), rgba(70,185,110,0.75))',
                     color: '#041510',
-                    boxShadow: '0 0 20px rgba(0,255,170,0.25)',
+                    boxShadow: '0 0 20px rgba(70,185,110,0.25)',
                   }}
                 >
                   Продолжить исследование

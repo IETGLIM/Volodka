@@ -187,7 +187,7 @@ export function QuestDirectionArrow() {
           {exitHint ? (
             <span
               className="flex items-center gap-1 font-mono text-[8px] tracking-wide uppercase whitespace-nowrap"
-              style={{ color: 'rgba(251, 191, 36, 0.8)' }}
+              style={{ color: 'rgba(226, 168, 75, 0.8)' }}
             >
               <span
                 aria-hidden="true"

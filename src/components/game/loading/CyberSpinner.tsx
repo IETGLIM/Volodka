@@ -17,11 +17,11 @@ export function CyberSpinner({ pulse = true }: CyberSpinnerProps) {
         <circle cx="5" cy="35" r="1.2" fill="rgb(var(--cyber-cyan-rgb) / 0.4)" />
       </svg>
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-[cyber-spinner-reverse_7s_linear_infinite]">
-        <polygon points="50,15 85,50 50,85 15,50" fill="none" stroke="rgba(251,191,36,0.2)" strokeWidth="0.6" />
-        <circle cx="50" cy="15" r="1" fill="rgba(251,191,36,0.5)" />
-        <circle cx="85" cy="50" r="1" fill="rgba(251,191,36,0.4)" />
-        <circle cx="50" cy="85" r="1" fill="rgba(251,191,36,0.5)" />
-        <circle cx="15" cy="50" r="1" fill="rgba(251,191,36,0.4)" />
+        <polygon points="50,15 85,50 50,85 15,50" fill="none" stroke="rgba(226,168,75,0.2)" strokeWidth="0.6" />
+        <circle cx="50" cy="15" r="1" fill="rgba(226,168,75,0.5)" />
+        <circle cx="85" cy="50" r="1" fill="rgba(226,168,75,0.4)" />
+        <circle cx="50" cy="85" r="1" fill="rgba(226,168,75,0.5)" />
+        <circle cx="15" cy="50" r="1" fill="rgba(226,168,75,0.4)" />
       </svg>
       <svg viewBox="0 0 100 100" className="absolute inset-0 w-full h-full animate-[cyber-pulse-ring_3s_ease-in-out_infinite]">
         <circle cx="50" cy="50" r="18" fill="none" stroke="rgb(var(--cyber-cyan-rgb) / 0.15)" strokeWidth="0.5" />

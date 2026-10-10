@@ -14,11 +14,11 @@ export const POEM_POWER_EFFECT_CYRILLIC_CHARS =
   'абвгдежзийклмнопрстуфхцчшщъыьэюяАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ0123456789{}[]<>/\\|#$@!';
 
 export const POEM_POWER_COLOR_THEMES = {
-  act1: '#00ffee',
-  act2: '#00ff66',
-  act3: '#ffcc00',
-  combat: '#ff4444',
-  defense: '#4488ff',
+  act1: '#9db3c8',
+  act2: '#46b96e',
+  act3: '#e2a84b',
+  combat: '#c65548',
+  defense: '#9db3c8',
 } as const;
 
 export type PoemPowerColorTheme = keyof typeof POEM_POWER_COLOR_THEMES;

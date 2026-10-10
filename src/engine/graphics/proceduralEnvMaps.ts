@@ -18,11 +18,11 @@ function buildBakeScene(kind: HeroEnvKind): Scene {
     scene.add(new HemisphereLight('#334466', '#0a0810', 0.55));
 
     const panels: Array<{ color: string; pos: [number, number, number]; scale: [number, number, number] }> = [
-      { color: '#ff2288', pos: [-4, 1.2, -2], scale: [0.15, 3.5, 6] },
-      { color: '#22ffdd', pos: [4.2, 1.0, -1], scale: [0.15, 3.2, 5] },
-      { color: '#8844ff', pos: [0, 2.5, -5], scale: [8, 0.2, 0.2] },
-      { color: '#ffaa33', pos: [1.5, 0.4, 3], scale: [3, 0.8, 0.12] },
-      { color: '#4488ff', pos: [-2, 3.2, 2], scale: [0.2, 0.2, 5] },
+      { color: '#8d7fb5', pos: [-4, 1.2, -2], scale: [0.15, 3.5, 6] },
+      { color: '#9db3c8', pos: [4.2, 1.0, -1], scale: [0.15, 3.2, 5] },
+      { color: '#8d7fb5', pos: [0, 2.5, -5], scale: [8, 0.2, 0.2] },
+      { color: '#e2a84b', pos: [1.5, 0.4, 3], scale: [3, 0.8, 0.12] },
+      { color: '#9db3c8', pos: [-2, 3.2, 2], scale: [0.2, 0.2, 5] },
     ];
     for (const p of panels) {
       const mesh = new Mesh(
@@ -55,18 +55,18 @@ function buildBakeScene(kind: HeroEnvKind): Scene {
     scene.background = new Color('#1a120c');
     scene.add(new AmbientLight('#3a3028', 0.4));
     scene.add(new HemisphereLight('#ffcc88', '#1a1008', 0.7));
-    const lamp = new PointLight('#ffaa66', 3.5, 12);
+    const lamp = new PointLight('#e2a84b', 3.5, 12);
     lamp.position.set(1.2, 1.6, 0.5);
     scene.add(lamp);
     const windowFill = new PointLight('#6688aa', 2.4, 14);
     windowFill.position.set(-2.5, 1.4, 0);
     scene.add(windowFill);
-    const monitor = new PointLight('#44ff99', 1.8, 8);
+    const monitor = new PointLight('#46b96e', 1.8, 8);
     monitor.position.set(0.8, 1.1, -1.5);
     scene.add(monitor);
     const warmPanel = new Mesh(
       new PlaneGeometry(3.5, 2.2),
-      new MeshBasicMaterial({ color: '#ffbb77' }),
+      new MeshBasicMaterial({ color: '#e2a84b' }),
     );
     warmPanel.position.set(0, 1.5, -3);
     scene.add(warmPanel);
@@ -80,7 +80,7 @@ function buildBakeScene(kind: HeroEnvKind): Scene {
   const overhead = new PointLight('#ccddee', 2.8, 16);
   overhead.position.set(0, 3.5, 0);
   scene.add(overhead);
-  const accent = new PointLight('#66aaff', 1.6, 10);
+  const accent = new PointLight('#9db3c8', 1.6, 10);
   accent.position.set(-2, 1.5, 2);
   scene.add(accent);
   return scene;

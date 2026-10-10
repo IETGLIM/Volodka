@@ -190,12 +190,12 @@ export function DiceRollDisplay({
   const degreeColor = successDegree ? getSuccessDegreeColor(successDegree) : null;
 
   const resultColor = degreeColor ?? (criticalSuccess
-    ? '#fbbf24'  // gold
+    ? '#e2a84b'  // gold
     : criticalFailure
-      ? '#ef4444'  // red
+      ? '#c65548'  // red
       : success
         ? '#10b981'  // emerald
-        : '#ef4444'); // red
+        : '#c65548'); // red
 
   const resultLabel = degreeLabel ?? (criticalSuccess
     ? 'КРИТИЧЕСКИЙ УСПЕХ'
@@ -305,14 +305,14 @@ export function DiceRollDisplay({
               value={dice[0]}
               rolling={phase === 'rolling'}
               revealed={die1Revealed}
-              color={phase === 'result' ? resultColor : '#06b6d4'}
+              color={phase === 'result' ? resultColor : '#9db3c8'}
             />
             <span className="text-xl font-mono text-white/30">+</span>
             <DieCube
               value={dice[1]}
               rolling={phase === 'rolling'}
               revealed={die2Revealed}
-              color={phase === 'result' ? resultColor : '#06b6d4'}
+              color={phase === 'result' ? resultColor : '#9db3c8'}
             />
           </div>
 

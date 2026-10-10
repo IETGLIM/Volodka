@@ -84,7 +84,7 @@ const BarRow = memo(function BarRow({
         />
         <motion.div
           className="relative h-full rounded-full"
-          style={{ background: fill, boxShadow: flash ? '0 0 10px rgba(239,68,68,0.85)' : glow }}
+          style={{ background: fill, boxShadow: flash ? '0 0 10px rgba(198,85,72,0.85)' : glow }}
           initial={false}
           animate={{ width: `${pct}%` }}
           transition={reducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
@@ -99,8 +99,8 @@ const BarRow = memo(function BarRow({
             className="pointer-events-none absolute inset-y-0 w-[2px] -translate-x-1/2"
             style={{
               left: `${thresholdPct}%`,
-              background: thresholdActive ? 'rgba(248, 113, 113, 0.95)' : 'rgba(255, 255, 255, 0.22)',
-              boxShadow: thresholdActive ? '0 0 6px rgba(248, 113, 113, 0.85)' : 'none',
+              background: thresholdActive ? 'rgba(198, 85, 72, 0.95)' : 'rgba(255, 255, 255, 0.22)',
+              boxShadow: thresholdActive ? '0 0 6px rgba(198, 85, 72, 0.85)' : 'none',
             }}
             animate={thresholdActive && !reducedMotion ? { opacity: [1, 0.45, 1] } : { opacity: 1 }}
             transition={
@@ -146,10 +146,10 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
   const karmaPct = karma;
   const tierLabel = getKarmaTierLabel(karma);
   const karmaColor = karma >= KARMA_HIGH_THRESHOLD
-    ? '#22d3ee'
+    ? '#9db3c8'
     : karma <= KARMA_LOW_THRESHOLD
-      ? '#fb7185'
-      : '#fbbf24';
+      ? '#c65548'
+      : '#e2a84b';
 
   return (
     <div

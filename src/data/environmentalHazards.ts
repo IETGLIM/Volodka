@@ -233,11 +233,11 @@ export function getHazardLabel(kind: HazardKind): string {
  * чтобы цвет зоны в мире совпадал с цветом предупреждения на экране.
  */
 export const HAZARD_KIND_COLOR: Readonly<Record<HazardKind, string>> = {
-  electric: '#7fd8ff',
-  toxic: '#5dff8a',
-  fall: '#ff5a5a',
-  drown: '#5a9dff',
-  fire: '#ff8a3d',
+  electric: '#9db3c8',
+  toxic: '#46b96e',
+  fall: '#c65548',
+  drown: '#9db3c8',
+  fire: '#e2a84b',
   static: '#cfe8ff',
 };
 

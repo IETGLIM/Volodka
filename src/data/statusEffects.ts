@@ -89,7 +89,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Навыки временно усилены. Муза шепчет решение.',
     icon: '🧠',
     category: 'buff',
-    color: '#a78bfa', // violet
+    color: '#8d7fb5', // violet
     duration: 2,
   },
   combat_advantage: {
@@ -98,7 +98,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Преимущество в бою. Враг не готов к твоей атаке.',
     icon: '⚔️',
     category: 'buff',
-    color: '#f87171', // red
+    color: '#c65548', // red
     duration: 2,
   },
   speed_boost: {
@@ -107,7 +107,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Скорость передвижения увеличена. Город мелькает за окном.',
     icon: '💨',
     category: 'buff',
-    color: '#fbbf24', // amber
+    color: '#e2a84b', // amber
     duration: 3,
   },
   perception_boost: {
@@ -135,7 +135,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Стресс выше 70. В бою открывается бонус «Ярость кода».',
     icon: '😰',
     category: 'debuff',
-    color: '#f87171', // red
+    color: '#c65548', // red
   },
   injured: {
     id: 'injured',
@@ -143,7 +143,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Получен урон. Действия замедлены, боль отвлекает.',
     icon: '🩸',
     category: 'debuff',
-    color: '#ef4444', // red-500
+    color: '#c65548', // red-500
     duration: 5,
   },
   confused: {
@@ -152,7 +152,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Разум затуманен. Выборы даются тяжелее.',
     icon: '😵‍💫',
     category: 'debuff',
-    color: '#a78bfa', // violet
+    color: '#8d7fb5', // violet
     duration: 3,
   },
   poisoned: {
@@ -161,7 +161,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Токсины в крови. Энергия медленно убывает.',
     icon: '🤢',
     category: 'debuff',
-    color: '#84cc16', // lime
+    color: '#46b96e', // lime
     duration: 4,
     stackable: true,
     maxStacks: 3,
@@ -207,7 +207,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Гроза. Энергия убывает быстро, стресс растёт. Код пишется лучше.',
     icon: '⛈️',
     category: 'weather',
-    color: '#cc4444',
+    color: '#c65548',
   },
 
   /* ═══ PERK-BASED ═══ */
@@ -233,7 +233,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Активна способность «Контратака»: шанс контрудара при защите.',
     icon: '↩️',
     category: 'perk',
-    color: '#f87171', // red
+    color: '#c65548', // red
   },
   poetic_trance: {
     id: 'poetic_trance',
@@ -241,7 +241,7 @@ export const STATUS_EFFECTS: Record<StatusEffectType, StatusEffectDef> = {
     description: 'Активна способность «Поэтический транс»: бонус интуиции при стихах.',
     icon: '🎭',
     category: 'perk',
-    color: '#fbbf24', // amber
+    color: '#e2a84b', // amber
   },
 };
 

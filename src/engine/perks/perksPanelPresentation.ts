@@ -86,7 +86,7 @@ export function getPerkCardVisualStyle(
       : isAvailable
         ? `${categoryColor}55`
         : isExclusive
-          ? 'rgba(251,113,133,0.3)'
+          ? 'rgba(198,85,72,0.3)'
           : 'rgba(100,116,139,0.15)';
 
   const bgColor = isAcquired

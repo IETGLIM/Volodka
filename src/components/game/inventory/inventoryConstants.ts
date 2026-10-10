@@ -29,9 +29,9 @@ export const INVENTORY_RARITY_BORDER_CLASS: Record<ItemRarity, string> = {
 
 export const INVENTORY_RARITY_ICON_SHADOW: Record<ItemRarity, string> = {
   common: '0 0 8px rgba(148, 163, 184, 0.15)',
-  uncommon: '0 0 12px rgba(52, 211, 153, 0.3), 0 0 24px rgba(52, 211, 153, 0.1)',
+  uncommon: '0 0 12px rgba(70, 185, 110, 0.3), 0 0 24px rgba(70, 185, 110, 0.1)',
   rare: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.1)',
-  legendary: '0 0 16px rgba(251, 191, 36, 0.4), 0 0 32px rgba(251, 191, 36, 0.15)',
+  legendary: '0 0 16px rgba(226, 168, 75, 0.4), 0 0 32px rgba(226, 168, 75, 0.15)',
 };
 
 export const INVENTORY_RARITY_DETAIL_BG: Record<ItemRarity, string> = {
@@ -118,11 +118,11 @@ export function getInventoryRarityHoverShadow(rarity: ItemRarity): string {
     case 'common':
       return '0 0 10px rgba(148, 163, 184, 0.15), 0 4px 12px rgba(0,0,0,0.3)';
     case 'uncommon':
-      return '0 0 12px rgba(52, 211, 153, 0.3), 0 0 24px rgba(52, 211, 153, 0.1), 0 4px 12px rgba(0,0,0,0.3)';
+      return '0 0 12px rgba(70, 185, 110, 0.3), 0 0 24px rgba(70, 185, 110, 0.1), 0 4px 12px rgba(0,0,0,0.3)';
     case 'rare':
       return '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.35), 0 0 24px rgb(var(--cyber-cyan-rgb) / 0.12), 0 4px 12px rgba(0,0,0,0.3)';
     case 'legendary':
-      return '0 0 16px rgba(251, 191, 36, 0.4), 0 0 32px rgba(251, 191, 36, 0.15), 0 4px 12px rgba(0,0,0,0.3)';
+      return '0 0 16px rgba(226, 168, 75, 0.4), 0 0 32px rgba(226, 168, 75, 0.15), 0 4px 12px rgba(0,0,0,0.3)';
     default: {
       const _exhaustive: never = rarity;
       return _exhaustive;

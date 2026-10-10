@@ -68,11 +68,11 @@ interface MapNode {
 }
 
 const REGION_COLORS: Record<MapRegion, string> = {
-  home: '#22dd88',        // green
-  city: '#0ef',           // cyan
-  cultural: '#a78bfa',    // violet
-  industrial: '#fb923c',  // amber
-  special: '#f472b6',     // pink
+  home: '#46b96e',        // green
+  city: '#9db3c8',           // cyan
+  cultural: '#8d7fb5',    // violet
+  industrial: '#e2a84b',  // amber
+  special: '#8d7fb5',     // pink
 };
 
 const REGION_LABELS: Record<MapRegion, string> = {
@@ -271,7 +271,7 @@ function TravelConfirmDialog({
         {questTitles.length > 0 && (
           <div
             className="mb-4 rounded-md border border-amber-500/25 px-2.5 py-2"
-            style={{ background: 'rgba(251, 191, 36, 0.06)' }}
+            style={{ background: 'rgba(226, 168, 75, 0.06)' }}
           >
             <p className="text-[10px] font-mono uppercase tracking-wider text-amber-400/80 mb-1 flex items-center gap-1">
               <MapPin className="size-3" />
@@ -631,16 +631,16 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                               border: isFocused
                                 ? '2px solid rgba(157, 179, 200,0.7)'
                                 : hasQuestMarker
-                                  ? '2px solid rgba(251, 191, 36, 0.75)'
+                                  ? '2px solid rgba(226, 168, 75, 0.75)'
                                   : isCurrent
                                     ? `2px solid ${regionColor}99`
                                     : isDiscovered
                                       ? `1.5px solid ${regionColor}55`
                                       : '1px solid rgba(71, 85, 105, 0.2)',
                               boxShadow: isFocused
-                                ? '0 0 18px rgba(157, 179, 200,0.55), 0 0 4px rgba(255,200,80,0.4)'
+                                ? '0 0 18px rgba(157, 179, 200,0.55), 0 0 4px rgba(226,168,75,0.4)'
                                 : hasQuestMarker
-                                  ? '0 0 16px rgba(251, 191, 36, 0.55), 0 0 4px rgba(251, 191, 36, 0.35)'
+                                  ? '0 0 16px rgba(226, 168, 75, 0.55), 0 0 4px rgba(226, 168, 75, 0.35)'
                                   : isCurrent
                                     ? `0 0 20px ${regionColor}44, inset 0 0 10px ${regionColor}18`
                                     : isDiscovered
@@ -677,9 +677,9 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                 aria-hidden="true"
                                 animate={{
                                   boxShadow: [
-                                    '0 0 0px rgba(251, 191, 36, 0)',
-                                    '0 0 18px rgba(251, 191, 36, 0.7)',
-                                    '0 0 0px rgba(251, 191, 36, 0)',
+                                    '0 0 0px rgba(226, 168, 75, 0)',
+                                    '0 0 18px rgba(226, 168, 75, 0.7)',
+                                    '0 0 0px rgba(226, 168, 75, 0)',
                                   ],
                                 }}
                                 transition={{ duration: 2.2, repeat: Infinity, ease: 'easeInOut' }}
@@ -700,7 +700,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
 
                             {hasQuestMarker && (
                               <span
-                                className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.9)]"
+                                className="absolute -top-1 -right-1 size-2 rounded-full bg-amber-400 shadow-[0_0_6px_rgba(226,168,75,0.9)]"
                                 aria-label="Активный квест"
                               />
                             )}
@@ -720,7 +720,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                   : isDiscovered
                                     ? `${regionColor}aa`
                                     : isRumored
-                                      ? 'rgba(251, 191, 36, 0.5)'
+                                      ? 'rgba(226, 168, 75, 0.5)'
                                       : 'rgba(71, 85, 105, 0.4)',
                               }}
                             >
@@ -779,23 +779,23 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                             style={{
                               background: 'rgba(8, 12, 22, 0.92)',
                               borderColor: questTitles.length > 0
-                                ? 'rgba(251, 191, 36, 0.45)'
+                                ? 'rgba(226, 168, 75, 0.45)'
                                 : isCurrent
                                   ? `${regionColor}66`
                                   : isDiscovered
                                     ? `${regionColor}44`
                                     : 'rgba(71, 85, 105, 0.3)',
                               boxShadow: questTitles.length > 0
-                                ? '0 0 16px rgba(251, 191, 36, 0.22)'
+                                ? '0 0 16px rgba(226, 168, 75, 0.22)'
                                 : `0 0 15px ${isCurrent ? `${regionColor}28` : isDiscovered ? `${regionColor}18` : 'rgba(0,0,0,0.3)'}`,
                             }}
                           >
                             <div className="flex items-center gap-2 mb-1">
-                              <MapPin className="size-3" style={{ color: questTitles.length > 0 ? '#fbbf24' : regionColor }} />
+                              <MapPin className="size-3" style={{ color: questTitles.length > 0 ? '#e2a84b' : regionColor }} />
                               <span
                                 className="text-xs font-semibold"
                                 style={{
-                                  color: isCurrent ? regionColor : isDiscovered ? `${regionColor}cc` : isRumored ? 'rgba(251,191,36,0.7)' : 'rgba(100,116,139,0.6)',
+                                  color: isCurrent ? regionColor : isDiscovered ? `${regionColor}cc` : isRumored ? 'rgba(226,168,75,0.7)' : 'rgba(100,116,139,0.6)',
                                 }}
                               >
                                 {isDiscovered && config ? config.name : isRumored && config ? config.name : '???'}
@@ -814,7 +814,7 @@ export function WorldMap({ open, onClose }: WorldMapProps) {
                                         key={title}
                                         className="text-[9px] font-mono text-amber-300/85 leading-tight flex items-start gap-1"
                                       >
-                                        <span className="mt-0.5 size-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_4px_rgba(251,191,36,0.8)]" aria-hidden="true" />
+                                        <span className="mt-0.5 size-1.5 rounded-full bg-amber-400 shrink-0 shadow-[0_0_4px_rgba(226,168,75,0.8)]" aria-hidden="true" />
                                         <span>Квест: {title}</span>
                                       </p>
                                     ))}

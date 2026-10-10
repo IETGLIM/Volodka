@@ -6,11 +6,11 @@
 @keyframes skill-line-pulse {
   0%, 100% {
     opacity: 0.7;
-    filter: drop-shadow(0 0 2px var(--line-color, rgba(0, 204, 255, 0.3)));
+    filter: drop-shadow(0 0 2px var(--line-color, rgba(157, 179, 200, 0.3)));
   }
   50% {
     opacity: 1;
-    filter: drop-shadow(0 0 6px var(--line-color, rgba(0, 204, 255, 0.5)));
+    filter: drop-shadow(0 0 6px var(--line-color, rgba(157, 179, 200, 0.5)));
   }
 }
 
@@ -41,15 +41,15 @@
 /* Node breathing glow for available state */
 @keyframes skill-node-breathe {
   0%, 100% {
-    box-shadow: 0 0 6px var(--node-color, rgba(0, 204, 255, 0.15)),
-                0 0 12px var(--node-color, rgba(0, 204, 255, 0.08)),
-                inset 0 0 4px var(--node-color, rgba(0, 204, 255, 0.05));
+    box-shadow: 0 0 6px var(--node-color, rgba(157, 179, 200, 0.15)),
+                0 0 12px var(--node-color, rgba(157, 179, 200, 0.08)),
+                inset 0 0 4px var(--node-color, rgba(157, 179, 200, 0.05));
   }
   50% {
-    box-shadow: 0 0 12px var(--node-color, rgba(0, 204, 255, 0.35)),
-                0 0 24px var(--node-color, rgba(0, 204, 255, 0.15)),
-                0 0 36px var(--node-color, rgba(0, 204, 255, 0.08)),
-                inset 0 0 8px var(--node-color, rgba(0, 204, 255, 0.1));
+    box-shadow: 0 0 12px var(--node-color, rgba(157, 179, 200, 0.35)),
+                0 0 24px var(--node-color, rgba(157, 179, 200, 0.15)),
+                0 0 36px var(--node-color, rgba(157, 179, 200, 0.08)),
+                inset 0 0 8px var(--node-color, rgba(157, 179, 200, 0.1));
   }
 }
 
@@ -86,10 +86,10 @@
 /* Skill point badge pulse */
 @keyframes skill-point-badge-pulse {
   0%, 100% {
-    box-shadow: 0 0 6px rgba(251, 191, 36, 0.2), 0 0 12px rgba(251, 191, 36, 0.1);
+    box-shadow: 0 0 6px rgba(226, 168, 75, 0.2), 0 0 12px rgba(226, 168, 75, 0.1);
   }
   50% {
-    box-shadow: 0 0 10px rgba(251, 191, 36, 0.4), 0 0 20px rgba(251, 191, 36, 0.2), 0 0 30px rgba(251, 191, 36, 0.08);
+    box-shadow: 0 0 10px rgba(226, 168, 75, 0.4), 0 0 20px rgba(226, 168, 75, 0.2), 0 0 30px rgba(226, 168, 75, 0.08);
   }
 }
 

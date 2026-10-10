@@ -132,10 +132,10 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                 style={{
                   width: `${capacityPct}%`,
                   background: inventory.length >= maxSlots
-                    ? 'linear-gradient(90deg, #9f1239, #f43f5e)'
+                    ? 'linear-gradient(90deg, #9f1239, #c65548)'
                     : inventory.length >= maxSlots * 0.75
-                      ? 'linear-gradient(90deg, #b45309, #f59e0b)'
-                      : 'linear-gradient(90deg, #059669, #57a874)',
+                      ? 'linear-gradient(90deg, #b45309, #e2a84b)'
+                      : 'linear-gradient(90deg, #6f8a5c, #7d9768)',
                 }}
               />
             </div>
@@ -211,7 +211,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
               className={`
                 px-3 py-1.5 rounded-md text-[11px] font-mono border transition-all duration-200 relative
                 ${activeTab === 'craft'
-                  ? 'border-amber-500/50 bg-amber-950/50 text-amber-300 shadow-[0_0_10px_rgba(251,191,36,0.15)]'
+                  ? 'border-amber-500/50 bg-amber-950/50 text-amber-300 shadow-[0_0_10px_rgba(226,168,75,0.15)]'
                   : 'border-slate-700/30 bg-slate-900/30 text-slate-500 hover:text-slate-300 hover:border-slate-600/40 hover:bg-slate-800/30'
                 }
               `}
@@ -222,7 +222,7 @@ export function Inventory({ open, onClose, onOpenPoetryBook }: InventoryProps) {
                 <motion.div
                   layoutId="inv-tab-indicator"
                   className="absolute bottom-0 left-1 right-1 h-[2px] bg-amber-400/60 rounded-full"
-                  style={{ boxShadow: '0 0 6px rgba(251,191,36,0.4)' }}
+                  style={{ boxShadow: '0 0 6px rgba(226,168,75,0.4)' }}
                   transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                 />
               )}

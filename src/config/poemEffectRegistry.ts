@@ -45,14 +45,14 @@ export const POEM_TTL_CONSUMERS: Record<string, PoemTTLConsumerMeta> = {
   guiding_star_active: {
     flagKey: 'guiding_star_active',
     icon: '⭐',
-    color: '#ffd866',
+    color: '#e2a84b',
     fallbackLabel: 'Путеводная Звезда',
     effectSummary: 'Скрытые пути и ослабленное зрение крипов.',
   },
   storm_wind_active: {
     flagKey: 'storm_wind_active',
     icon: '🌪',
-    color: '#ff8c42',
+    color: '#e2a84b',
     fallbackLabel: 'Штормовой Ветер',
     effectSummary: '+5 к интуиции и логике.',
     combatBridge: {
@@ -68,7 +68,7 @@ export const POEM_TTL_CONSUMERS: Record<string, PoemTTLConsumerMeta> = {
   word_power_active: {
     flagKey: 'word_power_active',
     icon: '📜',
-    color: '#f0c878',
+    color: '#e2a84b',
     fallbackLabel: 'Слово Мощь',
     effectSummary: '+4 к письму и убеждению.',
   },
@@ -83,7 +83,7 @@ export const POEM_TTL_CONSUMERS: Record<string, PoemTTLConsumerMeta> = {
   breakthrough_active: {
     flagKey: 'breakthrough_active',
     icon: '⚡',
-    color: '#66ffcc',
+    color: '#46b96e',
     fallbackLabel: 'Прорыв',
     effectSummary: 'Следующая проверка кодинга проходит автоматически.',
     combatBridge: {
@@ -99,7 +99,7 @@ export const POEM_TTL_CONSUMERS: Record<string, PoemTTLConsumerMeta> = {
   jester_word_active: {
     flagKey: 'jester_word_active',
     icon: '🃏',
-    color: '#e8a0ff',
+    color: '#8d7fb5',
     fallbackLabel: 'Шутово Слово',
     effectSummary: 'Враги теряют уверенность.',
     combatBridge: {
@@ -115,7 +115,7 @@ export const POEM_TTL_CONSUMERS: Record<string, PoemTTLConsumerMeta> = {
   stone_skin_active: {
     flagKey: 'stone_skin_active',
     icon: '🛡',
-    color: '#64a0ff',
+    color: '#9db3c8',
     fallbackLabel: 'Каменная Кожа',
     effectSummary: 'Входящий стресс снижен на 50%.',
     stressIncomingMultiplier: 0.5,
@@ -139,14 +139,14 @@ export const POEM_TTL_CONSUMERS: Record<string, PoemTTLConsumerMeta> = {
   star_path_active: {
     flagKey: 'star_path_active',
     icon: '🌠',
-    color: '#fde68a',
+    color: '#e2a84b',
     fallbackLabel: 'Звездный Путь',
     effectSummary: 'Путеводная звезда ведёт к цели.',
   },
   deep_thought_active: {
     flagKey: 'deep_thought_active',
     icon: '🧠',
-    color: '#93c5fd',
+    color: '#9db3c8',
     fallbackLabel: 'Глубокое Размышление',
     effectSummary: '+5 к письму и логике.',
   },

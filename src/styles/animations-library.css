@@ -119,27 +119,27 @@
 
 @keyframes glitchText {
   0%, 90%, 100% {
-    text-shadow: 2px 0 #ff0040, -2px 0 #9db3c8;
+    text-shadow: 2px 0 #8d7fb5, -2px 0 #9db3c8;
     transform: translate(0);
     clip-path: inset(0 0 0 0);
   }
   92% {
-    text-shadow: -3px -1px #ff0040, 3px 1px #9db3c8;
+    text-shadow: -3px -1px #8d7fb5, 3px 1px #9db3c8;
     transform: translate(-2px, 1px);
     clip-path: inset(20% 0 60% 0);
   }
   94% {
-    text-shadow: 3px 1px #ff0040, -3px -1px #9db3c8;
+    text-shadow: 3px 1px #8d7fb5, -3px -1px #9db3c8;
     transform: translate(2px, -1px);
     clip-path: inset(60% 0 10% 0);
   }
   96% {
-    text-shadow: -1px 2px #ff0040, 1px -2px #9db3c8;
+    text-shadow: -1px 2px #8d7fb5, 1px -2px #9db3c8;
     transform: translate(0, 2px);
     clip-path: inset(40% 0 30% 0);
   }
   98% {
-    text-shadow: 2px -1px #ff0040, -2px 1px #9db3c8;
+    text-shadow: 2px -1px #8d7fb5, -2px 1px #9db3c8;
     transform: translate(-1px, 0);
     clip-path: inset(10% 0 70% 0);
   }
@@ -223,11 +223,11 @@
 /* ── State Transitions ─────────────────────────────────────────────────────── */
 
 @keyframes stressIncrease {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); }
-  50%      { box-shadow: 0 0 20px 4px rgba(220,38,38,0.35), inset 0 0 12px rgba(220,38,38,0.15); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(198,85,72,0); }
+  50%      { box-shadow: 0 0 20px 4px rgba(198,85,72,0.35), inset 0 0 12px rgba(198,85,72,0.15); }
 }
 @keyframes stressDecrease {
-  0%   { background-color: rgba(220,38,38,0.15); }
+  0%   { background-color: rgba(198,85,72,0.15); }
   100% { background-color: transparent; }
 }
 @keyframes karmaShiftLeft {

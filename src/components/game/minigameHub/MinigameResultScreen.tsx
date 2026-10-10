@@ -137,7 +137,7 @@ export const MinigameResultScreen = memo(function MinigameResultScreen({
       {/* Title */}
       <h3
         className="minigame-result-title"
-        style={{ color: isWin ? 'rgba(34, 197, 94, 0.9)' : accentColor }}
+        style={{ color: isWin ? 'rgba(70, 185, 110, 0.9)' : accentColor }}
       >
         {title}
       </h3>

@@ -29,9 +29,9 @@ interface DifficultyOption {
 }
 
 const DIFFICULTY_OPTIONS: DifficultyOption[] = [
-  { level: 1, name: 'Новичок', description: 'Лёгкие вопросы, 20 сек на ответ', timePerQuestion: 20, accentColor: 'rgba(52, 211, 153, 0.9)' },
-  { level: 2, name: 'Оператор', description: 'Смешанные вопросы, 15 сек на ответ', timePerQuestion: 15, accentColor: 'rgba(56, 189, 248, 0.9)' },
-  { level: 3, name: 'Мастер', description: 'Сложные вопросы, 10 сек на ответ', timePerQuestion: 10, accentColor: 'rgba(244, 63, 94, 0.9)' },
+  { level: 1, name: 'Новичок', description: 'Лёгкие вопросы, 20 сек на ответ', timePerQuestion: 20, accentColor: 'rgba(70, 185, 110, 0.9)' },
+  { level: 2, name: 'Оператор', description: 'Смешанные вопросы, 15 сек на ответ', timePerQuestion: 15, accentColor: 'rgba(157, 179, 200, 0.9)' },
+  { level: 3, name: 'Мастер', description: 'Сложные вопросы, 10 сек на ответ', timePerQuestion: 10, accentColor: 'rgba(198, 85, 72, 0.9)' },
 ];
 
 const QUESTIONS_PER_ROUND = 5;
@@ -46,9 +46,9 @@ function TimerRing({ timeLeft, maxTime }: { timeLeft: number; maxTime: number })
   const strokeDashoffset = circumference * (1 - progress);
 
   const color =
-    progress > 0.5 ? 'rgba(52, 211, 153, 0.9)' :
-    progress > 0.25 ? 'rgba(251, 191, 36, 0.9)' :
-    'rgba(244, 63, 94, 0.9)';
+    progress > 0.5 ? 'rgba(70, 185, 110, 0.9)' :
+    progress > 0.25 ? 'rgba(226, 168, 75, 0.9)' :
+    'rgba(198, 85, 72, 0.9)';
 
   return (
     <div className="relative w-20 h-20 flex items-center justify-center">
@@ -298,8 +298,8 @@ export function QuizGame({ onClose }: QuizGameProps) {
 
   // ── Rating ──
   const getRating = (s: number) => {
-    if (s >= 60) return { name: 'Архитектор', color: 'rgba(56, 189, 248, 0.9)', icon: '🏆' };
-    if (s >= 30) return { name: 'Оператор', color: 'rgba(251, 191, 36, 0.9)', icon: '⚡' };
+    if (s >= 60) return { name: 'Архитектор', color: 'rgba(157, 179, 200, 0.9)', icon: '🏆' };
+    if (s >= 30) return { name: 'Оператор', color: 'rgba(226, 168, 75, 0.9)', icon: '⚡' };
     return { name: 'Новичок', color: 'rgba(148, 163, 184, 0.7)', icon: '📖' };
   };
 
@@ -333,7 +333,7 @@ export function QuizGame({ onClose }: QuizGameProps) {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(56, 189, 248, 0.015) 2px, rgba(56, 189, 248, 0.015) 4px)',
+            'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157, 179, 200, 0.015) 2px, rgba(157, 179, 200, 0.015) 4px)',
         }}
       />
 
@@ -486,12 +486,12 @@ export function QuizGame({ onClose }: QuizGameProps) {
                         animate={{ scale: 1, opacity: 1 }}
                         className="flex items-center gap-1 px-2 py-0.5 rounded-full"
                         style={{
-                          background: 'rgba(251, 146, 60, 0.15)',
-                          border: '1px solid rgba(251, 146, 60, 0.3)',
+                          background: 'rgba(226, 168, 75, 0.15)',
+                          border: '1px solid rgba(226, 168, 75, 0.3)',
                         }}
                       >
                         <span className="text-xs">🔥</span>
-                        <span className="text-[11px] font-bold" style={{ color: 'rgba(251, 146, 60, 0.9)' }}>
+                        <span className="text-[11px] font-bold" style={{ color: 'rgba(226, 168, 75, 0.9)' }}>
                           ×{streak}
                         </span>
                       </motion.div>
@@ -503,17 +503,17 @@ export function QuizGame({ onClose }: QuizGameProps) {
                         whileTap={{ scale: 0.95 }}
                         className="flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider transition-all"
                         style={{
-                          color: 'rgba(251, 191, 36, 0.8)',
-                          background: 'rgba(251, 191, 36, 0.08)',
-                          border: '1px solid rgba(251, 191, 36, 0.25)',
+                          color: 'rgba(226, 168, 75, 0.8)',
+                          background: 'rgba(226, 168, 75, 0.08)',
+                          border: '1px solid rgba(226, 168, 75, 0.25)',
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = 'rgba(251, 191, 36, 0.15)';
-                          e.currentTarget.style.borderColor = 'rgba(251, 191, 36, 0.5)';
+                          e.currentTarget.style.background = 'rgba(226, 168, 75, 0.15)';
+                          e.currentTarget.style.borderColor = 'rgba(226, 168, 75, 0.5)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = 'rgba(251, 191, 36, 0.08)';
-                          e.currentTarget.style.borderColor = 'rgba(251, 191, 36, 0.25)';
+                          e.currentTarget.style.background = 'rgba(226, 168, 75, 0.08)';
+                          e.currentTarget.style.borderColor = 'rgba(226, 168, 75, 0.25)';
                         }}
                         aria-label="Подсказка 50/50"
                       >
@@ -584,15 +584,15 @@ export function QuizGame({ onClose }: QuizGameProps) {
 
                     if (isRevealedState) {
                       if (isCorrect) {
-                        borderColor = 'rgba(52, 211, 153, 0.6)';
-                        bgColor = 'rgba(52, 211, 153, 0.12)';
-                        textColor = 'rgba(52, 211, 153, 0.95)';
-                        glow = '0 0 20px rgba(52, 211, 153, 0.2), inset 0 0 12px rgba(52, 211, 153, 0.05)';
+                        borderColor = 'rgba(70, 185, 110, 0.6)';
+                        bgColor = 'rgba(70, 185, 110, 0.12)';
+                        textColor = 'rgba(70, 185, 110, 0.95)';
+                        glow = '0 0 20px rgba(70, 185, 110, 0.2), inset 0 0 12px rgba(70, 185, 110, 0.05)';
                       } else if (isSelected && !isCorrect) {
-                        borderColor = 'rgba(244, 63, 94, 0.6)';
-                        bgColor = 'rgba(244, 63, 94, 0.12)';
-                        textColor = 'rgba(244, 63, 94, 0.95)';
-                        glow = '0 0 20px rgba(244, 63, 94, 0.2)';
+                        borderColor = 'rgba(198, 85, 72, 0.6)';
+                        bgColor = 'rgba(198, 85, 72, 0.12)';
+                        textColor = 'rgba(198, 85, 72, 0.95)';
+                        glow = '0 0 20px rgba(198, 85, 72, 0.2)';
                         shake = true;
                       } else {
                         borderColor = 'rgba(100, 116, 139, 0.1)';
@@ -633,12 +633,12 @@ export function QuizGame({ onClose }: QuizGameProps) {
                           className="inline-flex items-center justify-center w-7 h-7 rounded-md text-[11px] font-bold shrink-0"
                           style={{
                             background: isRevealedState && isCorrect
-                              ? 'rgba(52, 211, 153, 0.2)'
+                              ? 'rgba(70, 185, 110, 0.2)'
                               : isRevealedState && isSelected && !isCorrect
-                              ? 'rgba(244, 63, 94, 0.2)'
+                              ? 'rgba(198, 85, 72, 0.2)'
                               : `rgba(${ACCENT_RGB}, 0.08)`,
-                            border: `1px solid ${isRevealedState && isCorrect ? 'rgba(52, 211, 153, 0.3)' : isRevealedState && isSelected && !isCorrect ? 'rgba(244, 63, 94, 0.3)' : `rgba(${ACCENT_RGB}, 0.15)`}`,
-                            color: isRevealedState && isCorrect ? 'rgba(52, 211, 153, 0.9)' : isRevealedState && isSelected && !isCorrect ? 'rgba(244, 63, 94, 0.9)' : `rgba(${ACCENT_RGB}, 0.5)`,
+                            border: `1px solid ${isRevealedState && isCorrect ? 'rgba(70, 185, 110, 0.3)' : isRevealedState && isSelected && !isCorrect ? 'rgba(198, 85, 72, 0.3)' : `rgba(${ACCENT_RGB}, 0.15)`}`,
+                            color: isRevealedState && isCorrect ? 'rgba(70, 185, 110, 0.9)' : isRevealedState && isSelected && !isCorrect ? 'rgba(198, 85, 72, 0.9)' : `rgba(${ACCENT_RGB}, 0.5)`,
                           }}
                         >
                           {String.fromCharCode(65 + idx)}
@@ -775,34 +775,34 @@ export function QuizGame({ onClose }: QuizGameProps) {
                 >
                   <div
                     className="rounded-lg p-3 text-center"
-                    style={{ background: 'rgba(52, 211, 153, 0.06)', border: '1px solid rgba(52, 211, 153, 0.15)' }}
+                    style={{ background: 'rgba(70, 185, 110, 0.06)', border: '1px solid rgba(70, 185, 110, 0.15)' }}
                   >
-                    <div className="text-lg font-bold" style={{ color: 'rgba(52, 211, 153, 0.9)' }}>
+                    <div className="text-lg font-bold" style={{ color: 'rgba(70, 185, 110, 0.9)' }}>
                       {correctCount}
                     </div>
-                    <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(52, 211, 153, 0.5)' }}>
+                    <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(70, 185, 110, 0.5)' }}>
                       Верно
                     </div>
                   </div>
                   <div
                     className="rounded-lg p-3 text-center"
-                    style={{ background: 'rgba(244, 63, 94, 0.06)', border: '1px solid rgba(244, 63, 94, 0.15)' }}
+                    style={{ background: 'rgba(198, 85, 72, 0.06)', border: '1px solid rgba(198, 85, 72, 0.15)' }}
                   >
-                    <div className="text-lg font-bold" style={{ color: 'rgba(244, 63, 94, 0.9)' }}>
+                    <div className="text-lg font-bold" style={{ color: 'rgba(198, 85, 72, 0.9)' }}>
                       {wrongCount}
                     </div>
-                    <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(244, 63, 94, 0.5)' }}>
+                    <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(198, 85, 72, 0.5)' }}>
                       Неверно
                     </div>
                   </div>
                   <div
                     className="rounded-lg p-3 text-center"
-                    style={{ background: 'rgba(251, 146, 60, 0.06)', border: '1px solid rgba(251, 146, 60, 0.15)' }}
+                    style={{ background: 'rgba(226, 168, 75, 0.06)', border: '1px solid rgba(226, 168, 75, 0.15)' }}
                   >
-                    <div className="text-lg font-bold" style={{ color: 'rgba(251, 146, 60, 0.9)' }}>
+                    <div className="text-lg font-bold" style={{ color: 'rgba(226, 168, 75, 0.9)' }}>
                       {bestStreak}
                     </div>
-                    <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(251, 146, 60, 0.5)' }}>
+                    <div className="text-[10px] uppercase tracking-wider" style={{ color: 'rgba(226, 168, 75, 0.5)' }}>
                       Серия
                     </div>
                   </div>
@@ -821,19 +821,19 @@ export function QuizGame({ onClose }: QuizGameProps) {
                   </div>
                   <div className="flex items-center justify-center gap-6">
                     <div className="text-center">
-                      <div className="text-sm font-bold" style={{ color: 'rgba(56, 189, 248, 0.9)' }}>
+                      <div className="text-sm font-bold" style={{ color: 'rgba(157, 179, 200, 0.9)' }}>
                         +{Math.round(score / 5) + 20} XP
                       </div>
                       <div className="text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Опыт</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-sm font-bold" style={{ color: 'rgba(168, 85, 247, 0.9)' }}>
+                      <div className="text-sm font-bold" style={{ color: 'rgba(141, 127, 181, 0.9)' }}>
                         +{Math.min(correctCount * 3, 15)} кармы
                       </div>
                       <div className="text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Карма</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-sm font-bold" style={{ color: 'rgba(52, 211, 153, 0.9)' }}>
+                      <div className="text-sm font-bold" style={{ color: 'rgba(70, 185, 110, 0.9)' }}>
                         +1 логика
                       </div>
                       <div className="text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Навык</div>

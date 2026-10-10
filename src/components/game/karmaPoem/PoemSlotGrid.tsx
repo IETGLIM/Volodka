@@ -18,7 +18,7 @@ const PoemSlot = memo(function PoemSlot({ slot }: { slot: PoemSlotView }) {
       aria-label={slot.collected ? `Стих: ${slot.title}` : `Слот ${slot.index}, не найден`}
       className={`aspect-square flex items-center justify-center rounded text-[10px] font-mono outline-none transition-colors focus-visible:ring-1 focus-visible:ring-emerald-500/50 ${
         slot.collected
-          ? 'bg-emerald-950/30 border border-emerald-700/40 text-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.12)] hover:bg-emerald-950/45'
+          ? 'bg-emerald-950/30 border border-emerald-700/40 text-emerald-400 shadow-[0_0_6px_rgba(70,185,110,0.12)] hover:bg-emerald-950/45'
           : 'bg-slate-900/40 border border-slate-700/30 text-slate-600'
       }`}
     >

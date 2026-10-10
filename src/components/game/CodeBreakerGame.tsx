@@ -11,7 +11,7 @@ import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 /* ─── Constants ─── */
 const CODE_LENGTH = 4;
 const MAX_ATTEMPTS = 6;
-const DIGIT_COLORS = ['#00ffee', '#ff6644', '#ffcc00', '#44ff88', '#ff44aa', '#8844ff', '#44aaff', '#ff8844', '#88ff44', '#ff4488'];
+const DIGIT_COLORS = ['#9db3c8', '#c65548', '#e2a84b', '#46b96e', '#8d7fb5', '#8d7fb5', '#9db3c8', '#e2a84b', '#46b96e', '#8d7fb5'];
 
 type Feedback = {
   exact: number; // correct digit + correct position
@@ -162,23 +162,23 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
         className="relative z-10 w-full max-w-md mx-4 rounded-lg border overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, rgba(5, 8, 15, 0.97), rgba(10, 15, 25, 0.97))',
-          borderColor: 'rgba(0, 255, 238, 0.25)',
-          boxShadow: '0 0 30px rgba(0, 255, 238, 0.08), inset 0 0 30px rgba(0, 255, 238, 0.02)',
+          borderColor: 'rgba(157, 179, 200, 0.25)',
+          boxShadow: '0 0 30px rgba(157, 179, 200, 0.08), inset 0 0 30px rgba(157, 179, 200, 0.02)',
         }}
       >
         {/* Header */}
         <div
           className="px-5 py-3 flex items-center justify-between"
           style={{
-            borderBottom: '1px solid rgba(0, 255, 238, 0.15)',
-            background: 'rgba(0, 255, 238, 0.03)',
+            borderBottom: '1px solid rgba(157, 179, 200, 0.15)',
+            background: 'rgba(157, 179, 200, 0.03)',
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: '#00ffee', fontSize: uiTextScaledPx(18) }}>⚡</span>
+            <span style={{ color: '#9db3c8', fontSize: uiTextScaledPx(18) }}>⚡</span>
             <h2
               className="text-sm font-bold tracking-widest uppercase"
-              style={{ color: '#00ffee', fontFamily: 'monospace' }}
+              style={{ color: '#9db3c8', fontFamily: 'monospace' }}
             >
               ВЗЛОМ КОДА
             </h2>
@@ -195,7 +195,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
         <div
           className="absolute inset-0 pointer-events-none z-20"
           style={{
-            background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,238,0.015) 2px, rgba(0,255,238,0.015) 4px)',
+            background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157,179,200,0.015) 2px, rgba(157,179,200,0.015) 4px)',
           }}
         />
 
@@ -215,10 +215,10 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                   key={`slot-${i}`}
                   className="flex items-center justify-center w-12 h-14 rounded border-2 font-mono text-2xl font-bold transition-all duration-150"
                   style={{
-                    borderColor: isSelected ? '#00ffee' : digit !== undefined ? 'rgba(0, 255, 238, 0.4)' : 'rgba(0, 255, 238, 0.15)',
-                    background: isSelected ? 'rgba(0, 255, 238, 0.08)' : 'rgba(5, 10, 20, 0.6)',
-                    color: digit !== undefined ? DIGIT_COLORS[digit] : 'rgba(0, 255, 238, 0.2)',
-                    boxShadow: isSelected ? '0 0 12px rgba(0, 255, 238, 0.2)' : 'none',
+                    borderColor: isSelected ? '#9db3c8' : digit !== undefined ? 'rgba(157, 179, 200, 0.4)' : 'rgba(157, 179, 200, 0.15)',
+                    background: isSelected ? 'rgba(157, 179, 200, 0.08)' : 'rgba(5, 10, 20, 0.6)',
+                    color: digit !== undefined ? DIGIT_COLORS[digit] : 'rgba(157, 179, 200, 0.2)',
+                    boxShadow: isSelected ? '0 0 12px rgba(157, 179, 200, 0.2)' : 'none',
                   }}
                 >
                   {digit !== undefined ? digit : '·'}
@@ -238,8 +238,8 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                   transition={{ duration: 0.2 }}
                   className="flex items-center gap-2 px-3 py-1.5 rounded"
                   style={{
-                    background: 'rgba(0, 255, 238, 0.03)',
-                    border: '1px solid rgba(0, 255, 238, 0.08)',
+                    background: 'rgba(157, 179, 200, 0.03)',
+                    border: '1px solid rgba(157, 179, 200, 0.08)',
                   }}
                 >
                   {/* Guess digits */}
@@ -266,7 +266,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                       <span
                         key={`exact-${i}`}
                         className="inline-block w-2.5 h-2.5 rounded-full"
-                        style={{ background: '#00ffee', boxShadow: '0 0 4px rgba(0, 255, 238, 0.6)' }}
+                        style={{ background: '#9db3c8', boxShadow: '0 0 4px rgba(157, 179, 200, 0.6)' }}
                       />
                     ))}
                     {/* Partial matches (correct digit, wrong position) */}
@@ -274,7 +274,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                       <span
                         key={`partial-${i}`}
                         className="inline-block w-2.5 h-2.5 rounded-full"
-                        style={{ background: '#ffcc00', boxShadow: '0 0 4px rgba(255, 204, 0, 0.4)' }}
+                        style={{ background: '#e2a84b', boxShadow: '0 0 4px rgba(226, 168, 75, 0.4)' }}
                       />
                     ))}
                     {/* Misses */}
@@ -289,9 +289,9 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
 
                   {/* Feedback labels */}
                   <span className="text-[10px] font-mono ml-1" style={{ color: '#6a8a9a' }}>
-                    {row.feedback.exact > 0 && <span style={{ color: '#00ffee' }}>{row.feedback.exact}✓</span>}
+                    {row.feedback.exact > 0 && <span style={{ color: '#9db3c8' }}>{row.feedback.exact}✓</span>}
                     {row.feedback.exact > 0 && row.feedback.partial > 0 && ' '}
-                    {row.feedback.partial > 0 && <span style={{ color: '#ffcc00' }}>{row.feedback.partial}≅</span>}
+                    {row.feedback.partial > 0 && <span style={{ color: '#e2a84b' }}>{row.feedback.partial}≅</span>}
                   </span>
                 </motion.div>
               ))}
@@ -307,18 +307,18 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                   onClick={() => handleDigit(i)}
                   className="flex items-center justify-center h-9 rounded font-mono text-sm font-bold transition-all duration-100 hover:scale-105 active:scale-95"
                   style={{
-                    background: 'rgba(0, 255, 238, 0.06)',
-                    border: '1px solid rgba(0, 255, 238, 0.2)',
+                    background: 'rgba(157, 179, 200, 0.06)',
+                    border: '1px solid rgba(157, 179, 200, 0.2)',
                     color: DIGIT_COLORS[i],
-                    boxShadow: 'inset 0 0 8px rgba(0, 255, 238, 0.03)',
+                    boxShadow: 'inset 0 0 8px rgba(157, 179, 200, 0.03)',
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 255, 238, 0.15)';
-                    e.currentTarget.style.borderColor = 'rgba(0, 255, 238, 0.5)';
+                    e.currentTarget.style.background = 'rgba(157, 179, 200, 0.15)';
+                    e.currentTarget.style.borderColor = 'rgba(157, 179, 200, 0.5)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(0, 255, 238, 0.06)';
-                    e.currentTarget.style.borderColor = 'rgba(0, 255, 238, 0.2)';
+                    e.currentTarget.style.background = 'rgba(157, 179, 200, 0.06)';
+                    e.currentTarget.style.borderColor = 'rgba(157, 179, 200, 0.2)';
                   }}
                 >
                   {i}
@@ -333,15 +333,15 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
               onClick={handleBackspace}
               className="w-full py-1.5 rounded text-xs font-mono transition-all duration-100 mb-3"
               style={{
-                background: 'rgba(255, 100, 68, 0.08)',
-                border: '1px solid rgba(255, 100, 68, 0.2)',
-                color: '#ff6644',
+                background: 'rgba(198, 85, 72, 0.08)',
+                border: '1px solid rgba(198, 85, 72, 0.2)',
+                color: '#c65548',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 100, 68, 0.15)';
+                e.currentTarget.style.background = 'rgba(198, 85, 72, 0.15)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 100, 68, 0.08)';
+                e.currentTarget.style.background = 'rgba(198, 85, 72, 0.08)';
               }}
             >
               ← Стереть
@@ -356,7 +356,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
               className="text-center py-4"
             >
               <div className="text-2xl mb-2">🔓</div>
-              <p className="text-sm font-bold font-mono" style={{ color: '#00ffee' }}>
+              <p className="text-sm font-bold font-mono" style={{ color: '#9db3c8' }}>
                 КОД ВЗЛОМАН!
               </p>
               <p className="text-xs font-mono mt-1" style={{ color: '#6a8a9a' }}>
@@ -366,9 +366,9 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                 onClick={onClose}
                 className="mt-3 px-4 py-1.5 rounded text-xs font-mono transition-all"
                 style={{
-                  background: 'rgba(0, 255, 238, 0.15)',
-                  border: '1px solid rgba(0, 255, 238, 0.4)',
-                  color: '#00ffee',
+                  background: 'rgba(157, 179, 200, 0.15)',
+                  border: '1px solid rgba(157, 179, 200, 0.4)',
+                  color: '#9db3c8',
                 }}
               >
                 Закрыть
@@ -383,7 +383,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
               className="text-center py-4"
             >
               <div className="text-2xl mb-2">🔒</div>
-              <p className="text-sm font-bold font-mono" style={{ color: '#ff6644' }}>
+              <p className="text-sm font-bold font-mono" style={{ color: '#c65548' }}>
                 ДОСТУП ЗАПРЕЩЁН
               </p>
               <p className="text-xs font-mono mt-1" style={{ color: '#6a8a9a' }}>
@@ -393,9 +393,9 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                 onClick={onClose}
                 className="mt-3 px-4 py-1.5 rounded text-xs font-mono transition-all"
                 style={{
-                  background: 'rgba(255, 100, 68, 0.15)',
-                  border: '1px solid rgba(255, 100, 68, 0.3)',
-                  color: '#ff6644',
+                  background: 'rgba(198, 85, 72, 0.15)',
+                  border: '1px solid rgba(198, 85, 72, 0.3)',
+                  color: '#c65548',
                 }}
               >
                 Закрыть
@@ -406,11 +406,11 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
           {/* Legend */}
           <div className="flex items-center justify-center gap-4 mt-2">
             <div className="flex items-center gap-1">
-              <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#00ffee' }} />
+              <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#9db3c8' }} />
               <span className="text-[9px] font-mono" style={{ color: '#6a8a9a' }}>цифра+место</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#ffcc00' }} />
+              <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#e2a84b' }} />
               <span className="text-[9px] font-mono" style={{ color: '#6a8a9a' }}>цифра верно</span>
             </div>
             <div className="flex items-center gap-1">

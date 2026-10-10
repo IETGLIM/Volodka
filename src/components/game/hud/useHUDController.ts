@@ -182,7 +182,7 @@ export function useHUDController(props: HUDProps) {
       prevKarma.current = karma;
       if (delta !== 0) floatKarma(delta);
       // Localized stat-change pip — color encodes direction (cyan = gain, rose = loss).
-      if (delta !== 0) showStatChange('Карма', delta, delta > 0 ? 'var(--cyber-cyan)' : '#fb7185');
+      if (delta !== 0) showStatChange('Карма', delta, delta > 0 ? 'var(--cyber-cyan)' : '#c65548');
       scheduleTimeout(() => {
         if (delta > 0) setKarmaDirection('up');
         else if (delta < 0) setKarmaDirection('down');
@@ -198,7 +198,7 @@ export function useHUDController(props: HUDProps) {
       const delta = energy - prevEnergy.current;
       prevEnergy.current = energy;
       if (delta !== 0) floatEnergy(delta);
-      if (delta !== 0) showStatChange('Энергия', delta, delta > 0 ? '#57a874' : '#fb7185');
+      if (delta !== 0) showStatChange('Энергия', delta, delta > 0 ? '#57a874' : '#c65548');
       scheduleTimeout(() => setEnergyPulse(true), 0);
       scheduleTimeout(() => setEnergyPulse(false), 600);
     }
@@ -210,7 +210,7 @@ export function useHUDController(props: HUDProps) {
       prevStress.current = stress;
       if (delta !== 0) floatStress(delta);
       // Stress: increase is bad (rose), decrease is good (green).
-      if (delta !== 0) showStatChange('Стресс', delta, delta > 0 ? '#fb7185' : '#57a874');
+      if (delta !== 0) showStatChange('Стресс', delta, delta > 0 ? '#c65548' : '#57a874');
       scheduleTimeout(() => setStressPulse(true), 0);
       scheduleTimeout(() => setStressPulse(false), 600);
     }

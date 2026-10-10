@@ -25,9 +25,9 @@ function getNodeStyle(
   }
   if (isScannerHere) {
     return {
-      bg: 'rgba(251, 146, 60, 0.15)',
-      border: 'rgba(251, 146, 60, 0.7)',
-      glow: '0 0 15px rgba(251, 146, 60, 0.4), inset 0 0 10px rgba(251, 146, 60, 0.15)',
+      bg: 'rgba(226, 168, 75, 0.15)',
+      border: 'rgba(226, 168, 75, 0.7)',
+      glow: '0 0 15px rgba(226, 168, 75, 0.4), inset 0 0 10px rgba(226, 168, 75, 0.15)',
       icon: '◉',
     };
   }
@@ -35,31 +35,31 @@ function getNodeStyle(
   switch (node.type) {
     case 'firewall':
       return {
-        bg: 'rgba(239, 68, 68, 0.1)',
-        border: 'rgba(239, 68, 68, 0.5)',
-        glow: '0 0 10px rgba(239, 68, 68, 0.2)',
+        bg: 'rgba(198, 85, 72, 0.1)',
+        border: 'rgba(198, 85, 72, 0.5)',
+        glow: '0 0 10px rgba(198, 85, 72, 0.2)',
         icon: '🛡',
       };
     case 'data':
       if (isDataCollected) {
         return {
-          bg: 'rgba(34, 197, 94, 0.03)',
-          border: 'rgba(34, 197, 94, 0.15)',
+          bg: 'rgba(70, 185, 110, 0.03)',
+          border: 'rgba(70, 185, 110, 0.15)',
           glow: 'none',
           icon: '✓',
         };
       }
       return {
-        bg: 'rgba(34, 197, 94, 0.12)',
-        border: 'rgba(34, 197, 94, 0.5)',
-        glow: '0 0 12px rgba(34, 197, 94, 0.25)',
+        bg: 'rgba(70, 185, 110, 0.12)',
+        border: 'rgba(70, 185, 110, 0.5)',
+        glow: '0 0 12px rgba(70, 185, 110, 0.25)',
         icon: '◆',
       };
     case 'target':
       return {
-        bg: 'rgba(168, 85, 247, 0.15)',
-        border: 'rgba(168, 85, 247, 0.7)',
-        glow: '0 0 18px rgba(168, 85, 247, 0.35), inset 0 0 10px rgba(168, 85, 247, 0.1)',
+        bg: 'rgba(141, 127, 181, 0.15)',
+        border: 'rgba(141, 127, 181, 0.7)',
+        glow: '0 0 18px rgba(141, 127, 181, 0.35), inset 0 0 10px rgba(141, 127, 181, 0.1)',
         icon: '⬡',
       };
     default:
@@ -146,20 +146,20 @@ export const HackingNetworkNode = memo(function HackingNetworkNode({
           color: isPlayerHere
             ? HACKING_CYAN_COLOR
             : isScannerHere
-              ? 'rgba(251, 146, 60, 0.9)'
+              ? 'rgba(226, 168, 75, 0.9)'
               : node.type === 'firewall'
-                ? 'rgba(239, 68, 68, 0.8)'
+                ? 'rgba(198, 85, 72, 0.8)'
                 : node.type === 'data'
                   ? isDataCollected
-                    ? 'rgba(34, 197, 94, 0.3)'
-                    : 'rgba(34, 197, 94, 0.9)'
+                    ? 'rgba(70, 185, 110, 0.3)'
+                    : 'rgba(70, 185, 110, 0.9)'
                   : node.type === 'target'
-                    ? 'rgba(168, 85, 247, 0.9)'
+                    ? 'rgba(141, 127, 181, 0.9)'
                     : 'rgba(100, 116, 139, 0.3)',
           textShadow: isPlayerHere
             ? `0 0 8px rgba(${HACKING_CYAN_RGB}, 0.5)`
             : node.type === 'target'
-              ? '0 0 8px rgba(168, 85, 247, 0.5)'
+              ? '0 0 8px rgba(141, 127, 181, 0.5)'
               : 'none',
         }}
         aria-hidden="true"
@@ -188,17 +188,17 @@ export const HackingNetworkNode = memo(function HackingNetworkNode({
         : node.type === 'target'
           ? {
               boxShadow: [
-                '0 0 12px rgba(168, 85, 247, 0.25), inset 0 0 8px rgba(168, 85, 247, 0.08)',
-                '0 0 22px rgba(168, 85, 247, 0.45), inset 0 0 14px rgba(168, 85, 247, 0.15)',
-                '0 0 12px rgba(168, 85, 247, 0.25), inset 0 0 8px rgba(168, 85, 247, 0.08)',
+                '0 0 12px rgba(141, 127, 181, 0.25), inset 0 0 8px rgba(141, 127, 181, 0.08)',
+                '0 0 22px rgba(141, 127, 181, 0.45), inset 0 0 14px rgba(141, 127, 181, 0.15)',
+                '0 0 12px rgba(141, 127, 181, 0.25), inset 0 0 8px rgba(141, 127, 181, 0.08)',
               ],
             }
           : isScannerHere
             ? {
                 boxShadow: [
-                  '0 0 8px rgba(251, 146, 60, 0.2), inset 0 0 6px rgba(251, 146, 60, 0.08)',
-                  '0 0 16px rgba(251, 146, 60, 0.4), inset 0 0 10px rgba(251, 146, 60, 0.15)',
-                  '0 0 8px rgba(251, 146, 60, 0.2), inset 0 0 6px rgba(251, 146, 60, 0.08)',
+                  '0 0 8px rgba(226, 168, 75, 0.2), inset 0 0 6px rgba(226, 168, 75, 0.08)',
+                  '0 0 16px rgba(226, 168, 75, 0.4), inset 0 0 10px rgba(226, 168, 75, 0.15)',
+                  '0 0 8px rgba(226, 168, 75, 0.2), inset 0 0 6px rgba(226, 168, 75, 0.08)',
                 ],
               }
             : {},

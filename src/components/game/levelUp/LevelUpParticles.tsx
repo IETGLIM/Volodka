@@ -8,8 +8,8 @@ type LevelUpParticlesProps = {
 
 const PARTICLE_COLORS = {
   gold: {
-    background: 'rgba(251,191,36,0.9)',
-    boxShadow: '0 0 6px rgba(251,191,36,0.6)',
+    background: 'rgba(226,168,75,0.9)',
+    boxShadow: '0 0 6px rgba(226,168,75,0.6)',
   },
   cyan: {
     background: 'rgb(var(--cyber-cyan-rgb) / 0.8)',

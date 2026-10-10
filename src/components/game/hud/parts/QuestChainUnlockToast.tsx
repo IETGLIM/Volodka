@@ -188,9 +188,9 @@ export function QuestChainUnlockToast() {
             padding: '14px 16px',
             background:
               'linear-gradient(135deg, rgba(8,12,22,0.96) 0%, rgba(22,18,10,0.94) 60%, rgba(12,18,24,0.96) 100%)',
-            border: '1px solid rgba(202,138,4,0.55)',
+            border: '1px solid rgba(226,168,75,0.55)',
             boxShadow:
-              '0 0 0 1px rgba(0,212,224,0.18), 0 0 22px rgba(202,138,4,0.32), 0 0 42px rgba(0,212,224,0.18), 0 6px 18px rgba(0,0,0,0.55)',
+              '0 0 0 1px rgba(157,179,200,0.18), 0 0 22px rgba(226,168,75,0.32), 0 0 42px rgba(157,179,200,0.18), 0 6px 18px rgba(0,0,0,0.55)',
             backdropFilter: 'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
           }}
@@ -201,7 +201,7 @@ export function QuestChainUnlockToast() {
             className="absolute left-0 right-0 top-0 h-px"
             style={{
               background:
-                'linear-gradient(90deg, transparent 0%, rgba(202,138,4,0) 8%, rgba(202,138,4,0.9) 28%, rgba(0,212,224,0.95) 72%, rgba(0,212,224,0) 92%, transparent 100%)',
+                'linear-gradient(90deg, transparent 0%, rgba(226,168,75,0) 8%, rgba(226,168,75,0.9) 28%, rgba(157,179,200,0.95) 72%, rgba(157,179,200,0) 92%, transparent 100%)',
             }}
             initial={reducedMotion ? false : { opacity: 0.4, scaleX: 0.6 }}
             animate={{ opacity: 1, scaleX: 1 }}
@@ -246,9 +246,9 @@ export function QuestChainUnlockToast() {
               className="flex items-center justify-center size-10 rounded-lg shrink-0"
               style={{
                 background:
-                  'radial-gradient(circle at 30% 30%, rgba(251,191,36,0.35) 0%, rgba(202,138,4,0.18) 60%, rgba(8,12,22,0.6) 100%)',
-                border: '1px solid rgba(251,191,36,0.55)',
-                boxShadow: '0 0 12px rgba(251,191,36,0.35), inset 0 0 8px rgba(251,191,36,0.2)',
+                  'radial-gradient(circle at 30% 30%, rgba(226,168,75,0.35) 0%, rgba(226,168,75,0.18) 60%, rgba(8,12,22,0.6) 100%)',
+                border: '1px solid rgba(226,168,75,0.55)',
+                boxShadow: '0 0 12px rgba(226,168,75,0.35), inset 0 0 8px rgba(226,168,75,0.2)',
               }}
               initial={reducedMotion ? false : { rotate: -8, scale: 0.7 }}
               animate={{ rotate: 0, scale: 1 }}
@@ -271,9 +271,9 @@ export function QuestChainUnlockToast() {
             <span
               className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-md"
               style={{
-                color: 'rgba(0,212,224,0.95)',
-                background: 'rgba(0,212,224,0.10)',
-                border: '1px solid rgba(0,212,224,0.32)',
+                color: 'rgba(157,179,200,0.95)',
+                background: 'rgba(157,179,200,0.10)',
+                border: '1px solid rgba(157,179,200,0.32)',
               }}
             >
               Акт {entry.actNumber}
@@ -283,7 +283,7 @@ export function QuestChainUnlockToast() {
           {/* Quest title */}
           <h3
             className="mt-2.5 text-[15px] font-semibold leading-snug text-amber-50"
-            style={{ textShadow: '0 0 12px rgba(251,191,36,0.25)' }}
+            style={{ textShadow: '0 0 12px rgba(226,168,75,0.25)' }}
           >
             {entry.nextQuestTitle}
           </h3>

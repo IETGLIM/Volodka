@@ -98,7 +98,7 @@ const COLORS = {
   /** Primary cyan for ready/glow effects */
   cyan: 'var(--cyber-cyan, #9db3c8)',
   /** Amber for warnings/almost-ready */
-  amber: 'var(--cyber-amber, #ffb800)',
+  amber: 'var(--cyber-amber, #e2a84b)',
   /** Dark overlay for cooldown */
   darkOverlay: 'rgba(0, 0, 0, 0.75)',
   /** Semi-transparent background */
@@ -106,7 +106,7 @@ const COLORS = {
   /** Border color for inactive slots */
   borderInactive: 'rgba(100, 120, 140, 0.3)',
   /** Border color for active slots */
-  borderActive: 'rgba(0, 240, 255, 0.8)',
+  borderActive: 'rgba(157, 179, 200, 0.8)',
 } as const;
 
 /* ─── Utility Functions ─── */
@@ -736,7 +736,7 @@ export default SkillRechargeHUD;
  * @remarks
  * This component uses CSS custom properties for theming:
  * - `--cyber-cyan`: Primary accent color (default: #9db3c8)
- * - `--cyber-amber`: Warning/highlight color (default: #ffb800)
+ * - `--cyber-amber`: Warning/highlight color (default: #e2a84b)
  *
  * The component relies on the unified «Ночная тетрадь» skin
  * (volodka-skin.css) which contains:

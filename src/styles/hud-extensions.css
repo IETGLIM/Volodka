@@ -127,10 +127,10 @@
 /* ─── Screen edge warning vignette ─── */
 @keyframes warning-vignette {
   0%, 100% {
-    box-shadow: inset 0 0 80px rgba(251, 113, 133, 0.1);
+    box-shadow: inset 0 0 80px rgba(198, 85, 72, 0.1);
   }
   50% {
-    box-shadow: inset 0 0 120px rgba(251, 113, 133, 0.2), inset 0 0 200px rgba(251, 113, 133, 0.05);
+    box-shadow: inset 0 0 120px rgba(198, 85, 72, 0.2), inset 0 0 200px rgba(198, 85, 72, 0.05);
   }
 }
 
@@ -185,15 +185,15 @@
 }
 
 .music-toggle-btn-muted {
-  border-color: rgba(251, 113, 133, 0.25);
-  color: rgba(251, 113, 133, 0.7);
+  border-color: rgba(198, 85, 72, 0.25);
+  color: rgba(198, 85, 72, 0.7);
 }
 
 .music-toggle-btn-muted:hover {
-  border-color: rgba(251, 113, 133, 0.5);
-  background: rgba(251, 113, 133, 0.1);
-  color: rgba(251, 113, 133, 0.9);
-  box-shadow: 0 0 12px rgba(251, 113, 133, 0.15);
+  border-color: rgba(198, 85, 72, 0.5);
+  background: rgba(198, 85, 72, 0.1);
+  color: rgba(198, 85, 72, 0.9);
+  box-shadow: 0 0 12px rgba(198, 85, 72, 0.15);
 }
 
 /* ══════════════════════════════════════════════════════════════
@@ -502,12 +502,12 @@
 
 /* ─── Stat change flash — brief flash when a stat changes ─── */
 @keyframes stat-change-flash-green {
-  0% { background-color: rgba(52, 211, 153, 0.25); box-shadow: 0 0 8px rgba(52, 211, 153, 0.3); }
+  0% { background-color: rgba(70, 185, 110, 0.25); box-shadow: 0 0 8px rgba(70, 185, 110, 0.3); }
   100% { background-color: transparent; box-shadow: none; }
 }
 
 @keyframes stat-change-flash-red {
-  0% { background-color: rgba(244, 63, 94, 0.25); box-shadow: 0 0 8px rgba(244, 63, 94, 0.3); }
+  0% { background-color: rgba(198, 85, 72, 0.25); box-shadow: 0 0 8px rgba(198, 85, 72, 0.3); }
   100% { background-color: transparent; box-shadow: none; }
 }
 
@@ -620,8 +620,8 @@
 .quest-objective-complete {
   position: relative;
   text-decoration: line-through;
-  text-decoration-color: rgba(52, 211, 153, 0.5);
-  color: rgba(52, 211, 153, 0.6) !important;
+  text-decoration-color: rgba(70, 185, 110, 0.5);
+  color: rgba(70, 185, 110, 0.6) !important;
 }
 
 .quest-objective-complete::after {
@@ -631,7 +631,7 @@
   bottom: -1px;
   width: 100%;
   height: 1px;
-  background: linear-gradient(90deg, rgba(52, 211, 153, 0.3), transparent 80%);
+  background: linear-gradient(90deg, rgba(70, 185, 110, 0.3), transparent 80%);
 }
 
 /* ─── XP progress bar with shimmer sweep + level-up flash ─── */
@@ -683,7 +683,7 @@
   min-width: 14px;
   height: 14px;
   border-radius: 999px;
-  background: linear-gradient(135deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, #c65548, #c65548);
   color: white;
   font-size: 8px;
   font-weight: 700;
@@ -692,8 +692,8 @@
   align-items: center;
   justify-content: center;
   padding: 0 3px;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4), 0 0 12px rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  box-shadow: 0 0 6px rgba(198, 85, 72, 0.4), 0 0 12px rgba(198, 85, 72, 0.15);
+  border: 1px solid rgba(198, 85, 72, 0.3);
   z-index: 5;
 }
 
@@ -1035,8 +1035,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #fbbf24;
-  box-shadow: 0 0 6px rgba(251, 191, 36, 0.4);
+  background: #e2a84b;
+  box-shadow: 0 0 6px rgba(226, 168, 75, 0.4);
   flex-shrink: 0;
 }
 
@@ -1045,7 +1045,7 @@
   position: absolute;
   inset: -3px;
   border-radius: 50%;
-  border: 1px solid rgba(251, 191, 36, 0.4);
+  border: 1px solid rgba(226, 168, 75, 0.4);
   animation: poi-marker-pulse 2s ease-out infinite;
   pointer-events: none;
 }
@@ -1058,7 +1058,7 @@
   transform: translateY(-50%);
   font-family: 'Courier New', monospace;
   font-size: 8px;
-  color: rgba(251, 191, 36, 0.6);
+  color: rgba(226, 168, 75, 0.6);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1188,9 +1188,9 @@
 
 .hud-health-segment[data-filled='true'],
 .hud-health-segment.is-filled {
-  background: linear-gradient(180deg, rgba(52, 211, 153, 0.7), rgba(52, 211, 153, 0.4));
-  border-color: rgba(52, 211, 153, 0.4);
-  box-shadow: 0 0 4px rgba(52, 211, 153, 0.2);
+  background: linear-gradient(180deg, rgba(70, 185, 110, 0.7), rgba(70, 185, 110, 0.4));
+  border-color: rgba(70, 185, 110, 0.4);
+  box-shadow: 0 0 4px rgba(70, 185, 110, 0.2);
 }
 
 .hud-health-segment.is-empty {
@@ -1301,30 +1301,30 @@
 /* Пока тащат совместимый расходуемый — все слоты «приглашают» */
 .quick-use-bar.quick-use-drop-armed .quick-use-slot {
   border-style: dashed;
-  border-color: rgba(34, 211, 238, 0.4);
+  border-color: rgba(157, 179, 200, 0.4);
 }
 
 /* Слот под курсором: совместимый дроп — cyan-пульс */
 .quick-use-slot.quick-use-drop-ok {
-  border-color: rgba(34, 211, 238, 0.9) !important;
-  background: rgba(34, 211, 238, 0.12) !important;
+  border-color: rgba(157, 179, 200, 0.9) !important;
+  background: rgba(157, 179, 200, 0.12) !important;
   animation: quick-use-drop-ok-pulse 0.9s ease-in-out infinite;
 }
 
 @keyframes quick-use-drop-ok-pulse {
-  0%, 100% { box-shadow: 0 0 6px rgba(34, 211, 238, 0.35), 0 0 0 1px rgba(34, 211, 238, 0.5); }
-  50% { box-shadow: 0 0 16px rgba(34, 211, 238, 0.6), 0 0 0 2px rgba(34, 211, 238, 0.85); }
+  0%, 100% { box-shadow: 0 0 6px rgba(157, 179, 200, 0.35), 0 0 0 1px rgba(157, 179, 200, 0.5); }
+  50% { box-shadow: 0 0 16px rgba(157, 179, 200, 0.6), 0 0 0 2px rgba(157, 179, 200, 0.85); }
 }
 
 /* Слот под курсором: отказ (не расходуемый) — rose-строб */
 .quick-use-slot.quick-use-drop-reject {
-  border-color: rgba(244, 63, 94, 0.9) !important;
+  border-color: rgba(198, 85, 72, 0.9) !important;
   animation: quick-use-drop-reject-strobe 0.35s ease-in-out infinite;
 }
 
 @keyframes quick-use-drop-reject-strobe {
-  0%, 100% { box-shadow: 0 0 0 1px rgba(244, 63, 94, 0.55); }
-  50% { box-shadow: 0 0 12px rgba(244, 63, 94, 0.5), 0 0 0 2px rgba(244, 63, 94, 0.9); }
+  0%, 100% { box-shadow: 0 0 0 1px rgba(198, 85, 72, 0.55); }
+  50% { box-shadow: 0 0 12px rgba(198, 85, 72, 0.5), 0 0 0 2px rgba(198, 85, 72, 0.9); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1366,7 +1366,7 @@
 }
 
 .mobile-action-btn--save:active {
-  background: rgba(255, 171, 0, 0.14);
+  background: rgba(226, 168, 75, 0.14);
   border-color: rgb(var(--cyber-amber-rgb) / 0.7);
   box-shadow: 0 0 14px rgb(var(--cyber-amber-rgb) / 0.25);
 }
@@ -1401,13 +1401,13 @@
     box-shadow:
       inset 0 0 0 1px rgba(148, 163, 184, 0.18),
       0 1px 6px rgba(0, 0, 0, 0.5),
-      0 0 4px rgba(251, 146, 60, 0.25);
+      0 0 4px rgba(226, 168, 75, 0.25);
   }
   50% {
     box-shadow:
       inset 0 0 0 1px rgba(148, 163, 184, 0.18),
       0 1px 6px rgba(0, 0, 0, 0.5),
-      0 0 12px rgba(251, 146, 60, 0.55);
+      0 0 12px rgba(226, 168, 75, 0.55);
   }
 }
 
@@ -1421,12 +1421,12 @@
  * пульсирует ниже порога, fill получает красное свечение. Слой absolute
  * с pointer-events-none — layout не трогает. */
 .stamina-bar-root.stamina-bar--low .stamina-bar-notch {
-  background: rgba(248, 113, 113, 0.95);
-  box-shadow: 0 0 6px rgba(248, 113, 113, 0.7);
+  background: rgba(198, 85, 72, 0.95);
+  box-shadow: 0 0 6px rgba(198, 85, 72, 0.7);
 }
 
 .stamina-bar-root.stamina-bar--low .stamina-bar-fill {
-  box-shadow: 0 0 6px rgba(248, 113, 113, 0.45);
+  box-shadow: 0 0 6px rgba(198, 85, 72, 0.45);
 }
 
 @keyframes stamina-notch-pulse {
@@ -1529,37 +1529,37 @@
    ослаблена до порога добивания (creepVitality), удар снимет крипа
    без пошагового боя. */
 .melee-strike-hint[data-finishable='true'] {
-  border-color: rgba(255, 71, 87, 0.45);
+  border-color: rgba(198, 85, 72, 0.45);
   background: linear-gradient(
     180deg,
     rgba(64, 8, 16, 0.55) 0%,
     rgba(40, 4, 10, 0.45) 100%
   );
   box-shadow:
-    0 0 18px rgba(255, 71, 87, 0.22),
-    inset 0 0 10px rgba(255, 71, 87, 0.12);
+    0 0 18px rgba(198, 85, 72, 0.22),
+    inset 0 0 10px rgba(198, 85, 72, 0.12);
 }
 
 .melee-strike-hint[data-finishable='true'] .melee-strike-hint__icon {
-  color: #ff6b7a;
+  color: #c65548;
 }
 
 .melee-strike-hint[data-finishable='true'] .melee-strike-hint__enemy {
   color: #ffc9cf;
-  text-shadow: 0 0 8px rgba(255, 71, 87, 0.45);
+  text-shadow: 0 0 8px rgba(198, 85, 72, 0.45);
 }
 
 .melee-strike-hint[data-finishable='true'] .melee-strike-hint__action {
-  color: #ff8b96;
+  color: #c65548;
 }
 
 /* Добивание важнее усталости: если обе правды совпали, красный остаётся
    читаемым (tired лишь слегка тускнит фон, но не подпись действия). */
 .melee-strike-hint[data-finishable='true'][data-tired='true'] .melee-strike-hint__action {
-  color: #e8798a;
+  color: #c65548;
 }
 
-/* v4.11.0: «в спину — ЛКМ» — фиолетовая стелс-капсула (#c084fc, в рифму
+/* v4.11.0: «в спину — ЛКМ» — фиолетовая стелс-капсула (#8d7fb5, в рифму
    с чипом «Мир Снов»): цель не осведомлена и стоит спиной. data-backstab
    ставится только при backstab && !finishable — конфликтов состояний CSS
    не разрешает (приоритет решён в компоненте). */
@@ -1581,7 +1581,7 @@
 }
 
 .melee-strike-hint[data-backstab='true'] .melee-strike-hint__icon {
-  color: #c084fc;
+  color: #8d7fb5;
   filter: drop-shadow(0 0 5px rgba(192, 132, 252, 0.65));
 }
 
@@ -1672,7 +1672,7 @@
 }
 
 .mobile-action-btn--strike:active {
-  background: rgba(255, 171, 0, 0.16);
+  background: rgba(226, 168, 75, 0.16);
   border-color: rgb(var(--cyber-amber-rgb) / 0.75);
   box-shadow: 0 0 16px rgb(var(--cyber-amber-rgb) / 0.3);
 }

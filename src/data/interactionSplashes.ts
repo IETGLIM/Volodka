@@ -138,7 +138,7 @@ function createNpcSplashPreset(
   presetId: string,
   textOverlay: string,
   subtitle?: string,
-  textAccentColor = '#38bdf8',
+  textAccentColor = '#9db3c8',
 ): InteractionSplashPreset {
   return {
     id: presetId,
@@ -156,57 +156,57 @@ function createNpcSplashPreset(
 const NPC_SPLASH_ENTRIES: ReadonlyArray<
   readonly [npcId: string, title: string, subtitle?: string, accent?: string]
 > = [
-  ['office_alexander', 'Александр', 'Лидер IT-гильдии', '#cc2020'],
+  ['office_alexander', 'Александр', 'Лидер IT-гильдии', '#c65548'],
   ['office_colleague', 'Коллега', 'Офис гильдии', '#8a8a98'],
-  ['maria', 'Виктория', 'Тень города', '#40d0e0'],
+  ['maria', 'Виктория', 'Тень города', '#9db3c8'],
   ['office_dmitry', 'Дмитрий', 'Старший разработчик', '#6a8a30'],
-  ['viktor', 'Виктор', 'Старый хакер', '#5a5aff'],
-  ['kira', 'Кира', 'Информаторка', '#ff4080'],
+  ['viktor', 'Виктор', 'Старый хакер', '#9db3c8'],
+  ['kira', 'Кира', 'Информаторка', '#8d7fb5'],
   ['boris', 'Борис', 'Поэт завода', '#8a6a30'],
-  ['tamara', 'Тамара', 'Библиотекарь', '#c06040'],
-  ['grisha', 'Гриша', 'Обитатель крыш', '#4a7aff'],
+  ['tamara', 'Тамара', 'Библиотекарь', '#c65548'],
+  ['grisha', 'Гриша', 'Обитатель крыш', '#9db3c8'],
   ['solnysh', 'Солныш', 'Лучшая подруга', '#ffb8d0'],
-  ['lyonya', 'Лёня', 'Обжарщик кофе', '#d4a060'],
-  ['sergey', 'Сергей', 'Сисадмин ночной смены', '#40a0c0'],
-  ['lena', 'Лена', 'Тень Сети', '#d040d0'],
+  ['lyonya', 'Лёня', 'Обжарщик кофе', '#e2a84b'],
+  ['sergey', 'Сергей', 'Сисадмин ночной смены', '#9db3c8'],
+  ['lena', 'Лена', 'Тень Сети', '#8d7fb5'],
   ['oleg', 'Олег', 'Охранник гильдии', '#a0a0a0'],
-  ['kate', 'Катя', 'Библиотекарь', '#60c060'],
-  ['maxim', 'Максим', 'Сопротивление', '#c06040'],
+  ['kate', 'Катя', 'Библиотекарь', '#46b96e'],
+  ['maxim', 'Максим', 'Сопротивление', '#c65548'],
   ['zeka', 'Жека', 'Заводской хакер', '#808070'],
-  ['anya', 'Аня', 'Хакер сопротивления', '#5090d0'],
+  ['anya', 'Аня', 'Хакер сопротивления', '#9db3c8'],
   ['fisherman_trofim', 'Трофим', 'Сторож пирса', '#88aa77'],
   ['baba_zina', 'Баба Зина', 'Хранительница «Зари-М»', '#aacc88'],
   ['street_poet', 'Уличный поэт', 'Голос площади', '#aabbcc'],
-  ['marat_echo', 'Марат (эхо)', 'Цифровой след', '#00ffaa'],
+  ['marat_echo', 'Марат (эхо)', 'Цифровой след', '#46b96e'],
   ['guild_defector', 'Перебежчик', 'Бывший инженер', '#6688aa'],
-  ['chk_ru', 'Ру', 'Архитектор ЧК', '#cc2244'],
+  ['chk_ru', 'Ру', 'Архитектор ЧК', '#c65548'],
   ['chk_based', 'Басед', 'Хранитель портвейна', '#aa6633'],
   ['chk_smert', 'Смерть', 'Бухгалтер-философ', '#6677aa'],
   ['chk_stalker', 'Сталкер', 'Проводник леса', '#445533'],
   ['chk_elis', 'Элис', 'Бард ЧК', '#bb7799'],
   ['chk_guest_devops', 'Гость (DevOps)', 'ТОЛПА', '#3399bb'],
   ['chk_guest_analyst', 'Гость (Аналитик)', 'ТОЛПА', '#8866bb'],
-  ['chk_ritka', 'Ритка', 'Бард пирса', '#ee7799'],
+  ['chk_ritka', 'Ритка', 'Бард пирса', '#8d7fb5'],
   // FIX (3.3, splash coverage audit): expansion NPC stubs
   // (src/data/expansion/expansionNpcStubs.ts) reference npc_* splash presets
   // via their `npcSplashProfile` field, but those presets were never
   // registered here — the audit (resolveInteractionSplash.test.ts) reported
   // 18 unwired NPCs: their first-meeting camera splash silently no-op'd.
-  ['victoria', 'Виктория', 'Хранительница ключей', '#a060c0'],
-  ['informant_seryozha', 'Информант Серёжа', 'Бывший архивист гильдии', '#c0a050'],
+  ['victoria', 'Виктория', 'Хранительница ключей', '#8d7fb5'],
+  ['informant_seryozha', 'Информант Серёжа', 'Бывший архивист гильдии', '#e2a84b'],
   ['merchant_boris', 'Торговец Борис', 'Печать гильдии купцов', '#b08040'],
   ['captain_garold', 'Капитан Гарольд', 'Городская стража', '#8090a0'],
-  ['blacksmith_ignat', 'Кузнец Игнат', 'Мастерская у реки', '#c07030'],
+  ['blacksmith_ignat', 'Кузнец Игнат', 'Мастерская у реки', '#e2a84b'],
   ['dying_old_man', 'Умирающий старик', 'Последние слова', '#907080'],
   ['marina', 'Марина', 'Дом за мостом', '#60b0a0'],
-  ['surveillance_contact', 'Контакт из Сети', 'Безымянный голос', '#50b0d0'],
+  ['surveillance_contact', 'Контакт из Сети', 'Безымянный голос', '#9db3c8'],
   ['park_old_man', 'Старик на скамье', 'Парк и память', '#90a070'],
   ['dying_poet', 'Умирающий поэт', 'Последний стеллаж', '#b06070'],
   ['poem_recipient_elena', 'Елена', 'Адресат стихов', '#d08090'],
   ['factory_foreman', 'Мастер завода', '«Прогресс-7»', '#a08050'],
-  ['rival_poet_max', 'Поэт Макс', 'Соперник с площади', '#c05050'],
+  ['rival_poet_max', 'Поэт Макс', 'Соперник с площади', '#c65548'],
   ['old_librarian_fyodor', 'Библиотекарь Фёдор', 'Хранитель подвала', '#80a8b0'],
-  ['radio_operator_katya', 'Радист Катя', 'Голос в эфире', '#60c0c0'],
+  ['radio_operator_katya', 'Радист Катя', 'Голос в эфире', '#9db3c8'],
   ['smuggler_grisha', 'Контрабандист Гриша', 'Тайные тропы', '#70a060'],
   ['community_buyer', 'Снабженец Общины', 'Хозяйственник окраин', '#90b080'],
   ['union_supplier', 'Поставщик Союза', 'Запчасти на медикаменты', '#a09860'],
@@ -225,7 +225,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Альберт',
     subtitle: 'Философ в углу',
-    textAccentColor: '#f97316',
+    textAccentColor: '#e2a84b',
     waypoints: [
       { position: [2, 2.0, 4], lookAt: [0, 1.2, 0], fov: 52, duration: 0 },
       {
@@ -252,7 +252,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Зарема',
     subtitle: 'Тёплый свет кухни',
-    textAccentColor: '#ec4899',
+    textAccentColor: '#8d7fb5',
     waypoints: [
       { position: [-2.2, 2.6, 5], lookAt: [0, 1.2, 0], fov: 58, duration: 0 },
       {
@@ -279,7 +279,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Бариста',
     subtitle: '«Синяя яма»',
-    textAccentColor: '#38bdf8',
+    textAccentColor: '#9db3c8',
     waypoints: [
       { position: [0, 2.2, 3.5], lookAt: [0, 1.25, 0], fov: 50, duration: 0 },
       {
@@ -380,7 +380,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Сломанный терминал',
     subtitle: 'Экран мигает последней ошибкой — код 0xDEADBEEF. Системе нечего сказать.',
-    textAccentColor: '#cc2020',
+    textAccentColor: '#c65548',
     waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
   },
 
@@ -391,7 +391,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Пыльная книга',
     subtitle: 'Пыль — это память вещей. Эта помнит слишком много.',
-    textAccentColor: '#d4920a',
+    textAccentColor: '#e2a84b',
     waypoints: [
       { position: [0.35, 1.45, 1.9], lookAt: [0, 0.72, 0], fov: 46, duration: 0 },
       {
@@ -428,7 +428,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Мигающая вывеска',
     subtitle: 'Неон гудит на 50 Гц и пишет имя того, кого уже нет.',
-    textAccentColor: '#00ff41',
+    textAccentColor: '#46b96e',
     waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
   },
 
@@ -439,7 +439,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Забытая кружка',
     subtitle: 'Кофе остыл семь лет назад. Кофейная гуща сложилась в строку.',
-    textAccentColor: '#d4a060',
+    textAccentColor: '#e2a84b',
     waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
   },
 
@@ -450,7 +450,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Лог сервера',
     subtitle: 'Бесконечный поток ошибок. На 312-й строке — твоё имя.',
-    textAccentColor: '#40d0e0',
+    textAccentColor: '#9db3c8',
     waypoints: [
       { position: [0.3, 1.5, 1.95], lookAt: [0, 0.85, 0], fov: 50, duration: 0 },
       {
@@ -476,7 +476,7 @@ export const SPLASH_PRESETS: Record<string, InteractionSplashPreset> = {
     letterboxStyle: 'thin',
     textOverlay: 'Мокрое граффити',
     subtitle: 'Краска ещё не высохла. Кто-то был здесь минуту назад. Или семнадцать лет.',
-    textAccentColor: '#ec4899',
+    textAccentColor: '#8d7fb5',
     waypoints: SPLASH_EXAMINE_CLOSE_UP.waypoints,
   },
 };

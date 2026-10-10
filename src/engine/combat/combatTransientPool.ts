@@ -11,7 +11,7 @@ function createHitSpark(): Mesh {
   const mesh = new Mesh(
     getHitSparkGeometry(),
     new MeshBasicMaterial({
-      color: '#ff6644',
+      color: '#c65548',
       transparent: true,
       opacity: 0.85,
       depthWrite: false,

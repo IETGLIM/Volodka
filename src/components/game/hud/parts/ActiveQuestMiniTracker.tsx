@@ -37,7 +37,7 @@ const QUEST_TYPE_ICON: Record<QuestType, string> = {
 const QUEST_TYPE_COLOR: Record<QuestType, string> = {
   main: '#c4b5a0',
   side: '#a8b4bc',
-  hidden: '#a78bfa',
+  hidden: '#8d7fb5',
   daily: '#78716c',
 };
 

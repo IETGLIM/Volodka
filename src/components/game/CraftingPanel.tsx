@@ -42,14 +42,14 @@ const CATEGORY_VISUAL: Record<CraftingCategory, { emoji: string; color: string; 
   consumable: {
     emoji: '🧪',
     color: '#57a874',
-    glowColor: 'rgba(52,211,153,0.25)',
-    bgGradient: 'linear-gradient(135deg, rgba(52,211,153,0.06) 0%, rgba(15,23,42,0.4) 60%)',
+    glowColor: 'rgba(70,185,110,0.25)',
+    bgGradient: 'linear-gradient(135deg, rgba(70,185,110,0.06) 0%, rgba(15,23,42,0.4) 60%)',
   },
   quest: {
     emoji: '📜',
-    color: '#fbbf24',
-    glowColor: 'rgba(251,191,36,0.25)',
-    bgGradient: 'linear-gradient(135deg, rgba(251,191,36,0.06) 0%, rgba(15,23,42,0.4) 60%)',
+    color: '#e2a84b',
+    glowColor: 'rgba(226,168,75,0.25)',
+    bgGradient: 'linear-gradient(135deg, rgba(226,168,75,0.06) 0%, rgba(15,23,42,0.4) 60%)',
   },
 };
 
@@ -614,8 +614,8 @@ function RecipeDetail({
                 key={input.itemId}
                 className="flex items-center gap-2 text-xs py-1 px-2 rounded-md"
                 style={{
-                  background: hasEnough ? 'rgba(52,211,153,0.05)' : 'rgba(251,113,133,0.05)',
-                  border: `1px solid ${hasEnough ? 'rgba(52,211,153,0.15)' : 'rgba(251,113,133,0.1)'}`,
+                  background: hasEnough ? 'rgba(70,185,110,0.05)' : 'rgba(198,85,72,0.05)',
+                  border: `1px solid ${hasEnough ? 'rgba(70,185,110,0.15)' : 'rgba(198,85,72,0.1)'}`,
                 }}
               >
                 {/* Checkmark or cross icon */}
@@ -651,16 +651,16 @@ function RecipeDetail({
                   key={req.skill}
                   className="flex items-center gap-2 text-xs py-1 px-2 rounded-md"
                   style={{
-                    background: met ? 'rgba(52,211,153,0.05)' : 'rgba(251,113,133,0.05)',
-                    border: `1px solid ${met ? 'rgba(52,211,153,0.15)' : 'rgba(251,113,133,0.1)'}`,
-                    color: met ? '#57a874' : '#fb7185',
+                    background: met ? 'rgba(70,185,110,0.05)' : 'rgba(198,85,72,0.05)',
+                    border: `1px solid ${met ? 'rgba(70,185,110,0.15)' : 'rgba(198,85,72,0.1)'}`,
+                    color: met ? '#57a874' : '#c65548',
                   }}
                 >
                   <span
                     className="inline-block w-2 h-2 rounded-full shrink-0"
                     style={{
-                      backgroundColor: met ? '#57a874' : '#fb7185',
-                      boxShadow: met ? '0 0 6px rgba(52,211,153,0.5)' : '0 0 4px rgba(251,113,133,0.3)',
+                      backgroundColor: met ? '#57a874' : '#c65548',
+                      boxShadow: met ? '0 0 6px rgba(70,185,110,0.5)' : '0 0 4px rgba(198,85,72,0.3)',
                     }}
                   />
                   <span className="flex-1">{SKILL_NAMES[req.skill] ?? req.skill}</span>

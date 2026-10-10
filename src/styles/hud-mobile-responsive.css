@@ -399,7 +399,7 @@
 }
 
 .mobile-action-btn--run-active:active {
-  background: rgba(255, 171, 0, 0.18);
+  background: rgba(226, 168, 75, 0.18);
   border-color: rgb(var(--cyber-amber-rgb) / 0.8);
 }
 

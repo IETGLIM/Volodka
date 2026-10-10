@@ -223,7 +223,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
               <div
                 className={`mt-5 p-3 rounded-xl border transition-all duration-300 ${
                   justUsed && !reducedMotion
-                    ? 'border-amber-400/60 bg-amber-950/30 shadow-[0_0_20px_rgba(251,191,36,0.2)]'
+                    ? 'border-amber-400/60 bg-amber-950/30 shadow-[0_0_20px_rgba(226,168,75,0.2)]'
                     : available
                       ? 'border-cyan-800/40 bg-cyan-950/20'
                       : 'border-slate-800/30 bg-slate-900/20 opacity-60'

@@ -84,8 +84,8 @@ function PerksPanelInner({ open, onClose }: PerksPanelProps) {
           <div
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-md border"
             style={{
-              borderColor: 'rgba(251,191,36,0.3)',
-              background: 'rgba(251,191,36,0.08)',
+              borderColor: 'rgba(226,168,75,0.3)',
+              background: 'rgba(226,168,75,0.08)',
             }}
             aria-label={`${perkPoints} ${PERKS_PANEL_LABELS.perkPointsUnit}`}
           >
@@ -125,19 +125,19 @@ function PerksPanelInner({ open, onClose }: PerksPanelProps) {
               >
                 <defs>
                   <pattern id="perk-grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#fbbf24" strokeWidth="0.5" />
+                    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2a84b" strokeWidth="0.5" />
                   </pattern>
                 </defs>
                 <rect width="100%" height="100%" fill="url(#perk-grid)" />
               </svg>
               <div
                 className="absolute top-1/4 left-1/4 w-40 h-40 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.04) 0%, transparent 70%)' }}
+                style={{ background: 'radial-gradient(circle, rgba(226,168,75,0.04) 0%, transparent 70%)' }}
                 aria-hidden="true"
               />
               <div
                 className="absolute bottom-1/4 right-1/4 w-40 h-40 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(251,191,36,0.03) 0%, transparent 70%)' }}
+                style={{ background: 'radial-gradient(circle, rgba(226,168,75,0.03) 0%, transparent 70%)' }}
                 aria-hidden="true"
               />
             </>

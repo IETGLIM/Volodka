@@ -104,7 +104,7 @@ export function PoemActiveEffectsHud() {
           className="poem-active-effects-scroll flex items-center gap-1.5 px-2 py-1.5 rounded-xl border backdrop-blur-xl max-w-[min(92vw,360px)] overflow-x-auto"
           style={{
             background: 'linear-gradient(135deg, rgba(2,6,23,0.92) 0%, rgba(8,12,28,0.88) 100%)',
-            borderColor: 'rgba(251,191,36,0.25)',
+            borderColor: 'rgba(226,168,75,0.25)',
             boxShadow: '0 4px 16px rgba(0,0,0,0.45)',
           }}
         >

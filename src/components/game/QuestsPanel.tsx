@@ -94,10 +94,10 @@ function DifficultyBadge({ difficulty }: { difficulty?: QuestDifficulty }) {
  * и FactionReputationPanel: изумрудный — Сеть, янтарный — Гильдия,
  * красный — Сопротивление, лаймовый — ТОЛПА, каменный — нейтральные. */
 const FACTION_CHIP_VISUALS: Record<string, { color: string; border: string; bg: string }> = {
-  network: { color: 'rgb(110, 231, 183)', border: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(6, 78, 59, 0.3)' },
-  guild: { color: 'rgb(252, 211, 77)', border: 'rgba(245, 158, 11, 0.4)', bg: 'rgba(69, 47, 6, 0.3)' },
-  resistance: { color: 'rgb(252, 165, 165)', border: 'rgba(239, 68, 68, 0.45)', bg: 'rgba(76, 5, 25, 0.35)' },
-  tolpa: { color: 'rgb(190, 242, 100)', border: 'rgba(132, 204, 22, 0.4)', bg: 'rgba(58, 69, 10, 0.3)' },
+  network: { color: 'rgb(70, 185, 110)', border: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(6, 78, 59, 0.3)' },
+  guild: { color: 'rgb(226, 168, 75)', border: 'rgba(226, 168, 75, 0.4)', bg: 'rgba(69, 47, 6, 0.3)' },
+  resistance: { color: 'rgb(252, 165, 165)', border: 'rgba(198, 85, 72, 0.45)', bg: 'rgba(76, 5, 25, 0.35)' },
+  tolpa: { color: 'rgb(70, 185, 110)', border: 'rgba(70, 185, 110, 0.4)', bg: 'rgba(58, 69, 10, 0.3)' },
   neutral: { color: 'rgb(203, 213, 225)', border: 'rgba(148, 163, 184, 0.35)', bg: 'rgba(30, 41, 59, 0.4)' },
 };
 
@@ -143,14 +143,14 @@ const QUEST_THEME_VISUALS = {
   dream: {
     label: 'Мир Снов',
     color: 'rgb(216, 180, 254)',
-    border: 'rgba(168, 85, 247, 0.45)',
+    border: 'rgba(141, 127, 181, 0.45)',
     bg: 'rgba(59, 7, 100, 0.35)',
     tooltip: 'Квест из пака «Мир Снов» — сон, дитя у фонаря и тетрадь Владимира',
   },
   void: {
     label: 'Пустота',
     color: 'rgb(240, 171, 252)',
-    border: 'rgba(217, 70, 239, 0.45)',
+    border: 'rgba(141, 127, 181, 0.45)',
     bg: 'rgba(74, 4, 78, 0.35)',
     tooltip: 'Квест из пака «Пустота» — эхо между мирами и неписаный стих',
   },
@@ -617,7 +617,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                 return (
                   <div
                     className="mb-4 p-3 rounded-xl border border-stone-800/20 flex items-center gap-3"
-                    style={{ background: 'linear-gradient(135deg, rgba(0,255,238,0.04) 0%, rgba(8,12,28,0.5) 100%)' }}
+                    style={{ background: 'linear-gradient(135deg, rgba(157,179,200,0.04) 0%, rgba(8,12,28,0.5) 100%)' }}
                     data-testid="quest-overview-bar"
                   >
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -1036,7 +1036,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
                                       : 'стихотворений';
                                     return (
                                       <div className="flex items-center gap-2 mb-2 px-1 py-1 rounded"
-                                        style={{ background: 'rgba(0, 255, 238, 0.06)', border: '1px solid rgba(0, 255, 238, 0.12)' }}>
+                                        style={{ background: 'rgba(157, 179, 200, 0.06)', border: '1px solid rgba(157, 179, 200, 0.12)' }}>
                                         <BookOpen className="size-3 text-stone-300/60 shrink-0" />
                                         <span className="text-[10px] font-mono text-stone-300/80">
                                           Собрано {poemWord}: {completedObjs} из {totalObjs}

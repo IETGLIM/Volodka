@@ -243,14 +243,14 @@
   opacity: 1;
 }
 
-.celebration-burst.active .celeb-particle:nth-child(1) { background: #22d3ee; box-shadow: 0 0 6px #22d3ee; animation: celebration-particle-1 0.8s ease-out forwards; }
-.celebration-burst.active .celeb-particle:nth-child(2) { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; animation: celebration-particle-2 0.9s ease-out 0.05s forwards; }
-.celebration-burst.active .celeb-particle:nth-child(3) { background: #a78bfa; box-shadow: 0 0 6px #a78bfa; animation: celebration-particle-3 0.85s ease-out 0.1s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(1) { background: #9db3c8; box-shadow: 0 0 6px #9db3c8; animation: celebration-particle-1 0.8s ease-out forwards; }
+.celebration-burst.active .celeb-particle:nth-child(2) { background: #e2a84b; box-shadow: 0 0 6px #e2a84b; animation: celebration-particle-2 0.9s ease-out 0.05s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(3) { background: #8d7fb5; box-shadow: 0 0 6px #8d7fb5; animation: celebration-particle-3 0.85s ease-out 0.1s forwards; }
 .celebration-burst.active .celeb-particle:nth-child(4) { background: #57a874; box-shadow: 0 0 6px #57a874; animation: celebration-particle-4 0.75s ease-out 0.08s forwards; }
-.celebration-burst.active .celeb-particle:nth-child(5) { background: #fb7185; box-shadow: 0 0 6px #fb7185; animation: celebration-particle-5 0.95s ease-out 0.12s forwards; }
-.celebration-burst.active .celeb-particle:nth-child(6) { background: #22d3ee; box-shadow: 0 0 6px #22d3ee; animation: celebration-particle-6 0.7s ease-out 0.15s forwards; }
-.celebration-burst.active .celeb-particle:nth-child(7) { background: #fbbf24; box-shadow: 0 0 6px #fbbf24; animation: celebration-particle-7 0.88s ease-out 0.03s forwards; }
-.celebration-burst.active .celeb-particle:nth-child(8) { background: #a78bfa; box-shadow: 0 0 6px #a78bfa; animation: celebration-particle-8 0.92s ease-out 0.07s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(5) { background: #c65548; box-shadow: 0 0 6px #c65548; animation: celebration-particle-5 0.95s ease-out 0.12s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(6) { background: #9db3c8; box-shadow: 0 0 6px #9db3c8; animation: celebration-particle-6 0.7s ease-out 0.15s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(7) { background: #e2a84b; box-shadow: 0 0 6px #e2a84b; animation: celebration-particle-7 0.88s ease-out 0.03s forwards; }
+.celebration-burst.active .celeb-particle:nth-child(8) { background: #8d7fb5; box-shadow: 0 0 6px #8d7fb5; animation: celebration-particle-8 0.92s ease-out 0.07s forwards; }
 
 /* ══════════════════════════════════════════════════════════════
    6. WEATHER PARTICLES — Rain/snow CSS indicators

@@ -25,7 +25,7 @@ const MIN_DISTANCE_M = 2.5;
 const UPDATE_INTERVAL_MS = 300;
 const BEACON_SIZE_DESKTOP = 18;
 const BEACON_SIZE_MOBILE = 14;
-const AMBER_RGB = '255, 179, 71'; // #FFB347
+const AMBER_RGB = '255, 179, 71'; // #e2a84b
 const AMBER_OPACITY = 0.3;
 
 export function ObjectiveBeacon() {

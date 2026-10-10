@@ -32,7 +32,7 @@ export const EncounterBeatOverlay = memo(function EncounterBeatOverlay() {
   const template = ctx ? ENEMY_TEMPLATES[ctx.enemyType] : null;
   const title = ctx?.encounterName ?? template?.name ?? '';
   const subtitle = template ? `${template.emoji}  ${template.name}` : undefined;
-  const presentation = resolveExaminePresentation('#ff6688');
+  const presentation = resolveExaminePresentation('#c65548');
 
   return (
     <AnimatePresence mode="wait">

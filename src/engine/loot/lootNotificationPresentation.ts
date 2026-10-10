@@ -44,9 +44,9 @@ const RARITY_LEFT_BORDER_ACCENT: Record<LootRarity, string> = {
 
 const RARITY_GLOW: Record<LootRarity, string> = {
   common: '',
-  uncommon: 'shadow-[0_0_12px_rgba(52,211,153,0.15)]',
+  uncommon: 'shadow-[0_0_12px_rgba(70,185,110,0.15)]',
   rare: 'shadow-[0_0_12px_rgb(var(--cyber-cyan-rgb)/0.2)]',
-  legendary: 'shadow-[0_0_16px_rgba(245,158,11,0.3)]',
+  legendary: 'shadow-[0_0_16px_rgba(226,168,75,0.3)]',
 };
 
 const TYPE_VISUAL: Record<LootNotificationType, LootVisualConfig> = {

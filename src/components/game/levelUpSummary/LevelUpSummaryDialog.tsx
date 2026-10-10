@@ -60,7 +60,7 @@ export function LevelUpSummaryDialog({ data, reducedMotion, onDismiss }: LevelUp
               ? undefined
               : {
                   textShadow:
-                    '0 0 20px rgba(212, 146, 10, 0.6), 0 0 40px rgba(212, 146, 10, 0.3)',
+                    '0 0 20px rgba(226, 168, 75, 0.6), 0 0 40px rgba(226, 168, 75, 0.3)',
                 }
           }
         >
@@ -69,7 +69,7 @@ export function LevelUpSummaryDialog({ data, reducedMotion, onDismiss }: LevelUp
         <div
           className="mt-3 h-px mx-auto w-[200px]"
           style={{
-            background: 'linear-gradient(90deg, transparent, rgba(212, 146, 10, 0.5), transparent)',
+            background: 'linear-gradient(90deg, transparent, rgba(226, 168, 75, 0.5), transparent)',
           }}
         />
       </div>
@@ -206,7 +206,7 @@ export function LevelUpSummaryDialog({ data, reducedMotion, onDismiss }: LevelUp
 
           <FocusTrap initialFocusRef={closeButtonRef}>
             <motion.div
-              className="relative z-10 w-full max-w-md mx-4 rounded-xl border overflow-hidden bg-gradient-to-b from-[rgba(15,12,5,0.95)] to-[rgba(10,8,3,0.98)] border-amber-500/40 shadow-[0_0_40px_rgba(212,146,10,0.15)]"
+              className="relative z-10 w-full max-w-md mx-4 rounded-xl border overflow-hidden bg-gradient-to-b from-[rgba(15,12,5,0.95)] to-[rgba(10,8,3,0.98)] border-amber-500/40 shadow-[0_0_40px_rgba(226,168,75,0.15)]"
               {...dialogProps}
               aria-describedby={descriptionId}
               initial={reducedMotion ? false : { scale: 0.5, opacity: 0, y: 30 }}
@@ -227,7 +227,7 @@ export function LevelUpSummaryDialog({ data, reducedMotion, onDismiss }: LevelUp
                   className="absolute inset-0 pointer-events-none"
                   style={{
                     background:
-                      'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(212, 146, 10, 0.015) 2px, rgba(212, 146, 10, 0.015) 4px)',
+                      'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(226, 168, 75, 0.015) 2px, rgba(226, 168, 75, 0.015) 4px)',
                   }}
                 />
               )}

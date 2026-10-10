@@ -1,14 +1,14 @@
 .openstack-terminal-panel {
   background: linear-gradient(135deg, rgba(0, 5, 2, 0.98), rgba(0, 12, 6, 0.98));
-  border-color: rgba(68, 255, 136, 0.25);
+  border-color: rgba(70, 185, 110, 0.25);
   box-shadow:
-    0 0 30px rgba(68, 255, 136, 0.08),
-    inset 0 0 30px rgba(68, 255, 136, 0.02);
+    0 0 30px rgba(70, 185, 110, 0.08),
+    inset 0 0 30px rgba(70, 185, 110, 0.02);
 }
 
 .openstack-terminal-header {
-  border-bottom: 1px solid rgba(68, 255, 136, 0.15);
-  background: rgba(68, 255, 136, 0.03);
+  border-bottom: 1px solid rgba(70, 185, 110, 0.15);
+  background: rgba(70, 185, 110, 0.03);
 }
 
 .openstack-terminal-scanlines {
@@ -16,8 +16,8 @@
     0deg,
     transparent,
     transparent 2px,
-    rgba(68, 255, 136, 0.015) 2px,
-    rgba(68, 255, 136, 0.015) 4px
+    rgba(70, 185, 110, 0.015) 2px,
+    rgba(70, 185, 110, 0.015) 4px
   );
 }
 
@@ -29,20 +29,20 @@
   font-family: monospace;
   font-size: 11px;
   line-height: 1.5;
-  border-bottom: 1px solid rgba(68, 255, 136, 0.1);
+  border-bottom: 1px solid rgba(70, 185, 110, 0.1);
   scrollbar-width: thin;
-  scrollbar-color: rgba(68, 255, 136, 0.2) transparent;
+  scrollbar-color: rgba(70, 185, 110, 0.2) transparent;
 }
 
 .openstack-cmd-btn {
-  background: rgba(68, 255, 136, 0.04);
-  border: 1px solid rgba(68, 255, 136, 0.15);
-  color: #44ff88;
+  background: rgba(70, 185, 110, 0.04);
+  border: 1px solid rgba(70, 185, 110, 0.15);
+  color: #46b96e;
 }
 
 .openstack-cmd-btn:hover:not(:disabled) {
-  background: rgba(68, 255, 136, 0.1);
-  border-color: rgba(68, 255, 136, 0.35);
+  background: rgba(70, 185, 110, 0.1);
+  border-color: rgba(70, 185, 110, 0.35);
 }
 
 .openstack-cmd-btn:disabled {
@@ -54,33 +54,33 @@
 }
 
 .openstack-cmd-btn--selected-correct {
-  background: rgba(68, 255, 136, 0.15);
-  border-color: rgba(68, 255, 136, 0.5);
-  color: #44ff88;
+  background: rgba(70, 185, 110, 0.15);
+  border-color: rgba(70, 185, 110, 0.5);
+  color: #46b96e;
 }
 
 .openstack-cmd-btn--selected-wrong {
-  background: rgba(255, 68, 68, 0.15);
-  border-color: rgba(255, 68, 68, 0.5);
-  color: #ff4444;
+  background: rgba(198, 85, 72, 0.15);
+  border-color: rgba(198, 85, 72, 0.5);
+  color: #c65548;
 }
 
 .openstack-cmd-key {
-  background: rgba(68, 255, 136, 0.1);
-  border: 1px solid rgba(68, 255, 136, 0.3);
-  color: #44ff88;
+  background: rgba(70, 185, 110, 0.1);
+  border: 1px solid rgba(70, 185, 110, 0.3);
+  color: #46b96e;
 }
 
 .openstack-outcome-btn--success {
-  background: rgba(68, 255, 136, 0.15);
-  border: 1px solid rgba(68, 255, 136, 0.4);
-  color: #44ff88;
+  background: rgba(70, 185, 110, 0.15);
+  border: 1px solid rgba(70, 185, 110, 0.4);
+  color: #46b96e;
 }
 
 .openstack-outcome-btn--failure {
-  background: rgba(255, 68, 68, 0.15);
-  border: 1px solid rgba(255, 68, 68, 0.3);
-  color: #ff4444;
+  background: rgba(198, 85, 72, 0.15);
+  border: 1px solid rgba(198, 85, 72, 0.3);
+  color: #c65548;
 }
 
 .openstack-outcome-btn:hover {

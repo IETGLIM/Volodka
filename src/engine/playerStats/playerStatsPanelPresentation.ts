@@ -7,10 +7,10 @@ import {
 
 export const PLAYER_STATS_COLORS = {
   cyan: 'var(--cyber-cyan)',
-  rose: '#fb7185',
+  rose: '#c65548',
   emerald: '#57a874',
-  amber: '#fbbf24',
-  violet: '#a78bfa',
+  amber: '#e2a84b',
+  violet: '#8d7fb5',
   slate: '#94a3b8',
 } as const;
 

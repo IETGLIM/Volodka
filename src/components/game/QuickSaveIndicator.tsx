@@ -14,7 +14,7 @@ const VISIBLE_DURATION_MS = 3000;
 const SAVING_PULSE_MS = 600;
 const SLOT_LABEL = 'Слот 1';
 const CYAN = 'var(--cyber-cyan)';
-const AMBER = '#fbbf24';
+const AMBER = '#e2a84b';
 const MATRIX_GREEN = 'var(--cyber-matrix)';
 
 function formatTime(ms: number): string {

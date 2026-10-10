@@ -30,8 +30,8 @@ export function StatusBadge({ buff }: { buff: CombatBuff }) {
     : 'bg-red-950/50 text-red-300';
   const glowStyle = isPositive
     ? '0 0 6px rgba(16,185,129,0.2)'
-    : '0 0 6px rgba(239,68,68,0.2)';
-  const pulseBorderColor = isPositive ? '#10b981' : '#ef4444';
+    : '0 0 6px rgba(198,85,72,0.2)';
+  const pulseBorderColor = isPositive ? '#10b981' : '#c65548';
 
   const effectDesc = getBuffEffectDescription(buff.effect);
   const tooltipText = `${buff.name}${effectDesc ? ' — ' + effectDesc : ''} (${buff.duration} х.)`;

@@ -20,7 +20,8 @@ describe('explorationUxPresentation', () => {
   it('getSceneTransitionAccent maps styles', () => {
     // v4.45.0 «Ночная тетрадь»: wipe/data_stream переведены с неонового циана
     // (255,255) на лунную сталь (157,179,200) — тест следует новой палитре.
-    expect(getSceneTransitionAccent('flash')).toContain('255');
+    // v4.45.1 «Ночная тетрадь»: flash переведён с белой вспышки на фонарь-янтарь
+    expect(getSceneTransitionAccent('flash')).toContain('226, 168, 75');
     expect(getSceneTransitionAccent('wipe')).toContain('157, 179, 200');
   });
 

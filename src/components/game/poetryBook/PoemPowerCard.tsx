@@ -65,7 +65,7 @@ export function PoemPowerCard({
       <div
         className={`relative mt-4 p-3 rounded-lg border transition-all duration-300 ${
           justUsed
-            ? 'border-amber-400/60 bg-amber-950/30 shadow-[0_0_20px_rgba(251,191,36,0.2)]'
+            ? 'border-amber-400/60 bg-amber-950/30 shadow-[0_0_20px_rgba(226,168,75,0.2)]'
             : available
               ? 'border-amber-800/30 bg-amber-950/10'
               : 'border-stone-800/30 bg-stone-900/20 opacity-60'
@@ -108,7 +108,7 @@ export function PoemPowerCard({
             animate={{ opacity: 0, scale: 1.05 }}
             transition={{ duration: 1.5, ease: 'easeOut' }}
             className="absolute inset-0 rounded-lg border-2 border-amber-400/40 pointer-events-none"
-            style={{ boxShadow: '0 0 30px rgba(251,191,36,0.15)' }}
+            style={{ boxShadow: '0 0 30px rgba(226,168,75,0.15)' }}
           />
         )}
       </div>
@@ -119,7 +119,7 @@ export function PoemPowerCard({
     <div
       className={`relative overflow-hidden rounded-lg border transition-all duration-300 ${
         justUsed
-          ? 'border-amber-400/60 bg-amber-950/30 shadow-[0_0_20px_rgba(251,191,36,0.15)]'
+          ? 'border-amber-400/60 bg-amber-950/30 shadow-[0_0_20px_rgba(226,168,75,0.15)]'
           : available
             ? 'border-amber-800/30 bg-amber-950/10 hover:border-amber-600/40'
             : 'border-stone-800/25 bg-stone-900/15'
@@ -137,7 +137,7 @@ export function PoemPowerCard({
           <div
             className={`size-9 rounded-lg flex items-center justify-center shrink-0 ${
               justUsed
-                ? 'bg-amber-500/30 shadow-[0_0_12px_rgba(251,191,36,0.3)]'
+                ? 'bg-amber-500/30 shadow-[0_0_12px_rgba(226,168,75,0.3)]'
                 : available
                   ? 'bg-amber-900/30'
                   : 'bg-stone-800/30'

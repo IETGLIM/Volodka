@@ -54,7 +54,7 @@ export function TopBarDataTicker() {
     const half: TickerItem[] = [
       { text: t('hud.ticker.quests', `ЗАДАНИЯ: ${activeQuests.length}`, { n: activeQuests.length }), accent: activeQuests.length > 0 ? 'rgb(var(--cyber-cyan-rgb) / 0.9)' : undefined },
       { text: t('hud.ticker.locations', `ЛОКАЦИИ: ${discovered.length}`, { n: discovered.length }) },
-      { text: t('hud.ticker.poems', `СТИХИ: ${poemCount}/${TOTAL_MAIN_POEMS}`, { done: poemCount, total: TOTAL_MAIN_POEMS }), accent: 'rgba(251,191,36,0.8)' },
+      { text: t('hud.ticker.poems', `СТИХИ: ${poemCount}/${TOTAL_MAIN_POEMS}`, { done: poemCount, total: TOTAL_MAIN_POEMS }), accent: 'rgba(226,168,75,0.8)' },
       { text: t('hud.ticker.scene', `СЦЕНА: ${sceneName.toUpperCase()}`, { name: sceneName.toUpperCase() }) },
       { text: t('hud.ticker.time', `ВРЕМЯ: ${formatGameClock(timeOfDay)}`, { time: formatGameClock(timeOfDay) }) },
       { text: t('hud.ticker.system', `СИСТЕМА: v${APP_VERSION}`, { version: APP_VERSION }) },
@@ -63,7 +63,7 @@ export function TopBarDataTicker() {
     ];
     // AI-строка городского эфира — только когда прокси вернул текст.
     if (aiNews) {
-      half.push({ text: aiNews, accent: 'rgba(251,191,36,0.85)', badge: t('hud.ticker.badge.onAir', 'ЭФИР') });
+      half.push({ text: aiNews, accent: 'rgba(226,168,75,0.85)', badge: t('hud.ticker.badge.onAir', 'ЭФИР') });
     }
     // Дублируем половину — бесшовная ротация бегущей строки (как раньше:
     // без AI-новости это ровно тот же список из 16 статичных строк).
@@ -94,8 +94,8 @@ export function TopBarDataTicker() {
               <span
                 aria-hidden="true"
                 style={{
-                  color: 'rgba(251,191,36,0.95)',
-                  border: '1px solid rgba(251,191,36,0.4)',
+                  color: 'rgba(226,168,75,0.95)',
+                  border: '1px solid rgba(226,168,75,0.4)',
                   borderRadius: 2,
                   padding: '0 3px',
                   fontSize: '0.5625rem',

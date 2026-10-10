@@ -108,7 +108,7 @@ export function ProceduralAaaTweakPanel({ startOpen = false }: { startOpen?: boo
           width: '100%',
           marginBottom: 8,
           padding: '8px 10px',
-          background: '#3a5cff',
+          background: '#9db3c8',
           color: '#fff',
           border: 'none',
           borderRadius: 6,

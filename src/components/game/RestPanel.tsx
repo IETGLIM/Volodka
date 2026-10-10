@@ -112,10 +112,10 @@ function DreamOverlay({ active, onComplete }: { active: boolean; onComplete: () 
             key={i}
             className="absolute w-0.5 h-0.5 rounded-full"
             style={{
-              background: i % 2 === 0 ? '#9db3c8' : '#a855f7',
+              background: i % 2 === 0 ? '#9db3c8' : '#8d7fb5',
               left: `${20 + Math.random() * 60}%`,
               top: `${20 + Math.random() * 60}%`,
-              boxShadow: `0 0 4px ${i % 2 === 0 ? 'rgba(157, 179, 200,0.4)' : 'rgba(168,85,247,0.4)'}`,
+              boxShadow: `0 0 4px ${i % 2 === 0 ? 'rgba(157, 179, 200,0.4)' : 'rgba(141,127,181,0.4)'}`,
             }}
             animate={{
               y: [-20, 20],
@@ -456,7 +456,7 @@ export function RestPanel({ open, onClose }: RestPanelProps) {
                       <motion.div
                         className="h-full rounded-full"
                         style={{
-                          background: 'linear-gradient(90deg, rgba(157, 179, 200,0.4), rgba(168,85,247,0.4), rgba(157, 179, 200,0.4))',
+                          background: 'linear-gradient(90deg, rgba(157, 179, 200,0.4), rgba(141,127,181,0.4), rgba(157, 179, 200,0.4))',
                           backgroundSize: '200% 100%',
                         }}
                         animate={{

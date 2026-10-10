@@ -19,7 +19,7 @@ const ACCENT_MAP: Record<
     bg: 'bg-cyan-950/50',
     text: 'text-cyan-400',
     hoverBg: 'hover:bg-cyan-900/40',
-    glow: '#06b6d4',
+    glow: '#9db3c8',
   },
   emerald: {
     border: 'border-emerald-700/60',
@@ -33,7 +33,7 @@ const ACCENT_MAP: Record<
     bg: 'bg-amber-950/50',
     text: 'text-amber-400',
     hoverBg: 'hover:bg-amber-900/40',
-    glow: '#f59e0b',
+    glow: '#e2a84b',
   },
   slate: {
     border: 'border-slate-600/60',
@@ -47,7 +47,7 @@ const ACCENT_MAP: Record<
     bg: 'bg-rose-950/50',
     text: 'text-rose-400',
     hoverBg: 'hover:bg-rose-900/40',
-    glow: '#f43f5e',
+    glow: '#c65548',
   },
 };
 

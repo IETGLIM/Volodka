@@ -4,7 +4,7 @@
 import type { SkillTreeNode, SkillBranch } from '@/shared/types/game';
 
 /* ══════════════════════════════════════════════════════════════
-   TECHNICAL BRANCH (Техническая) — Color: #00ccff (Cyan)
+   TECHNICAL BRANCH (Техническая) — Color: #9db3c8 (Cyan)
    Skills: coding, logic
    ══════════════════════════════════════════════════════════════ */
 const TECHNICAL_NODES: SkillTreeNode[] = [
@@ -97,7 +97,7 @@ const TECHNICAL_NODES: SkillTreeNode[] = [
 ];
 
 /* ══════════════════════════════════════════════════════════════
-   SOCIAL BRANCH (Социальная) — Color: #ff00cc (Magenta)
+   SOCIAL BRANCH (Социальная) — Color: #8d7fb5 (Magenta)
    Skills: empathy, persuasion
    ══════════════════════════════════════════════════════════════ */
 const SOCIAL_NODES: SkillTreeNode[] = [
@@ -190,7 +190,7 @@ const SOCIAL_NODES: SkillTreeNode[] = [
 ];
 
 /* ══════════════════════════════════════════════════════════════
-   SPIRITUAL BRANCH (Духовная) — Color: #ffaa00 (Amber)
+   SPIRITUAL BRANCH (Духовная) — Color: #e2a84b (Amber)
    Skills: intuition, writing, rhythm
    ══════════════════════════════════════════════════════════════ */
 const SPIRITUAL_NODES: SkillTreeNode[] = [
@@ -351,24 +351,24 @@ export const BRANCH_META: Record<SkillBranch, BranchMeta> = {
   technical: {
     id: 'technical',
     name: 'Техническая',
-    color: '#00ccff',
-    glowColor: 'rgba(0,204,255,0.3)',
+    color: '#9db3c8',
+    glowColor: 'rgba(157,179,200,0.3)',
     icon: '⚙️',
     skills: ['Взлом', 'Интеллект'],
   },
   social: {
     id: 'social',
     name: 'Социальная',
-    color: '#ff00cc',
-    glowColor: 'rgba(255,0,204,0.3)',
+    color: '#8d7fb5',
+    glowColor: 'rgba(141,127,181,0.3)',
     icon: '💬',
     skills: ['Эмпатия', 'Улица'],
   },
   spiritual: {
     id: 'spiritual',
     name: 'Духовная',
-    color: '#ffaa00',
-    glowColor: 'rgba(255,170,0,0.3)',
+    color: '#e2a84b',
+    glowColor: 'rgba(226,168,75,0.3)',
     icon: '✨',
     skills: ['Храбрость', 'Поэзия'],
   },

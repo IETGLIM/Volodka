@@ -45,14 +45,14 @@ function deriveMood(
   // Priority: storm > rain > night > dusk/dawn > category default
   if (isStormy) return { icon: '⛈', label: t('hud.mood.storm', 'ШТОРМ'), intensity: 0.9, hue: 'rgba(148, 163, 184, 0.8)' };
   if (isRainy) return { icon: '🌧', label: t('hud.mood.rain', 'ДОЖДЬ'), intensity: 0.6, hue: 'rgb(var(--cyber-cyan-rgb) / 0.7)' };
-  if (isNight) return { icon: '🌙', label: t('hud.mood.night', 'НОЧЬ'), intensity: 0.7, hue: 'rgba(139, 92, 246, 0.8)' };
-  if (isDusk) return { icon: '🌅', label: t('hud.mood.dusk', 'СУМЕРКИ'), intensity: 0.5, hue: 'rgba(251, 146, 60, 0.8)' };
-  if (isDawn) return { icon: '🌄', label: t('hud.mood.dawn', 'РАССВЕТ'), intensity: 0.4, hue: 'rgba(251, 191, 36, 0.8)' };
+  if (isNight) return { icon: '🌙', label: t('hud.mood.night', 'НОЧЬ'), intensity: 0.7, hue: 'rgba(141, 127, 181, 0.8)' };
+  if (isDusk) return { icon: '🌅', label: t('hud.mood.dusk', 'СУМЕРКИ'), intensity: 0.5, hue: 'rgba(226, 168, 75, 0.8)' };
+  if (isDawn) return { icon: '🌄', label: t('hud.mood.dawn', 'РАССВЕТ'), intensity: 0.4, hue: 'rgba(226, 168, 75, 0.8)' };
 
   // Category defaults — map to actual LocationCategory values
   switch (category) {
     case 'home':
-      return { icon: '🏠', label: t('hud.mood.cozy', 'УЮТ'), intensity: 0.25, hue: 'rgba(251, 191, 36, 0.7)' };
+      return { icon: '🏠', label: t('hud.mood.cozy', 'УЮТ'), intensity: 0.25, hue: 'rgba(226, 168, 75, 0.7)' };
     case 'rooftop':
     case 'park':
     case 'street':
@@ -87,7 +87,7 @@ export function EnvironmentMoodIndicator() {
       className="flex items-center gap-2 px-2 py-0.5 rounded-md"
       style={{
         background: 'rgba(0,0,0,0.25)',
-        border: `1px solid ${isStorm ? 'rgba(255, 68, 68, 0.25)' : 'rgb(var(--cyber-cyan-rgb) / 0.08)'}`,
+        border: `1px solid ${isStorm ? 'rgba(198, 85, 72, 0.25)' : 'rgb(var(--cyber-cyan-rgb) / 0.08)'}`,
       }}
       aria-label={t('hud.mood.aria', `Настроение: ${mood.label}`, { label: mood.label })}
       role="status"
@@ -115,7 +115,7 @@ export function EnvironmentMoodIndicator() {
         className="mood-bar-label"
         style={{
           color: mood.hue,
-          textShadow: isStorm ? '0 0 8px rgba(255, 68, 68, 0.45)' : undefined,
+          textShadow: isStorm ? '0 0 8px rgba(198, 85, 72, 0.45)' : undefined,
         }}
       >
         {mood.label}

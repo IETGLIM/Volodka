@@ -76,9 +76,9 @@ function formatPlayTime(seconds: number | undefined): string {
 
 /** Get karma color based on value */
 function getKarmaColor(karma: number): string {
-  if (karma >= 70) return 'rgba(52, 211, 153, 0.9)';   // emerald — high karma
-  if (karma >= 40) return 'rgba(251, 191, 36, 0.9)';   // amber — mid karma
-  return 'rgba(244, 63, 94, 0.9)';                      // rose — low karma
+  if (karma >= 70) return 'rgba(70, 185, 110, 0.9)';   // emerald — high karma
+  if (karma >= 40) return 'rgba(226, 168, 75, 0.9)';   // amber — mid karma
+  return 'rgba(198, 85, 72, 0.9)';                      // rose — low karma
 }
 
 /** Get karma alignment label in Russian */
@@ -164,9 +164,9 @@ function SaveSlotCard({
               <span
                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
                 style={{
-                  background: 'rgba(251, 191, 36, 0.12)',
-                  color: 'rgba(251, 191, 36, 0.8)',
-                  border: '1px solid rgba(251, 191, 36, 0.2)',
+                  background: 'rgba(226, 168, 75, 0.12)',
+                  color: 'rgba(226, 168, 75, 0.8)',
+                  border: '1px solid rgba(226, 168, 75, 0.2)',
                 }}
               >
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -181,9 +181,9 @@ function SaveSlotCard({
               <span
                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
                 style={{
-                  background: 'rgba(34, 211, 238, 0.1)',
-                  color: 'rgba(34, 211, 238, 0.7)',
-                  border: '1px solid rgba(34, 211, 238, 0.2)',
+                  background: 'rgba(157, 179, 200, 0.1)',
+                  color: 'rgba(157, 179, 200, 0.7)',
+                  border: '1px solid rgba(157, 179, 200, 0.2)',
                 }}
               >
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -267,7 +267,7 @@ function SaveSlotCard({
                 <span className="font-mono text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.5)' }}>
                   Стихи
                 </span>
-                <span className="font-mono text-xs" style={{ color: 'rgba(168, 85, 247, 0.8)' }}>
+                <span className="font-mono text-xs" style={{ color: 'rgba(141, 127, 181, 0.8)' }}>
                   {data.collectedPoems.length}/{TOTAL_POEMS}
                 </span>
               </div>
@@ -342,25 +342,25 @@ function SaveSlotCard({
             style={{
               color: isEmpty
                 ? 'rgba(100, 116, 139, 0.3)'
-                : 'rgba(52, 211, 153, 0.85)',
+                : 'rgba(70, 185, 110, 0.85)',
               background: isEmpty
                 ? 'rgba(30, 41, 59, 0.3)'
-                : 'rgba(52, 211, 153, 0.08)',
+                : 'rgba(70, 185, 110, 0.08)',
               border: isEmpty
                 ? '1px solid rgba(100, 116, 139, 0.1)'
-                : '1px solid rgba(52, 211, 153, 0.2)',
+                : '1px solid rgba(70, 185, 110, 0.2)',
               cursor: isEmpty ? 'not-allowed' : 'pointer',
             }}
             onMouseEnter={(e) => {
               if (isEmpty) return;
-              e.currentTarget.style.background = 'rgba(52, 211, 153, 0.15)';
-              e.currentTarget.style.borderColor = 'rgba(52, 211, 153, 0.4)';
-              e.currentTarget.style.boxShadow = '0 0 12px rgba(52, 211, 153, 0.15)';
+              e.currentTarget.style.background = 'rgba(70, 185, 110, 0.15)';
+              e.currentTarget.style.borderColor = 'rgba(70, 185, 110, 0.4)';
+              e.currentTarget.style.boxShadow = '0 0 12px rgba(70, 185, 110, 0.15)';
             }}
             onMouseLeave={(e) => {
               if (isEmpty) return;
-              e.currentTarget.style.background = 'rgba(52, 211, 153, 0.08)';
-              e.currentTarget.style.borderColor = 'rgba(52, 211, 153, 0.2)';
+              e.currentTarget.style.background = 'rgba(70, 185, 110, 0.08)';
+              e.currentTarget.style.borderColor = 'rgba(70, 185, 110, 0.2)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
@@ -381,18 +381,18 @@ function SaveSlotCard({
               aria-label={`Удалить сохранение в слоте ${slotNumber}`}
               className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-md font-mono text-xs tracking-wide transition-colors"
               style={{
-                color: 'rgba(244, 63, 94, 0.7)',
-                background: 'rgba(244, 63, 94, 0.06)',
-                border: '1px solid rgba(244, 63, 94, 0.15)',
+                color: 'rgba(198, 85, 72, 0.7)',
+                background: 'rgba(198, 85, 72, 0.06)',
+                border: '1px solid rgba(198, 85, 72, 0.15)',
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(244, 63, 94, 0.12)';
-                e.currentTarget.style.borderColor = 'rgba(244, 63, 94, 0.35)';
-                e.currentTarget.style.boxShadow = '0 0 12px rgba(244, 63, 94, 0.1)';
+                e.currentTarget.style.background = 'rgba(198, 85, 72, 0.12)';
+                e.currentTarget.style.borderColor = 'rgba(198, 85, 72, 0.35)';
+                e.currentTarget.style.boxShadow = '0 0 12px rgba(198, 85, 72, 0.1)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(244, 63, 94, 0.06)';
-                e.currentTarget.style.borderColor = 'rgba(244, 63, 94, 0.15)';
+                e.currentTarget.style.background = 'rgba(198, 85, 72, 0.06)';
+                e.currentTarget.style.borderColor = 'rgba(198, 85, 72, 0.15)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
@@ -414,7 +414,7 @@ function SaveSlotCard({
             >
               <span
                 className="font-mono text-[10px]"
-                style={{ color: 'rgba(244, 63, 94, 0.7)' }}
+                style={{ color: 'rgba(198, 85, 72, 0.7)' }}
               >
                 Уверены?
               </span>
@@ -426,9 +426,9 @@ function SaveSlotCard({
                 aria-label={`Подтвердить удаление слота ${slotNumber}`}
                 className="px-2 py-1 rounded font-mono text-[10px] tracking-wide"
                 style={{
-                  color: 'rgba(244, 63, 94, 0.9)',
-                  background: 'rgba(244, 63, 94, 0.15)',
-                  border: '1px solid rgba(244, 63, 94, 0.3)',
+                  color: 'rgba(198, 85, 72, 0.9)',
+                  background: 'rgba(198, 85, 72, 0.15)',
+                  border: '1px solid rgba(198, 85, 72, 0.3)',
                 }}
               >
                 Да
@@ -724,17 +724,17 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
       <div
         className="absolute -bottom-px -left-px w-8 h-8 pointer-events-none"
         style={{
-          borderBottom: '2px solid rgba(251, 191, 36, 0.2)',
-          borderLeft: '2px solid rgba(251, 191, 36, 0.2)',
-          boxShadow: '-2px 2px 10px rgba(251, 191, 36, 0.05)',
+          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
+          borderLeft: '2px solid rgba(226, 168, 75, 0.2)',
+          boxShadow: '-2px 2px 10px rgba(226, 168, 75, 0.05)',
         }}
       />
       <div
         className="absolute -bottom-px -right-px w-8 h-8 pointer-events-none"
         style={{
-          borderBottom: '2px solid rgba(251, 191, 36, 0.2)',
-          borderRight: '2px solid rgba(251, 191, 36, 0.2)',
-          boxShadow: '2px 2px 10px rgba(251, 191, 36, 0.05)',
+          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
+          borderRight: '2px solid rgba(226, 168, 75, 0.2)',
+          boxShadow: '2px 2px 10px rgba(226, 168, 75, 0.05)',
         }}
       />
     </motion.div>

@@ -40,18 +40,18 @@
 /* ── Glow behind numbers ───────────────────────────────────────────────────── */
 
 @keyframes damageGlow {
-  0%, 100% { text-shadow: 0 0 6px rgba(248,113,113,0.6), 0 2px 4px rgba(0,0,0,0.8); }
-  50%      { text-shadow: 0 0 14px rgba(248,113,113,0.9), 0 0 28px rgba(248,113,113,0.4), 0 2px 4px rgba(0,0,0,0.8); }
+  0%, 100% { text-shadow: 0 0 6px rgba(198,85,72,0.6), 0 2px 4px rgba(0,0,0,0.8); }
+  50%      { text-shadow: 0 0 14px rgba(198,85,72,0.9), 0 0 28px rgba(198,85,72,0.4), 0 2px 4px rgba(0,0,0,0.8); }
 }
 
 @keyframes criticalGlow {
-  0%, 100% { text-shadow: 0 0 10px rgba(250,204,21,0.7), 0 0 20px rgba(250,204,21,0.4), 0 0 40px rgba(250,204,21,0.15), 0 2px 6px rgba(0,0,0,0.9); }
-  50%      { text-shadow: 0 0 18px rgba(250,204,21,1), 0 0 36px rgba(250,204,21,0.6), 0 0 60px rgba(250,204,21,0.3), 0 2px 6px rgba(0,0,0,0.9); }
+  0%, 100% { text-shadow: 0 0 10px rgba(226,168,75,0.7), 0 0 20px rgba(226,168,75,0.4), 0 0 40px rgba(226,168,75,0.15), 0 2px 6px rgba(0,0,0,0.9); }
+  50%      { text-shadow: 0 0 18px rgba(226,168,75,1), 0 0 36px rgba(226,168,75,0.6), 0 0 60px rgba(226,168,75,0.3), 0 2px 6px rgba(0,0,0,0.9); }
 }
 
 @keyframes healGlow {
-  0%, 100% { text-shadow: 0 0 6px rgba(52,211,153,0.6), 0 2px 4px rgba(0,0,0,0.8); }
-  50%      { text-shadow: 0 0 14px rgba(52,211,153,0.9), 0 0 28px rgba(52,211,153,0.4), 0 2px 4px rgba(0,0,0,0.8); }
+  0%, 100% { text-shadow: 0 0 6px rgba(70,185,110,0.6), 0 2px 4px rgba(0,0,0,0.8); }
+  50%      { text-shadow: 0 0 14px rgba(70,185,110,0.9), 0 0 28px rgba(70,185,110,0.4), 0 2px 4px rgba(0,0,0,0.8); }
 }
 
 /* ── Micro screen shake for critical hits ──────────────────────────────────── */
@@ -80,12 +80,12 @@
 }
 
 .combat-dmg-number--damage {
-  color: #f87171;
+  color: #c65548;
   animation: damageFloat 1.2s cubic-bezier(0.22,1,0.36,1) both, damageGlow 0.4s ease-in-out infinite;
 }
 
 .combat-dmg-number--critical {
-  color: #facc15;
+  color: #e2a84b;
   font-size: 1.6em;
   animation: criticalFloat 1.85s cubic-bezier(0.22,1,0.36,1) both, criticalGlow 0.35s ease-in-out 3;
 }
@@ -110,22 +110,22 @@
 }
 
 .combat-dmg-number--poison {
-  color: #4ade80;
-  text-shadow: 0 0 6px rgba(74,222,128,0.6), 0 2px 3px rgba(0,0,0,0.8);
+  color: #46b96e;
+  text-shadow: 0 0 6px rgba(70,185,110,0.6), 0 2px 3px rgba(0,0,0,0.8);
 }
 
 .combat-dmg-number--burn {
-  color: #fb923c;
-  text-shadow: 0 0 6px rgba(251,146,60,0.6), 0 2px 3px rgba(0,0,0,0.8);
+  color: #e2a84b;
+  text-shadow: 0 0 6px rgba(226,168,75,0.6), 0 2px 3px rgba(0,0,0,0.8);
 }
 
 .combat-dmg-number--freeze {
-  color: #22d3ee;
-  text-shadow: 0 0 6px rgba(34,211,238,0.6), 0 2px 3px rgba(0,0,0,0.8);
+  color: #9db3c8;
+  text-shadow: 0 0 6px rgba(157,179,200,0.6), 0 2px 3px rgba(0,0,0,0.8);
 }
 
 .combat-dmg-number--stun {
-  color: #c084fc;
+  color: #8d7fb5;
   text-shadow: 0 0 6px rgba(192,132,252,0.6), 0 2px 3px rgba(0,0,0,0.8);
 }
 

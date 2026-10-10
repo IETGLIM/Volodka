@@ -72,11 +72,11 @@ const ACCENT = {
     shadow: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.12)',
   },
   manual: {
-    primary: '#fbbf24',     // amber-400
-    glow: 'rgba(251, 191, 36, 0.15)',
-    border: 'rgba(251, 191, 36, 0.35)',
+    primary: '#e2a84b',     // amber-400
+    glow: 'rgba(226, 168, 75, 0.15)',
+    border: 'rgba(226, 168, 75, 0.35)',
     bg: 'rgba(20, 16, 8, 0.82)',
-    shadow: '0 0 12px rgba(251, 191, 36, 0.12)',
+    shadow: '0 0 12px rgba(226, 168, 75, 0.12)',
   },
 } as const;
 

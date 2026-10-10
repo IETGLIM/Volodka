@@ -787,7 +787,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--hud-filmic-glow-warm, #ffaa44);
+  background: var(--hud-filmic-glow-warm, #e2a84b);
   transform: scaleY(0);
   transform-origin: bottom;
   transition: transform 240ms cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -849,7 +849,7 @@
   margin: 12px 0;
   background: linear-gradient(90deg,
     transparent 0%,
-    var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.25)) 50%,
+    var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.25)) 50%,
     transparent 100%
   );
   pointer-events: none;
@@ -863,7 +863,7 @@
   left: 50%;
   width: 4px;
   height: 4px;
-  background: var(--hud-filmic-glow-warm, #ffaa44);
+  background: var(--hud-filmic-glow-warm, #e2a84b);
   transform: translate(-50%, -50%) rotate(45deg);
   pointer-events: none;
 }
@@ -883,7 +883,7 @@
   top: 0;
   left: 0;
   font-size: 3em;
-  color: var(--hud-filmic-glow-warm, #ffaa44);
+  color: var(--hud-filmic-glow-warm, #e2a84b);
   opacity: 0.18;
   line-height: 1;
   pointer-events: none;
@@ -907,7 +907,7 @@
   pointer-events: none;
   border-style: solid;
   border-width: 0;
-  border-color: var(--hud-filmic-rule, rgba(255, 170, 68, 0.4));
+  border-color: var(--hud-filmic-rule, rgba(226, 168, 75, 0.4));
   z-index: 1;
 }
 
@@ -1015,7 +1015,7 @@
   position: absolute;
   width: 4px;
   height: 4px;
-  border-color: var(--hud-filmic-rule, rgba(255, 170, 68, 0.4));
+  border-color: var(--hud-filmic-rule, rgba(226, 168, 75, 0.4));
   border-style: solid;
   opacity: 0.5;
   transition: opacity 0.24s cubic-bezier(0.2, 0.8, 0.2, 1),
@@ -1037,7 +1037,7 @@
 
 .hud-filmic-choice:hover > div > .hud-filmic-kicker:first-child,
 .hud-filmic-choice:focus-visible > div > .hud-filmic-kicker:first-child {
-  text-shadow: 0 0 8px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.5));
+  text-shadow: 0 0 8px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.5));
 }
 
 .hud-filmic-choice:hover > div > .hud-filmic-kicker:first-child::before,
@@ -1045,7 +1045,7 @@
 .hud-filmic-choice:focus-visible > div > .hud-filmic-kicker:first-child::before,
 .hud-filmic-choice:focus-visible > div > .hud-filmic-kicker:first-child::after {
   opacity: 1;
-  border-color: var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.7));
+  border-color: var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.7));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1088,8 +1088,8 @@
    Apply via className="hud-filmic-text-glow". */
 .hud-filmic-text-glow {
   text-shadow:
-    0 0 4px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.35)),
-    0 0 12px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.12));
+    0 0 4px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.35)),
+    0 0 12px var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.12));
 }
 
 /* ── 4. Fade edge mask ──
@@ -1125,12 +1125,12 @@
   @keyframes hud-filmic-pulse-ring-cycle {
     0%, 100% {
       box-shadow:
-        0 0 0 0 var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.4)),
-        0 0 0 0 var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.15));
+        0 0 0 0 var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.4)),
+        0 0 0 0 var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.15));
     }
     50% {
       box-shadow:
-        0 0 0 4px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.15)),
+        0 0 0 4px var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.15)),
         0 0 0 8px transparent;
     }
   }
@@ -1138,7 +1138,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .hud-filmic-pulse-ring {
-    box-shadow: 0 0 0 2px var(--hud-filmic-rule, rgba(255, 170, 68, 0.3));
+    box-shadow: 0 0 0 2px var(--hud-filmic-rule, rgba(226, 168, 75, 0.3));
     animation: none;
   }
 }
@@ -1200,8 +1200,8 @@
   width: 100%;
   background: linear-gradient(
     to right,
-    var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.6)),
-    var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.15)),
+    var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.6)),
+    var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.15)),
     transparent
   );
   transform-origin: left;
@@ -1238,7 +1238,7 @@
   transform: translateY(-1px);
   box-shadow:
     0 2px 8px rgba(0, 0, 0, 0.3),
-    0 0 12px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.1));
+    0 0 12px var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.1));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1297,7 +1297,7 @@
 
   @keyframes hud-filmic-dialogue-reveal-pulse {
     from {
-      text-shadow: 0 0 8px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.4));
+      text-shadow: 0 0 8px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.4));
     }
     to {
       text-shadow: none;
@@ -1360,8 +1360,8 @@
    className="hud-filmic-interjection" on the thought prefix. */
 .hud-filmic-interjection {
   text-shadow:
-    0 0 6px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.3)),
-    0 0 16px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.08));
+    0 0 6px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.3)),
+    0 0 16px var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.08));
 }
 
 /* ═════════════════════════════════════════════════════════════════════
@@ -1389,7 +1389,7 @@
       box-shadow:
         0 0 0 1px var(--hud-filmic-border),
         0 8px 28px rgba(0, 0, 0, 0.45),
-        0 0 20px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.06));
+        0 0 20px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.06));
     }
   }
 }
@@ -1528,11 +1528,11 @@
 
   @keyframes hud-filmic-thought-new-glow {
     0% {
-      box-shadow: 0 0 0 0 var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.4));
+      box-shadow: 0 0 0 0 var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.4));
       border-color: var(--hud-filmic-accent, rgba(196, 181, 160, 0.75));
     }
     30% {
-      box-shadow: 0 0 12px 2px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.2));
+      box-shadow: 0 0 12px 2px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.2));
     }
     100% {
       box-shadow: none;
@@ -1564,8 +1564,8 @@
 
   @keyframes hud-filmic-dice-flash-green {
     0% {
-      box-shadow: 0 0 16px 4px rgba(52, 211, 153, 0.5);
-      border-color: rgba(52, 211, 153, 0.6);
+      box-shadow: 0 0 16px 4px rgba(70, 185, 110, 0.5);
+      border-color: rgba(70, 185, 110, 0.6);
     }
     100% {
       box-shadow: none;
@@ -1613,27 +1613,27 @@
 
 .choice-difficulty-easy {
   color: #57a874;
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.2);
+  background: rgba(70, 185, 110, 0.08);
+  border-color: rgba(70, 185, 110, 0.2);
 }
 
 .choice-difficulty-medium {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.08);
-  border-color: rgba(251, 191, 36, 0.2);
+  color: #e2a84b;
+  background: rgba(226, 168, 75, 0.08);
+  border-color: rgba(226, 168, 75, 0.2);
 }
 
 .choice-difficulty-hard {
-  color: #fb923c;
-  background: rgba(251, 146, 60, 0.08);
-  border-color: rgba(251, 146, 60, 0.25);
+  color: #e2a84b;
+  background: rgba(226, 168, 75, 0.08);
+  border-color: rgba(226, 168, 75, 0.25);
 }
 
 .choice-difficulty-extreme {
-  color: #f87171;
-  background: rgba(248, 113, 113, 0.1);
-  border-color: rgba(248, 113, 113, 0.3);
-  box-shadow: 0 0 6px rgba(248, 113, 113, 0.12);
+  color: #c65548;
+  background: rgba(198, 85, 72, 0.1);
+  border-color: rgba(198, 85, 72, 0.3);
+  box-shadow: 0 0 6px rgba(198, 85, 72, 0.12);
 }
 
 /* Hover lift on difficulty badges — subtle glow reinforcement */
@@ -1642,19 +1642,19 @@
 }
 
 .choice-difficulty-easy:hover {
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.2);
+  box-shadow: 0 0 8px rgba(70, 185, 110, 0.2);
 }
 
 .choice-difficulty-medium:hover {
-  box-shadow: 0 0 8px rgba(251, 191, 36, 0.2);
+  box-shadow: 0 0 8px rgba(226, 168, 75, 0.2);
 }
 
 .choice-difficulty-hard:hover {
-  box-shadow: 0 0 8px rgba(251, 146, 60, 0.25);
+  box-shadow: 0 0 8px rgba(226, 168, 75, 0.25);
 }
 
 .choice-difficulty-extreme:hover {
-  box-shadow: 0 0 10px rgba(248, 113, 113, 0.3);
+  box-shadow: 0 0 10px rgba(198, 85, 72, 0.3);
 }
 
 .choice-difficulty-label {
@@ -1684,11 +1684,11 @@
 
   @keyframes hud-filmic-compass-glow-cycle {
     0%, 100% {
-      text-shadow: 0 0 4px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.2));
+      text-shadow: 0 0 4px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.2));
     }
     50% {
-      text-shadow: 0 0 8px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.4)),
-                   0 0 16px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.1));
+      text-shadow: 0 0 8px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.4)),
+                   0 0 16px var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.1));
     }
   }
 }
@@ -1862,8 +1862,8 @@
       text-shadow: 0 0 0 transparent;
     }
     50% {
-      text-shadow: 0 0 6px var(--hud-filmic-glow-warm, rgba(255, 170, 68, 0.15)),
-                   0 0 12px var(--hud-filmic-rule-soft, rgba(255, 170, 68, 0.05));
+      text-shadow: 0 0 6px var(--hud-filmic-glow-warm, rgba(226, 168, 75, 0.15)),
+                   0 0 12px var(--hud-filmic-rule-soft, rgba(226, 168, 75, 0.05));
     }
   }
 }
@@ -2076,10 +2076,10 @@
 
   @keyframes hud-filmic-health-pulse-cycle {
     0%, 100% {
-      box-shadow: 0 0 0 0 rgba(244, 63, 94, 0);
+      box-shadow: 0 0 0 0 rgba(198, 85, 72, 0);
     }
     50% {
-      box-shadow: 0 0 8px 1px rgba(244, 63, 94, 0.28);
+      box-shadow: 0 0 8px 1px rgba(198, 85, 72, 0.28);
     }
   }
 }
@@ -2087,7 +2087,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hud-filmic-health-pulse {
     animation: none;
-    box-shadow: 0 0 4px 0 rgba(244, 63, 94, 0.2);
+    box-shadow: 0 0 4px 0 rgba(198, 85, 72, 0.2);
   }
 }
 
@@ -2272,10 +2272,10 @@
 
   @keyframes objective-beacon-breathe {
     0%, 100% {
-      filter: drop-shadow(0 0 3px rgba(255, 179, 71, 0.12));
+      filter: drop-shadow(0 0 3px rgba(226, 168, 75, 0.12));
     }
     50% {
-      filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.25));
+      filter: drop-shadow(0 0 8px rgba(226, 168, 75, 0.25));
     }
   }
 
@@ -2285,10 +2285,10 @@
 
   @keyframes objective-beacon-ring-pulse {
     0%, 100% {
-      box-shadow: 0 0 0 0 rgba(255, 179, 71, 0.12);
+      box-shadow: 0 0 0 0 rgba(226, 168, 75, 0.12);
     }
     50% {
-      box-shadow: 0 0 0 3px rgba(255, 179, 71, 0.08), 0 0 0 6px transparent;
+      box-shadow: 0 0 0 3px rgba(226, 168, 75, 0.08), 0 0 0 6px transparent;
     }
   }
 }
@@ -2346,7 +2346,7 @@
    WS16-B — 6 NEW filmic micro-animations (all reduced-motion-gated)
    Cinematic polish: achievement burst, notification slide-in,
    hint attention, combo ramp, compass needle settle, mood wave.
-   Palette: cyan #00d4e0, amber #FFB347, warm orange #ff6644.
+   Palette: cyan #9db3c8, amber #e2a84b, warm orange #c65548.
    ══════════════════════════════════════════════════════════════ */
 
 /* ── 19. Achievement burst ──
@@ -2358,15 +2358,15 @@
   @keyframes hud-filmic-achievement-burst-cycle {
     0% {
       transform: scale(0.92);
-      filter: drop-shadow(0 0 0 rgba(255, 179, 71, 0));
+      filter: drop-shadow(0 0 0 rgba(226, 168, 75, 0));
     }
     35% {
       transform: scale(1.06);
-      filter: drop-shadow(0 0 16px rgba(255, 179, 71, 0.55));
+      filter: drop-shadow(0 0 16px rgba(226, 168, 75, 0.55));
     }
     100% {
       transform: scale(1);
-      filter: drop-shadow(0 0 0 rgba(255, 179, 71, 0));
+      filter: drop-shadow(0 0 0 rgba(226, 168, 75, 0));
     }
   }
 
@@ -2417,11 +2417,11 @@
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-hint-attention {
     0%, 100% {
-      filter: drop-shadow(0 0 4px rgba(255, 179, 71, 0.12));
+      filter: drop-shadow(0 0 4px rgba(226, 168, 75, 0.12));
       transform: scale(1);
     }
     50% {
-      filter: drop-shadow(0 0 8px rgba(255, 179, 71, 0.28));
+      filter: drop-shadow(0 0 8px rgba(226, 168, 75, 0.28));
       transform: scale(1.02);
     }
   }
@@ -2526,16 +2526,16 @@
 
 /* ── 31. Quest pulse ──
    2s subtle cyan border-pulse for ActiveQuestMiniTracker when quest is active.
-   Infinite loop. Box-shadow: 0 0 0px → 0 0 4px → 0 0 0px (cyan #00d4e0).
+   Infinite loop. Box-shadow: 0 0 0px → 0 0 4px → 0 0 0px (cyan #9db3c8).
    Apply via className="hud-filmic-quest-pulse" on the quest tracker's
    collapsed row div. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-quest-pulse {
     0%, 100% {
-      box-shadow: 0 0 0px rgba(0, 212, 224, 0);
+      box-shadow: 0 0 0px rgba(157, 179, 200, 0);
     }
     50% {
-      box-shadow: 0 0 4px rgba(0, 212, 224, 0.35);
+      box-shadow: 0 0 4px rgba(157, 179, 200, 0.35);
     }
   }
 
@@ -2552,19 +2552,19 @@
 
 /* ── 32. Badge fill glow ──
    1.5s amber fill glow for ExplorationProgressBadge when progress changes.
-   One-shot. Filter drop-shadow: 0 0 0px → 0 0 5px → 0 0 0px (amber #FFB347).
+   One-shot. Filter drop-shadow: 0 0 0px → 0 0 5px → 0 0 0px (amber #e2a84b).
    Apply via className="hud-filmic-badge-fill-glow" on the badge wrapper div.
    Re-apply the class (key change or re-mount) to replay. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-badge-fill-glow {
     0% {
-      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+      filter: drop-shadow(0 0 0px rgba(226, 168, 75, 0));
     }
     40% {
-      filter: drop-shadow(0 0 5px rgba(255, 179, 71, 0.4));
+      filter: drop-shadow(0 0 5px rgba(226, 168, 75, 0.4));
     }
     100% {
-      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+      filter: drop-shadow(0 0 0px rgba(226, 168, 75, 0));
     }
   }
 
@@ -2723,8 +2723,8 @@
    WS18-A — Six new filmic micro-animations for HUD parts polish
    (WeatherIcon, SkillRechargeHUD, QuickUseCooldownOverlay,
     BuffDebuffTracker, DamageFloatSystem, EnemyWeaknessDisplay)
-   Color palette: cyan #00d4e0, amber #FFB347, warm orange #ff6644,
-   purple #cc66ff. No blue/indigo.
+   Color palette: cyan #9db3c8, amber #e2a84b, warm orange #c65548,
+   purple #8d7fb5. No blue/indigo.
    ═══════════════════════════════════════════════════════════════════ */
 
 /* ── 37. Weather shift ──
@@ -2761,17 +2761,17 @@
 /* ── 38. Skill recharge pulse ──
    1.8s subtle cyan fill pulse for SkillRechargeHUD slots when a skill
    is recharging (cooldown active). Infinite loop. Box-shadow:
-   0 0 0px rgba(0,212,224,0) → 0 0 6px rgba(0,212,224,0.4) → 0 0 0px.
+   0 0 0px rgba(157,179,200,0) → 0 0 6px rgba(157,179,200,0.4) → 0 0 0px.
    Apply via className="hud-filmic-skill-recharge-pulse" on the slot
    root when the skill is on cooldown. Stacks subtly with the existing
    framer-motion glow-line + countdown animations. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-skill-recharge-pulse {
     0%, 100% {
-      box-shadow: 0 0 0px rgba(0, 212, 224, 0);
+      box-shadow: 0 0 0px rgba(157, 179, 200, 0);
     }
     50% {
-      box-shadow: 0 0 6px rgba(0, 212, 224, 0.4);
+      box-shadow: 0 0 6px rgba(157, 179, 200, 0.4);
     }
   }
 
@@ -2789,20 +2789,20 @@
 /* ── 39. Quick-use ready glow ──
    2s soft amber glow for QuickUseCooldownOverlay svg ring when an
    item becomes ready (cooldown complete). One-shot. Filter
-   drop-shadow: 0 0 0px rgba(255,179,71,0) → 0 0 6px rgba(255,179,71,0.5)
+   drop-shadow: 0 0 0px rgba(226,168,75,0) → 0 0 6px rgba(226,168,75,0.5)
    → 0 0 0px. Apply via className="hud-filmic-quickuse-ready-glow" on
    the cooldown-ring svg when progress >= 1. Re-mount via key change
    or short window of ready state replays. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-quickuse-ready-glow {
     0% {
-      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+      filter: drop-shadow(0 0 0px rgba(226, 168, 75, 0));
     }
     40% {
-      filter: drop-shadow(0 0 6px rgba(255, 179, 71, 0.5));
+      filter: drop-shadow(0 0 6px rgba(226, 168, 75, 0.5));
     }
     100% {
-      filter: drop-shadow(0 0 0px rgba(255, 179, 71, 0));
+      filter: drop-shadow(0 0 0px rgba(226, 168, 75, 0));
     }
   }
 
@@ -2887,8 +2887,8 @@
 /* ── 42. Weakness reveal ──
    0.8s quick scale + outline pulse for EnemyWeaknessDisplay when a
    weakness is revealed (card mounts). One-shot. scale(0.95) →
-   scale(1.05) → scale(1), outline-color rgba(204,102,255,0) →
-   rgba(204,102,255,0.55) → rgba(204,102,255,0). Apply via
+   scale(1.05) → scale(1), outline-color rgba(141,127,181,0) →
+   rgba(141,127,181,0.55) → rgba(141,127,181,0). Apply via
    className="hud-filmic-weakness-reveal" on the enemy-weakness-card
    motion.div. Mount-triggered one-shot (AnimatePresence will replay
    on each new enemy). */
@@ -2896,15 +2896,15 @@
   @keyframes hud-filmic-weakness-reveal {
     0% {
       transform: scale(0.95);
-      outline-color: rgba(204, 102, 255, 0);
+      outline-color: rgba(141, 127, 181, 0);
     }
     45% {
       transform: scale(1.05);
-      outline-color: rgba(204, 102, 255, 0.55);
+      outline-color: rgba(141, 127, 181, 0.55);
     }
     100% {
       transform: scale(1);
-      outline-color: rgba(204, 102, 255, 0);
+      outline-color: rgba(141, 127, 181, 0);
     }
   }
 
@@ -2931,13 +2931,13 @@
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-stat-bar-fill {
     0% {
-      box-shadow: 0 0 0 rgba(0, 212, 224, 0);
+      box-shadow: 0 0 0 rgba(157, 179, 200, 0);
     }
     40% {
-      box-shadow: 0 0 8px rgba(0, 212, 224, 0.5);
+      box-shadow: 0 0 8px rgba(157, 179, 200, 0.5);
     }
     100% {
-      box-shadow: 0 0 0 rgba(0, 212, 224, 0);
+      box-shadow: 0 0 0 rgba(157, 179, 200, 0);
     }
   }
 
@@ -2990,13 +2990,13 @@
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-emergency-pulse {
     0% {
-      border-color: rgba(255, 68, 68, 0.3);
+      border-color: rgba(198, 85, 72, 0.3);
     }
     50% {
-      border-color: rgba(255, 68, 68, 0.7);
+      border-color: rgba(198, 85, 72, 0.7);
     }
     100% {
-      border-color: rgba(255, 68, 68, 0.3);
+      border-color: rgba(198, 85, 72, 0.3);
     }
   }
 
@@ -3015,17 +3015,17 @@
    0.8s amber inset box-shadow flash for CombatPreEngagementWarning
    vignette overlay. One-shot. Apply via
    className="hud-filmic-combat-warning-flash" on the vignette div.
-   Uses amber #FFB347. Opacity peak 0.5 ≤ 0.6. */
+   Uses amber #e2a84b. Opacity peak 0.5 ≤ 0.6. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-combat-warning-flash {
     0% {
-      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0);
+      box-shadow: inset 0 0 80px rgba(226, 168, 75, 0);
     }
     40% {
-      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0.5);
+      box-shadow: inset 0 0 80px rgba(226, 168, 75, 0.5);
     }
     100% {
-      box-shadow: inset 0 0 80px rgba(255, 179, 71, 0);
+      box-shadow: inset 0 0 80px rgba(226, 168, 75, 0);
     }
   }
 
@@ -3060,9 +3060,9 @@
     background-image: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(0, 212, 224, 0.12) 45%,
-      rgba(0, 212, 224, 0.22) 50%,
-      rgba(0, 212, 224, 0.12) 55%,
+      rgba(157, 179, 200, 0.12) 45%,
+      rgba(157, 179, 200, 0.22) 50%,
+      rgba(157, 179, 200, 0.12) 55%,
       transparent 100%
     );
     background-size: 50% 100%;
@@ -3218,16 +3218,16 @@
 
 /* ── 23. QTE urgency pulse ──
    Pulsing red box-shadow for QTE overlay to convey urgency.
-   0.6s cycle, box-shadow 0 0 8px rgba(255,60,60,0.5) →
-   0 0 16px rgba(255,60,60,0.8) → 0 0 8px. Apply via
+   0.6s cycle, box-shadow 0 0 8px rgba(198,85,72,0.5) →
+   0 0 16px rgba(198,85,72,0.8) → 0 0 8px. Apply via
    className="hud-filmic-qte-urgency-pulse" on QuickTimeEventOverlay root. */
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-qte-urgency-pulse {
     0%, 100% {
-      box-shadow: 0 0 8px rgba(255, 60, 60, 0.5);
+      box-shadow: 0 0 8px rgba(198, 85, 72, 0.5);
     }
     50% {
-      box-shadow: 0 0 16px rgba(255, 60, 60, 0.8);
+      box-shadow: 0 0 16px rgba(198, 85, 72, 0.8);
     }
   }
 
@@ -3239,7 +3239,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hud-filmic-qte-urgency-pulse {
     animation: none;
-    box-shadow: 0 0 8px rgba(255, 60, 60, 0.5);
+    box-shadow: 0 0 8px rgba(198, 85, 72, 0.5);
   }
 }
 
@@ -3373,10 +3373,10 @@
 @media (prefers-reduced-motion: no-preference) {
   @keyframes hud-filmic-level-badge-glow {
     0%, 100% {
-      box-shadow: 0 0 6px rgba(251, 191, 36, 0.15);
+      box-shadow: 0 0 6px rgba(226, 168, 75, 0.15);
     }
     50% {
-      box-shadow: 0 0 14px rgba(251, 191, 36, 0.4);
+      box-shadow: 0 0 14px rgba(226, 168, 75, 0.4);
     }
   }
 
@@ -4050,11 +4050,11 @@
   0%,
   100% {
     opacity: 1;
-    text-shadow: 0 0 4px rgba(255, 68, 68, 0.3);
+    text-shadow: 0 0 4px rgba(198, 85, 72, 0.3);
   }
   50% {
     opacity: 0.5;
-    text-shadow: 0 0 12px rgba(255, 68, 68, 0.6);
+    text-shadow: 0 0 12px rgba(198, 85, 72, 0.6);
   }
 }
 

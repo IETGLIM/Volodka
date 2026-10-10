@@ -62,9 +62,9 @@ export const DAMAGE_CHANNEL_LABELS: Record<DamageChannel, string> = {
 export const DAMAGE_CHANNEL_COLORS: Record<DamageChannel, string> = {
   code: '#57a874',      // CYBER_GREEN — coding/exploit
   logic: '#9db3c8',     // CYBER_CYAN — analytical
-  empathy: '#ff6b9d',   // rose — compassionate
-  intuition: '#a78bfa', // purple — perceptive
-  writing: '#d4920a',   // amberGold — poetic
+  empathy: '#8d7fb5',   // rose — compassionate
+  intuition: '#8d7fb5', // purple — perceptive
+  writing: '#e2a84b',   // amberGold — poetic
   physical: '#e2a84b',  // CYBER_AMBER — brute force
 };
 

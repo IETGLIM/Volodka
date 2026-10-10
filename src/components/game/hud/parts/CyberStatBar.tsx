@@ -60,7 +60,7 @@ export function CyberStatBar({
   const lowClass = isHeartbeat
     ? 'low-hp-heartbeat'
     : isLow
-      ? color.includes('#ef4444') || color.includes('red') || color.includes('#f87171')
+      ? color.includes('#c65548') || color.includes('red') || color.includes('#c65548')
         ? 'low-bar-pulse'
         : 'low-bar-pulse-amber'
       : '';
@@ -133,7 +133,7 @@ export function CyberStatBar({
             left: `${pendingDamage.left}%`,
             /* bg-red-300/40 — lighter than the main bar, drains over 500ms */
             background: 'rgba(252, 165, 165, 0.40)',
-            boxShadow: 'inset 0 0 4px rgba(255, 80, 80, 0.25)',
+            boxShadow: 'inset 0 0 4px rgba(198, 85, 72, 0.25)',
           }}
           initial={{ width: `${pendingDamage.pct}%`, opacity: 1 }}
           animate={{ width: '0%', opacity: 0.6 }}
@@ -175,7 +175,7 @@ export function CyberStatBar({
         <div
           className="absolute inset-0 rounded-full pointer-events-none"
           style={{
-            boxShadow: 'inset 0 0 6px rgba(255,50,50,0.3), 0 0 8px rgba(255,50,50,0.15)',
+            boxShadow: 'inset 0 0 6px rgba(198,85,72,0.3), 0 0 8px rgba(198,85,72,0.15)',
           }}
         />
       )}

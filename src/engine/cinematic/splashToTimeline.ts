@@ -13,7 +13,7 @@ function overlayFromPreset(preset: InteractionSplashPreset) {
   return {
     text: preset.textOverlay ?? '',
     subtitle: preset.subtitle,
-    accentColor: preset.textAccentColor ?? '#44ffff',
+    accentColor: preset.textAccentColor ?? '#9db3c8',
     letterboxStyle: preset.letterboxStyle ?? 'thin',
   };
 }

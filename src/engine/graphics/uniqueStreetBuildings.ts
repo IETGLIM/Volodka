@@ -169,12 +169,12 @@ export function getUniqueBuildingGeometry(arch: StreetBuildingArchetype): Buffer
 
 /** Directed plaza block — each slot a distinct archetype (no visual module repetition). */
 export const STREET_NIGHT_UNIQUE_BLOCK: UniqueBuildingSpec[] = [
-  { id: 'left_tower', archetype: 'narrow_tower', position: [-12.5, 0, -16], rotationY: 0.06, neon: '#ff2a7a', scale: 1.05 },
-  { id: 'left_bay', archetype: 'bay_midrise', position: [-13.2, 0, -5.5], rotationY: 0.1, neon: '#aa44ff', scale: 0.95 },
-  { id: 'left_arcade', archetype: 'arcade_wing', position: [-12.0, 0, 6.5], rotationY: Math.PI / 2 + 0.04, neon: '#22e0ff', scale: 0.9 },
-  { id: 'right_terrace', archetype: 'terrace_setback', position: [13.0, 0, -19], rotationY: Math.PI - 0.05, neon: '#33ffcc', scale: 1.0 },
-  { id: 'right_warehouse', archetype: 'warehouse_low', position: [14.5, 0, -7], rotationY: Math.PI + 0.08, neon: '#4488ff', scale: 0.92 },
-  { id: 'right_corner', archetype: 'corner_chamfer', position: [12.5, 0, 5], rotationY: -Math.PI / 2 - 0.06, neon: '#ffaa22', scale: 0.88 },
-  { id: 'rear_watertower', archetype: 'water_tower', position: [0.8, 0, -26.5], rotationY: 0.03, neon: '#ff4488', scale: 1.15 },
-  { id: 'alley_ruin', archetype: 'ruin_gap', position: [-10.2, 0, 14.5], rotationY: Math.PI / 2, neon: '#66aaff', scale: 0.85 },
+  { id: 'left_tower', archetype: 'narrow_tower', position: [-12.5, 0, -16], rotationY: 0.06, neon: '#8d7fb5', scale: 1.05 },
+  { id: 'left_bay', archetype: 'bay_midrise', position: [-13.2, 0, -5.5], rotationY: 0.1, neon: '#8d7fb5', scale: 0.95 },
+  { id: 'left_arcade', archetype: 'arcade_wing', position: [-12.0, 0, 6.5], rotationY: Math.PI / 2 + 0.04, neon: '#9db3c8', scale: 0.9 },
+  { id: 'right_terrace', archetype: 'terrace_setback', position: [13.0, 0, -19], rotationY: Math.PI - 0.05, neon: '#9db3c8', scale: 1.0 },
+  { id: 'right_warehouse', archetype: 'warehouse_low', position: [14.5, 0, -7], rotationY: Math.PI + 0.08, neon: '#9db3c8', scale: 0.92 },
+  { id: 'right_corner', archetype: 'corner_chamfer', position: [12.5, 0, 5], rotationY: -Math.PI / 2 - 0.06, neon: '#e2a84b', scale: 0.88 },
+  { id: 'rear_watertower', archetype: 'water_tower', position: [0.8, 0, -26.5], rotationY: 0.03, neon: '#8d7fb5', scale: 1.15 },
+  { id: 'alley_ruin', archetype: 'ruin_gap', position: [-10.2, 0, 14.5], rotationY: Math.PI / 2, neon: '#9db3c8', scale: 0.85 },
 ];

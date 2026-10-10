@@ -105,7 +105,7 @@ export function FloatingTextLayer() {
                     animate={{ scale: 3, opacity: 0 }}
                     transition={{ duration: 1.5 }}
                     className="absolute inset-0 flex items-center justify-center text-amber-400/30"
-                    style={{ textShadow: '0 0 30px rgba(251,191,36,0.5)' }}
+                    style={{ textShadow: '0 0 30px rgba(226,168,75,0.5)' }}
                   >
                     ⬆
                   </motion.span>

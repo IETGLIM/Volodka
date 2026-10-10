@@ -46,8 +46,8 @@ const ACCENT_MAP: Record<NotificationType, {
   bg: string;
 }> = {
   combat: {
-    primary: '#fb7185',     // rose-400
-    border: 'rgba(251, 113, 133, 0.35)',
+    primary: '#c65548',     // rose-400
+    border: 'rgba(198, 85, 72, 0.35)',
     bg: 'rgba(30, 12, 16, 0.82)',
   },
   scene: {
@@ -56,13 +56,13 @@ const ACCENT_MAP: Record<NotificationType, {
     bg: 'var(--hud-filmic-plate-strong)',
   },
   achievement: {
-    primary: '#fbbf24',     // amber-400
-    border: 'rgba(251, 191, 36, 0.35)',
+    primary: '#e2a84b',     // amber-400
+    border: 'rgba(226, 168, 75, 0.35)',
     bg: 'rgba(20, 16, 8, 0.82)',
   },
   quest: {
     primary: '#57a874',     // emerald-400
-    border: 'rgba(52, 211, 153, 0.35)',
+    border: 'rgba(70, 185, 110, 0.35)',
     bg: 'rgba(8, 24, 18, 0.82)',
   },
   info: {

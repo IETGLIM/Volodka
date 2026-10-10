@@ -24,9 +24,9 @@ const LOW_THRESHOLD = 0.25;
 
 /** Зелёный → жёлтый → янтарный по мере истощения. */
 function resolveBarColor(ratio: number): string {
-  if (ratio >= 0.55) return 'rgba(74, 222, 128, 0.88)';
-  if (ratio >= 0.25) return 'rgba(250, 204, 21, 0.9)';
-  return 'rgba(251, 146, 60, 0.95)';
+  if (ratio >= 0.55) return 'rgba(70, 185, 110, 0.88)';
+  if (ratio >= 0.25) return 'rgba(226, 168, 75, 0.9)';
+  return 'rgba(226, 168, 75, 0.95)';
 }
 
 export function StaminaBar() {
@@ -106,7 +106,7 @@ export function StaminaBar() {
           style={{
             width: '100%',
             height: '100%',
-            backgroundColor: 'rgba(74, 222, 128, 0.88)',
+            backgroundColor: 'rgba(70, 185, 110, 0.88)',
             borderRadius: 2,
             transition: 'width 120ms linear, background-color 300ms linear',
           }}

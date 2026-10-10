@@ -24,23 +24,23 @@
 
 /* Color tiers based on relationship value */
 .npc-rel-meter-fill--enemy {
-  background: linear-gradient(90deg, #dc2626, #f87171);
-  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(90deg, #c65548, #c65548);
+  box-shadow: 0 0 10px rgba(198, 85, 72, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .npc-rel-meter-fill--low {
-  background: linear-gradient(90deg, #ea580c, #fb923c);
-  box-shadow: 0 0 10px rgba(249, 115, 22, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(90deg, #e2a84b, #e2a84b);
+  box-shadow: 0 0 10px rgba(226, 168, 75, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .npc-rel-meter-fill--neutral {
-  background: linear-gradient(90deg, #d97706, #fbbf24);
-  box-shadow: 0 0 10px rgba(245, 158, 11, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(90deg, #e2a84b, #e2a84b);
+  box-shadow: 0 0 10px rgba(226, 168, 75, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .npc-rel-meter-fill--friendly {
-  background: linear-gradient(90deg, #0891b2, #22d3ee);
-  box-shadow: 0 0 10px rgba(6, 182, 212, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(90deg, #0891b2, #9db3c8);
+  box-shadow: 0 0 10px rgba(157, 179, 200, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .npc-rel-meter-fill--ally {
@@ -83,15 +83,15 @@
 }
 
 .npc-rel-change--up {
-  color: #22d3ee;
-  background: rgba(6, 182, 212, 0.1);
-  border: 1px solid rgba(6, 182, 212, 0.2);
+  color: #9db3c8;
+  background: rgba(157, 179, 200, 0.1);
+  border: 1px solid rgba(157, 179, 200, 0.2);
 }
 
 .npc-rel-change--down {
-  color: #fb7185;
-  background: rgba(251, 113, 133, 0.1);
-  border: 1px solid rgba(251, 113, 133, 0.2);
+  color: #c65548;
+  background: rgba(198, 85, 72, 0.1);
+  border: 1px solid rgba(198, 85, 72, 0.2);
 }
 
 @keyframes npc-rel-change-pulse {
@@ -148,18 +148,18 @@
 
 /* Faction color themes */
 .npc-faction--network {
-  --faction-color: #22d3ee;
-  --faction-glow: rgba(34, 211, 238, 0.15);
+  --faction-color: #9db3c8;
+  --faction-glow: rgba(157, 179, 200, 0.15);
 }
 
 .npc-faction--guild {
-  --faction-color: #f97316;
-  --faction-glow: rgba(249, 115, 22, 0.15);
+  --faction-color: #e2a84b;
+  --faction-glow: rgba(226, 168, 75, 0.15);
 }
 
 .npc-faction--resistance {
-  --faction-color: #a855f7;
-  --faction-glow: rgba(168, 85, 247, 0.15);
+  --faction-color: #8d7fb5;
+  --faction-glow: rgba(141, 127, 181, 0.15);
 }
 
 .npc-faction--neutral {
@@ -181,15 +181,15 @@
 /* ── Enhanced card with faction border glow ── */
 
 .npc-rel-card--faction-network {
-  border-color: rgba(34, 211, 238, 0.12) !important;
+  border-color: rgba(157, 179, 200, 0.12) !important;
 }
 
 .npc-rel-card--faction-guild {
-  border-color: rgba(249, 115, 22, 0.12) !important;
+  border-color: rgba(226, 168, 75, 0.12) !important;
 }
 
 .npc-rel-card--faction-resistance {
-  border-color: rgba(168, 85, 247, 0.12) !important;
+  border-color: rgba(141, 127, 181, 0.12) !important;
 }
 
 /* ── Value display with color ── */
@@ -202,8 +202,8 @@
   text-align: right;
 }
 
-.npc-rel-value--enemy { color: #f87171; text-shadow: 0 0 8px rgba(239, 68, 68, 0.3); }
-.npc-rel-value--low { color: #fb923c; text-shadow: 0 0 8px rgba(249, 115, 22, 0.2); }
-.npc-rel-value--neutral { color: #fbbf24; text-shadow: 0 0 8px rgba(245, 158, 11, 0.2); }
-.npc-rel-value--friendly { color: #22d3ee; text-shadow: 0 0 8px rgba(6, 182, 212, 0.3); }
+.npc-rel-value--enemy { color: #c65548; text-shadow: 0 0 8px rgba(198, 85, 72, 0.3); }
+.npc-rel-value--low { color: #e2a84b; text-shadow: 0 0 8px rgba(226, 168, 75, 0.2); }
+.npc-rel-value--neutral { color: #e2a84b; text-shadow: 0 0 8px rgba(226, 168, 75, 0.2); }
+.npc-rel-value--friendly { color: #9db3c8; text-shadow: 0 0 8px rgba(157, 179, 200, 0.3); }
 .npc-rel-value--ally { color: #57a874; text-shadow: 0 0 8px rgba(16, 185, 129, 0.3); }

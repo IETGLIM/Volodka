@@ -92,29 +92,29 @@ interface KindStyle {
 
 const KIND_STYLE: Record<DamageNumberKind, KindStyle> = {
   damage: {
-    color: '#f87171',
-    glow: '0 0 10px rgba(248,113,113,0.55), 0 2px 3px rgba(0,0,0,0.8)',
+    color: '#c65548',
+    glow: '0 0 10px rgba(198,85,72,0.55), 0 2px 3px rgba(0,0,0,0.8)',
     fontSizePx: 26,
     weight: 800,
     letterSpacing: '0.02em',
   },
   critical: {
-    color: '#fde047',
-    glow: '0 0 14px rgba(253,224,71,0.9), 0 0 28px rgba(250,204,21,0.45), 0 2px 3px rgba(0,0,0,0.85)',
+    color: '#e2a84b',
+    glow: '0 0 14px rgba(226,168,75,0.9), 0 0 28px rgba(226,168,75,0.45), 0 2px 3px rgba(0,0,0,0.85)',
     fontSizePx: 38,
     weight: 900,
     letterSpacing: '0.04em',
   },
   heal: {
     color: '#57a874',
-    glow: '0 0 10px rgba(52,211,153,0.55), 0 2px 3px rgba(0,0,0,0.8)',
+    glow: '0 0 10px rgba(70,185,110,0.55), 0 2px 3px rgba(0,0,0,0.8)',
     fontSizePx: 24,
     weight: 800,
     letterSpacing: '0.02em',
   },
   status: {
-    color: '#fb923c',
-    glow: '0 0 10px rgba(251,146,60,0.55), 0 2px 3px rgba(0,0,0,0.8)',
+    color: '#e2a84b',
+    glow: '0 0 10px rgba(226,168,75,0.55), 0 2px 3px rgba(0,0,0,0.8)',
     fontSizePx: 20,
     weight: 700,
     letterSpacing: '0.08em',
@@ -141,8 +141,8 @@ const KIND_STYLE: Record<DamageNumberKind, KindStyle> = {
     letterSpacing: '0.1em',
   },
   killshot: {
-    color: '#ef4444',
-    glow: '0 0 16px rgba(239,68,68,0.95), 0 0 32px rgba(239,68,68,0.5), 0 2px 4px rgba(0,0,0,0.9)',
+    color: '#c65548',
+    glow: '0 0 16px rgba(198,85,72,0.95), 0 0 32px rgba(198,85,72,0.5), 0 2px 4px rgba(0,0,0,0.9)',
     fontSizePx: 30,
     weight: 900,
     letterSpacing: '0.08em',

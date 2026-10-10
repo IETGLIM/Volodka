@@ -99,7 +99,7 @@ export function FirstMinutesDirector() {
             <div className="relative overflow-hidden rounded-[10px] bg-black/55 backdrop-blur-[14px] border border-white/10 px-4 py-3 shadow-[0_8px_24px_rgba(0,0,0,0.45)]">
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.04] to-transparent pointer-events-none" />
               <div className="flex items-start gap-3">
-                <div className="mt-[2px] w-1.5 h-1.5 rounded-full bg-cyan-300/70 shadow-[0_0_8px_rgba(0,255,200,0.6)] animate-pulse" />
+                <div className="mt-[2px] w-1.5 h-1.5 rounded-full bg-cyan-300/70 shadow-[0_0_8px_rgba(157,179,200,0.6)] animate-pulse" />
                 <p className="font-serif text-[13px] leading-[1.5] tracking-[0.02em] text-stone-200/85 [text-shadow:0_1px_8px_rgba(0,0,0,0.6)]">
                   {hint}
                 </p>
@@ -112,7 +112,7 @@ export function FirstMinutesDirector() {
                     className="h-[2px] rounded-full transition-all duration-500"
                     style={{
                       width: progress > i ? 20 : 8,
-                      background: progress > i ? 'rgba(0,255,200,0.8)' : 'rgba(255,255,255,0.18)',
+                      background: progress > i ? 'rgba(157,179,200,0.8)' : 'rgba(255,255,255,0.18)',
                     }}
                   />
                 ))}
@@ -130,7 +130,7 @@ export function FirstMinutesDirector() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.12 }}
-          className="fixed inset-0 pointer-events-none z-20 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(255,80,40,0.18)_100%)] mix-blend-soft-light"
+          className="fixed inset-0 pointer-events-none z-20 bg-[radial-gradient(ellipse_at_center,transparent_60%,rgba(198,85,72,0.18)_100%)] mix-blend-soft-light"
           aria-hidden
         />
       )}

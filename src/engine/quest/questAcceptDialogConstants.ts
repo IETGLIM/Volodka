@@ -47,16 +47,16 @@ export const QUEST_ACCEPT_DIALOG_LABELS = {
 } as const;
 
 export const QUEST_TYPE_BADGE_COLORS: Record<'main' | 'side' | 'hidden' | 'daily', string> = {
-  main: '#ff6644',
-  side: '#66ccff',
-  hidden: '#cc66ff',
+  main: '#c65548',
+  side: '#9db3c8',
+  hidden: '#8d7fb5',
   daily: '#aaaaaa',
 };
 
 export const QUEST_ACCEPT_ACCENT = {
-  cyan: '#00ffee',
-  cyanDim: 'rgba(0,255,238,0.3)',
-  text: '#e0f8f8',
+  cyan: '#9db3c8',
+  cyanDim: 'rgba(157,179,200,0.3)',
+  text: '#eae4d6',
   description: '#aacccc',
   muted: '#888',
 } as const;

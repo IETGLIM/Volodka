@@ -231,11 +231,11 @@ export interface GodRaysSunConfig {
 const GODRAYS_SUN_CONFIG: Partial<Record<SceneId, GodRaysSunConfig>> = {
   home_evening: {
     position: [0, 2.5, 0],
-    color: '#ffaa44',
+    color: '#e2a84b',
   },
   factory_basement: {
     position: [0, 2.6, -5.2],
-    color: '#22ff88',
+    color: '#46b96e',
   },
   // ── Expansion coverage (ultra-only postprocessing GodRays) ──
   // Positions mirror SCENE_ACCENT_LIGHTS in Lighting.tsx so the sun mesh
@@ -253,28 +253,28 @@ const GODRAYS_SUN_CONFIG: Partial<Record<SceneId, GodRaysSunConfig>> = {
   river_pier: {
     // Barrel fire at the pier head — warm flickering orange.
     position: [0, 1.5, -1],
-    color: '#ff9944',
+    color: '#e2a84b',
   },
   rooftop_edge: {
     // Sunset warm practical — rooftop edge hero lamp.
     position: [-3, 3, 0],
-    color: '#ff8844',
+    color: '#e2a84b',
   },
   chk_campfire_night: {
     // Campfire in the CHK clearing — primary fire light.
     position: [0, 1.2, 0],
-    color: '#ff8833',
+    color: '#e2a84b',
   },
   factory_roof: {
     // Factory yard lamp — industrial warm sodium.
     position: [-3, 3, 0],
-    color: '#ff7744',
+    color: '#c65548',
   },
   // AAA Phase A: expand ultra post godrays to more hero interiors for luxurious volumetric shafts
   cafe_evening: {
     // Neon bar glow + window spill
     position: [-3, 2.5, 0],
-    color: '#4488ff',
+    color: '#9db3c8',
   },
   library_day: {
     // Banker lamp / reading light shafts
@@ -284,12 +284,12 @@ const GODRAYS_SUN_CONFIG: Partial<Record<SceneId, GodRaysSunConfig>> = {
   pier_evening: {
     // Pier fire + dusk light
     position: [0, 2.2, -2],
-    color: '#ff9944',
+    color: '#e2a84b',
   },
   // AAA Phase A: dream gets ultra screen-space godrays too (ethereal cosmic light source for postprocessing GodRaysEffect)
   sleep_dream: {
     position: [0, 5.5, 0],
-    color: '#aa77ff',
+    color: '#8d7fb5',
   },
 };
 

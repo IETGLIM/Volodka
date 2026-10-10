@@ -77,13 +77,13 @@ export function HackingGameSetup({ difficulty, onSelectDifficulty, onStart }: Ha
                 {cfg.description}
               </p>
               <div className="flex items-center gap-3 mt-2">
-                <span className="font-mono text-[10px]" style={{ color: 'rgba(239, 68, 68, 0.6)' }}>
+                <span className="font-mono text-[10px]" style={{ color: 'rgba(198, 85, 72, 0.6)' }}>
                   🛡 {cfg.firewalls}
                 </span>
-                <span className="font-mono text-[10px]" style={{ color: 'rgba(34, 197, 94, 0.6)' }}>
+                <span className="font-mono text-[10px]" style={{ color: 'rgba(70, 185, 110, 0.6)' }}>
                   ◆ {cfg.dataNodes}
                 </span>
-                <span className="font-mono text-[10px]" style={{ color: 'rgba(251, 146, 60, 0.6)' }}>
+                <span className="font-mono text-[10px]" style={{ color: 'rgba(226, 168, 75, 0.6)' }}>
                   ◉ {cfg.scanners}
                 </span>
               </div>
@@ -118,19 +118,19 @@ export function HackingGameSetup({ difficulty, onSelectDifficulty, onStart }: Ha
           <span className="font-mono text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Вы</span>
         </div>
         <div className="flex items-center gap-1.5 justify-center">
-          <span className="text-xs" style={{ color: 'rgba(168, 85, 247, 0.9)' }}>⬡</span>
+          <span className="text-xs" style={{ color: 'rgba(141, 127, 181, 0.9)' }}>⬡</span>
           <span className="font-mono text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Цель</span>
         </div>
         <div className="flex items-center gap-1.5 justify-center">
-          <span className="text-xs" style={{ color: 'rgba(239, 68, 68, 0.8)' }}>🛡</span>
+          <span className="text-xs" style={{ color: 'rgba(198, 85, 72, 0.8)' }}>🛡</span>
           <span className="font-mono text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Файрвол</span>
         </div>
         <div className="flex items-center gap-1.5 justify-center">
-          <span className="text-xs" style={{ color: 'rgba(34, 197, 94, 0.9)' }}>◆</span>
+          <span className="text-xs" style={{ color: 'rgba(70, 185, 110, 0.9)' }}>◆</span>
           <span className="font-mono text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Данные</span>
         </div>
         <div className="flex items-center gap-1.5 justify-center">
-          <span className="text-xs" style={{ color: 'rgba(251, 146, 60, 0.9)' }}>◉</span>
+          <span className="text-xs" style={{ color: 'rgba(226, 168, 75, 0.9)' }}>◉</span>
           <span className="font-mono text-[10px]" style={{ color: 'rgba(148, 163, 184, 0.4)' }}>Сканер</span>
         </div>
         <div className="flex items-center gap-1.5 justify-center">

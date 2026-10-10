@@ -117,40 +117,40 @@ export const DIFFICULTY_META: Record<GameDifficulty, {
     name: 'Сюжетный',
     description: 'Фокус на нарративе. Боёвки прощают ошибки, навыки не требуются.',
     icon: '📖',
-    color: '#f59e0b',     // amber
-    glowColor: 'rgba(245, 158, 11, 0.3)',
+    color: '#e2a84b',     // amber
+    glowColor: 'rgba(226, 168, 75, 0.3)',
     dangerLevel: 0,
   },
   easy: {
     name: 'Лёгкий',
     description: 'Расслабленное приключение. Враги слабее, навыки чуть легче.',
     icon: '🛡️',
-    color: '#22c55e',     // green
-    glowColor: 'rgba(34, 197, 94, 0.25)',
+    color: '#46b96e',     // green
+    glowColor: 'rgba(70, 185, 110, 0.25)',
     dangerLevel: 1,
   },
   normal: {
     name: 'Обычный',
     description: 'Сбалансированный опыт. Рекомендуется для первого прохождения.',
     icon: '⚖️',
-    color: '#06b6d4',     // cyan
-    glowColor: 'rgba(6, 182, 212, 0.25)',
+    color: '#9db3c8',     // cyan
+    glowColor: 'rgba(157, 179, 200, 0.25)',
     dangerLevel: 2,
   },
   hard: {
     name: 'Сложный',
     description: 'Требует мастерства. Враги сильнее, стресс накапливается быстрее.',
     icon: '⚔️',
-    color: '#f97316',     // orange
-    glowColor: 'rgba(249, 115, 22, 0.3)',
+    color: '#e2a84b',     // orange
+    glowColor: 'rgba(226, 168, 75, 0.3)',
     dangerLevel: 3,
   },
   nightmare: {
     name: 'Кошмар',
     description: 'Персонажи умирают навсегда. Каждый шаг может стать последним.',
     icon: '💀',
-    color: '#ef4444',     // red
-    glowColor: 'rgba(239, 68, 68, 0.35)',
+    color: '#c65548',     // red
+    glowColor: 'rgba(198, 85, 72, 0.35)',
     dangerLevel: 4,
   },
 };

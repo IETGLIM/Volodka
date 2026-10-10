@@ -65,8 +65,8 @@ export function OpenStackTerminalOutcome({
         style={{
           color: isSuccess ? OPENSTACK_TERMINAL_COLORS.success : OPENSTACK_TERMINAL_COLORS.error,
           textShadow: isSuccess
-            ? '0 0 15px rgba(68, 255, 136, 0.4)'
-            : '0 0 15px rgba(255, 68, 68, 0.4)',
+            ? '0 0 15px rgba(70, 185, 110, 0.4)'
+            : '0 0 15px rgba(198, 85, 72, 0.4)',
         }}
       >
         {title}
@@ -83,8 +83,8 @@ export function OpenStackTerminalOutcome({
             className="text-xs font-mono px-2 py-1 rounded"
             style={{
               color: OPENSTACK_TERMINAL_COLORS.success,
-              background: 'rgba(68, 255, 136, 0.1)',
-              border: '1px solid rgba(68, 255, 136, 0.25)',
+              background: 'rgba(70, 185, 110, 0.1)',
+              border: '1px solid rgba(70, 185, 110, 0.25)',
             }}
           >
             {OPENSTACK_TERMINAL_LABELS.rewardCoding}
@@ -93,8 +93,8 @@ export function OpenStackTerminalOutcome({
             className="text-xs font-mono px-2 py-1 rounded"
             style={{
               color: OPENSTACK_TERMINAL_COLORS.phase,
-              background: 'rgba(255, 204, 0, 0.1)',
-              border: '1px solid rgba(255, 204, 0, 0.25)',
+              background: 'rgba(226, 168, 75, 0.1)',
+              border: '1px solid rgba(226, 168, 75, 0.25)',
             }}
           >
             {OPENSTACK_TERMINAL_LABELS.rewardKarma}
@@ -107,8 +107,8 @@ export function OpenStackTerminalOutcome({
             className="text-xs font-mono px-2 py-1 rounded"
             style={{
               color: OPENSTACK_TERMINAL_COLORS.error,
-              background: 'rgba(255, 68, 68, 0.1)',
-              border: '1px solid rgba(255, 68, 68, 0.25)',
+              background: 'rgba(198, 85, 72, 0.1)',
+              border: '1px solid rgba(198, 85, 72, 0.25)',
             }}
           >
             {OPENSTACK_TERMINAL_LABELS.penaltyStress}

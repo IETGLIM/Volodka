@@ -53,7 +53,7 @@ export function HackingGamePlaying({
                     ? `rgba(${HACKING_CYAN_RGB}, 0.7)`
                     : bandwidth > 2
                       ? `rgba(${HACKING_AMBER_RGB}, 0.7)`
-                      : 'rgba(239, 68, 68, 0.7)',
+                      : 'rgba(198, 85, 72, 0.7)',
                 }}
                 animate={{ width: `${(bandwidth / config.bandwidth) * 100}%` }}
                 transition={{ duration: 0.3 }}
@@ -109,7 +109,7 @@ export function HackingGamePlaying({
           >
             <span
               className="font-mono text-xs font-bold tracking-wider"
-              style={{ color: 'rgba(251, 146, 60, 0.9)', textShadow: '0 0 8px rgba(251, 146, 60, 0.3)' }}
+              style={{ color: 'rgba(226, 168, 75, 0.9)', textShadow: '0 0 8px rgba(226, 168, 75, 0.3)' }}
             >
               {scannerAlert}
             </span>

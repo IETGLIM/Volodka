@@ -50,11 +50,11 @@ export function HUDNotificationFeed() {
     });
 
     const unsubLevelUp = eventBus.on('skill:level_up', (payload) => {
-      addItem('⭐', t('hud.feed.skillLevel', `${payload.skill} → ур. ${payload.level}`, { skill: payload.skill, level: payload.level }), '#fbbf24');
+      addItem('⭐', t('hud.feed.skillLevel', `${payload.skill} → ур. ${payload.level}`, { skill: payload.skill, level: payload.level }), '#e2a84b');
     });
 
     const unsubQuestAccepted = eventBus.on('quest:accepted', (payload) => {
-      addItem('📜', t('hud.feed.questAccepted', `Задание: ${payload.questTitle ?? 'Новое'}`, { title: payload.questTitle ?? 'Новое' }), '#00d4e0');
+      addItem('📜', t('hud.feed.questAccepted', `Задание: ${payload.questTitle ?? 'Новое'}`, { title: payload.questTitle ?? 'Новое' }), '#9db3c8');
     });
 
     const unsubQuestCompleted = eventBus.on('quest:completed', (payload) => {
@@ -67,25 +67,25 @@ export function HUDNotificationFeed() {
         addItem(
           d > 0 ? '🕊' : '⚠',
           d > 0 ? t('hud.feed.karmaGain', `Карма +${d}`, { n: d }) : t('hud.feed.karmaDrop', `Карма ${d}`, { n: d }),
-          d > 0 ? '#57a874' : '#fb7185',
+          d > 0 ? '#57a874' : '#c65548',
         );
       }
     });
 
     const unsubPoem = eventBus.on('poem:collected', (payload) => {
-      addItem('📖', t('hud.feed.poem', `Стих: ${payload.poemId ?? 'Новый'}`, { id: payload.poemId ?? 'Новый' }), '#a78bfa');
+      addItem('📖', t('hud.feed.poem', `Стих: ${payload.poemId ?? 'Новый'}`, { id: payload.poemId ?? 'Новый' }), '#8d7fb5');
     });
 
     // thought:acquired is not a typed event — skip
 
     const unsubToast = eventBus.on('toast:add', (payload) => {
       if (payload.type === 'karma' || payload.type === 'poem' || payload.type === 'quest') {
-        addItem('📋', payload.message, '#fbbf24');
+        addItem('📋', payload.message, '#e2a84b');
       }
     });
 
     const unsubLore = eventBus.on('lore:discovered', (payload) => {
-      addItem('📜', t('hud.feed.lore', `Лор: ${payload.title ?? 'Запись'}`, { title: payload.title ?? 'Запись' }), '#2dd4bf');
+      addItem('📜', t('hud.feed.lore', `Лор: ${payload.title ?? 'Запись'}`, { title: payload.title ?? 'Запись' }), '#9db3c8');
     });
 
     return () => {

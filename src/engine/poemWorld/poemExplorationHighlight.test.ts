@@ -21,7 +21,7 @@ describe('resolvePoemExplorationHighlight', () => {
     );
     expect(state.mode).toBe('exploration');
     expect(state.pulse).toBe(true);
-    expect(state.color).toBe('#ffd866');
+    expect(state.color).toBe('#e2a84b');
   });
 
   it('disables pulse when reduced motion is on', () => {

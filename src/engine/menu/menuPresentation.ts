@@ -66,10 +66,10 @@ export function getAccentColors(accent?: string, isSelected?: boolean): MenuAcce
         text: isSelected ? 'text-emerald-100' : 'text-emerald-300/80',
         textHover: 'hover:text-emerald-100',
         glow: isSelected
-          ? '0 0 15px rgba(52, 211, 153, 0.12), inset 0 0 10px rgba(52, 211, 153, 0.06)'
+          ? '0 0 15px rgba(70, 185, 110, 0.12), inset 0 0 10px rgba(70, 185, 110, 0.06)'
           : 'none',
-        glowHover: 'inset 0 0 20px rgba(52, 211, 153, 0.1), 0 0 15px rgba(52, 211, 153, 0.08)',
-        scanColor: 'rgba(52, 211, 153, 0.06)',
+        glowHover: 'inset 0 0 20px rgba(70, 185, 110, 0.1), 0 0 15px rgba(70, 185, 110, 0.08)',
+        scanColor: 'rgba(70, 185, 110, 0.06)',
       };
     case 'amber':
       return {
@@ -80,10 +80,10 @@ export function getAccentColors(accent?: string, isSelected?: boolean): MenuAcce
         text: isSelected ? 'text-amber-100' : 'text-amber-300/70',
         textHover: 'hover:text-amber-100',
         glow: isSelected
-          ? '0 0 15px rgba(251, 191, 36, 0.1), inset 0 0 10px rgba(251, 191, 36, 0.05)'
+          ? '0 0 15px rgba(226, 168, 75, 0.1), inset 0 0 10px rgba(226, 168, 75, 0.05)'
           : 'none',
-        glowHover: 'inset 0 0 20px rgba(251, 191, 36, 0.1), 0 0 15px rgba(251, 191, 36, 0.08)',
-        scanColor: 'rgba(251, 191, 36, 0.06)',
+        glowHover: 'inset 0 0 20px rgba(226, 168, 75, 0.1), 0 0 15px rgba(226, 168, 75, 0.08)',
+        scanColor: 'rgba(226, 168, 75, 0.06)',
       };
     case 'magenta':
       return {
@@ -94,10 +94,10 @@ export function getAccentColors(accent?: string, isSelected?: boolean): MenuAcce
         text: isSelected ? 'text-fuchsia-100' : 'text-fuchsia-300/70',
         textHover: 'hover:text-fuchsia-100',
         glow: isSelected
-          ? '0 0 15px rgba(217, 70, 239, 0.1), inset 0 0 10px rgba(217, 70, 239, 0.05)'
+          ? '0 0 15px rgba(141, 127, 181, 0.1), inset 0 0 10px rgba(141, 127, 181, 0.05)'
           : 'none',
-        glowHover: 'inset 0 0 20px rgba(217, 70, 239, 0.1), 0 0 15px rgba(217, 70, 239, 0.08)',
-        scanColor: 'rgba(217, 70, 239, 0.06)',
+        glowHover: 'inset 0 0 20px rgba(141, 127, 181, 0.1), 0 0 15px rgba(141, 127, 181, 0.08)',
+        scanColor: 'rgba(141, 127, 181, 0.06)',
       };
     default:
       return {
@@ -119,11 +119,11 @@ export function getAccentBarColor(accent?: string): string {
     case 'cyan':
       return 'rgba(157, 179, 200, 0.8)';
     case 'emerald':
-      return 'rgba(52, 211, 153, 0.8)';
+      return 'rgba(70, 185, 110, 0.8)';
     case 'amber':
-      return 'rgba(251, 191, 36, 0.8)';
+      return 'rgba(226, 168, 75, 0.8)';
     case 'magenta':
-      return 'rgba(217, 70, 239, 0.8)';
+      return 'rgba(141, 127, 181, 0.8)';
     default:
       return 'rgba(157, 179, 200, 0.8)';
   }

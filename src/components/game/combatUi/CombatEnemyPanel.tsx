@@ -19,7 +19,7 @@ function TelegraphIndicator({ name }: { name: string }) {
   return (
     <motion.div
       className="relative mt-1 overflow-hidden rounded border border-rose-500/70 bg-gradient-to-r from-rose-950/80 via-rose-900/50 to-rose-950/80 px-2 py-1"
-      style={{ boxShadow: '0 0 14px rgba(244,63,94,0.35), inset 0 0 10px rgba(244,63,94,0.12)' }}
+      style={{ boxShadow: '0 0 14px rgba(198,85,72,0.35), inset 0 0 10px rgba(198,85,72,0.12)' }}
       initial={{ opacity: 0, y: -6, scaleX: 0.9 }}
       animate={{ opacity: [0.8, 1, 0.8], y: 0, scaleX: 1 }}
       exit={{ opacity: 0, y: 4 }}
@@ -44,13 +44,13 @@ function TelegraphIndicator({ name }: { name: string }) {
         {/* Иконка в пульсирующем кольце. */}
         <motion.span
           className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-rose-400/70 bg-rose-950/90"
-          animate={{ boxShadow: ['0 0 4px rgba(251,113,133,0.4)', '0 0 10px rgba(251,113,133,0.9)', '0 0 4px rgba(251,113,133,0.4)'] }}
+          animate={{ boxShadow: ['0 0 4px rgba(198,85,72,0.4)', '0 0 10px rgba(198,85,72,0.9)', '0 0 4px rgba(198,85,72,0.4)'] }}
           transition={{ duration: 0.9, repeat: Infinity, ease: 'easeInOut' }}
           aria-hidden="true"
         >
           <span className="text-[9px] leading-none">⚡</span>
         </motion.span>
-        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-200 truncate drop-shadow-[0_0_6px_rgba(244,63,94,0.6)]">
+        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-rose-200 truncate drop-shadow-[0_0_6px_rgba(198,85,72,0.6)]">
           Готовит: {name}!
         </span>
         <span className="ml-auto whitespace-nowrap font-mono text-[9px] text-rose-300/90">
@@ -61,7 +61,7 @@ function TelegraphIndicator({ name }: { name: string }) {
       {/* Тонкая нижняя линия «до удара» — доля заполнения растёт к удару. */}
       <motion.div
         className="absolute bottom-0 left-0 h-[2px] rounded-full bg-rose-400/80"
-        style={{ boxShadow: '0 0 6px rgba(251,113,133,0.8)' }}
+        style={{ boxShadow: '0 0 6px rgba(198,85,72,0.8)' }}
         initial={{ width: '12%' }}
         animate={{ width: ['12%', '100%'] }}
         transition={{ duration: 1.4, repeat: Infinity, ease: 'easeIn' }}
@@ -104,7 +104,7 @@ export function CombatEnemyPanel({
       {pendingWave.length > 0 && (
         <div
           className="mb-1 flex items-center justify-center gap-1.5 rounded border border-amber-500/50 bg-amber-950/40 px-2 py-0.5 backdrop-blur-sm"
-          style={{ boxShadow: '0 0 10px rgba(245, 158, 11, 0.18)' }}
+          style={{ boxShadow: '0 0 10px rgba(226, 168, 75, 0.18)' }}
           role="status"
           aria-label="В бою ждёт второй противник"
         >
@@ -123,7 +123,7 @@ export function CombatEnemyPanel({
       )}
       <motion.div
         className={`glass-panel-dark bg-black/60 backdrop-blur-sm border border-red-900/30 rounded-lg p-3 scan-line combat-enemy-card ${enemyAffinityClass}`}
-        style={{ boxShadow: '0 0 20px rgba(239,68,68,0.1)' }}
+        style={{ boxShadow: '0 0 20px rgba(198,85,72,0.1)' }}
       >
         <div className="flex items-center gap-3 mb-2">
           <EnemyPortrait emoji={enemy.emoji} hp={enemy.hp} maxHp={enemy.maxHp} />

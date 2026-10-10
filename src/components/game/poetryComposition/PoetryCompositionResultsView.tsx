@@ -131,8 +131,8 @@ export function PoetryCompositionResultsView({
           {POETRY_COMPOSITION_LABELS.rewards}
         </span>
         <div className="flex items-center justify-center gap-4 text-xs font-mono">
-          <span style={{ color: '#00ffee' }}>{POETRY_COMPOSITION_LABELS.rewardXp(rewards.xpReward)}</span>
-          <span style={{ color: '#ffcc00' }}>{POETRY_COMPOSITION_LABELS.rewardKarma(rewards.karmaReward)}</span>
+          <span style={{ color: '#9db3c8' }}>{POETRY_COMPOSITION_LABELS.rewardXp(rewards.xpReward)}</span>
+          <span style={{ color: '#e2a84b' }}>{POETRY_COMPOSITION_LABELS.rewardKarma(rewards.karmaReward)}</span>
           <span style={{ color: POETRY_COMPOSITION_ACCENT_COLOR }}>{POETRY_COMPOSITION_LABELS.rewardWriting}</span>
         </div>
       </motion.div>

@@ -293,9 +293,9 @@ export function LoadingScreen({
             style={{ zIndex: 6 }}
             animate={{
               background: [
-                'radial-gradient(ellipse at 70% 60%, rgba(251,191,36,0.015) 0%, transparent 50%)',
-                'radial-gradient(ellipse at 30% 40%, rgba(251,191,36,0.03) 0%, transparent 50%)',
-                'radial-gradient(ellipse at 70% 60%, rgba(251,191,36,0.015) 0%, transparent 50%)',
+                'radial-gradient(ellipse at 70% 60%, rgba(226,168,75,0.015) 0%, transparent 50%)',
+                'radial-gradient(ellipse at 30% 40%, rgba(226,168,75,0.03) 0%, transparent 50%)',
+                'radial-gradient(ellipse at 70% 60%, rgba(226,168,75,0.015) 0%, transparent 50%)',
               ],
             }}
             transition={{ duration: 8, repeat: Infinity, repeatType: 'reverse' }}
@@ -329,7 +329,7 @@ export function LoadingScreen({
         )}
 
         {showTitle && (
-          <MotionBox fx={fx} className="font-mono text-sm sm:text-base tracking-[0.4em] uppercase bg-[linear-gradient(90deg,rgba(157, 179, 200,0.8),rgba(255,140,0,0.6),rgba(157, 179, 200,0.8))] bg-clip-text text-transparent" delay={0.8}>
+          <MotionBox fx={fx} className="font-mono text-sm sm:text-base tracking-[0.4em] uppercase bg-[linear-gradient(90deg,rgba(157, 179, 200,0.8),rgba(226,168,75,0.6),rgba(157, 179, 200,0.8))] bg-clip-text text-transparent" delay={0.8}>
             {LOADING_SUBTITLE_TEXT}
           </MotionBox>
         )}
@@ -361,7 +361,7 @@ export function LoadingScreen({
                 <div
                   className="absolute inset-0"
                   style={{
-                    background: 'linear-gradient(90deg, #0891b2, #06b6d4, #22d3ee, #f59e0b, #fbbf24)',
+                    background: 'linear-gradient(90deg, #0891b2, #9db3c8, #9db3c8, #e2a84b, #e2a84b)',
                     backgroundSize: '200% 100%',
                     animation: 'loading-bar-pulse 2s ease-in-out infinite',
                   }}
@@ -379,7 +379,7 @@ export function LoadingScreen({
                 <div
                   className="absolute inset-0"
                   style={{
-                    boxShadow: '0 0 12px rgba(6,182,212,0.4), 0 0 4px rgba(245,158,11,0.2)',
+                    boxShadow: '0 0 12px rgba(157,179,200,0.4), 0 0 4px rgba(226,168,75,0.2)',
                   }}
                 />
               </div>
@@ -393,14 +393,14 @@ export function LoadingScreen({
                   <div
                     className="absolute inset-0"
                     style={{
-                      background: 'linear-gradient(90deg, #0891b2, #06b6d4, #22d3ee, #f59e0b, #fbbf24)',
+                      background: 'linear-gradient(90deg, #0891b2, #9db3c8, #9db3c8, #e2a84b, #e2a84b)',
                       backgroundSize: '200% 100%',
                       animation: 'loading-bar-pulse 2s ease-in-out infinite',
                     }}
                   />
                 </motion.div>
               ) : (
-                <div className="h-full w-2/5" style={{ background: 'linear-gradient(90deg, #0891b2, #06b6d4, #f59e0b)' }} />
+                <div className="h-full w-2/5" style={{ background: 'linear-gradient(90deg, #0891b2, #9db3c8, #e2a84b)' }} />
               )
             )}
           </div>
@@ -411,7 +411,7 @@ export function LoadingScreen({
             </p>
             {clampedProgress !== undefined && (
               <span className="text-[11px] font-mono tabular-nums" style={{
-                background: 'linear-gradient(90deg, rgba(6,182,212,0.6), rgba(245,158,11,0.5))',
+                background: 'linear-gradient(90deg, rgba(157,179,200,0.6), rgba(226,168,75,0.5))',
                 WebkitBackgroundClip: 'text',
                 WebkitTextFillColor: 'transparent',
               }}>
@@ -491,9 +491,9 @@ export function LoadingScreen({
                   aria-atomic="true"
                 >
                   <div className="flex items-center justify-center gap-3 mb-1">
-                    <div className="h-px w-6 bg-[linear-gradient(90deg,transparent,rgba(251,191,36,0.4))]" />
+                    <div className="h-px w-6 bg-[linear-gradient(90deg,transparent,rgba(226,168,75,0.4))]" />
                     <span className="text-[10px] text-amber-500/50 uppercase tracking-[0.2em] font-mono">Совет</span>
-                    <div className="h-px w-6 bg-[linear-gradient(90deg,rgba(251,191,36,0.4),transparent)]" />
+                    <div className="h-px w-6 bg-[linear-gradient(90deg,rgba(226,168,75,0.4),transparent)]" />
                   </div>
                   <p className="text-xs leading-relaxed" style={{ color: 'var(--hud-filmic-ink-dim)' }}>{currentTip}</p>
                 </motion.div>

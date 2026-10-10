@@ -54,19 +54,19 @@ export const PERK_CATEGORY_META: Record<PerkCategory, PerkCategoryMeta> = {
     id: 'social',
     name: 'Социальные',
     icon: 'Users',
-    color: '#a78bfa', // violet
+    color: '#8d7fb5', // violet
   },
   combat: {
     id: 'combat',
     name: 'Боевые',
     icon: 'Sword',
-    color: '#f87171', // red
+    color: '#c65548', // red
   },
   poetic: {
     id: 'poetic',
     name: 'Поэтические',
     icon: 'Feather',
-    color: '#fbbf24', // amber
+    color: '#e2a84b', // amber
   },
   technical: {
     id: 'technical',

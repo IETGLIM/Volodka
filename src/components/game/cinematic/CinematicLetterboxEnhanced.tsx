@@ -215,7 +215,7 @@ export const CinematicLetterboxEnhanced = memo(
       zIndex: 12,
       backgroundImage: `${NOISE_TEXTURE}, ${topGradient}`,
       backgroundSize: '256px 256px, 100% 100%',
-      boxShadow: 'inset 0 -1px 0 rgba(0, 255, 200, 0.06)',
+      boxShadow: 'inset 0 -1px 0 rgba(157, 179, 200, 0.06)',
     };
 
     return (
@@ -240,7 +240,7 @@ export const CinematicLetterboxEnhanced = memo(
           style={{
             ...barBaseStyle,
             backgroundImage: `${NOISE_TEXTURE}, ${bottomGradient}`,
-            boxShadow: 'inset 0 1px 0 rgba(0, 255, 200, 0.06)',
+            boxShadow: 'inset 0 1px 0 rgba(157, 179, 200, 0.06)',
             transformOrigin: 'bottom',
           }}
           initial={initial}

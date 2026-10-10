@@ -26,22 +26,22 @@ interface SystemAlertData {
 
 const ACCENT: Record<SystemAlertKind, { primary: string; border: string; bg: string; glow: string }> = {
   save_failed: {
-    primary: '#fb7185',
-    border: 'rgba(251, 113, 133, 0.35)',
+    primary: '#c65548',
+    border: 'rgba(198, 85, 72, 0.35)',
     bg: 'rgba(30, 12, 16, 0.88)',
-    glow: 'rgba(251, 113, 133, 0.12)',
+    glow: 'rgba(198, 85, 72, 0.12)',
   },
   load_failed: {
-    primary: '#f87171',
-    border: 'rgba(248, 113, 113, 0.35)',
+    primary: '#c65548',
+    border: 'rgba(198, 85, 72, 0.35)',
     bg: 'rgba(28, 10, 10, 0.88)',
-    glow: 'rgba(248, 113, 113, 0.12)',
+    glow: 'rgba(198, 85, 72, 0.12)',
   },
   load_recovered: {
-    primary: '#fbbf24',
-    border: 'rgba(251, 191, 36, 0.35)',
+    primary: '#e2a84b',
+    border: 'rgba(226, 168, 75, 0.35)',
     bg: 'rgba(20, 16, 8, 0.88)',
-    glow: 'rgba(251, 191, 36, 0.12)',
+    glow: 'rgba(226, 168, 75, 0.12)',
   },
 };
 

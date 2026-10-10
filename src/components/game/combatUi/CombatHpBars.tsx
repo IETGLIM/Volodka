@@ -45,17 +45,17 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
     ? pct > 60
       ? '#10b981'
       : pct > 30
-        ? '#f59e0b'
-        : '#ef4444'
+        ? '#e2a84b'
+        : '#c65548'
     : pct > 60
-      ? '#ef4444'
+      ? '#c65548'
       : pct > 30
-        ? '#f97316'
-        : '#eab308';
+        ? '#e2a84b'
+        : '#e2a84b';
 
-  // Player HP uses green gradient (#22c55e → #16a34a) when healthy
+  // Player HP uses green gradient (#46b96e → #16a34a) when healthy
   const playerGradientStyle = isPlayer && pct > 60
-    ? { background: 'linear-gradient(90deg, #22c55e, #16a34a)' }
+    ? { background: 'linear-gradient(90deg, #46b96e, #16a34a)' }
     : undefined;
 
   return (
@@ -73,7 +73,7 @@ export const AnimatedHPBar = React.memo(function AnimatedHPBar({
         {isLowHealth && isPlayer && (
           <motion.div
             className="absolute inset-0 rounded-sm pointer-events-none"
-            style={{ background: 'rgba(239, 68, 68, 0.25)' }}
+            style={{ background: 'rgba(198, 85, 72, 0.25)' }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 0.6, 0] }}
             transition={{ duration: 1.2, repeat: Infinity, ease: 'easeInOut' }}

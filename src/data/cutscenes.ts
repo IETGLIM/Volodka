@@ -66,7 +66,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     anchorSceneId: 'volodka_room',
     waypointSpace: 'spawn_offset',
     textDurationMs: 6000,
-    textAccentColor: '#00ff66', // green — monitor glow
+    textAccentColor: '#46b96e', // green — monitor glow
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',
@@ -200,7 +200,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: '«Садись. Я налью тебе суп.»',
     triggerStoryNode: 'kitchen_table',
     textDurationMs: 5000,
-    textAccentColor: '#ffaa44', // warm amber
+    textAccentColor: '#e2a84b', // warm amber
     type: 'character_intro',
     oneShot: true,
     letterboxStyle: 'thin',
@@ -250,7 +250,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: '«Я видела твой код в архивах.»',
     triggerStoryNode: 'maria_curious',
     textDurationMs: 5500,
-    textAccentColor: '#c084fc', // purple — mysterious
+    textAccentColor: '#8d7fb5', // purple — mysterious
     type: 'character_intro',
     oneShot: true,
     letterboxStyle: 'thin',
@@ -350,7 +350,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Под поверхностью города пульсирует что-то иное',
     triggerStoryNode: 'act2_transition',
     textDurationMs: 6500,
-    textAccentColor: '#22d3ee', // cyan (hex — var() не парсится THREE.Color/canvas)
+    textAccentColor: '#9db3c8', // cyan (hex — var() не парсится THREE.Color/canvas)
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',
@@ -400,7 +400,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Гильдия закрывает кольцо',
     triggerStoryNode: 'act3_transition',
     textDurationMs: 6500,
-    textAccentColor: '#a78bfa', // violet
+    textAccentColor: '#8d7fb5', // violet
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',
@@ -449,7 +449,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Время выбирать сторону',
     triggerStoryNode: 'act4_transition',
     textDurationMs: 6500,
-    textAccentColor: '#f97316', // orange
+    textAccentColor: '#e2a84b', // orange
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',
@@ -498,7 +498,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Каждое слово вело сюда',
     triggerStoryNode: 'act4_final_choice',
     textDurationMs: 8000,
-    textAccentColor: '#fbbf24', // amber/gold
+    textAccentColor: '#e2a84b', // amber/gold
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',
@@ -547,7 +547,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'За примирением последует расплата',
     triggerStoryNode: 'act5_ending_epilogue',
     textDurationMs: 6000,
-    textAccentColor: '#6366f1', // indigo — foreboding
+    textAccentColor: '#9db3c8', // indigo — foreboding
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',
@@ -597,7 +597,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Последний акт начинается',
     triggerStoryNode: 'act6_final_confrontation',
     textDurationMs: 5500,
-    textAccentColor: '#fbbf24', // gold — resolution
+    textAccentColor: '#e2a84b', // gold — resolution
     type: 'act_transition',
     oneShot: true,
     letterboxStyle: 'full',
@@ -697,7 +697,7 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
     subtitle: 'Каждое слово — удар. Каждый стих — щит.',
     triggerStoryNode: 'join_resistance',
     textDurationMs: 8000,
-    textAccentColor: '#f43f5e', // rose
+    textAccentColor: '#c65548', // rose
     type: 'story_moment',
     oneShot: true,
     letterboxStyle: 'full',

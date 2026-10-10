@@ -80,7 +80,7 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
     <div className="relative h-full w-full bg-black overflow-hidden font-mono">
       {/* Матричный призрак + поэма на фоне */}
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute inset-0 opacity-[0.035] bg-[linear-gradient(transparent_0%,rgba(0,255,180,0.18)_50%,transparent_100%)] animate-pulse" />
+        <div className="absolute inset-0 opacity-[0.035] bg-[linear-gradient(transparent_0%,rgba(70,185,110,0.18)_50%,transparent_100%)] animate-pulse" />
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.06 }}
@@ -122,12 +122,12 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
       >
         <div className="max-w-4xl mx-auto space-y-[2px]">
           {BOOT_LINES.slice(0, visibleCount).map((line, i) => (
-            <div key={i} className="text-emerald-300/85 tracking-[0.02em] [text-shadow:0_0_8px_rgba(52,211,153,0.35)]">
+            <div key={i} className="text-emerald-300/85 tracking-[0.02em] [text-shadow:0_0_8px_rgba(70,185,110,0.35)]">
               {line}
             </div>
           ))}
           {visibleCount < BOOT_LINES.length && (
-            <div className="text-emerald-200/90 tracking-[0.02em] [text-shadow:0_0_12px_rgba(52,211,153,0.5)]">
+            <div className="text-emerald-200/90 tracking-[0.02em] [text-shadow:0_0_12px_rgba(70,185,110,0.5)]">
               {BOOT_LINES[visibleCount]?.slice(0, charIndex)}
               <span className="inline-block w-[0.6em] h-[1.1em] bg-emerald-300/70 ml-[1px] -mb-[2px] animate-pulse" aria-hidden>
                 _

@@ -123,7 +123,7 @@ export const GlitchRevealTransition = memo(function GlitchRevealTransition({
             <div
               className="absolute inset-0"
               style={{
-                background: `rgba(255, 0, 80, 0.3)`,
+                background: `rgba(141, 127, 181, 0.3)`,
                 transform: `translateX(${slice.channelOffset}px)`,
               }}
             />
@@ -131,7 +131,7 @@ export const GlitchRevealTransition = memo(function GlitchRevealTransition({
             <div
               className="absolute inset-0"
               style={{
-                background: `rgba(0, 100, 255, 0.3)`,
+                background: `rgba(157, 179, 200, 0.3)`,
                 transform: `translateX(-${slice.channelOffset}px)`,
               }}
             />

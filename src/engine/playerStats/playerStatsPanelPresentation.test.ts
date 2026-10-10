@@ -19,13 +19,13 @@ describe('playerStatsPanelPresentation', () => {
   it('resolves karma ring colors by threshold', () => {
     expect(getKarmaRingColor(80)).toBe('#57a874');
     expect(getKarmaRingColor(40)).toBe('var(--cyber-cyan)');
-    expect(getKarmaRingColor(10)).toBe('#fb7185');
+    expect(getKarmaRingColor(10)).toBe('#c65548');
   });
 
   it('resolves vital colors and warnings', () => {
-    expect(getEnergyColor(10)).toBe('#fb7185');
+    expect(getEnergyColor(10)).toBe('#c65548');
     expect(getEnergyColor(80)).toBe('var(--cyber-cyan)');
-    expect(getStressColor(80)).toBe('#fb7185');
+    expect(getStressColor(80)).toBe('#c65548');
     expect(isVitalLowWarning(20)).toBe(true);
     expect(isVitalHighWarning(75)).toBe(true);
   });

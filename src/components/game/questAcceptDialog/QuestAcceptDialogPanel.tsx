@@ -76,17 +76,17 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
               border: `1px solid ${QUEST_ACCEPT_ACCENT.cyanDim}`,
               borderRadius: '8px',
               boxShadow:
-                '0 0 30px rgba(0,255,238,0.1), 0 0 8px rgba(0,255,238,0.05), inset 0 0 15px rgba(0,255,238,0.03)',
+                '0 0 30px rgba(157,179,200,0.1), 0 0 8px rgba(157,179,200,0.05), inset 0 0 15px rgba(157,179,200,0.03)',
             }}
           >
-            <QuestAcceptBracketCorners color="rgba(0,255,238,0.5)" size={6} />
+            <QuestAcceptBracketCorners color="rgba(157,179,200,0.5)" size={6} />
 
             <div className="flex flex-col md:flex-row flex-1 min-h-0 overflow-hidden">
               <div
                 className="flex-shrink-0 w-full md:w-[240px] flex flex-col items-center p-4 md:p-6"
                 style={{
-                  borderRight: '1px solid rgba(0,255,238,0.15)',
-                  borderBottom: '1px solid rgba(0,255,238,0.15)',
+                  borderRight: '1px solid rgba(157,179,200,0.15)',
+                  borderBottom: '1px solid rgba(157,179,200,0.15)',
                   background: 'linear-gradient(180deg, rgba(0,20,30,0.5), rgba(0,8,16,0.3))',
                 }}
               >
@@ -113,9 +113,9 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                             key={dot}
                             className="w-2 h-2 rounded-full"
                             style={{
-                              background: isRelationDotFilled(npcRelation, dot) ? '#00ff66' : '#333',
+                              background: isRelationDotFilled(npcRelation, dot) ? '#46b96e' : '#333',
                               boxShadow: isRelationDotFilled(npcRelation, dot)
-                                ? '0 0 4px rgba(0,255,102,0.5)'
+                                ? '0 0 4px rgba(70,185,110,0.5)'
                                 : 'none',
                             }}
                           />
@@ -132,7 +132,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                       className="text-xs font-mono tracking-wider"
                       style={{
                         color: '#557777',
-                        textShadow: '0 0 4px rgba(0,255,238,0.1)',
+                        textShadow: '0 0 4px rgba(157,179,200,0.1)',
                       }}
                     >
                       {giverFallback}
@@ -151,7 +151,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                     className="text-xl font-mono font-bold tracking-wide"
                     style={{
                       color: QUEST_ACCEPT_ACCENT.text,
-                      textShadow: '0 0 12px rgba(0,255,238,0.2)',
+                      textShadow: '0 0 12px rgba(157,179,200,0.2)',
                     }}
                   >
                     {questDef.title}
@@ -181,8 +181,8 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                           key={level}
                           className="text-xs"
                           style={{
-                            color: level <= difficultyStars ? '#ffaa00' : '#444',
-                            textShadow: level <= difficultyStars ? '0 0 4px rgba(255,170,0,0.5)' : 'none',
+                            color: level <= difficultyStars ? '#e2a84b' : '#444',
+                            textShadow: level <= difficultyStars ? '0 0 4px rgba(226,168,75,0.5)' : 'none',
                           }}
                         >
                           {level <= difficultyStars ? '★' : '☆'}
@@ -194,7 +194,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                   {questDef.timeLimitHours && (
                     <div className="flex items-center gap-1">
                       <Clock className="size-3 text-amber-400/70" aria-hidden="true" />
-                      <span className="text-[10px] font-mono" style={{ color: '#ddaa66' }}>
+                      <span className="text-[10px] font-mono" style={{ color: '#e2a84b' }}>
                         {questDef.timeLimitHours}ч
                       </span>
                     </div>
@@ -206,8 +206,8 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                   <div
                     className="mb-3 px-3 py-2 rounded"
                     style={{
-                      background: 'rgba(0,255,238,0.04)',
-                      borderLeft: '2px solid rgba(0,255,238,0.3)',
+                      background: 'rgba(157,179,200,0.04)',
+                      borderLeft: '2px solid rgba(157,179,200,0.3)',
                     }}
                   >
                     <p
@@ -294,15 +294,15 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                   <div
                     className="mb-4 px-3 py-2 rounded"
                     style={{
-                      background: 'rgba(0,255,102,0.08)',
-                      border: '1px solid rgba(0,255,102,0.2)',
+                      background: 'rgba(70,185,110,0.08)',
+                      border: '1px solid rgba(70,185,110,0.2)',
                     }}
                   >
                     <div className="flex items-center gap-2">
-                      <span style={{ color: '#00ff66', fontSize: uiTextScaledPx(14) }} aria-hidden="true">
+                      <span style={{ color: '#46b96e', fontSize: uiTextScaledPx(14) }} aria-hidden="true">
                         📜
                       </span>
-                      <span className="text-[11px] font-mono" style={{ color: '#66ffaa' }}>
+                      <span className="text-[11px] font-mono" style={{ color: '#46b96e' }}>
                         {QUEST_ACCEPT_DIALOG_LABELS.poemBypass}
                       </span>
                     </div>
@@ -331,7 +331,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
 
             <div
               className="flex gap-3 px-4 py-3 md:px-6"
-              style={{ borderTop: '1px solid rgba(0,255,238,0.15)' }}
+              style={{ borderTop: '1px solid rgba(157,179,200,0.15)' }}
             >
               <motion.button
                 ref={dialog.acceptBtnRef}
@@ -340,10 +340,10 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                 aria-label={QUEST_ACCEPT_DIALOG_LABELS.accept}
                 className="quest-accept-btn--accept flex-1 py-3 rounded font-mono text-sm tracking-wider font-bold"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(0,255,238,0.18), rgba(0,255,238,0.08))',
+                  background: 'linear-gradient(135deg, rgba(157,179,200,0.18), rgba(157,179,200,0.08))',
                   color: QUEST_ACCEPT_ACCENT.cyan,
-                  border: '1px solid rgba(0,255,238,0.4)',
-                  textShadow: '0 0 8px rgba(0,255,238,0.3)',
+                  border: '1px solid rgba(157,179,200,0.4)',
+                  textShadow: '0 0 8px rgba(157,179,200,0.3)',
                 }}
                 whileHover={reducedMotion ? undefined : { scale: 1.01 }}
                 whileTap={reducedMotion ? undefined : { scale: 0.98 }}
@@ -357,10 +357,10 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                 aria-label={mainQuest ? QUEST_ACCEPT_DIALOG_LABELS.close : QUEST_ACCEPT_DIALOG_LABELS.decline}
                 className="quest-accept-btn--decline flex-1 py-3 rounded font-mono text-sm tracking-wider"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(255,100,68,0.1), rgba(255,100,68,0.05))',
-                  color: '#ff6644',
-                  border: '1px solid rgba(255,100,68,0.3)',
-                  textShadow: '0 0 8px rgba(255,100,68,0.3)',
+                  background: 'linear-gradient(135deg, rgba(198,85,72,0.1), rgba(198,85,72,0.05))',
+                  color: '#c65548',
+                  border: '1px solid rgba(198,85,72,0.3)',
+                  textShadow: '0 0 8px rgba(198,85,72,0.3)',
                 }}
                 whileHover={reducedMotion ? undefined : { scale: 1.01 }}
                 whileTap={reducedMotion ? undefined : { scale: 0.98 }}

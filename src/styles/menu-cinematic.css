@@ -52,17 +52,17 @@
   background: rgb(var(--cyber-cyan-rgb) / 0.4);
   box-shadow:
     60vw 10vh 0 1px rgb(var(--cyber-cyan-rgb) / 0.25),
-    25vw 50vh 0 0.5px rgba(251, 113, 133, 0.2),
+    25vw 50vh 0 0.5px rgba(198, 85, 72, 0.2),
     75vw 30vh 0 1.5px rgb(var(--cyber-cyan-rgb) / 0.3),
-    40vw 70vh 0 1px rgba(52, 211, 153, 0.2),
+    40vw 70vh 0 1px rgba(70, 185, 110, 0.2),
     85vw 60vh 0 0.5px rgb(var(--cyber-cyan-rgb) / 0.35),
-    10vw 80vh 0 1px rgba(251, 113, 133, 0.15),
+    10vw 80vh 0 1px rgba(198, 85, 72, 0.15),
     55vw 20vh 0 0.5px rgb(var(--cyber-cyan-rgb) / 0.2),
-    90vw 45vh 0 1px rgba(52, 211, 153, 0.15),
+    90vw 45vh 0 1px rgba(70, 185, 110, 0.15),
     35vw 90vh 0 0.5px rgb(var(--cyber-cyan-rgb) / 0.3),
-    70vw 75vh 0 1.5px rgba(251, 113, 133, 0.1),
+    70vw 75vh 0 1.5px rgba(198, 85, 72, 0.1),
     5vw 35vh 0 0.5px rgb(var(--cyber-cyan-rgb) / 0.2),
-    50vw 5vh 0 1px rgba(52, 211, 153, 0.2);
+    50vw 5vh 0 1px rgba(70, 185, 110, 0.2);
   animation: menu-dust-drift-1 12s ease-in-out infinite;
 }
 
@@ -71,18 +71,18 @@
   height: 1.5px;
   top: 60%;
   left: 80%;
-  background: rgba(251, 113, 133, 0.3);
+  background: rgba(198, 85, 72, 0.3);
   box-shadow:
     -50vw -30vh 0 1px rgb(var(--cyber-cyan-rgb) / 0.2),
-    -70vw -10vh 0 0.5px rgba(52, 211, 153, 0.15),
+    -70vw -10vh 0 0.5px rgba(70, 185, 110, 0.15),
     -30vw -50vh 0 1.5px rgb(var(--cyber-cyan-rgb) / 0.25),
-    -15vw -70vh 0 0.5px rgba(251, 113, 133, 0.2),
+    -15vw -70vh 0 0.5px rgba(198, 85, 72, 0.2),
     -60vw -45vh 0 1px rgb(var(--cyber-cyan-rgb) / 0.15),
-    -80vw -20vh 0 0.5px rgba(52, 211, 153, 0.2),
+    -80vw -20vh 0 0.5px rgba(70, 185, 110, 0.2),
     -40vw -60vh 0 1px rgb(var(--cyber-cyan-rgb) / 0.3),
-    -25vw -35vh 0 0.5px rgba(251, 113, 133, 0.15),
+    -25vw -35vh 0 0.5px rgba(198, 85, 72, 0.15),
     -55vw -55vh 0 1.5px rgb(var(--cyber-cyan-rgb) / 0.2),
-    -10vw -80vh 0 0.5px rgba(52, 211, 153, 0.25);
+    -10vw -80vh 0 0.5px rgba(70, 185, 110, 0.25);
   animation: menu-dust-drift-2 15s ease-in-out infinite;
 }
 
@@ -117,7 +117,7 @@
 }
 
 .menu-glitch-title::after {
-  color: #fb7185;
+  color: #c65548;
   z-index: -1;
   clip-path: inset(65% 0 0 0);
   animation: menu-glitch-clip-bottom 3s ease-in-out infinite;

@@ -38,7 +38,7 @@ describe('npcPortraitPresentation', () => {
   it('adapts appearance for color blind modes', () => {
     const base = fallbackAppearance(1);
     const adapted = adaptPortraitAppearance(base, 'deuteranopia');
-    expect(adapted.glowColor).toBe('#facc15');
+    expect(adapted.glowColor).toBe('#e2a84b');
   });
 
   it('builds stable cache keys', () => {

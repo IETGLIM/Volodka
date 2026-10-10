@@ -97,7 +97,7 @@ export function ObjectiveCompleteVfx() {
 
       // (c) Gold screen flash — emit to ScreenEffects (existing listener).
       eventBus.emit('fx:flash', {
-        color: 'rgba(251,191,36,0.10)',
+        color: 'rgba(226,168,75,0.10)',
         opacity: 1,
         duration: 320,
       });
@@ -172,7 +172,7 @@ export function ObjectiveCompleteVfx() {
                     className="absolute inset-0 rounded-full"
                     style={{
                       background:
-                        'radial-gradient(circle, rgba(251,191,36,0.55) 0%, rgba(251,191,36,0.12) 50%, transparent 75%)',
+                        'radial-gradient(circle, rgba(226,168,75,0.55) 0%, rgba(226,168,75,0.12) 50%, transparent 75%)',
                     }}
                     initial={{ scale: 0.4, opacity: 0.9 }}
                     animate={{ scale: 2.4, opacity: 0 }}
@@ -186,9 +186,9 @@ export function ObjectiveCompleteVfx() {
                   className="relative flex items-center justify-center size-14 rounded-full"
                   style={{
                     background:
-                      'radial-gradient(circle at 35% 30%, rgba(254,243,199,0.95) 0%, rgba(251,191,36,0.95) 35%, rgba(180,120,8,0.95) 100%)',
+                      'radial-gradient(circle at 35% 30%, rgba(254,243,199,0.95) 0%, rgba(226,168,75,0.95) 35%, rgba(180,120,8,0.95) 100%)',
                     boxShadow:
-                      '0 0 24px rgba(251,191,36,0.65), 0 0 48px rgba(251,191,36,0.35), inset 0 0 8px rgba(255,240,180,0.5)',
+                      '0 0 24px rgba(226,168,75,0.65), 0 0 48px rgba(226,168,75,0.35), inset 0 0 8px rgba(255,240,180,0.5)',
                   }}
                   initial={reducedMotion ? false : { scale: 0.5, rotate: -25 }}
                   animate={{ scale: 1, rotate: 0 }}
@@ -231,10 +231,10 @@ export function ObjectiveCompleteVfx() {
                             height: 4 + (i % 2) * 2,
                             background:
                               i % 2 === 0
-                                ? 'rgba(251,191,36,0.95)'
-                                : 'rgba(0,212,224,0.85)',
+                                ? 'rgba(226,168,75,0.95)'
+                                : 'rgba(157,179,200,0.85)',
                             boxShadow: `0 0 6px ${
-                              i % 2 === 0 ? 'rgba(251,191,36,0.7)' : 'rgba(0,212,224,0.6)'
+                              i % 2 === 0 ? 'rgba(226,168,75,0.7)' : 'rgba(157,179,200,0.6)'
                             }`,
                             translateX: '-50%',
                             translateY: '-50%',
@@ -273,7 +273,7 @@ export function ObjectiveCompleteVfx() {
                   className="text-[13px] font-bold uppercase tracking-[0.22em]"
                   style={{
                     color: '#fde68a',
-                    textShadow: '0 0 10px rgba(251,191,36,0.6), 0 0 18px rgba(251,191,36,0.35)',
+                    textShadow: '0 0 10px rgba(226,168,75,0.6), 0 0 18px rgba(226,168,75,0.35)',
                   }}
                 >
                   Цель выполнена
@@ -300,7 +300,7 @@ export function ObjectiveCompleteVfx() {
             style={{
               zIndex: UI_LAYERS.DAMAGE_FLASH - 1,
               background:
-                'radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.18) 0%, rgba(251,191,36,0.06) 35%, transparent 65%)',
+                'radial-gradient(ellipse at 50% 0%, rgba(226,168,75,0.18) 0%, rgba(226,168,75,0.06) 35%, transparent 65%)',
             }}
             initial={{ opacity: 0 }}
             animate={{ opacity: [0, 1, 0] }}

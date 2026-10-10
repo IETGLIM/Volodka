@@ -152,11 +152,11 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(157, 179, 200,0.09)_0%,rgba(0,0,0,1)_72%)]" aria-hidden />
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="w-full max-w-3xl h-[40vh] mt-[34vh] opacity-[0.07] blur-[0.8px] scale-y-[-0.52] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,0.45)_0%,transparent_58%)]" aria-hidden>
-                <CinematicTitleCard title="ПРОБУЖДЕНИЕ" subtitle={titleSubtitle} accentColor="#44ffcc" type="act_transition" reducedMotion={true} />
+                <CinematicTitleCard title="ПРОБУЖДЕНИЕ" subtitle={titleSubtitle} accentColor="#46b96e" type="act_transition" reducedMotion={true} />
               </div>
             </div>
             <div className="relative z-10">
-              <CinematicTitleCard title="ПРОБУЖДЕНИЕ" subtitle={titleSubtitle} accentColor="#44ffcc" type="act_transition" reducedMotion={reducedMotion} />
+              <CinematicTitleCard title="ПРОБУЖДЕНИЕ" subtitle={titleSubtitle} accentColor="#46b96e" type="act_transition" reducedMotion={reducedMotion} />
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 0.52, y: 0 }} transition={{ delay: 0.9, duration: 0.9 }} className="mt-8 text-center font-mono text-[10px] tracking-[0.24em] uppercase text-stone-500/50">
                 <span className="inline-block px-3 py-1 rounded-full bg-white/[0.04] border border-white/[0.06] backdrop-blur-sm">volodka://wake --mode=prologue --soul=0</span>
               </motion.div>
@@ -197,7 +197,7 @@ export function ProloguePerfectionOverlay({ onComplete }: Props) {
           const done = thisIdx < curIdx;
           return (
             <div key={p} className="relative">
-              <div className="h-[3px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" style={{ width: active ? 32 : done ? 16 : 10, background: done ? 'rgba(255,255,255,0.55)' : active ? 'rgba(0,255,200,0.95)' : 'rgba(255,255,255,0.14)', boxShadow: active ? '0 0 10px rgba(0,255,200,0.6), 0 0 22px rgba(0,255,200,0.18)' : undefined }} aria-hidden />
+              <div className="h-[3px] rounded-full transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]" style={{ width: active ? 32 : done ? 16 : 10, background: done ? 'rgba(255,255,255,0.55)' : active ? 'rgba(157,179,200,0.95)' : 'rgba(255,255,255,0.14)', boxShadow: active ? '0 0 10px rgba(157,179,200,0.6), 0 0 22px rgba(157,179,200,0.18)' : undefined }} aria-hidden />
               {active && <motion.div layoutId="prologue-active-dot-glow" className="absolute inset-0 rounded-full bg-cyan-200/20 blur-[3px] -z-10" transition={{ type: 'spring', stiffness: 420, damping: 28 }} />}
             </div>
           );

@@ -34,7 +34,7 @@ interface ComboTierConfig {
 
 const COMBO_TIERS: Record<number, Omit<ComboTierConfig, 'tier'>> = {
   /* 2-3 */ 2: { label: 'ХОРОШО!', color: '#9db3c8', glowColor: 'rgba(157, 179, 200, 0.6)', icon: Flame },
-  /* 4-6 */ 4: { label: 'ОТЛИЧНО!', color: '#e2a84b', glowColor: 'rgba(255, 171, 0, 0.7)', icon: Zap },
+  /* 4-6 */ 4: { label: 'ОТЛИЧНО!', color: '#e2a84b', glowColor: 'rgba(226, 168, 75, 0.7)', icon: Zap },
   /* 7-10*/ 7: { label: 'ПРЕВОСХОДНО!', color: '#46b96e', glowColor: 'rgba(70, 185, 110, 0.65)', icon: Trophy },
   /* 11+ */ 11: { label: 'ЛЕГЕНДАРНО!', color: '#46b96e', glowColor: 'rgba(70, 185, 110, 0.9)', icon: Crown },
 };

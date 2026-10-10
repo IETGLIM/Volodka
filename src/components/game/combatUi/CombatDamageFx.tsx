@@ -31,7 +31,7 @@ export function ComboCounter({ count }: { count: number }) {
       <div
         className={`text-3xl font-black ${color} font-mono`}
         style={{
-          textShadow: `0 0 ${8 + intensity * 4}px currentColor, 0 0 ${16 + intensity * 8}px ${count >= 3 ? '#f97316' : '#06b6d4'}40`,
+          textShadow: `0 0 ${8 + intensity * 4}px currentColor, 0 0 ${16 + intensity * 8}px ${count >= 3 ? '#e2a84b' : '#9db3c8'}40`,
         }}
       >
         <Flame className="inline size-5 mr-0.5" />

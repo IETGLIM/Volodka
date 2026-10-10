@@ -470,11 +470,11 @@ export function getGiftPreferenceBg(preference: GiftPreference): string {
  */
 export function getGiftPreferenceGlow(preference: GiftPreference): string {
   switch (preference) {
-    case 'loved': return 'rgba(251,191,36,0.25)';
-    case 'liked': return 'rgba(52,211,153,0.25)';
+    case 'loved': return 'rgba(226,168,75,0.25)';
+    case 'liked': return 'rgba(70,185,110,0.25)';
     case 'neutral': return 'rgba(100,116,139,0.15)';
-    case 'disliked': return 'rgba(245,158,11,0.2)';
-    case 'hated': return 'rgba(244,63,94,0.25)';
+    case 'disliked': return 'rgba(226,168,75,0.2)';
+    case 'hated': return 'rgba(198,85,72,0.25)';
   }
 }
 

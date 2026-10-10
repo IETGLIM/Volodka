@@ -62,8 +62,8 @@ export function ProceduralAtmosphereLayer() {
     <group ref={groupRef}>
       <primitive object={rays} />
       {/* Neon key lights for hero readability */}
-      <pointLight position={[4, 6, -4]} intensity={2.2} color="#6688ff" distance={28} />
-      <pointLight position={[-5, 4, 3]} intensity={1.4} color="#ff4488" distance={22} />
+      <pointLight position={[4, 6, -4]} intensity={2.2} color="#9db3c8" distance={28} />
+      <pointLight position={[-5, 4, 3]} intensity={1.4} color="#8d7fb5" distance={22} />
       <pointLight position={[0, 3, 2]} intensity={0.9} color="#aaccff" distance={14} />
       <directionalLight
         position={[6, 14, 4]}

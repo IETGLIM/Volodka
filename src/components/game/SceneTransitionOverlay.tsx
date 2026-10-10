@@ -151,8 +151,8 @@ export function SceneTransitionOverlay() {
                 />
               ) : (
                 <>
-              <div className="absolute inset-0" style={{ background: 'rgba(255, 0, 0, 0.08)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 1.5}px)` }} />
-              <div className="absolute inset-0" style={{ background: 'rgba(0, 100, 255, 0.08)', mixBlendMode: 'screen', transform: `translateX(${-glitchOffset * 1.2}px)` }} />
+              <div className="absolute inset-0" style={{ background: 'rgba(198, 85, 72, 0.08)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 1.5}px)` }} />
+              <div className="absolute inset-0" style={{ background: 'rgba(157, 179, 200, 0.08)', mixBlendMode: 'screen', transform: `translateX(${-glitchOffset * 1.2}px)` }} />
               <div className="absolute inset-0" style={{ background: 'rgba(70, 185, 110, 0.04)', mixBlendMode: 'screen', transform: `translateX(${glitchOffset * 0.7}px)` }} />
               <div className="absolute inset-0" style={{
                 background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(157, 179, 200, 0.03) 2px, rgba(157, 179, 200, 0.03) 4px)',
@@ -160,7 +160,7 @@ export function SceneTransitionOverlay() {
               }} />
               <motion.div className="absolute inset-0" style={{ background: 'rgba(255, 255, 255, 0.12)' }} initial={{ opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: 0.15, ease: 'easeOut' }} />
               <div className="absolute inset-0" style={{
-                background: 'linear-gradient(transparent 0%, transparent 30%, rgba(157, 179, 200,0.02) 30%, rgba(157, 179, 200,0.02) 32%, transparent 32%, transparent 55%, rgba(255,0,100,0.03) 55%, rgba(255,0,100,0.03) 57%, transparent 57%, transparent 78%, rgba(0,100,255,0.02) 78%, rgba(0,100,255,0.02) 80%, transparent 80%)',
+                background: 'linear-gradient(transparent 0%, transparent 30%, rgba(157, 179, 200,0.02) 30%, rgba(157, 179, 200,0.02) 32%, transparent 32%, transparent 55%, rgba(141,127,181,0.03) 55%, rgba(141,127,181,0.03) 57%, transparent 57%, transparent 78%, rgba(157,179,200,0.02) 78%, rgba(157,179,200,0.02) 80%, transparent 80%)',
                 transform: `translateX(${glitchOffset * 2}px)`,
               }} />
                 </>
@@ -255,7 +255,7 @@ export function SceneTransitionOverlay() {
               </div>
               {/* Dream-like distortion lines */}
               <div className="absolute inset-0" style={{
-                background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(180,100,255,0.015) 4px, rgba(180,100,255,0.015) 8px)',
+                background: 'repeating-linear-gradient(90deg, transparent 0px, transparent 4px, rgba(141,127,181,0.015) 4px, rgba(141,127,181,0.015) 8px)',
               }} />
             </motion.div>
           )}
@@ -309,7 +309,7 @@ export function SceneTransitionOverlay() {
               <motion.div
                 className="absolute inset-0"
                 style={{
-                  background: `radial-gradient(ellipse at 85% 90%, rgba(255,80,0,0.85) 0%, rgba(200,50,0,0.6) 30%, rgba(100,20,0,0.8) 60%, rgba(0,0,0,0.95) 100%)`,
+                  background: `radial-gradient(ellipse at 85% 90%, rgba(226,168,75,0.85) 0%, rgba(198,85,72,0.6) 30%, rgba(100,20,0,0.8) 60%, rgba(0,0,0,0.95) 100%)`,
                   filter: 'contrast(1.3) saturate(1.4)',
                 }}
                 initial={{ opacity: 0 }}
@@ -320,7 +320,7 @@ export function SceneTransitionOverlay() {
               <motion.div
                 className="absolute inset-0"
                 style={{
-                  background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(255,120,40,0.04) 1px, rgba(255,120,40,0.04) 2px)',
+                  background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 1px, rgba(226,168,75,0.04) 1px, rgba(226,168,75,0.04) 2px)',
                   mixBlendMode: 'screen',
                 }}
                 animate={{ opacity: [0, 0.8, 0.5] }}
@@ -330,7 +330,7 @@ export function SceneTransitionOverlay() {
               <motion.div
                 className="absolute inset-0"
                 style={{
-                  background: `radial-gradient(ellipse at 85% 90%, rgba(255,200,50,0.4) 0%, transparent 40%)`,
+                  background: `radial-gradient(ellipse at 85% 90%, rgba(226,168,75,0.4) 0%, transparent 40%)`,
                   filter: 'blur(10px)',
                 }}
                 initial={{ opacity: 0 }}
@@ -341,7 +341,7 @@ export function SceneTransitionOverlay() {
               <motion.div
                 className="absolute inset-0"
                 style={{
-                  background: `radial-gradient(ellipse at 15% 10%, rgba(255,150,50,0.15) 0%, transparent 50%)`,
+                  background: `radial-gradient(ellipse at 15% 10%, rgba(226,168,75,0.15) 0%, transparent 50%)`,
                 }}
                 animate={{ opacity: [0, 0.6, 0.2] }}
                 transition={{ duration: FILM_BURN_DURATION / 1000, delay: 0.05 }}
@@ -362,7 +362,7 @@ export function SceneTransitionOverlay() {
               <motion.div
                 className="absolute inset-0"
                 style={{
-                  background: 'rgba(255, 0, 50, 0.35)',
+                  background: 'rgba(198, 85, 72, 0.35)',
                   mixBlendMode: 'screen',
                   clipPath: 'inset(20% 0% 40% 0%)',
                 }}
@@ -374,7 +374,7 @@ export function SceneTransitionOverlay() {
               <motion.div
                 className="absolute inset-0"
                 style={{
-                  background: 'rgba(0, 80, 255, 0.3)',
+                  background: 'rgba(157, 179, 200, 0.3)',
                   mixBlendMode: 'screen',
                   clipPath: 'inset(55% 0% 15% 0%)',
                 }}
@@ -386,7 +386,7 @@ export function SceneTransitionOverlay() {
               <motion.div
                 className="absolute inset-0"
                 style={{
-                  background: 'rgba(0, 255, 80, 0.2)',
+                  background: 'rgba(70, 185, 110, 0.2)',
                   mixBlendMode: 'screen',
                   clipPath: 'inset(38% 0% 42% 0%)',
                 }}

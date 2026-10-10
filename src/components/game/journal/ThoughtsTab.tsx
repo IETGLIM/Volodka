@@ -55,7 +55,7 @@ export function ThoughtsTab({ searchQuery }: { searchQuery: string }) {
         <div
           className="text-3xl mb-3 opacity-30"
           aria-hidden
-          style={{ color: '#a855f7' }}
+          style={{ color: '#8d7fb5' }}
         >
           💭
         </div>
@@ -91,14 +91,14 @@ function ThoughtEntryCard({ entry, index }: { entry: ThoughtHistoryEntry; index:
       className="cyber-fade-in-stagger group relative rounded-lg p-3 transition-colors duration-200"
       style={{
         background: 'rgba(88, 28, 135, 0.06)',
-        border: '1px solid rgba(168, 85, 247, 0.1)',
+        border: '1px solid rgba(141, 127, 181, 0.1)',
         '--stagger-index': index,
       } as React.CSSProperties}
     >
       {/* Purple left accent bar */}
       <div
         className="absolute left-0 top-2 bottom-2 w-[3px] rounded-full"
-        style={{ background: 'rgba(168, 85, 247, 0.4)' }}
+        style={{ background: 'rgba(141, 127, 181, 0.4)' }}
         aria-hidden
       />
 
@@ -106,7 +106,7 @@ function ThoughtEntryCard({ entry, index }: { entry: ThoughtHistoryEntry; index:
       <div className="flex items-center justify-between mb-1.5 pl-2">
         <span
           className="text-[10px] font-mono tracking-wider uppercase"
-          style={{ color: 'rgba(168, 85, 247, 0.6)' }}
+          style={{ color: 'rgba(141, 127, 181, 0.6)' }}
         >
           {sceneName}
         </span>

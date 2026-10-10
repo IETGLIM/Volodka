@@ -146,7 +146,7 @@ export function ScreenEffects() {
     const unsub = eventBus.on('fx:damage_vignette', (payload) => {
       if (reducedMotion) {
         // Reduced motion: just a subtle flash
-        triggerFlash('rgba(255,50,50,0.1)', 0.1, 150);
+        triggerFlash('rgba(198,85,72,0.1)', 0.1, 150);
         return;
       }
       setDamageVignette({ intensity: payload.intensity, duration: payload.duration });
@@ -164,23 +164,23 @@ export function ScreenEffects() {
         // Этап 32: damage vignette УЖЕ красный full-screen слой — на
         // low/medium лишний мелкий flash дублирует его. Пропускаем.
         if (!budget.mergeRedundantDamageFlashes) {
-          triggerFlash('rgba(255,50,50,0.25)', reducedMotion ? 0.1 : 0.25, reducedMotion ? 100 : 200);
+          triggerFlash('rgba(198,85,72,0.25)', reducedMotion ? 0.1 : 0.25, reducedMotion ? 100 : 200);
         }
         if (!reducedMotion) {
           triggerShake(6, 300);
           triggerDamageVignette(0.5, 400);
         }
       } else {
-        triggerFlash('rgba(255,200,50,0.1)', reducedMotion ? 0.06 : 0.1, reducedMotion ? 80 : 150);
+        triggerFlash('rgba(226,168,75,0.1)', reducedMotion ? 0.06 : 0.1, reducedMotion ? 80 : 150);
       }
     }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('combat:victory', () => {
-      triggerFlash('rgba(251,191,36,0.2)', reducedMotion ? 0.08 : 0.2, reducedMotion ? 120 : 600);
+      triggerFlash('rgba(226,168,75,0.2)', reducedMotion ? 0.08 : 0.2, reducedMotion ? 120 : 600);
     }, EventBusPriority.FX));
 
     unsubs.push(eventBus.on('combat:defeat', () => {
-      triggerFlash('rgba(255,0,0,0.35)', reducedMotion ? 0.1 : 0.35, reducedMotion ? 120 : 800);
+      triggerFlash('rgba(198,85,72,0.35)', reducedMotion ? 0.1 : 0.35, reducedMotion ? 120 : 800);
       if (!reducedMotion) triggerVignette(0.8, 3000);
     }, EventBusPriority.FX));
 
@@ -193,7 +193,7 @@ export function ScreenEffects() {
     }));
 
     unsubs.push(eventBus.on('skill:level_up', () => {
-      triggerFlash('rgba(251,191,36,0.15)', reducedMotion ? 0.08 : 0.15, reducedMotion ? 100 : 400);
+      triggerFlash('rgba(226,168,75,0.15)', reducedMotion ? 0.08 : 0.15, reducedMotion ? 100 : 400);
     }));
 
     // Area F: Clear all active screen FX when a scene transition starts.

@@ -350,17 +350,17 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                             `}
                             style={{
                               background: isCurrent
-                                ? 'rgba(52, 211, 153, 0.15)'
+                                ? 'rgba(70, 185, 110, 0.15)'
                                 : isDiscovered
                                   ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
                                   : 'rgba(51, 65, 85, 0.2)',
                               border: isCurrent
-                                ? '2px solid rgba(52, 211, 153, 0.6)'
+                                ? '2px solid rgba(70, 185, 110, 0.6)'
                                 : isDiscovered
                                   ? '1.5px solid rgb(var(--cyber-cyan-rgb) / 0.35)'
                                   : '1px solid rgba(71, 85, 105, 0.3)',
                               boxShadow: isCurrent
-                                ? '0 0 20px rgba(52, 211, 153, 0.3), inset 0 0 10px rgba(52, 211, 153, 0.1)'
+                                ? '0 0 20px rgba(70, 185, 110, 0.3), inset 0 0 10px rgba(70, 185, 110, 0.1)'
                                 : isDiscovered
                                   ? '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)'
                                   : 'none',
@@ -373,9 +373,9 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                                 className="absolute inset-0 rounded-full"
                                 animate={{
                                   boxShadow: [
-                                    '0 0 0px rgba(52, 211, 153, 0)',
-                                    '0 0 20px rgba(52, 211, 153, 0.4)',
-                                    '0 0 0px rgba(52, 211, 153, 0)',
+                                    '0 0 0px rgba(70, 185, 110, 0)',
+                                    '0 0 20px rgba(70, 185, 110, 0.4)',
+                                    '0 0 0px rgba(70, 185, 110, 0)',
                                   ],
                                 }}
                                 transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
@@ -458,11 +458,11 @@ export function FastTravelPanel({ open, onClose }: FastTravelPanelProps) {
                             style={{
                               background: 'rgba(8, 12, 22, 0.92)',
                               borderColor: isCurrent
-                                ? 'rgba(52, 211, 153, 0.4)'
+                                ? 'rgba(70, 185, 110, 0.4)'
                                 : isDiscovered
                                   ? 'rgb(var(--cyber-cyan-rgb) / 0.3)'
                                   : 'rgba(71, 85, 105, 0.3)',
-                              boxShadow: `0 0 15px ${isCurrent ? 'rgba(52,211,153,0.15)' : isDiscovered ? 'rgb(var(--cyber-cyan-rgb) / 0.1)' : 'rgba(0,0,0,0.3)'}`,
+                              boxShadow: `0 0 15px ${isCurrent ? 'rgba(70,185,110,0.15)' : isDiscovered ? 'rgb(var(--cyber-cyan-rgb) / 0.1)' : 'rgba(0,0,0,0.3)'}`,
                             }}
                           >
                             <div className="flex items-center gap-2 mb-1">

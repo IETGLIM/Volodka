@@ -48,7 +48,7 @@ export function AmbientAtmosphereCaption() {
         className={
           reducedMotion
             ? 'flex items-start gap-2 rounded-md border border-cyan-500/20 bg-slate-950/85 px-2.5 py-1.5'
-            : 'flex items-start gap-2 rounded-md border border-cyan-500/25 bg-slate-950/75 px-2.5 py-1.5 backdrop-blur-sm shadow-[0_0_12px_rgba(34,211,238,0.15)]'
+            : 'flex items-start gap-2 rounded-md border border-cyan-500/25 bg-slate-950/75 px-2.5 py-1.5 backdrop-blur-sm shadow-[0_0_12px_rgba(157,179,200,0.15)]'
         }
       >
         <Waves className="size-3.5 shrink-0 text-cyan-400/90 mt-0.5" aria-hidden />

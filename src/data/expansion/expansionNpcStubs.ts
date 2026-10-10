@@ -65,7 +65,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
     },
     appearance: {
       bodyColor: '#2b1f2e',
-      accentColor: '#a060c0',
+      accentColor: '#8d7fb5',
       headAccessory: 'glasses',
       height: 0.98,
       glowColor: '#8848a8',
@@ -216,7 +216,7 @@ export const EXPANSION_NPC_STUBS: NPCDefinition[] = [
       accentColor: '#aa6a3a',
       headAccessory: 'hat',
       height: 1.15,
-      glowColor: '#cc6633',
+      glowColor: '#e2a84b',
       silhouette: 'heavy',
     },
   },

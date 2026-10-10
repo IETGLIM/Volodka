@@ -8,14 +8,14 @@ export const OPENSTACK_RETRY_DELAY_MS = 600;
 
 export const OPENSTACK_TERMINAL_COLORS = {
   prompt: '#88ccaa',
-  command: '#44ff88',
-  success: '#44ff88',
-  error: '#ff4444',
-  phase: '#ffcc00',
+  command: '#46b96e',
+  success: '#46b96e',
+  error: '#c65548',
+  phase: '#e2a84b',
   muted: '#6a8a9a',
   hint: '#4a6a5a',
-  alert: '#ff4444',
-  alertSub: '#ff6644',
+  alert: '#c65548',
+  alertSub: '#c65548',
 } as const;
 
 export const OPENSTACK_TERMINAL_LABELS = {

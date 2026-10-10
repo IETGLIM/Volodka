@@ -63,12 +63,12 @@ export const FACTION_DEFINITIONS: Record<FactionId, FactionDefinition> = {
 
 /** Пороги репутации и соответствующие русские заголовки */
 export const REPUTATION_THRESHOLDS = [
-  { min: 80, title: 'Почитаемый союзник', color: '#fbbf24' },
-  { min: 50, title: 'Доверенный друг', color: '#22c55e' },
-  { min: 20, title: 'Сочувствующий', color: '#86efac' },
+  { min: 80, title: 'Почитаемый союзник', color: '#e2a84b' },
+  { min: 50, title: 'Доверенный друг', color: '#46b96e' },
+  { min: 20, title: 'Сочувствующий', color: '#57a874' },
   { min: -20, title: 'Нейтрал', color: '#a1a1aa' },
-  { min: -50, title: 'Недоверчивый', color: '#f97316' },
-  { min: -80, title: 'Враг', color: '#ef4444' },
+  { min: -50, title: 'Недоверчивый', color: '#e2a84b' },
+  { min: -80, title: 'Враг', color: '#c65548' },
   { min: -101, title: 'Ненависть', color: '#991b1b' },
 ] as const;
 

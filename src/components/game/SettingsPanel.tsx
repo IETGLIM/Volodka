@@ -806,19 +806,19 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             whileTap={{ scale: 0.97 }}
             className="font-mono text-[11px] tracking-wider uppercase px-3 py-1.5 rounded border transition-colors"
             style={{
-              color: 'rgba(251, 191, 36, 0.7)',
-              borderColor: 'rgba(251, 191, 36, 0.2)',
-              backgroundColor: 'rgba(251, 191, 36, 0.05)',
+              color: 'rgba(226, 168, 75, 0.7)',
+              borderColor: 'rgba(226, 168, 75, 0.2)',
+              backgroundColor: 'rgba(226, 168, 75, 0.05)',
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(251, 191, 36, 0.4)';
-              e.currentTarget.style.background = 'rgba(251, 191, 36, 0.1)';
-              e.currentTarget.style.color = 'rgba(251, 191, 36, 0.9)';
+              e.currentTarget.style.borderColor = 'rgba(226, 168, 75, 0.4)';
+              e.currentTarget.style.background = 'rgba(226, 168, 75, 0.1)';
+              e.currentTarget.style.color = 'rgba(226, 168, 75, 0.9)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(251, 191, 36, 0.2)';
-              e.currentTarget.style.background = 'rgba(251, 191, 36, 0.05)';
-              e.currentTarget.style.color = 'rgba(251, 191, 36, 0.7)';
+              e.currentTarget.style.borderColor = 'rgba(226, 168, 75, 0.2)';
+              e.currentTarget.style.background = 'rgba(226, 168, 75, 0.05)';
+              e.currentTarget.style.color = 'rgba(226, 168, 75, 0.7)';
             }}
           >
             Сбросить настройки
@@ -863,17 +863,17 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
       <div
         className="absolute -bottom-px -left-px w-8 h-8 pointer-events-none"
         style={{
-          borderBottom: '2px solid rgba(251, 191, 36, 0.2)',
-          borderLeft: '2px solid rgba(251, 191, 36, 0.2)',
-          boxShadow: '-2px 2px 10px rgba(251, 191, 36, 0.05)',
+          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
+          borderLeft: '2px solid rgba(226, 168, 75, 0.2)',
+          boxShadow: '-2px 2px 10px rgba(226, 168, 75, 0.05)',
         }}
       />
       <div
         className="absolute -bottom-px -right-px w-8 h-8 pointer-events-none"
         style={{
-          borderBottom: '2px solid rgba(251, 191, 36, 0.2)',
-          borderRight: '2px solid rgba(251, 191, 36, 0.2)',
-          boxShadow: '2px 2px 10px rgba(251, 191, 36, 0.05)',
+          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
+          borderRight: '2px solid rgba(226, 168, 75, 0.2)',
+          boxShadow: '2px 2px 10px rgba(226, 168, 75, 0.05)',
         }}
       />
     </motion.div>

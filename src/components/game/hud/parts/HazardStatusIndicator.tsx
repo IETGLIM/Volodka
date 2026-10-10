@@ -94,7 +94,7 @@ export function HazardStatusIndicator() {
   }, [status]);
 
   const visible = status !== null && gamePhase === 'exploration';
-  const accent = status ? HAZARD_KIND_COLOR[status.kind] : '#ff5a5a';
+  const accent = status ? HAZARD_KIND_COLOR[status.kind] : '#c65548';
   const KindIcon = status ? HAZARD_KIND_ICON[status.kind] : TriangleAlert;
 
   return (

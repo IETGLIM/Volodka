@@ -34,7 +34,7 @@ export const STREET_ARRIVAL_TIMELINE: CinematicTimelineDef = {
       overlay: {
         text: 'Ночной квартал. Неон дышит — как и ты.',
         letterboxStyle: 'thin',
-        accentColor: '#44ffff',
+        accentColor: '#9db3c8',
       },
     },
     {

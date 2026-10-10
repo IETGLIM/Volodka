@@ -62,8 +62,8 @@ function resolveNpcColor(speaker: string): string {
 }
 
 function getSpeakerColor(entry: DialogueHistoryEntry): string {
-  if (entry.isPlayerChoice) return 'var(--cyber-cyan, #22d3ee)';
-  if (isPlayerSpeaker(entry.speaker)) return 'var(--cyber-cyan, #22d3ee)';
+  if (entry.isPlayerChoice) return 'var(--cyber-cyan, #9db3c8)';
+  if (isPlayerSpeaker(entry.speaker)) return 'var(--cyber-cyan, #9db3c8)';
   if (isNarratorSpeaker(entry.speaker)) return '#ffffff';
   return resolveNpcColor(entry.speaker);
 }

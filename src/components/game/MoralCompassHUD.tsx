@@ -38,8 +38,8 @@ export function MoralCompassHUD() {
     karma >= KARMA_HIGH_THRESHOLD
       ? { main: 'var(--cyber-cyan)', glow: 'rgb(var(--cyber-cyan-rgb) / 0.3)' } // cyan
       : karma <= KARMA_LOW_THRESHOLD
-        ? { main: '#f43f5e', glow: 'rgba(244,63,94,0.3)' } // rose
-        : { main: '#fbbf24', glow: 'rgba(251,191,36,0.3)' }; // amber
+        ? { main: '#c65548', glow: 'rgba(198,85,72,0.3)' } // rose
+        : { main: '#e2a84b', glow: 'rgba(226,168,75,0.3)' }; // amber
 
   // Map karma 0-100 to rotation -135 to 135 degrees
   const rotation = -135 + (karma / 100) * 270;

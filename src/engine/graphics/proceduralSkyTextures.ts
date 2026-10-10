@@ -107,8 +107,8 @@ function buildRooftopSunsetGalaxySkyTexture(): CanvasTexture {
   grad.addColorStop(0.38, '#1a2a3a'); // dusty teal mid
   grad.addColorStop(0.58, '#4a2838'); // magenta smog band
   grad.addColorStop(0.74, '#7a4028'); // warm smog
-  grad.addColorStop(0.88, '#c86a28'); // sunset orange
-  grad.addColorStop(1.0, '#e8a040'); // horizon glow
+  grad.addColorStop(0.88, '#e2a84b'); // sunset orange
+  grad.addColorStop(1.0, '#e2a84b'); // horizon glow
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, w, h);
 
@@ -265,7 +265,7 @@ function buildCafeEveningNeonSkyTexture(): CanvasTexture {
     const cy = 20 + seededRand(i * 43 + 6207) * (h * 0.45);
     const radius = 16 + seededRand(i * 59 + 6207) * 26;
     const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    glow.addColorStop(0, 'rgba(30, 80, 220, 0.22)');
+    glow.addColorStop(0, 'rgba(157, 179, 200, 0.22)');
     glow.addColorStop(1, 'rgba(8, 12, 28, 0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, w, h);
@@ -386,7 +386,7 @@ function buildHomeEveningWarmSkyTexture(): CanvasTexture {
     const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
     const warm = seededRand(i * 79 + 8305) < 0.65;
     if (warm) {
-      glow.addColorStop(0, 'rgba(255, 180, 80, 0.18)');
+      glow.addColorStop(0, 'rgba(226, 168, 75, 0.18)');
       glow.addColorStop(1, 'rgba(32, 16, 8, 0)');
     } else {
       glow.addColorStop(0, 'rgba(40, 60, 140, 0.12)');
@@ -432,13 +432,13 @@ function buildVolodkaRoomNightSkyTexture(): CanvasTexture {
     const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
     const huePick = seededRand(i * 73 + 8401);
     if (huePick < 0.45) {
-      glow.addColorStop(0, 'rgba(0, 255, 136, 0.16)');
+      glow.addColorStop(0, 'rgba(70, 185, 110, 0.16)');
       glow.addColorStop(1, 'rgba(8, 16, 24, 0)');
     } else if (huePick < 0.75) {
-      glow.addColorStop(0, 'rgba(68, 136, 238, 0.14)');
+      glow.addColorStop(0, 'rgba(157, 179, 200, 0.14)');
       glow.addColorStop(1, 'rgba(8, 12, 24, 0)');
     } else {
-      glow.addColorStop(0, 'rgba(255, 200, 120, 0.1)');
+      glow.addColorStop(0, 'rgba(226, 168, 75, 0.1)');
       glow.addColorStop(1, 'rgba(12, 10, 16, 0)');
     }
     ctx.fillStyle = glow;
@@ -559,7 +559,7 @@ function buildFactoryBasementCoreGlowTexture(): CanvasTexture {
     const cy = 20 + seededRand(i * 43 + 8707) * (h * 0.42);
     const radius = 14 + seededRand(i * 57 + 8707) * 24;
     const pulse = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    pulse.addColorStop(0, 'rgba(0, 220, 120, 0.2)');
+    pulse.addColorStop(0, 'rgba(70, 185, 110, 0.2)');
     pulse.addColorStop(1, 'rgba(8, 16, 12, 0)');
     ctx.fillStyle = pulse;
     ctx.fillRect(0, 0, w, h);
@@ -599,7 +599,7 @@ function buildZaremaAlbertWarmSkyTexture(): CanvasTexture {
     const cy = 22 + seededRand(i * 47 + 8809) * (h * 0.4);
     const radius = 14 + seededRand(i * 59 + 8809) * 20;
     const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-    glow.addColorStop(0, 'rgba(255, 200, 120, 0.16)');
+    glow.addColorStop(0, 'rgba(226, 168, 75, 0.16)');
     glow.addColorStop(1, 'rgba(32, 24, 16, 0)');
     ctx.fillStyle = glow;
     ctx.fillRect(0, 0, w, h);

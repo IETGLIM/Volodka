@@ -96,7 +96,7 @@ export const PBR_PRESETS = {
     color: '#101018',
     roughness: 0.35,
     metalness: 0.4,
-    emissive: '#22ffdd',
+    emissive: '#9db3c8',
     emissiveIntensity: 1.4,
   },
   monitorGlass: {
@@ -129,7 +129,7 @@ export const PBR_PRESETS = {
     metalness: 0.45,
     transmission: 0.08,
     thickness: 0.15,
-    emissive: '#22ffdd',
+    emissive: '#9db3c8',
     emissiveIntensity: 1.1,
   },
 } as const;

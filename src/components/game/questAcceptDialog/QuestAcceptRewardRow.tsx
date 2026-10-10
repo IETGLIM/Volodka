@@ -26,7 +26,7 @@ export function QuestAcceptRewardRow({ reward }: QuestAcceptRewardRowProps) {
   return (
     <div className="flex items-center gap-2">
       {getRewardLucideIcon(reward)}
-      <span className="text-[12px] font-mono" style={{ color: '#ddaa66' }}>
+      <span className="text-[12px] font-mono" style={{ color: '#e2a84b' }}>
         {buildRewardLabel(reward)}
       </span>
       <span className="sr-only">{buildRewardAriaLabel(reward)}</span>

@@ -36,7 +36,7 @@ export const MenuParticles = memo(function MenuParticles({ counts }: MenuParticl
         i % 3 === 0
           ? 'rgb(var(--cyber-cyan-rgb) / 0.7)'
           : i % 3 === 1
-            ? 'rgba(255, 171, 0, 0.6)'
+            ? 'rgba(226, 168, 75, 0.6)'
             : 'rgba(255, 255, 255, 0.5)';
       const size = 1 + seededRand(i * 3 + 500) * 2;
       items.push({

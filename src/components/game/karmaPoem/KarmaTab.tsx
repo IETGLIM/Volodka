@@ -3,8 +3,8 @@ import type { EndingView } from '@/engine/karmaPoem/karmaPoemPresentation';
 
 function karmaStrokeColor(karma: number): string {
   if (karma >= 60) return '#57a874';
-  if (karma < 40) return '#f87171';
-  return '#fbbf24';
+  if (karma < 40) return '#c65548';
+  return '#e2a84b';
 }
 
 interface KarmaTabProps {

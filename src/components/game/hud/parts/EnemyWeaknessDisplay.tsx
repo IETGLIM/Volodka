@@ -12,10 +12,10 @@ const STAT_INFO: Record<string, { label: string; icon: string; color: string }> 
 };
 
 const STAT_GRADIENT: Record<string, string> = {
-  logic: '#06b6d4',
-  energy: '#f59e0b',
+  logic: '#9db3c8',
+  energy: '#e2a84b',
   karma: '#10b981',
-  empathy: '#f43f5e',
+  empathy: '#c65548',
 };
 
 const TYPE_COLORS: Record<string, string> = {
@@ -54,7 +54,7 @@ export function EnemyWeaknessDisplay() {
 
   if (!enemy || !statInfo) return null;
 
-  const gradientColor = STAT_GRADIENT[enemy.targetsStat] ?? '#f43f5e';
+  const gradientColor = STAT_GRADIENT[enemy.targetsStat] ?? '#c65548';
 
   return (
     <AnimatePresence>

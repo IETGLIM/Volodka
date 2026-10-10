@@ -284,10 +284,10 @@ export function ShortcutsOverlay({ open, onClose }: ShortcutsOverlayProps) {
                         className={!isLast ? 'pb-4 mb-4 border-b border-cyan-500/10' : ''}
                       >
                         <h3 className="text-[11px] font-bold uppercase tracking-[0.18em] mb-3 flex items-center gap-2"
-                          style={{ color: isGamepad ? 'rgba(52, 211, 153, 0.6)' : 'rgba(34, 211, 238, 0.55)' }}
+                          style={{ color: isGamepad ? 'rgba(70, 185, 110, 0.6)' : 'rgba(157, 179, 200, 0.55)' }}
                         >
                           {isGamepad && (
-                            <Gamepad2 className="size-3" style={{ color: 'rgba(52, 211, 153, 0.5)' }} />
+                            <Gamepad2 className="size-3" style={{ color: 'rgba(70, 185, 110, 0.5)' }} />
                           )}
                           {group.title}
                         </h3>

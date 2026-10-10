@@ -41,7 +41,7 @@ export function PoetryPowerSlot({ poemId, slotIndex, reducedMotion }: PoetryPowe
   const shortcutKey = getShortcutKey(slotIndex);
   const pulseMotion = getJustUsedPulseMotion(reducedMotion);
   const slotStateClass = justUsed
-    ? 'poetry-power-slot--just-used border-amber-400 bg-amber-950/50 shadow-[0_0_20px_rgba(251,191,36,0.3)]'
+    ? 'poetry-power-slot--just-used border-amber-400 bg-amber-950/50 shadow-[0_0_20px_rgba(226,168,75,0.3)]'
     : available
       ? 'poetry-power-slot--ready border-amber-700/40 bg-amber-950/20 hover:border-amber-500/60 hover:bg-amber-900/30'
       : 'border-stone-800/30 bg-stone-900/20 opacity-50 cursor-not-allowed';

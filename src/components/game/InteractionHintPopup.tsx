@@ -158,15 +158,15 @@ export function InteractionHintPopup() {
             ) : null}
 
             {/* Corner bracket decorations */}
-            <div className="hint-bracket hint-bracket-tl" style={{ borderColor: `${accent.color}55` }} />
-            <div className="hint-bracket hint-bracket-tr" style={{ borderColor: `${accent.color}55` }} />
-            <div className="hint-bracket hint-bracket-bl" style={{ borderColor: `${accent.color}55` }} />
-            <div className="hint-bracket hint-bracket-br" style={{ borderColor: `${accent.color}55` }} />
+            <div className="hint-bracket hint-bracket-tl" style={{ borderColor: `${accent.color}33` }} />
+            <div className="hint-bracket hint-bracket-tr" style={{ borderColor: `${accent.color}33` }} />
+            <div className="hint-bracket hint-bracket-bl" style={{ borderColor: `${accent.color}33` }} />
+            <div className="hint-bracket hint-bracket-br" style={{ borderColor: `${accent.color}33` }} />
 
             {/* Content */}
             <div className="hint-content">
               {/* Type icon */}
-              <div className="hint-icon-wrap" style={{ filter: `drop-shadow(0 0 6px ${accent.color}66)` }}>
+              <div className="hint-icon-wrap" style={{ filter: `drop-shadow(0 0 4px ${accent.color}40)` }}>
                 <HintIcon type={hint.type} color={accent.color} />
               </div>
 
@@ -178,7 +178,7 @@ export function InteractionHintPopup() {
                   borderColor: accent.border,
                   color: accent.color,
                   boxShadow: accent.glow,
-                  animation: reducedMotion ? 'none' : 'hint-key-pulse 2s ease-in-out infinite',
+                  animation: reducedMotion ? 'none' : 'hint-key-pulse 2.8s ease-in-out infinite',
                 }}
               >
                 {showTouchHint ? <Hand size={16} /> : `[${hintKey}]`}

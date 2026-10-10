@@ -141,7 +141,7 @@ export function resolveSceneLocationPresentation(accentColor = '#9db3c8'): Cinem
   };
 }
 
-export function resolvePoemPresentation(accentColor = '#66ffaa'): CinematicNarrativePresentation {
+export function resolvePoemPresentation(accentColor = '#46b96e'): CinematicNarrativePresentation {
   return {
     type: 'revelation',
     accentColor,

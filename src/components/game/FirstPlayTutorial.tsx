@@ -63,7 +63,7 @@ function QuestMarkerVisual() {
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
           style={{
-            background: 'rgba(250, 204, 21, 0.15)',
+            background: 'rgba(226, 168, 75, 0.15)',
             border: '1px solid rgba(252, 211, 165, 0.32)',
             color: 'var(--hud-filmic-warn)',
           }}
@@ -77,7 +77,7 @@ function QuestMarkerVisual() {
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
           style={{
-            background: 'rgba(96, 165, 250, 0.15)',
+            background: 'rgba(157, 179, 200, 0.15)',
             border: '1px solid var(--hud-filmic-border)',
             color: 'var(--hud-filmic-accent)',
           }}
@@ -91,7 +91,7 @@ function QuestMarkerVisual() {
         <div
           className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold"
           style={{
-            background: 'rgba(74, 222, 128, 0.15)',
+            background: 'rgba(70, 185, 110, 0.15)',
             border: '1px solid rgba(196, 181, 160, 0.32)',
             color: 'var(--hud-filmic-ink)',
           }}

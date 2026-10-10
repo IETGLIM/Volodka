@@ -256,7 +256,7 @@ export function DataTerminalOverlay() {
             style={{
               background: 'linear-gradient(180deg, rgba(0,20,0,0.98) 0%, rgba(0,10,0,0.99) 100%)',
               boxShadow:
-                '0 0 40px rgba(0,255,0,0.08), inset 0 0 60px rgba(0,255,0,0.03)',
+                '0 0 40px rgba(70,185,110,0.08), inset 0 0 60px rgba(70,185,110,0.03)',
             }}
             initial={reducedMotion ? false : { y: 20 }}
             animate={{ y: 0 }}
@@ -298,7 +298,7 @@ export function DataTerminalOverlay() {
                       ? 'text-green-400'
                       : 'text-green-600/60'
                   }`}
-                  style={{ textShadow: i === state.codeLines.length - 1 ? '0 0 6px rgba(0,255,0,0.4)' : 'none' }}
+                  style={{ textShadow: i === state.codeLines.length - 1 ? '0 0 6px rgba(70,185,110,0.4)' : 'none' }}
                 >
                   {i === state.codeLines.length - 1 ? '> ' : '  '}
                   {line}
@@ -328,8 +328,8 @@ export function DataTerminalOverlay() {
                     style={{
                       boxShadow:
                         state.phase !== 'failure'
-                          ? '0 0 8px rgba(0,255,0,0.4)'
-                          : '0 0 8px rgba(255,0,0,0.4)',
+                          ? '0 0 8px rgba(70,185,110,0.4)'
+                          : '0 0 8px rgba(198,85,72,0.4)',
                     }}
                     animate={{ width: `${state.progress}%` }}
                     transition={{ duration: 0.1, ease: 'linear' }}
@@ -350,7 +350,7 @@ export function DataTerminalOverlay() {
                 >
                   <p
                     className="text-sm font-mono font-bold text-green-400 mb-1"
-                    style={{ textShadow: '0 0 12px rgba(0,255,0,0.5)' }}
+                    style={{ textShadow: '0 0 12px rgba(70,185,110,0.5)' }}
                   >
                     {'>>> ДОСТУП РАЗРЕШЁН <<<'}
                   </p>
@@ -382,7 +382,7 @@ export function DataTerminalOverlay() {
                 >
                   <p
                     className="text-sm font-mono font-bold text-red-400 mb-1"
-                    style={{ textShadow: '0 0 12px rgba(255,0,0,0.4)' }}
+                    style={{ textShadow: '0 0 12px rgba(198,85,72,0.4)' }}
                   >
                     {'>>> ОШИБКА РАСШИФРОВКИ <<<'}
                   </p>
@@ -418,7 +418,7 @@ export function DataTerminalOverlay() {
                 aria-hidden="true"
                 style={{
                   background:
-                    'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,0,0.15) 2px, rgba(0,255,0,0.15) 4px)',
+                    'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(70,185,110,0.15) 2px, rgba(70,185,110,0.15) 4px)',
                 }}
               />
             ) : null}

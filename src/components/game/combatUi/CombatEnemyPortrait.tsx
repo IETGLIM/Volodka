@@ -28,7 +28,7 @@ export function EnemyPortrait({
       <div
         className="absolute inset-0 rounded-full opacity-20"
         style={{
-          background: `radial-gradient(circle, ${hurt ? '#ef4444' : '#f97316'} 0%, transparent 70%)`,
+          background: `radial-gradient(circle, ${hurt ? '#c65548' : '#e2a84b'} 0%, transparent 70%)`,
           filter: 'blur(12px)',
           transform: 'scale(1.5)',
         }}

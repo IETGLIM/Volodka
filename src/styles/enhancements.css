@@ -26,11 +26,11 @@
 /* Epic rarity — amber glow pulse with sparkle */
 @keyframes rarity-epic-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(251, 191, 36, 0.25), 0 0 16px rgba(251, 191, 36, 0.12);
+    box-shadow: 0 0 8px rgba(226, 168, 75, 0.25), 0 0 16px rgba(226, 168, 75, 0.12);
     filter: brightness(1);
   }
   50% {
-    box-shadow: 0 0 16px rgba(251, 191, 36, 0.45), 0 0 32px rgba(251, 191, 36, 0.22), 0 0 4px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 16px rgba(226, 168, 75, 0.45), 0 0 32px rgba(226, 168, 75, 0.22), 0 0 4px rgba(255, 255, 255, 0.3);
     filter: brightness(1.05);
   }
 }
@@ -42,15 +42,15 @@
 /* Legendary rarity — rose/fuchsia glow with intense sparkle */
 @keyframes rarity-legendary-pulse {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(244, 114, 182, 0.30), 0 0 20px rgba(244, 114, 182, 0.15), 0 0 4px rgba(168, 85, 247, 0.10);
+    box-shadow: 0 0 10px rgba(141, 127, 181, 0.30), 0 0 20px rgba(141, 127, 181, 0.15), 0 0 4px rgba(141, 127, 181, 0.10);
     filter: brightness(1);
   }
   30% {
-    box-shadow: 0 0 18px rgba(244, 114, 182, 0.50), 0 0 36px rgba(244, 114, 182, 0.25), 0 0 8px rgba(168, 85, 247, 0.20), 0 0 2px rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 18px rgba(141, 127, 181, 0.50), 0 0 36px rgba(141, 127, 181, 0.25), 0 0 8px rgba(141, 127, 181, 0.20), 0 0 2px rgba(255, 255, 255, 0.4);
     filter: brightness(1.08);
   }
   60% {
-    box-shadow: 0 0 14px rgba(168, 85, 247, 0.40), 0 0 28px rgba(168, 85, 247, 0.20), 0 0 6px rgba(244, 114, 182, 0.15), 0 0 2px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 14px rgba(141, 127, 181, 0.40), 0 0 28px rgba(141, 127, 181, 0.20), 0 0 6px rgba(141, 127, 181, 0.15), 0 0 2px rgba(255, 255, 255, 0.3);
     filter: brightness(1.04);
   }
 }

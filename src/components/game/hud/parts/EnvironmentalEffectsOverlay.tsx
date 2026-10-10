@@ -166,15 +166,15 @@ function getTimeVignetteColors(phase: ActiveEffects['timePhase']): {
       };
     case 'sunrise':
       return {
-        topColor: 'rgba(255, 120, 60, 0.12)',
-        bottomColor: 'rgba(255, 80, 40, 0.06)',
-        ambientGlow: 'radial-gradient(ellipse at 50% 100%, rgba(255, 150, 80, 0.15), transparent 60%)',
+        topColor: 'rgba(226, 168, 75, 0.12)',
+        bottomColor: 'rgba(198, 85, 72, 0.06)',
+        ambientGlow: 'radial-gradient(ellipse at 50% 100%, rgba(226, 168, 75, 0.15), transparent 60%)',
       };
     case 'sunset':
       return {
-        topColor: 'rgba(200, 70, 50, 0.14)',
+        topColor: 'rgba(198, 85, 72, 0.14)',
         bottomColor: 'rgba(180, 50, 30, 0.10)',
-        ambientGlow: 'radial-gradient(ellipse at 50% 100%, rgba(255, 100, 50, 0.18), transparent 55%)',
+        ambientGlow: 'radial-gradient(ellipse at 50% 100%, rgba(198, 85, 72, 0.18), transparent 55%)',
       };
     case 'day':
     default:
@@ -511,7 +511,7 @@ const FogEffect = memo<FogEffectProps>(({ density, reducedMotion }) => {
                 top: `${Math.random() * 100}%`,
                 width: `${3 + Math.random() * 8}px`,
                 height: `${3 + Math.random() * 8}px`,
-                background: 'radial-gradient(circle, rgba(120, 200, 100, 0.3), transparent)',
+                background: 'radial-gradient(circle, rgba(70, 185, 110, 0.3), transparent)',
                 filter: 'blur(2px)',
                 animation: `env-toxic-particle ${3 + Math.random() * 4}s ease-in-out ${Math.random() * 5}s infinite`,
               }}
@@ -827,7 +827,7 @@ const CombatOverlay = memo<CombatOverlayProps>(({
         <div
           className="absolute inset-0"
           style={{
-            boxShadow: `inset 0 0 30px rgba(200, 50, 50, 0.15)`,
+            boxShadow: `inset 0 0 30px rgba(198, 85, 72, 0.15)`,
             animation: 'env-critical-health 1.5s ease-in-out infinite',
           }}
         />
@@ -946,7 +946,7 @@ const IndustrialEffect = memo<IndustrialEffectProps>(({ reducedMotion }) => (
     <div
       className="absolute inset-0"
       style={{
-        background: 'linear-gradient(180deg, rgba(255, 140, 60, 0.04) 0%, rgba(200, 100, 50, 0.03) 50%, rgba(180, 80, 40, 0.05) 100%)',
+        background: 'linear-gradient(180deg, rgba(226, 168, 75, 0.04) 0%, rgba(226, 168, 75, 0.03) 50%, rgba(180, 80, 40, 0.05) 100%)',
       }}
     />
 
@@ -1413,10 +1413,10 @@ export const EnvironmentalEffectsCSS = () => (
     /* ═── COMBAT OVERLAY KEYFRAMES ═── */
     @keyframes env-critical-health {
       0%, 100% {
-        box-shadow: inset 0 0 30px rgba(200, 50, 50, 0.1);
+        box-shadow: inset 0 0 30px rgba(198, 85, 72, 0.1);
       }
       50% {
-        box-shadow: inset 0 0 50px rgba(200, 50, 50, 0.2);
+        box-shadow: inset 0 0 50px rgba(198, 85, 72, 0.2);
       }
     }
 

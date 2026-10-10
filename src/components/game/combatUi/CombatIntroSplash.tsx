@@ -34,14 +34,14 @@ export function CombatIntroSplash({
         {isBoss && (
           <div
             className="text-[11px] font-mono tracking-[0.5em] uppercase mb-1"
-            style={{ color: '#ff4a4a', textShadow: '0 0 12px rgba(255,74,74,0.8)' }}
+            style={{ color: '#c65548', textShadow: '0 0 12px rgba(198,85,72,0.8)' }}
           >
             ⚠ БОСС ⚠
           </div>
         )}
         <div
           className={`combat-intro-emoji mb-2 enemy-hologram ${isBoss ? 'combat-intro-emoji--boss' : ''}`}
-          style={isBoss ? { fontSize: '5rem', filter: 'drop-shadow(0 0 24px rgba(255,74,74,0.6))' } : undefined}
+          style={isBoss ? { fontSize: '5rem', filter: 'drop-shadow(0 0 24px rgba(198,85,72,0.6))' } : undefined}
         >
           {emoji}
         </div>

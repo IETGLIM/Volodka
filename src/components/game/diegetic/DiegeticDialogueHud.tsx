@@ -430,7 +430,7 @@ export function DiegeticDialogueHud() {
             <p
               className="px-4 pb-1 font-serif text-xs italic leading-relaxed"
               style={{
-                color: factionAttitude.tier === 'ally' ? 'rgba(110, 231, 183, 0.75)' : 'rgba(252, 165, 165, 0.78)',
+                color: factionAttitude.tier === 'ally' ? 'rgba(70, 185, 110, 0.75)' : 'rgba(252, 165, 165, 0.78)',
                 textShadow: 'var(--hud-filmic-shadow)',
               }}
             >

@@ -27,20 +27,20 @@
 }
 
 .codex-cat-history.codex-cat-active {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.08);
-  border-color: rgba(251, 191, 36, 0.25);
+  color: #e2a84b;
+  background: rgba(226, 168, 75, 0.08);
+  border-color: rgba(226, 168, 75, 0.25);
 }
-.codex-cat-history::after { background: #fbbf24; }
-.codex-cat-history.codex-cat-active::after { box-shadow: 0 0 8px rgba(251,191,36,0.4); }
+.codex-cat-history::after { background: #e2a84b; }
+.codex-cat-history.codex-cat-active::after { box-shadow: 0 0 8px rgba(226,168,75,0.4); }
 
 .codex-cat-factions.codex-cat-active {
-  color: #fb7185;
-  background: rgba(251, 113, 133, 0.08);
-  border-color: rgba(251, 113, 133, 0.25);
+  color: #c65548;
+  background: rgba(198, 85, 72, 0.08);
+  border-color: rgba(198, 85, 72, 0.25);
 }
-.codex-cat-factions::after { background: #fb7185; }
-.codex-cat-factions.codex-cat-active::after { box-shadow: 0 0 8px rgba(251,113,133,0.4); }
+.codex-cat-factions::after { background: #c65548; }
+.codex-cat-factions.codex-cat-active::after { box-shadow: 0 0 8px rgba(198,85,72,0.4); }
 
 .codex-cat-technology.codex-cat-active {
   color: #9db3c8;
@@ -51,20 +51,20 @@
 .codex-cat-technology.codex-cat-active::after { box-shadow: 0 0 8px rgba(157, 179, 200,0.4); }
 
 .codex-cat-culture.codex-cat-active {
-  color: #a78bfa;
+  color: #8d7fb5;
   background: rgba(167, 139, 250, 0.08);
   border-color: rgba(167, 139, 250, 0.25);
 }
-.codex-cat-culture::after { background: #a78bfa; }
+.codex-cat-culture::after { background: #8d7fb5; }
 .codex-cat-culture.codex-cat-active::after { box-shadow: 0 0 8px rgba(167,139,250,0.4); }
 
 .codex-cat-mysteries.codex-cat-active {
   color: #57a874;
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.25);
+  background: rgba(70, 185, 110, 0.08);
+  border-color: rgba(70, 185, 110, 0.25);
 }
 .codex-cat-mysteries::after { background: #57a874; }
-.codex-cat-mysteries.codex-cat-active::after { box-shadow: 0 0 8px rgba(52,211,153,0.4); }
+.codex-cat-mysteries.codex-cat-active::after { box-shadow: 0 0 8px rgba(70,185,110,0.4); }
 
 /* ── Lore Entry Cards ── */
 .codex-entry-card {
@@ -99,19 +99,19 @@
   );
 }
 .codex-entry-card.codex-entry-selected {
-  border-color: rgba(251, 191, 36, 0.35) !important;
-  background: rgba(251, 191, 36, 0.05) !important;
+  border-color: rgba(226, 168, 75, 0.35) !important;
+  background: rgba(226, 168, 75, 0.05) !important;
 }
 .codex-entry-card.codex-entry-selected::before {
   opacity: 1;
-  background: linear-gradient(180deg, #fbbf24, #d97706);
+  background: linear-gradient(180deg, #e2a84b, #e2a84b);
 }
 
 /* Category-specific entry left borders */
-.codex-entry-cat-history::before { background: #fbbf24; }
-.codex-entry-cat-factions::before { background: #fb7185; }
+.codex-entry-cat-history::before { background: #e2a84b; }
+.codex-entry-cat-factions::before { background: #c65548; }
 .codex-entry-cat-technology::before { background: #9db3c8; }
-.codex-entry-cat-culture::before { background: #a78bfa; }
+.codex-entry-cat-culture::before { background: #8d7fb5; }
 .codex-entry-cat-mysteries::before { background: #57a874; }
 
 /* ── Lore Entry Detail View ── */
@@ -128,16 +128,16 @@
   opacity: 0.04;
 }
 .codex-detail-atmosphere-history {
-  background: radial-gradient(ellipse at 30% 0%, #fbbf24, transparent 70%);
+  background: radial-gradient(ellipse at 30% 0%, #e2a84b, transparent 70%);
 }
 .codex-detail-atmosphere-factions {
-  background: radial-gradient(ellipse at 30% 0%, #fb7185, transparent 70%);
+  background: radial-gradient(ellipse at 30% 0%, #c65548, transparent 70%);
 }
 .codex-detail-atmosphere-technology {
   background: radial-gradient(ellipse at 30% 0%, #9db3c8, transparent 70%);
 }
 .codex-detail-atmosphere-culture {
-  background: radial-gradient(ellipse at 30% 0%, #a78bfa, transparent 70%);
+  background: radial-gradient(ellipse at 30% 0%, #8d7fb5, transparent 70%);
 }
 .codex-detail-atmosphere-mysteries {
   background: radial-gradient(ellipse at 30% 0%, #57a874, transparent 70%);
@@ -282,12 +282,12 @@
   box-shadow: 0 0 12px rgba(157, 179, 200, 0.1), inset 0 0 8px rgba(157, 179, 200, 0.03);
 }
 .equip-slot-equipped {
-  border-color: rgba(251, 191, 36, 0.3);
-  background: rgba(251, 191, 36, 0.04);
+  border-color: rgba(226, 168, 75, 0.3);
+  background: rgba(226, 168, 75, 0.04);
 }
 .equip-slot-equipped:hover {
-  border-color: rgba(251, 191, 36, 0.5);
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.15), inset 0 0 8px rgba(251, 191, 36, 0.05);
+  border-color: rgba(226, 168, 75, 0.5);
+  box-shadow: 0 0 12px rgba(226, 168, 75, 0.15), inset 0 0 8px rgba(226, 168, 75, 0.05);
 }
 .equip-slot-label {
   font-size: 7px;
@@ -297,7 +297,7 @@
   color: rgba(148, 163, 184, 0.4);
 }
 .equip-slot-equipped .equip-slot-label {
-  color: rgba(251, 191, 36, 0.5);
+  color: rgba(226, 168, 75, 0.5);
 }
 .equip-slot-item {
   font-size: 9px;
@@ -388,7 +388,7 @@
 .karma-meter-track {
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(90deg, #fb7185, #fbbf24, #9db3c8);
+  background: linear-gradient(90deg, #c65548, #e2a84b, #9db3c8);
   position: relative;
 }
 .karma-meter-thumb {
@@ -449,12 +449,12 @@
   z-index: 0;
   background:
     radial-gradient(1px 1px at 10% 20%, rgba(157, 179, 200, 0.15), transparent),
-    radial-gradient(1px 1px at 30% 70%, rgba(251, 191, 36, 0.1), transparent),
+    radial-gradient(1px 1px at 30% 70%, rgba(226, 168, 75, 0.1), transparent),
     radial-gradient(1px 1px at 50% 40%, rgba(167, 139, 250, 0.08), transparent),
     radial-gradient(1px 1px at 70% 80%, rgba(157, 179, 200, 0.12), transparent),
-    radial-gradient(1px 1px at 90% 30%, rgba(251, 191, 36, 0.1), transparent),
-    radial-gradient(1px 1px at 20% 90%, rgba(52, 211, 153, 0.08), transparent),
-    radial-gradient(1px 1px at 80% 10%, rgba(251, 113, 133, 0.08), transparent),
+    radial-gradient(1px 1px at 90% 30%, rgba(226, 168, 75, 0.1), transparent),
+    radial-gradient(1px 1px at 20% 90%, rgba(70, 185, 110, 0.08), transparent),
+    radial-gradient(1px 1px at 80% 10%, rgba(198, 85, 72, 0.08), transparent),
     radial-gradient(1px 1px at 60% 60%, rgba(157, 179, 200, 0.1), transparent);
   animation: poem-particles-drift 20s linear infinite;
 }
@@ -489,18 +489,18 @@
 
 /* ── Poem Mood Colors ── */
 .poem-mood-melancholy {
-  --poem-accent: rgba(96, 165, 250, 0.3);
-  --poem-glow: rgba(96, 165, 250, 0.1);
-  --poem-text: #93c5fd;
+  --poem-accent: rgba(157, 179, 200, 0.3);
+  --poem-glow: rgba(157, 179, 200, 0.1);
+  --poem-text: #9db3c8;
 }
 .poem-mood-hope {
-  --poem-accent: rgba(251, 191, 36, 0.3);
-  --poem-glow: rgba(251, 191, 36, 0.1);
-  --poem-text: #fde68a;
+  --poem-accent: rgba(226, 168, 75, 0.3);
+  --poem-glow: rgba(226, 168, 75, 0.1);
+  --poem-text: #e2a84b;
 }
 .poem-mood-rage {
-  --poem-accent: rgba(248, 113, 113, 0.3);
-  --poem-glow: rgba(248, 113, 113, 0.1);
+  --poem-accent: rgba(198, 85, 72, 0.3);
+  --poem-glow: rgba(198, 85, 72, 0.1);
   --poem-text: #fca5a5;
 }
 .poem-mood-wonder {
@@ -509,8 +509,8 @@
   --poem-text: #d8b4fe;
 }
 .poem-mood-love {
-  --poem-accent: rgba(244, 114, 182, 0.3);
-  --poem-glow: rgba(244, 114, 182, 0.1);
+  --poem-accent: rgba(141, 127, 181, 0.3);
+  --poem-glow: rgba(141, 127, 181, 0.1);
   --poem-text: #f9a8d4;
 }
 .poem-mood-default {
@@ -533,9 +533,9 @@
 }
 .poem-power-badge-active {
   color: #57a874;
-  border-color: rgba(52, 211, 153, 0.3);
-  background: rgba(52, 211, 153, 0.08);
-  box-shadow: 0 0 8px rgba(52, 211, 153, 0.1);
+  border-color: rgba(70, 185, 110, 0.3);
+  background: rgba(70, 185, 110, 0.08);
+  box-shadow: 0 0 8px rgba(70, 185, 110, 0.1);
 }
 .poem-power-badge-inactive {
   color: rgba(148, 163, 184, 0.5);

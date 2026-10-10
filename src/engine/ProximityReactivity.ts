@@ -30,7 +30,7 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
     position: [0, 1.12, -2.68],
     radius: 3,
     type: 'light_glow',
-    config: { minIntensity: 0.3, maxIntensity: 1.0, speed: 2, color: '#00ff44', distance: 5 },
+    config: { minIntensity: 0.3, maxIntensity: 1.0, speed: 2, color: '#46b96e', distance: 5 },
   },
   // Desk lamp warms up near player
   {
@@ -39,7 +39,7 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
     position: [0.3, 1.5, -2.3],
     radius: 2.5,
     type: 'light_glow',
-    config: { minIntensity: 0.1, maxIntensity: 0.6, speed: 3, color: '#ffaa44', distance: 4 },
+    config: { minIntensity: 0.1, maxIntensity: 0.6, speed: 3, color: '#e2a84b', distance: 4 },
   },
   // Zabbix alert LED pulses when player approaches desk
   {
@@ -97,7 +97,7 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
     position: [0, 1.5, -4.0],
     radius: 3,
     type: 'light_glow',
-    config: { minIntensity: 0.5, maxIntensity: 1.5, speed: 2, color: '#4488ff', distance: 6 },
+    config: { minIntensity: 0.5, maxIntensity: 1.5, speed: 2, color: '#9db3c8', distance: 6 },
   },
   // Cafe ambient music shifts near the back table
   {
@@ -117,7 +117,7 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
     position: [-6, 1.5, -5],
     radius: 4,
     type: 'light_glow',
-    config: { minIntensity: 0.2, maxIntensity: 0.8, speed: 1.5, color: '#00ff66', distance: 5 },
+    config: { minIntensity: 0.2, maxIntensity: 0.8, speed: 1.5, color: '#46b96e', distance: 5 },
   },
   // Terminal screens glitch when player is near
   {
@@ -137,7 +137,7 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
     position: [-3, 1.0, -2],
     radius: 3,
     type: 'light_glow',
-    config: { minIntensity: 0.2, maxIntensity: 0.7, speed: 2, color: '#ffcc66', distance: 4 },
+    config: { minIntensity: 0.2, maxIntensity: 0.7, speed: 2, color: '#e2a84b', distance: 4 },
   },
 
   /* ─────────────── ABANDONED FACTORY ─────────────── */
@@ -168,7 +168,7 @@ export const PROXIMITY_EFFECTS: ProximityEffect[] = [
     position: [0, 2.0, 0],
     radius: 4,
     type: 'light_glow',
-    config: { minIntensity: 0.3, maxIntensity: 0.8, speed: 2, color: '#ffaa44', distance: 5 },
+    config: { minIntensity: 0.3, maxIntensity: 0.8, speed: 2, color: '#e2a84b', distance: 5 },
   },
   // Radio static increases near the radio
   {

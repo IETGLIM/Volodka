@@ -34,7 +34,7 @@ export function MorningSyncUrgency() {
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: urgency }}
-        className="fixed inset-0 pointer-events-none z-20 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(255,80,40,0.22)_100%)] mix-blend-soft-light"
+        className="fixed inset-0 pointer-events-none z-20 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(198,85,72,0.22)_100%)] mix-blend-soft-light"
         aria-hidden
       />
       <AnimatePresence>
@@ -45,8 +45,8 @@ export function MorningSyncUrgency() {
           className="fixed left-1/2 -translate-x-1/2 bottom-[22vh] z-30 pointer-events-none"
           style={{ zIndex: UI_LAYERS.HUD }}
         >
-          <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-black/55 backdrop-blur-[14px] border border-amber-500/20 shadow-[0_0_24px_rgba(255,120,40,0.15)]">
-            <div className="w-2 h-2 rounded-full bg-amber-400/80 animate-pulse shadow-[0_0_8px_rgba(255,180,80,0.8)]" />
+          <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-black/55 backdrop-blur-[14px] border border-amber-500/20 shadow-[0_0_24px_rgba(226,168,75,0.15)]">
+            <div className="w-2 h-2 rounded-full bg-amber-400/80 animate-pulse shadow-[0_0_8px_rgba(226,168,75,0.8)]" />
             <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-amber-200/80">
               Синк через {5 - minutes}м • Терминал в углу комнаты
             </span>

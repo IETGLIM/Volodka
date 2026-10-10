@@ -169,7 +169,7 @@ export function MinigameTutorialOverlay({ gameType, onDismiss, forceShow = false
                   className="minigame-tutorial-dot"
                   style={{
                     background: i === stepIndex
-                      ? 'rgba(6, 182, 212, 0.8)'
+                      ? 'rgba(157, 179, 200, 0.8)'
                       : i < stepIndex
                         ? 'rgba(148, 163, 184, 0.3)'
                         : 'rgba(100, 116, 139, 0.15)',

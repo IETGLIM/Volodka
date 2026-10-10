@@ -65,7 +65,7 @@ export const CityWhisperOverlay = memo(function CityWhisperOverlay() {
               fontStyle: 'italic',
               color: 'rgba(240, 230, 200, 0.85)',
               textShadow:
-                '0 0 18px rgba(240, 230, 200, 0.28), 0 0 42px rgba(160, 96, 192, 0.20), 0 2px 6px rgba(0, 0, 0, 0.85)',
+                '0 0 18px rgba(240, 230, 200, 0.28), 0 0 42px rgba(141, 127, 181, 0.20), 0 2px 6px rgba(0, 0, 0, 0.85)',
             }}
           >
             {whisper}

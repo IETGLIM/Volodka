@@ -145,7 +145,7 @@ export function CombatUI() {
           style={{
             zIndex: UI_LAYERS.COMBAT,
             backgroundImage:
-              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.1) 2px, rgba(0,255,65,0.1) 4px)',
+              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(70,185,110,0.1) 2px, rgba(70,185,110,0.1) 4px)',
           }}
         />
         <div className="combat-grid-overlay" />

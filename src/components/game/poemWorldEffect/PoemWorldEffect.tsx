@@ -127,7 +127,7 @@ function PoemWorldEffectInner() {
   const { activeEvent, reducedMotion, isExpiring } = usePoemWorldEffectController();
   const profile = activeEvent?.profile;
   const showLetterbox = profile?.visualPreset === 'letterbox_truth';
-  const tint = profile?.worldTint ?? 'rgba(0,255,200,0.08)';
+  const tint = profile?.worldTint ?? 'rgba(157,179,200,0.08)';
   const epigraph = profile?.narrationLine;
 
   // Derive an accent color from the tint for shimmer/glyph effects
@@ -137,7 +137,7 @@ function PoemWorldEffectInner() {
     if (match) {
       return `rgba(${match[1]}, ${match[2]}, ${match[3]}, 1)`;
     }
-    return '#00ffc8';
+    return '#9db3c8';
   }, [tint]);
 
   return (
@@ -170,7 +170,7 @@ function PoemWorldEffectInner() {
               transition={{ duration: 1.8, ease: 'easeOut' }}
               style={{
                 background:
-                  'conic-gradient(from 180deg at 50% -10%, rgba(255,220,100,0.25), transparent 40%, rgba(255,220,100,0.15), transparent 80%)',
+                  'conic-gradient(from 180deg at 50% -10%, rgba(226,168,75,0.25), transparent 40%, rgba(226,168,75,0.15), transparent 80%)',
                 mixBlendMode: 'screen',
               }}
             />

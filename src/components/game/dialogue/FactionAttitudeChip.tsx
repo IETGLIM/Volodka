@@ -27,15 +27,15 @@ interface TierVisual {
 function getTierVisual(tier: FactionAttitudeTier): TierVisual {
   switch (tier) {
     case 'ally':
-      return { color: 'rgb(110, 231, 183)', border: 'rgba(16, 185, 129, 0.45)', bg: 'rgba(6, 78, 59, 0.35)' };
+      return { color: 'rgb(70, 185, 110)', border: 'rgba(16, 185, 129, 0.45)', bg: 'rgba(6, 78, 59, 0.35)' };
     case 'cordial':
-      return { color: 'rgb(190, 242, 100)', border: 'rgba(132, 204, 22, 0.4)', bg: 'rgba(58, 69, 10, 0.3)' };
+      return { color: 'rgb(70, 185, 110)', border: 'rgba(70, 185, 110, 0.4)', bg: 'rgba(58, 69, 10, 0.3)' };
     case 'neutral':
       return { color: 'rgb(203, 213, 225)', border: 'rgba(148, 163, 184, 0.35)', bg: 'rgba(30, 41, 59, 0.4)' };
     case 'wary':
-      return { color: 'rgb(252, 211, 77)', border: 'rgba(245, 158, 11, 0.45)', bg: 'rgba(69, 47, 6, 0.35)' };
+      return { color: 'rgb(226, 168, 75)', border: 'rgba(226, 168, 75, 0.45)', bg: 'rgba(69, 47, 6, 0.35)' };
     case 'hostile':
-      return { color: 'rgb(252, 165, 165)', border: 'rgba(239, 68, 68, 0.5)', bg: 'rgba(76, 5, 25, 0.4)' };
+      return { color: 'rgb(252, 165, 165)', border: 'rgba(198, 85, 72, 0.5)', bg: 'rgba(76, 5, 25, 0.4)' };
   }
 }
 

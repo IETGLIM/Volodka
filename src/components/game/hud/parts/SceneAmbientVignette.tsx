@@ -39,10 +39,10 @@ function getVignetteStyle(hour: number, weather: WeatherType): React.CSSProperti
   let bottomColor = 'transparent';
 
   if (hour >= 6 && hour < 10) {
-    topColor = 'rgba(255, 140, 50, 0.04)';
-    bottomColor = 'rgba(255, 100, 50, 0.02)';
+    topColor = 'rgba(226, 168, 75, 0.04)';
+    bottomColor = 'rgba(198, 85, 72, 0.02)';
   } else if (hour >= 18 && hour < 21) {
-    topColor = 'rgba(200, 80, 40, 0.05)';
+    topColor = 'rgba(198, 85, 72, 0.05)';
     bottomColor = 'rgba(180, 60, 30, 0.03)';
   } else if (hour >= 21 || hour < 6) {
     topColor = 'rgba(10, 20, 60, 0.08)';
@@ -50,7 +50,7 @@ function getVignetteStyle(hour: number, weather: WeatherType): React.CSSProperti
   }
 
   if (weather === 'rain' || weather === 'storm') {
-    topColor = 'rgba(60, 120, 200, 0.06)';
+    topColor = 'rgba(157, 179, 200, 0.06)';
     bottomColor = 'rgba(40, 80, 160, 0.03)';
   } else if (weather === 'snow') {
     topColor = 'rgba(180, 200, 240, 0.04)';

@@ -37,19 +37,19 @@ const NUMBER_LIFETIME_MS = 1500;
 /* ─── Color map ─── */
 
 const TYPE_COLORS: Record<DamageNumberType, string> = {
-  damage: '#fb7185',     // rose-400
+  damage: '#c65548',     // rose-400
   heal: '#57a874',       // emerald-400
-  stress: '#fbbf24',     // amber-400
+  stress: '#e2a84b',     // amber-400
   xp: 'var(--cyber-cyan)',         // cyan-400
-  critical: '#fb7185',   // rose-400 (brighter effect)
+  critical: '#c65548',   // rose-400 (brighter effect)
 };
 
 const TYPE_GLOW: Record<DamageNumberType, string> = {
-  damage: '0 0 12px rgba(251,113,133,0.6), 0 0 24px rgba(251,113,133,0.3)',
-  heal: '0 0 12px rgba(52,211,153,0.5), 0 0 20px rgba(52,211,153,0.2)',
-  stress: '0 0 12px rgba(251,191,36,0.5), 0 0 20px rgba(251,191,36,0.2)',
+  damage: '0 0 12px rgba(198,85,72,0.6), 0 0 24px rgba(198,85,72,0.3)',
+  heal: '0 0 12px rgba(70,185,110,0.5), 0 0 20px rgba(70,185,110,0.2)',
+  stress: '0 0 12px rgba(226,168,75,0.5), 0 0 20px rgba(226,168,75,0.2)',
   xp: '0 0 12px rgb(var(--cyber-cyan-rgb) / 0.5), 0 0 20px rgb(var(--cyber-cyan-rgb) / 0.2)',
-  critical: '0 0 18px rgba(251,113,133,0.8), 0 0 36px rgba(251,113,133,0.4), 0 0 54px rgba(251,113,133,0.2)',
+  critical: '0 0 18px rgba(198,85,72,0.8), 0 0 36px rgba(198,85,72,0.4), 0 0 54px rgba(198,85,72,0.2)',
 };
 
 /* ─── ID counter ─── */
@@ -136,7 +136,7 @@ function DamageNumber({ entry }: { entry: DamageNumberEntry }) {
         className="relative px-3 py-1 rounded-md"
         style={{
           background: isDamage
-            ? 'rgba(251,113,133,0.08)'
+            ? 'rgba(198,85,72,0.08)'
             : 'rgba(0,0,0,0.35)',
           backdropFilter: 'blur(4px)',
           WebkitBackdropFilter: 'blur(4px)',

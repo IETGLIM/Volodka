@@ -371,7 +371,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
 
   /* ─── Timer bar color ─── */
   const timerColor =
-    timeLeft > 30 ? '#00ff41' : timeLeft > 15 ? '#ffcc00' : '#ff4444';
+    timeLeft > 30 ? '#46b96e' : timeLeft > 15 ? '#e2a84b' : '#c65548';
   const timerPercent = (timeLeft / TIME_LIMIT) * 100;
 
   return (
@@ -395,8 +395,8 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
         className="relative z-10 w-full max-w-lg mx-4 rounded-lg border overflow-hidden"
         style={{
           background: 'linear-gradient(135deg, rgba(0, 8, 2, 0.98), rgba(2, 12, 4, 0.98))',
-          borderColor: 'rgba(0, 255, 65, 0.3)',
-          boxShadow: '0 0 40px rgba(0, 255, 65, 0.08), inset 0 0 40px rgba(0, 255, 65, 0.02)',
+          borderColor: 'rgba(70, 185, 110, 0.3)',
+          boxShadow: '0 0 40px rgba(70, 185, 110, 0.08), inset 0 0 40px rgba(70, 185, 110, 0.02)',
         }}
       >
         {/* Scanlines overlay */}
@@ -404,7 +404,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
           className="absolute inset-0 pointer-events-none z-20"
           style={{
             background:
-              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,65,0.02) 2px, rgba(0,255,65,0.02) 4px)',
+              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(70,185,110,0.02) 2px, rgba(70,185,110,0.02) 4px)',
           }}
         />
 
@@ -421,15 +421,15 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
         <div
           className="px-4 py-2.5 flex items-center justify-between"
           style={{
-            borderBottom: '1px solid rgba(0, 255, 65, 0.2)',
-            background: 'rgba(0, 255, 65, 0.04)',
+            borderBottom: '1px solid rgba(70, 185, 110, 0.2)',
+            background: 'rgba(70, 185, 110, 0.04)',
           }}
         >
           <div className="flex items-center gap-2">
-            <span style={{ color: '#00ff41', fontSize: uiTextScaledPx(14) }}>&#9608;</span>
+            <span style={{ color: '#46b96e', fontSize: uiTextScaledPx(14) }}>&#9608;</span>
             <h2
               className="text-xs font-bold tracking-widest uppercase"
-              style={{ color: '#00ff41', fontFamily: 'monospace' }}
+              style={{ color: '#46b96e', fontFamily: 'monospace' }}
             >
               BASH TERMINAL
             </h2>
@@ -439,7 +439,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
           <div className="flex items-center gap-2">
             <div
               className="w-20 h-1.5 rounded-full overflow-hidden"
-              style={{ background: 'rgba(0, 255, 65, 0.1)' }}
+              style={{ background: 'rgba(70, 185, 110, 0.1)' }}
             >
               <motion.div
                 className="h-full rounded-full"
@@ -467,8 +467,8 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
         <div
           className="px-4 py-1.5 flex items-center gap-2"
           style={{
-            borderBottom: '1px solid rgba(0, 255, 65, 0.1)',
-            background: 'rgba(0, 255, 65, 0.02)',
+            borderBottom: '1px solid rgba(70, 185, 110, 0.1)',
+            background: 'rgba(70, 185, 110, 0.02)',
           }}
         >
           {PHASES.map((phase, idx) => (
@@ -478,13 +478,13 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
                 style={{
                   background:
                     idx < currentPhaseIndex
-                      ? '#00ff41'
+                      ? '#46b96e'
                       : idx === currentPhaseIndex && gameStatus === 'playing'
-                        ? 'rgba(0, 255, 65, 0.8)'
-                        : 'rgba(0, 255, 65, 0.15)',
+                        ? 'rgba(70, 185, 110, 0.8)'
+                        : 'rgba(70, 185, 110, 0.15)',
                   boxShadow:
                     idx === currentPhaseIndex && gameStatus === 'playing'
-                      ? '0 0 6px rgba(0, 255, 65, 0.5)'
+                      ? '0 0 6px rgba(70, 185, 110, 0.5)'
                       : 'none',
                 }}
               />
@@ -493,16 +493,16 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
                 style={{
                   color:
                     idx < currentPhaseIndex
-                      ? '#00ff41'
+                      ? '#46b96e'
                       : idx === currentPhaseIndex && gameStatus === 'playing'
-                        ? 'rgba(0, 255, 65, 0.8)'
-                        : 'rgba(0, 255, 65, 0.25)',
+                        ? 'rgba(70, 185, 110, 0.8)'
+                        : 'rgba(70, 185, 110, 0.25)',
                 }}
               >
                 {phase.id === 'investigate' ? 'РАССЛ.' : phase.id === 'trace' ? 'СЛЕД' : 'ВОССТ.'}
               </span>
               {idx < PHASES.length - 1 && (
-                <span style={{ color: 'rgba(0, 255, 65, 0.15)' }}>→</span>
+                <span style={{ color: 'rgba(70, 185, 110, 0.15)' }}>→</span>
               )}
             </div>
           ))}
@@ -516,7 +516,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
             fontSize: uiTextScaledPx(11),
             lineHeight: '1.5',
             scrollbarWidth: 'thin',
-            scrollbarColor: 'rgba(0,255,65,0.2) transparent',
+            scrollbarColor: 'rgba(70,185,110,0.2) transparent',
           }}
         >
           <AnimatePresence>
@@ -529,14 +529,14 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
                 style={{
                   color:
                     line.type === 'command'
-                      ? '#00ff41'
+                      ? '#46b96e'
                       : line.type === 'output'
                         ? '#33aa55'
                         : line.type === 'error'
-                          ? '#ff5544'
+                          ? '#c65548'
                           : line.type === 'narrative'
-                            ? '#88ddaa'
-                            : '#00ff41',
+                            ? '#57a874'
+                            : '#46b96e',
                   fontWeight: line.type === 'system' ? 'bold' : 'normal',
                   whiteSpace: 'pre-wrap',
                   wordBreak: 'break-all',
@@ -553,15 +553,15 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
         <div
           className="px-4 py-3"
           style={{
-            borderTop: '1px solid rgba(0, 255, 65, 0.15)',
-            background: 'rgba(0, 255, 65, 0.02)',
+            borderTop: '1px solid rgba(70, 185, 110, 0.15)',
+            background: 'rgba(70, 185, 110, 0.02)',
           }}
         >
           {gameStatus === 'playing' && (
             <>
               <p
                 className="text-[10px] font-mono mb-2"
-                style={{ color: 'rgba(0, 255, 65, 0.5)' }}
+                style={{ color: 'rgba(70, 185, 110, 0.5)' }}
               >
                 {currentPhase.title} — выбери команду:
               </p>
@@ -576,18 +576,18 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
                       className="w-full text-left px-3 py-2 rounded font-mono text-xs transition-all duration-150 flex items-center gap-2"
                       style={{
                         background: isSelected
-                          ? 'rgba(0, 255, 65, 0.12)'
-                          : 'rgba(0, 255, 65, 0.04)',
-                        border: `1px solid ${isSelected ? 'rgba(0, 255, 65, 0.4)' : 'rgba(0, 255, 65, 0.15)'}`,
-                        color: '#00ff41',
+                          ? 'rgba(70, 185, 110, 0.12)'
+                          : 'rgba(70, 185, 110, 0.04)',
+                        border: `1px solid ${isSelected ? 'rgba(70, 185, 110, 0.4)' : 'rgba(70, 185, 110, 0.15)'}`,
+                        color: '#46b96e',
                         opacity: isProcessing && !isSelected ? 0.4 : 1,
                         cursor: isProcessing ? 'wait' : 'pointer',
                       }}
                       whileHover={
                         !isProcessing
                           ? {
-                              background: 'rgba(0, 255, 65, 0.1)',
-                              borderColor: 'rgba(0, 255, 65, 0.35)',
+                              background: 'rgba(70, 185, 110, 0.1)',
+                              borderColor: 'rgba(70, 185, 110, 0.35)',
                             }
                           : {}
                       }
@@ -596,9 +596,9 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
                       <span
                         className="inline-flex items-center justify-center w-5 h-5 rounded text-[10px] font-bold flex-shrink-0"
                         style={{
-                          background: 'rgba(0, 255, 65, 0.1)',
-                          border: '1px solid rgba(0, 255, 65, 0.3)',
-                          color: '#00ff41',
+                          background: 'rgba(70, 185, 110, 0.1)',
+                          border: '1px solid rgba(70, 185, 110, 0.3)',
+                          color: '#46b96e',
                         }}
                       >
                         {idx + 1}
@@ -610,7 +610,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
               </div>
               <p
                 className="text-[9px] font-mono mt-2"
-                style={{ color: 'rgba(0, 255, 65, 0.3)' }}
+                style={{ color: 'rgba(70, 185, 110, 0.3)' }}
               >
                 Клавиши: [1] [2] [3] — выбрать · [Esc] — закрыть
               </p>
@@ -625,11 +625,11 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
               transition={{ duration: 0.3 }}
               className="text-center py-3"
             >
-              <p className="text-sm font-bold font-mono" style={{ color: '#00ff41' }}>
+              <p className="text-sm font-bold font-mono" style={{ color: '#46b96e' }}>
                 &#9608; СИСТЕМА ВОССТАНОВЛЕНА
               </p>
               <div className="mt-2 space-y-0.5">
-                <p className="text-xs font-mono" style={{ color: '#88ddaa' }}>
+                <p className="text-xs font-mono" style={{ color: '#57a874' }}>
                   +4 программирование · +2 логика · +5 карма
                 </p>
               </div>
@@ -637,9 +637,9 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
                 onClick={onClose}
                 className="mt-3 px-4 py-1.5 rounded text-xs font-mono transition-all"
                 style={{
-                  background: 'rgba(0, 255, 65, 0.15)',
-                  border: '1px solid rgba(0, 255, 65, 0.4)',
-                  color: '#00ff41',
+                  background: 'rgba(70, 185, 110, 0.15)',
+                  border: '1px solid rgba(70, 185, 110, 0.4)',
+                  color: '#46b96e',
                 }}
               >
                 Закрыть
@@ -655,7 +655,7 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
               transition={{ duration: 0.3 }}
               className="text-center py-3"
             >
-              <p className="text-sm font-bold font-mono" style={{ color: '#ff5544' }}>
+              <p className="text-sm font-bold font-mono" style={{ color: '#c65548' }}>
                 &#9608; ВРЕМЯ ВЫШЛО — СБОЙ НЕ УСТРАНЁН
               </p>
               <p className="text-xs font-mono mt-1" style={{ color: '#aa6644' }}>
@@ -665,9 +665,9 @@ export function BashTerminalGame({ onClose }: BashTerminalGameProps) {
                 onClick={onClose}
                 className="mt-3 px-4 py-1.5 rounded text-xs font-mono transition-all"
                 style={{
-                  background: 'rgba(255, 85, 68, 0.15)',
-                  border: '1px solid rgba(255, 85, 68, 0.3)',
-                  color: '#ff5544',
+                  background: 'rgba(198, 85, 72, 0.15)',
+                  border: '1px solid rgba(198, 85, 72, 0.3)',
+                  color: '#c65548',
                 }}
               >
                 Закрыть

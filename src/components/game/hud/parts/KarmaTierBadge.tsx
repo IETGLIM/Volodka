@@ -17,23 +17,23 @@ const TIER_STYLES: Record<KarmaTier, {
 }> = {
   positive: {
     color: 'var(--cyber-cyan)',
-    brightColor: '#67e8f9',
+    brightColor: '#9db3c8',
     alpha: 'rgb(var(--cyber-cyan-rgb) / 0.25)',
     alphaDim: 'rgb(var(--cyber-cyan-rgb) / 0.1)',
     icon: '✦',
   },
   neutral: {
-    color: '#fbbf24',
-    brightColor: '#fcd34d',
-    alpha: 'rgba(251, 191, 36, 0.25)',
-    alphaDim: 'rgba(251, 191, 36, 0.1)',
+    color: '#e2a84b',
+    brightColor: '#e2a84b',
+    alpha: 'rgba(226, 168, 75, 0.25)',
+    alphaDim: 'rgba(226, 168, 75, 0.1)',
     icon: '◆',
   },
   negative: {
-    color: '#fb7185',
-    brightColor: '#fda4af',
-    alpha: 'rgba(251, 113, 133, 0.25)',
-    alphaDim: 'rgba(251, 113, 133, 0.1)',
+    color: '#c65548',
+    brightColor: '#dd9088',
+    alpha: 'rgba(198, 85, 72, 0.25)',
+    alphaDim: 'rgba(198, 85, 72, 0.1)',
     icon: '✧',
   },
 };

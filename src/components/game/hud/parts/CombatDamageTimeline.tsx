@@ -84,7 +84,7 @@ export function CombatDamageTimeline() {
                   y={CENTER_Y - pH}
                   width={BAR_WIDTH}
                   height={pH}
-                  fill="rgba(6,182,212,0.6)"
+                  fill="rgba(157,179,200,0.6)"
                   rx={1}
                   initial={reducedMotion ? undefined : { height: 0, y: CENTER_Y }}
                   animate={{ height: pH, y: CENTER_Y - pH }}
@@ -98,7 +98,7 @@ export function CombatDamageTimeline() {
                   y={CENTER_Y}
                   width={BAR_WIDTH}
                   height={eH}
-                  fill="rgba(239,68,68,0.6)"
+                  fill="rgba(198,85,72,0.6)"
                   rx={1}
                   initial={reducedMotion ? undefined : { height: 0 }}
                   animate={{ height: eH }}

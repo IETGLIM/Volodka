@@ -23,10 +23,10 @@
 
 /* ─── Glitch text effect for important text elements ─── */
 @keyframes glitch-text {
-  0%, 100% { text-shadow: 2px 0 #ff0040, -2px 0 #0ff; }
-  25% { text-shadow: -2px 0 #ff0040, 2px 0 #0ff; }
-  50% { text-shadow: 2px 2px #ff0040, -2px -2px #0ff; }
-  75% { text-shadow: -2px -2px #ff0040, 2px 2px #0ff; }
+  0%, 100% { text-shadow: 2px 0 #8d7fb5, -2px 0 #9db3c8; }
+  25% { text-shadow: -2px 0 #8d7fb5, 2px 0 #9db3c8; }
+  50% { text-shadow: 2px 2px #8d7fb5, -2px -2px #9db3c8; }
+  75% { text-shadow: -2px -2px #8d7fb5, 2px 2px #9db3c8; }
 }
 
 .glitch-text-fx {
@@ -79,23 +79,23 @@
 }
 
 .neon-border-amber {
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  box-shadow: 0 0 10px rgba(251, 191, 36, 0.1), inset 0 0 10px rgba(251, 191, 36, 0.05);
+  border: 1px solid rgba(226, 168, 75, 0.3);
+  box-shadow: 0 0 10px rgba(226, 168, 75, 0.1), inset 0 0 10px rgba(226, 168, 75, 0.05);
 }
 
 .neon-border-rose {
-  border: 1px solid rgba(251, 113, 133, 0.3);
-  box-shadow: 0 0 10px rgba(251, 113, 133, 0.1), inset 0 0 10px rgba(251, 113, 133, 0.05);
+  border: 1px solid rgba(198, 85, 72, 0.3);
+  box-shadow: 0 0 10px rgba(198, 85, 72, 0.1), inset 0 0 10px rgba(198, 85, 72, 0.05);
 }
 
 /* ─── Stat change indicator animation ─── */
 @keyframes stat-flash-positive {
-  0% { color: #57a874; text-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
+  0% { color: #57a874; text-shadow: 0 0 8px rgba(70, 185, 110, 0.5); }
   100% { color: inherit; text-shadow: none; }
 }
 
 @keyframes stat-flash-negative {
-  0% { color: #fb7185; text-shadow: 0 0 8px rgba(251, 113, 133, 0.5); }
+  0% { color: #c65548; text-shadow: 0 0 8px rgba(198, 85, 72, 0.5); }
   100% { color: inherit; text-shadow: none; }
 }
 

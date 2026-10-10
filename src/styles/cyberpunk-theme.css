@@ -38,7 +38,7 @@
   --color-stone-700: rgb(0 14 24);
   --color-stone-500: rgb(85 136 102);
   --color-stone-400: rgb(85 136 102);
-  --color-amber-500: #ddaa33;
+  --color-amber-500: #e2a84b;
   --color-cyan-500: var(--cyber-cyan-dim);
 
   /* Scrollbar fallback for unclassed scroll areas — matches .game-scrollbar */
@@ -104,7 +104,7 @@
 /* ─── Amber/gold overrides (keep amber for important stuff) ─── */
 [data-cyberpunk] .text-amber-300,
 [data-cyberpunk] .text-amber-400 {
-  text-shadow: 0 0 8px rgba(255, 180, 0, 0.3);
+  text-shadow: 0 0 8px rgba(226, 168, 75, 0.3);
 }
 
 /* ─── Cyan/emerald overrides ─── */
@@ -123,13 +123,13 @@
 [data-cyberpunk] .text-red-400,
 [data-cyberpunk] .text-rose-300,
 [data-cyberpunk] .text-rose-400 {
-  text-shadow: 0 0 8px rgba(255, 50, 50, 0.25);
+  text-shadow: 0 0 8px rgba(198, 85, 72, 0.25);
 }
 
 /* ─── Purple/violet overrides ─── */
 [data-cyberpunk] .text-violet-300,
 [data-cyberpunk] .text-violet-400 {
-  text-shadow: 0 0 8px rgba(180, 100, 255, 0.25);
+  text-shadow: 0 0 8px rgba(141, 127, 181, 0.25);
 }
 
 /* ─── Backdrop blur for overlays ─── */
@@ -154,7 +154,7 @@
 /* ─── RGB split hover effect on interactive text ─── */
 @keyframes cyberpunk-rgb-split {
   0%, 100% { text-shadow: 0 0 4px rgb(var(--cyber-matrix-rgb) / 0.4); }
-  50% { text-shadow: -1px 0 2px rgba(157, 179, 200, 0.3), 1px 0 2px rgba(255, 0, 100, 0.3); }
+  50% { text-shadow: -1px 0 2px rgba(157, 179, 200, 0.3), 1px 0 2px rgba(141, 127, 181, 0.3); }
 }
 
 [data-cyberpunk] a:hover,
@@ -199,12 +199,12 @@
 }
 .cp-glitch:hover::before {
   opacity: 0.8;
-  color: #ff0055;
+  color: #8d7fb5;
   animation: cp-glitch-shift 0.3s infinite;
 }
 .cp-glitch:hover::after {
   opacity: 0.8;
-  color: #00ffff;
+  color: #9db3c8;
   animation: cp-glitch-shift 0.3s infinite 0.15s;
 }
 @keyframes cp-glitch-shift {
@@ -266,7 +266,7 @@
   z-index: 2;
   box-shadow:
     inset 3px 0 8px -4px rgba(157, 179, 200, 0.04),
-    inset -3px 0 8px -4px rgba(255, 0, 100, 0.03);
+    inset -3px 0 8px -4px rgba(141, 127, 181, 0.03);
 }
 
 /* ─── Atmospheric fog layer for panels and overlays ─── */
@@ -284,7 +284,7 @@
   z-index: 0;
   background:
     radial-gradient(ellipse at 20% 80%, rgba(157, 179, 200, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(255, 140, 0, 0.02) 0%, transparent 50%);
+    radial-gradient(ellipse at 80% 20%, rgba(226, 168, 75, 0.02) 0%, transparent 50%);
   animation: cp-fog-drift 12s ease-in-out infinite;
 }
 
@@ -383,7 +383,7 @@
 /* ─── Subtle gradient noise on all data-panel elements ─── */
 [data-cyberpunk] [data-panel] {
   background:
-    linear-gradient(135deg, rgba(157, 179, 200, 0.01) 0%, transparent 50%, rgba(255, 140, 0, 0.008) 100%),
+    linear-gradient(135deg, rgba(157, 179, 200, 0.01) 0%, transparent 50%, rgba(226, 168, 75, 0.008) 100%),
     rgba(0, 6, 10, 0.92);
  border: 1px solid rgb(var(--cyber-matrix-rgb) / 0.12);
   box-shadow:
@@ -545,8 +545,8 @@
 }
 
 .cyber-tag:hover {
-  border-color: rgba(244, 63, 94, 0.4);
-  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12);
+  border-color: rgba(198, 85, 72, 0.4);
+  box-shadow: 0 0 10px rgba(198, 85, 72, 0.12);
 }
 
 .cyber-tag-remove {
@@ -564,9 +564,9 @@
 }
 
 .cyber-tag-remove:hover {
-  color: #f43f5e;
-  background: rgba(244, 63, 94, 0.15);
-  box-shadow: 0 0 6px rgba(244, 63, 94, 0.2);
+  color: #c65548;
+  background: rgba(198, 85, 72, 0.15);
+  box-shadow: 0 0 6px rgba(198, 85, 72, 0.2);
 }
 
 /* ─── Tooltip with CSS triangle arrow pointing up ─── */
@@ -682,7 +682,7 @@
 }
 
 .cyber-save-slot:hover {
-  border-image: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.5), rgba(168, 85, 247, 0.3)) 1 !important;
+  border-image: linear-gradient(135deg, rgb(var(--cyber-cyan-rgb) / 0.5), rgba(141, 127, 181, 0.3)) 1 !important;
   box-shadow:
     0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1),
     0 4px 20px rgba(0, 0, 0, 0.4),
@@ -1136,11 +1136,11 @@
 /* ─── 5. Cyber Badge Dot — pulsing status notification dot ─── */
 @keyframes badge-dot-pulse {
   0%, 100% {
-    box-shadow: 0 0 4px rgba(239, 68, 68, 0.5), 0 0 8px rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 4px rgba(198, 85, 72, 0.5), 0 0 8px rgba(198, 85, 72, 0.2);
     transform: scale(1);
   }
   50% {
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.7), 0 0 16px rgba(239, 68, 68, 0.3), 0 0 24px rgba(239, 68, 68, 0.1);
+    box-shadow: 0 0 8px rgba(198, 85, 72, 0.7), 0 0 16px rgba(198, 85, 72, 0.3), 0 0 24px rgba(198, 85, 72, 0.1);
     transform: scale(1.15);
   }
 }
@@ -1149,8 +1149,8 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.4);
+  background: #c65548;
+  border: 1px solid rgba(198, 85, 72, 0.4);
   animation: badge-dot-pulse 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -1420,7 +1420,7 @@
 }
 
 .cyber-stat-row .stat-row-change.negative {
-  color: rgba(251, 113, 133, 0.8);
+  color: rgba(198, 85, 72, 0.8);
 }
 
 /* ─── 8. Cyber Toggle Row — toggle switch row with label and subtle bottom border ─── */
@@ -1617,18 +1617,18 @@
 .cyber-alert-info .alert-icon-area { color: rgb(var(--cyber-cyan-rgb)); }
 
 .cyber-alert-warning {
-  border-left-color: rgba(251, 191, 36, 0.6);
-  box-shadow: 0 0 12px rgba(251, 191, 36, 0.06);
+  border-left-color: rgba(226, 168, 75, 0.6);
+  box-shadow: 0 0 12px rgba(226, 168, 75, 0.06);
 }
 
-.cyber-alert-warning .alert-icon-area { color: #fbbf24; }
+.cyber-alert-warning .alert-icon-area { color: #e2a84b; }
 
 .cyber-alert-error {
-  border-left-color: rgba(248, 113, 113, 0.6);
-  box-shadow: 0 0 12px rgba(248, 113, 113, 0.06);
+  border-left-color: rgba(198, 85, 72, 0.6);
+  box-shadow: 0 0 12px rgba(198, 85, 72, 0.06);
 }
 
-.cyber-alert-error .alert-icon-area { color: #f87171; }
+.cyber-alert-error .alert-icon-area { color: #c65548; }
 
 /* ─── 4. Cyber Data Table ─── */
 .cyber-data-table {
@@ -1699,14 +1699,14 @@
   height: 16px;
   padding: 0 4px;
   border-radius: 9999px;
-  background: #ef4444;
+  background: #c65548;
   color: #fff;
   font-size: 10px;
   font-family: 'Courier New', monospace;
   font-weight: 700;
   line-height: 16px;
   text-align: center;
-  box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+  box-shadow: 0 0 6px rgba(198, 85, 72, 0.4);
   animation: badge-pop 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: none;
   z-index: 10;
@@ -1774,25 +1774,25 @@
 }
 
 .cyber-tag-amber {
-  color: #fbbf24;
-  border-color: rgba(251, 191, 36, 0.25);
-  background: rgba(251, 191, 36, 0.06);
+  color: #e2a84b;
+  border-color: rgba(226, 168, 75, 0.25);
+  background: rgba(226, 168, 75, 0.06);
 }
 
 .cyber-tag-rose {
-  color: #fb7185;
-  border-color: rgba(251, 113, 133, 0.25);
-  background: rgba(251, 113, 133, 0.06);
+  color: #c65548;
+  border-color: rgba(198, 85, 72, 0.25);
+  background: rgba(198, 85, 72, 0.06);
 }
 
 .cyber-tag-emerald {
   color: #57a874;
-  border-color: rgba(52, 211, 153, 0.25);
-  background: rgba(52, 211, 153, 0.06);
+  border-color: rgba(70, 185, 110, 0.25);
+  background: rgba(70, 185, 110, 0.06);
 }
 
 .cyber-tag-violet {
-  color: #a78bfa;
+  color: #8d7fb5;
   border-color: rgba(167, 139, 250, 0.25);
   background: rgba(167, 139, 250, 0.06);
 }

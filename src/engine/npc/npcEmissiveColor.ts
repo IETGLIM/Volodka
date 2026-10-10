@@ -18,8 +18,8 @@ export function getNpcEmissiveColor(npcId: string, glowColor: string): string {
   const value = relation?.value ?? 50;
 
   let color: string;
-  if (value >= 70) color = '#ffaa44';
-  else if (value <= 30) color = '#ff4444';
+  if (value >= 70) color = '#e2a84b';
+  else if (value <= 30) color = '#c65548';
   else color = glowColor;
 
   _emissiveCache.set(npcId, { color, frame: _emissiveFrame });

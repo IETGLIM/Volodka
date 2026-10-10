@@ -129,21 +129,21 @@ const DEFAULT_DEBUFF_ICON = Skull;
 /** Color configuration for buff effects */
 const BUFF_COLORS = {
   primary: '#9db3c8',
-  secondary: '#00ff88',
-  glow: 'rgba(0, 240, 255, 0.5)',
-  glowSecondary: 'rgba(0, 255, 136, 0.3)',
-  border: '#00c8dc',
-  background: 'rgba(0, 240, 255, 0.08)',
+  secondary: '#46b96e',
+  glow: 'rgba(157, 179, 200, 0.5)',
+  glowSecondary: 'rgba(70, 185, 110, 0.3)',
+  border: '#9db3c8',
+  background: 'rgba(157, 179, 200, 0.08)',
 } as const;
 
 /** Color configuration for debuff effects */
 const DEBUFF_COLORS = {
-  primary: '#ff3366',
-  secondary: '#ff00aa',
-  glow: 'rgba(255, 51, 102, 0.5)',
-  glowSecondary: 'rgba(255, 0, 170, 0.3)',
-  border: '#dd2255',
-  background: 'rgba(255, 51, 102, 0.08)',
+  primary: '#c65548',
+  secondary: '#8d7fb5',
+  glow: 'rgba(198, 85, 72, 0.5)',
+  glowSecondary: 'rgba(141, 127, 181, 0.3)',
+  border: '#8d7fb5',
+  background: 'rgba(198, 85, 72, 0.08)',
 } as const;
 
 /** Position style mappings.
@@ -463,12 +463,12 @@ const EffectIcon = memo(function EffectIcon({ effect, size, showTimer }: EffectI
                 style={{
                   color: isBuff ? BUFF_COLORS.secondary : DEBUFF_COLORS.secondary,
                   backgroundColor: isBuff
-                    ? 'rgba(0, 255, 136, 0.12)'
-                    : 'rgba(255, 0, 170, 0.12)',
+                    ? 'rgba(70, 185, 110, 0.12)'
+                    : 'rgba(141, 127, 181, 0.12)',
                   border: `1px solid ${
                     isBuff
-                      ? 'rgba(0, 255, 136, 0.25)'
-                      : 'rgba(255, 0, 170, 0.25)'
+                      ? 'rgba(70, 185, 110, 0.25)'
+                      : 'rgba(141, 127, 181, 0.25)'
                   }`,
                 }}
               >
@@ -635,7 +635,7 @@ const BuffDebuffTracker = memo(function BuffDebuffTracker({
         WebkitBackdropFilter: 'blur(16px)',
         boxShadow: `
           0 8px 32px rgba(0, 0, 0, 0.5),
-          0 0 1px rgba(0, 240, 255, 0.12),
+          0 0 1px rgba(157, 179, 200, 0.12),
           0 0 20px rgba(0, 0, 0, 0.2),
           inset 0 1px 0 rgba(255, 255, 255, 0.04)
         `,

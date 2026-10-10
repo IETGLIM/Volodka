@@ -124,7 +124,7 @@ function StatCard({ icon, label, value, color = '#9db3c8', delta }: StatCardProp
         {delta !== undefined && delta !== 0 && (
           <span
             className="text-[10px] font-mono"
-            style={{ color: delta > 0 ? '#57a874' : '#f87171' }}
+            style={{ color: delta > 0 ? '#57a874' : '#c65548' }}
           >
             {delta > 0 ? `+${delta}` : String(delta)}
           </span>
@@ -298,37 +298,37 @@ export function GameStatsDashboard({ open, onClose }: GameStatsDashboardProps) {
               icon={<Swords className="w-3.5 h-3.5" />}
               label="Бои"
               value={persisted.totalCombatsWon}
-              color="#f87171"
+              color="#c65548"
             />
             <StatCard
               icon={<Users className="w-3.5 h-3.5" />}
               label="Жители"
               value={totalNpcsMet}
-              color="#60a5fa"
+              color="#9db3c8"
             />
             <StatCard
               icon={<MapPin className="w-3.5 h-3.5" />}
               label="Локации"
               value={totalLocations}
-              color="#fbbf24"
+              color="#e2a84b"
             />
             <StatCard
               icon={<Award className="w-3.5 h-3.5" />}
               label="Стихи"
               value={totalPoemsCollected}
-              color="#fbbf24"
+              color="#e2a84b"
             />
             <StatCard
               icon={<Wrench className="w-3.5 h-3.5" />}
               label="Крафты"
               value={persisted.totalItemsCrafted}
-              color="#fb923c"
+              color="#e2a84b"
             />
             <StatCard
               icon={<Heart className="w-3.5 h-3.5" />}
               label="Карма"
               value={playerKarma}
-              color={playerKarma >= 0 ? '#57a874' : '#f87171'}
+              color={playerKarma >= 0 ? '#57a874' : '#c65548'}
             />
             <StatCard
               icon={<Footprints className="w-3.5 h-3.5" />}

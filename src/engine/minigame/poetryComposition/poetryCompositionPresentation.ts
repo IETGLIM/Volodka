@@ -102,7 +102,7 @@ export function getQualityRating(totalScore: number): { label: string; color: st
     return { label: POETRY_COMPOSITION_LABELS.qualityMaster, color: `rgba(${POETRY_COMPOSITION_ACCENT_RGB}, 1)` };
   }
   if (totalScore >= POETRY_QUALITY_POET_THRESHOLD) {
-    return { label: POETRY_COMPOSITION_LABELS.qualityPoet, color: '#ffcc00' };
+    return { label: POETRY_COMPOSITION_LABELS.qualityPoet, color: '#e2a84b' };
   }
   return { label: POETRY_COMPOSITION_LABELS.qualityNovice, color: '#6a8a9a' };
 }

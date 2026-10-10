@@ -49,19 +49,19 @@ export interface AchievementDefinition {
 /* ─── Category metadata ─── */
 
 export const CATEGORY_META: Record<AchievementCategory, { label: string; icon: string; color: string }> = {
-  story: { label: 'Сюжет', icon: '📖', color: '#a78bfa' },
-  combat: { label: 'Бой', icon: '⚔️', color: '#f87171' },
+  story: { label: 'Сюжет', icon: '📖', color: '#8d7fb5' },
+  combat: { label: 'Бой', icon: '⚔️', color: '#c65548' },
   exploration: { label: 'Исследование', icon: '🧭', color: '#57a874' },
-  poetry: { label: 'Поэзия', icon: '📜', color: '#fbbf24' },
-  social: { label: 'Социальные', icon: '🤝', color: '#60a5fa' },
-  hidden: { label: 'Секретные', icon: '🔮', color: '#c084fc' },
+  poetry: { label: 'Поэзия', icon: '📜', color: '#e2a84b' },
+  social: { label: 'Социальные', icon: '🤝', color: '#9db3c8' },
+  hidden: { label: 'Секретные', icon: '🔮', color: '#8d7fb5' },
 };
 
 export const RARITY_META: Record<AchievementRarity, { label: string; color: string }> = {
   common: { label: 'Обычное', color: '#94a3b8' },
-  rare: { label: 'Редкое', color: '#60a5fa' },
-  epic: { label: 'Эпическое', color: '#a78bfa' },
-  legendary: { label: 'Легендарное', color: '#fbbf24' },
+  rare: { label: 'Редкое', color: '#9db3c8' },
+  epic: { label: 'Эпическое', color: '#8d7fb5' },
+  legendary: { label: 'Легендарное', color: '#e2a84b' },
 };
 
 export const CATEGORY_ORDER: AchievementCategory[] = ['story', 'combat', 'exploration', 'poetry', 'social', 'hidden'];

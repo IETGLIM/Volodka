@@ -22,14 +22,14 @@ export function LevelBadge({
       <div className="flex items-center gap-1.5">
         <motion.div
           className={`flex items-center justify-center w-7 h-7 rounded border text-[11px] font-bold font-mono hud-filmic-badge-shimmer ${justLeveled ? 'level-pulse-anim' : ''}`}
-          animate={justLeveled ? { scale: [1, 1.3, 1], borderColor: ['rgba(251,191,36,0.6)', 'rgba(251,191,36,0.8)', 'rgb(var(--cyber-cyan-rgb) / 0.3)'] } : {}}
+          animate={justLeveled ? { scale: [1, 1.3, 1], borderColor: ['rgba(226,168,75,0.6)', 'rgba(226,168,75,0.8)', 'rgb(var(--cyber-cyan-rgb) / 0.3)'] } : {}}
           transition={{ duration: 0.6 }}
           style={{
-            borderColor: justLeveled ? 'rgba(251,191,36,0.6)' : 'rgb(var(--cyber-cyan-rgb) / 0.35)',
-            background: justLeveled ? 'rgba(251,191,36,0.15)' : 'rgb(var(--cyber-cyan-rgb) / 0.1)',
-            color: justLeveled ? '#fbbf24' : 'var(--cyber-cyan)',
-            textShadow: justLeveled ? '0 0 8px rgba(251,191,36,0.6)' : '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)',
-            boxShadow: justLeveled ? '0 0 12px rgba(251,191,36,0.3)' : '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)',
+            borderColor: justLeveled ? 'rgba(226,168,75,0.6)' : 'rgb(var(--cyber-cyan-rgb) / 0.35)',
+            background: justLeveled ? 'rgba(226,168,75,0.15)' : 'rgb(var(--cyber-cyan-rgb) / 0.1)',
+            color: justLeveled ? '#e2a84b' : 'var(--cyber-cyan)',
+            textShadow: justLeveled ? '0 0 8px rgba(226,168,75,0.6)' : '0 0 6px rgb(var(--cyber-cyan-rgb) / 0.5)',
+            boxShadow: justLeveled ? '0 0 12px rgba(226,168,75,0.3)' : '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.15)',
           }}
           aria-label={`Уровень ${level}`}
         >
@@ -39,7 +39,7 @@ export function LevelBadge({
         {perkCount > 0 && (
           <span
             className="text-[9px] font-mono font-bold text-amber-400/80"
-            style={{ textShadow: '0 0 6px rgba(251,191,36,0.3)' }}
+            style={{ textShadow: '0 0 6px rgba(226,168,75,0.3)' }}
             aria-label={`${perkCount} черт`}
           >
             ★{perkCount}
@@ -63,10 +63,10 @@ export function LevelBadge({
           className="h-full rounded-full"
           style={{
             background: justLeveled
-              ? 'linear-gradient(90deg, #fbbf24, #f59e0b)'
+              ? 'linear-gradient(90deg, #e2a84b, #e2a84b)'
               : 'linear-gradient(90deg, #0891b2, var(--cyber-cyan))',
             boxShadow: justLeveled
-              ? '0 0 4px rgba(251,191,36,0.4)'
+              ? '0 0 4px rgba(226,168,75,0.4)'
               : '0 0 3px rgb(var(--cyber-cyan-rgb) / 0.2)',
           }}
           initial={false}

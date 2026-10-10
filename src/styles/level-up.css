@@ -31,23 +31,23 @@
 @keyframes levelup-glow {
   0% {
     opacity: 0;
-    box-shadow: inset 0 0 60px rgba(251, 191, 36, 0);
+    box-shadow: inset 0 0 60px rgba(226, 168, 75, 0);
   }
   20% {
     opacity: 1;
-    box-shadow: inset 0 0 120px rgba(251, 191, 36, 0.15);
+    box-shadow: inset 0 0 120px rgba(226, 168, 75, 0.15);
   }
   50% {
     opacity: 0.7;
-    box-shadow: inset 0 0 80px rgba(251, 191, 36, 0.1);
+    box-shadow: inset 0 0 80px rgba(226, 168, 75, 0.1);
   }
   70% {
     opacity: 0.5;
-    box-shadow: inset 0 0 100px rgba(251, 191, 36, 0.08);
+    box-shadow: inset 0 0 100px rgba(226, 168, 75, 0.08);
   }
   100% {
     opacity: 0;
-    box-shadow: inset 0 0 40px rgba(251, 191, 36, 0);
+    box-shadow: inset 0 0 40px rgba(226, 168, 75, 0);
   }
 }
 
@@ -100,13 +100,13 @@
   }
   25% {
     transform: scale(1.25);
-    box-shadow: 0 0 16px rgba(251, 191, 36, 0.5);
-    text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 16px rgba(226, 168, 75, 0.5);
+    text-shadow: 0 0 12px rgba(226, 168, 75, 0.6);
   }
   50% {
     transform: scale(1.1);
-    box-shadow: 0 0 12px rgba(251, 191, 36, 0.35);
-    text-shadow: 0 0 8px rgba(251, 191, 36, 0.4);
+    box-shadow: 0 0 12px rgba(226, 168, 75, 0.35);
+    text-shadow: 0 0 8px rgba(226, 168, 75, 0.4);
   }
   100% {
     transform: scale(1);

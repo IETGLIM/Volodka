@@ -114,8 +114,8 @@ const GoldBurst = memo(function GoldBurst({ reducedMotion }: { reducedMotion: bo
           style={{
             width: `${p.size}px`,
             height: `${p.size}px`,
-            background: 'radial-gradient(circle, #fde68a 0%, #fbbf24 50%, #f59e0b 100%)',
-            boxShadow: '0 0 6px rgba(251,191,36,0.9), 0 0 14px rgba(251,191,36,0.5)',
+            background: 'radial-gradient(circle, #fde68a 0%, #e2a84b 50%, #e2a84b 100%)',
+            boxShadow: '0 0 6px rgba(226,168,75,0.9), 0 0 14px rgba(226,168,75,0.5)',
           }}
           initial={{ x: 0, y: 0, opacity: 0, scale: 0.4 }}
           animate={{
@@ -163,7 +163,7 @@ const DefeatText = memo(function DefeatText({
           fontSize: 'clamp(2.8rem, 11vw, 7rem)',
           color: '#fde68a',
           textShadow:
-            '0 0 18px rgba(251,191,36,0.85), 0 0 36px rgba(251,191,36,0.45), 0 4px 12px rgba(0,0,0,0.85)',
+            '0 0 18px rgba(226,168,75,0.85), 0 0 36px rgba(226,168,75,0.45), 0 4px 12px rgba(0,0,0,0.85)',
           ['--text-glitch-speed' as string]: '1.2s',
         }}
         data-text="ПОВЕРЖЕН"
@@ -201,7 +201,7 @@ const DissolveWash = memo(function DissolveWash({
       style={{
         zIndex: UI_LAYERS.COMBAT + 5,
         background:
-          'radial-gradient(ellipse at center, rgba(255,250,220,0.55) 0%, rgba(251,191,36,0.25) 30%, rgba(0,0,0,0) 70%)',
+          'radial-gradient(ellipse at center, rgba(255,250,220,0.55) 0%, rgba(226,168,75,0.25) 30%, rgba(0,0,0,0) 70%)',
         mixBlendMode: 'screen',
       }}
       initial={{ opacity: 0 }}

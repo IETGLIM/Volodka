@@ -1504,7 +1504,7 @@ function handleWaveSwap(cs: CombatState, pendingWave: EnemyType[]): CombatState 
     nextType: nextEnemy.type,
     nextName: nextEnemy.name,
   });
-  eventBus.emit('fx:flash', { color: '#ff3b6b', opacity: 0.3, duration: 400 });
+  eventBus.emit('fx:flash', { color: '#c65548', opacity: 0.3, duration: 400 });
   combat.notifyListeners();
 
   return combat.getState();

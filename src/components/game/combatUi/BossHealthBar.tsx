@@ -44,11 +44,11 @@ interface BossBarData {
 }
 
 const BOSS_BAR_DATA: Partial<Record<EnemyType, BossBarData>> = {
-  boss_neuro_sys: { name: 'НЕЙРО-СИСТЕМА', act: 3, accent: '#ff3b6b' },
-  boss_dream_eater: { name: 'ПОЖИРАТЕЛЬ СНОВ', act: 5, accent: '#9b5cff' },
+  boss_neuro_sys: { name: 'НЕЙРО-СИСТЕМА', act: 3, accent: '#c65548' },
+  boss_dream_eater: { name: 'ПОЖИРАТЕЛЬ СНОВ', act: 5, accent: '#8d7fb5' },
   boss_final_code: { name: 'ФИНАЛЬНЫЙ КОД', act: 7, accent: '#9db3c8' },
-  boss_catacombs_keeper: { name: 'ХРАНИТЕЛЬ КАТАКОМБ', act: 4, accent: '#8b5cf6' },
-  boss_silent_warden: { name: 'ТИХИЙ ХРАНИТЕЛЬ', act: 4, accent: '#35f0a0' },
+  boss_catacombs_keeper: { name: 'ХРАНИТЕЛЬ КАТАКОМБ', act: 4, accent: '#8d7fb5' },
+  boss_silent_warden: { name: 'ТИХИЙ ХРАНИТЕЛЬ', act: 4, accent: '#46b96e' },
 };
 
 /* ══════════════════════════════════════════════════════════════
@@ -211,10 +211,10 @@ const BossFill = memo(function BossFill({ current, max, accent, reducedMotion, p
   // The accent color is layered on top via the outer glow.
   const fillColor =
     pct > phase2Start
-      ? 'linear-gradient(90deg, #fbbf24 0%, #f59e0b 50%, #ef4444 100%)'
+      ? 'linear-gradient(90deg, #e2a84b 0%, #e2a84b 50%, #c65548 100%)'
       : pct > phase3Start
-        ? 'linear-gradient(90deg, #f59e0b 0%, #ef4444 60%, #b91c1c 100%)'
-        : 'linear-gradient(90deg, #ef4444 0%, #b91c1c 70%, #7f1d1d 100%)';
+        ? 'linear-gradient(90deg, #e2a84b 0%, #c65548 60%, #b91c1c 100%)'
+        : 'linear-gradient(90deg, #c65548 0%, #b91c1c 70%, #7f1d1d 100%)';
 
   return (
     <div
@@ -244,7 +244,7 @@ const BossFill = memo(function BossFill({ current, max, accent, reducedMotion, p
             style={{
               left: `${pendingDamage.left}%`,
               background: 'rgba(252, 165, 165, 0.45)',
-              boxShadow: 'inset 0 0 6px rgba(255, 80, 80, 0.4)',
+              boxShadow: 'inset 0 0 6px rgba(198, 85, 72, 0.4)',
             }}
             initial={{ width: `${pendingDamage.pct}%`, opacity: 1 }}
             animate={{ width: '0%', opacity: 0.5 }}
@@ -352,8 +352,8 @@ export const BossHealthBar = memo(function BossHealthBar({ enemy, hidden }: Boss
               borderRadius: '6px',
               background: 'linear-gradient(180deg, rgba(8,4,2,0.92) 0%, rgba(20,6,4,0.92) 100%)',
               boxShadow:
-                `inset 0 0 0 1px rgba(251,191,36,0.35),` +
-                ` inset 0 0 0 2px rgba(239,68,68,0.18),` +
+                `inset 0 0 0 1px rgba(226,168,75,0.35),` +
+                ` inset 0 0 0 2px rgba(198,85,72,0.18),` +
                 ` inset 0 1px 0 rgba(255,255,255,0.05),` +
                 ` 0 0 18px ${data.accent}33,` +
                 ` 0 6px 18px rgba(0,0,0,0.55)`,
@@ -387,10 +387,10 @@ export const BossHealthBar = memo(function BossHealthBar({ enemy, hidden }: Boss
                 <div
                   className="text-[10px] sm:text-xs font-mono font-bold uppercase tracking-[0.2em] px-2 py-0.5 rounded-sm"
                   style={{
-                    color: '#fbbf24',
-                    border: '1px solid rgba(251,191,36,0.35)',
-                    background: 'rgba(251,191,36,0.08)',
-                    textShadow: '0 0 6px rgba(251,191,36,0.4)',
+                    color: '#e2a84b',
+                    border: '1px solid rgba(226,168,75,0.35)',
+                    background: 'rgba(226,168,75,0.08)',
+                    textShadow: '0 0 6px rgba(226,168,75,0.4)',
                   }}
                 >
                   Акт {data.act}

@@ -4,9 +4,9 @@
 
 /* ── Merchant personality border styles ── */
 .trading-merchant--cafe {
-  --merchant-border: rgba(251, 191, 36, 0.35);
-  --merchant-glow: rgba(251, 191, 36, 0.12);
-  --merchant-accent: #fbbf24;
+  --merchant-border: rgba(226, 168, 75, 0.35);
+  --merchant-glow: rgba(226, 168, 75, 0.12);
+  --merchant-accent: #e2a84b;
 }
 
 .trading-merchant--general {
@@ -16,20 +16,20 @@
 }
 
 .trading-merchant--shady {
-  --merchant-border: rgba(239, 68, 68, 0.35);
-  --merchant-glow: rgba(239, 68, 68, 0.12);
-  --merchant-accent: #ef4444;
+  --merchant-border: rgba(198, 85, 72, 0.35);
+  --merchant-glow: rgba(198, 85, 72, 0.12);
+  --merchant-accent: #c65548;
 }
 
 .trading-merchant--books {
-  --merchant-border: rgba(168, 85, 247, 0.35);
-  --merchant-glow: rgba(168, 85, 247, 0.12);
-  --merchant-accent: #a855f7;
+  --merchant-border: rgba(141, 127, 181, 0.35);
+  --merchant-glow: rgba(141, 127, 181, 0.12);
+  --merchant-accent: #8d7fb5;
 }
 
 .trading-merchant--elite {
-  --merchant-border: rgba(52, 211, 153, 0.35);
-  --merchant-glow: rgba(52, 211, 153, 0.12);
+  --merchant-border: rgba(70, 185, 110, 0.35);
+  --merchant-glow: rgba(70, 185, 110, 0.12);
   --merchant-accent: #57a874;
 }
 
@@ -47,17 +47,17 @@
 /* ── Price comparison highlight ── */
 .trading-price-good {
   color: #57a874;
-  text-shadow: 0 0 6px rgba(52, 211, 153, 0.3);
+  text-shadow: 0 0 6px rgba(70, 185, 110, 0.3);
 }
 
 .trading-price-bad {
-  color: #fb7185;
-  text-shadow: 0 0 6px rgba(251, 113, 133, 0.3);
+  color: #c65548;
+  text-shadow: 0 0 6px rgba(198, 85, 72, 0.3);
 }
 
 .trading-price-neutral {
-  color: #fbbf24;
-  text-shadow: 0 0 4px rgba(251, 191, 36, 0.2);
+  color: #e2a84b;
+  text-shadow: 0 0 4px rgba(226, 168, 75, 0.2);
 }
 
 /* ── Trade history entry ── */
@@ -81,12 +81,12 @@
 
 .trading-stat-better {
   color: #57a874;
-  text-shadow: 0 0 4px rgba(52, 211, 153, 0.3);
+  text-shadow: 0 0 4px rgba(70, 185, 110, 0.3);
 }
 
 .trading-stat-worse {
-  color: #fb7185;
-  text-shadow: 0 0 4px rgba(251, 113, 133, 0.3);
+  color: #c65548;
+  text-shadow: 0 0 4px rgba(198, 85, 72, 0.3);
 }
 
 /* ── Two-column split layout ── */

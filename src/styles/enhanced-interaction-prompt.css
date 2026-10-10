@@ -80,18 +80,18 @@
 }
 
 .eip-context-icon.eip-icon-item {
-  background: rgba(251, 191, 36, 0.1);
-  border-color: rgba(251, 191, 36, 0.25);
+  background: rgba(226, 168, 75, 0.1);
+  border-color: rgba(226, 168, 75, 0.25);
 }
 
 .eip-context-icon.eip-icon-door {
-  background: rgba(168, 85, 247, 0.1);
-  border-color: rgba(168, 85, 247, 0.25);
+  background: rgba(141, 127, 181, 0.1);
+  border-color: rgba(141, 127, 181, 0.25);
 }
 
 .eip-context-icon.eip-icon-examine {
-  background: rgba(52, 211, 153, 0.1);
-  border-color: rgba(52, 211, 153, 0.25);
+  background: rgba(70, 185, 110, 0.1);
+  border-color: rgba(70, 185, 110, 0.25);
 }
 
 /* ── Distance-based fade ── */

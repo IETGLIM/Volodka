@@ -56,11 +56,11 @@ export const SUCCESS_DEGREE_LABELS: Record<SuccessDegree, string> = {
 
 /** Color mapping for each success degree — used in DiceRollDisplay. */
 export const SUCCESS_DEGREE_COLORS: Record<SuccessDegree, string> = {
-  critical_success: '#fbbf24', // gold
+  critical_success: '#e2a84b', // gold
   strong_success: '#10b981',   // emerald
-  success: '#06b6d4',          // cyan
-  marginal_success: '#f59e0b', // amber
-  failure: '#ef4444',          // red
+  success: '#9db3c8',          // cyan
+  marginal_success: '#e2a84b', // amber
+  failure: '#c65548',          // red
   disastrous_failure: '#991b1b', // dark red
 };
 

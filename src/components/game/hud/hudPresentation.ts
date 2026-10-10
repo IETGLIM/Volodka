@@ -8,8 +8,8 @@ export function karmaColor(karma: number): string {
 
 export function karmaStroke(karma: number): string {
   if (karma >= KARMA_HIGH_THRESHOLD) return 'var(--cyber-cyan)';
-  if (karma <= KARMA_LOW_THRESHOLD) return '#fb7185';
-  return '#fbbf24';
+  if (karma <= KARMA_LOW_THRESHOLD) return '#c65548';
+  return '#e2a84b';
 }
 
 export function timeLabel(hour: number): string {

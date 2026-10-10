@@ -9,9 +9,10 @@ import {
 
 describe('matrixQuotePresentation', () => {
   it('returns act theme colors', () => {
-    expect(getActThemeColor(1)).toBe('#00ffee');
-    expect(getActThemeColor(3)).toBe('#ff6644');
-    expect(getActThemeColor(99)).toBe('#00ffee');
+    // v4.45.1 «Ночная тетрадь»: акты переведены в семейство (сталь/кирпич)
+    expect(getActThemeColor(1)).toBe('#9db3c8');
+    expect(getActThemeColor(3)).toBe('#c65548');
+    expect(getActThemeColor(99)).toBe('#9db3c8');
   });
 
   it('limits matrix columns by device tier', () => {

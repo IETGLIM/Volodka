@@ -75,7 +75,7 @@ function ScanLineOverlay() {
     <div
       className="absolute inset-0 pointer-events-none"
       style={{
-        background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,40,40,0.03) 2px, rgba(255,40,40,0.03) 4px)',
+        background: 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(198,85,72,0.03) 2px, rgba(198,85,72,0.03) 4px)',
         animation: 'damage-edge-flash 0.15s linear infinite',
       }}
     />
@@ -97,7 +97,7 @@ function GlitchOverlay({ intensity }: { intensity: number }) {
       <div
         className="absolute inset-0"
         style={{
-          background: 'rgba(255,0,0,0.05)',
+          background: 'rgba(198,85,72,0.05)',
           mixBlendMode: 'screen',
           transform: `translateX(${2 + intensity * 0.3}px)`,
         }}
@@ -159,7 +159,7 @@ function HealFlash({ entry }: { entry: HealFlashEntry }) {
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
-          background: 'radial-gradient(ellipse at 50% 50%, rgba(52,211,153,0.08) 0%, transparent 60%)',
+          background: 'radial-gradient(ellipse at 50% 50%, rgba(70,185,110,0.08) 0%, transparent 60%)',
           animation: 'heal-pulse 0.4s ease-out',
         }}
       />
