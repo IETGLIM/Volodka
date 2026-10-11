@@ -201,20 +201,17 @@ export function CinematicTimelineRunner() {
       openDiegeticNarrative('start', 'story');
     };
 
-    // Arm prologue listener BEFORE completeCinematicTimeline — otherwise the
-    // overlay_end emit is dropped and the player waits the full 9s fallback
-    // (meanwhile free to examine props and miss the start beat).
-    if (!store.isCutsceneTriggered('act1_prologue')) {
-      store.setCurrentNodeId('start');
-      prologueUnsubRef.current = eventBus.on('cutscene:overlay_end', () => {
-        openPrologueStory();
-      });
-      prologueTimerRef.current = setTimeout(() => {
-        openPrologueStory();
-      }, 9_000);
-    } else {
-      openPrologueStory();
-    }
+    // FIX v4.46 («АКТ 1 Пробуждение проигрывается два раза»): интро-пробуждение
+    // (этот таймлайн, 8 фаз) УЖЕ показало акт I кинематографически — титр-карта
+    // act1_prologue следом за ним дублировала «Пробуждение» ещё раз (а по пути
+    // «С пролога» — третий: ProloguePerfectionOverlay показывает «ПРОБУЖДЕНИЕ»
+    // до New Game). Помечаем one-shot кат-сцену сыгранной, чтобы
+    // useCutsceneController её больше не запускал, и сразу открываем стартовый
+    // бит — listener/9s-фоллбек больше не нужны (finishIntroWake и так вызывается
+    // в момент завершения таймлайна).
+    store.markCutsceneTriggered('act1_prologue');
+    store.setCurrentNodeId('start');
+    openPrologueStory();
 
     if (getActiveCinematicTimelineId() === 'intro_wakeup') {
       completeCinematicTimeline('intro_wakeup');

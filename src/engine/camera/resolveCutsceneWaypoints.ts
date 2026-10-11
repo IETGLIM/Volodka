@@ -28,13 +28,25 @@ export function resolveCutsceneAnchorSceneId(
   return cutscene.anchorSceneId ?? playbackSceneId;
 }
 
-/** World-space camera waypoints for the active scene spawn. */
+/** World-space camera waypoints for the active scene spawn.
+ *
+ *  FIX v4.46 («некорректная работа камеры» в коридоре): spawn_offset-кат-сцены
+ *  привязывались к defaultSpawn сцены, а игрок входит через конкретный выход
+ *  (spawnAt) или физически проходит дверной проём — якорь уезжал на 1-3 м от
+ *  реальной позиции, камера летала по пустому углу коридора вместо персонажа.
+ *  Теперь вызов может передать живую позицию игрока как якорь-оверрайд.
+ */
 export function resolveCutsceneWaypoints(
   cutscene: CutsceneDef,
   playbackSceneId: SceneId,
+  anchorOverride?: Vec3,
 ): CameraWaypointData[] {
   if (cutscene.waypointSpace !== 'spawn_offset') {
     return cutscene.waypoints;
+  }
+
+  if (anchorOverride) {
+    return cutscene.waypoints.map((wp) => offsetWaypoint(anchorOverride, wp));
   }
 
   const anchorSceneId = resolveCutsceneAnchorSceneId(cutscene, playbackSceneId);

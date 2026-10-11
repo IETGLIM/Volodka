@@ -6,14 +6,18 @@ import { PerspectiveCamera, Vector3 } from 'three';
 import { PLAYER_METRIC } from '@/config/metricScaleCoherence';
 
 export const WAKEUP_PHASE = {
-  terminal: 4.6,   // longer terminal hold — show-don't-tell room beat
-  rise: 4.0,
-  standing: 2.8,   // hold on lived-in apartment silhouette
-  walking: 5.2,
-  sitting: 3.2,
-  settle: 2.2,     // pause before monitor push-in
-  monitor: 6.2,
-  handoff: 3.5,
+  // FIX v4.46 (протестировано игроком: «пролог длинный, скучный»):
+  // суммарно было 31.7с ДО первого управления. Сокращено до ~21с —
+  // ритм сохранён (терминал→подъём→стойка→шаг→стул→монитор→передача),
+  // каждый бит ужат на ~30%. Скип по Esc по-прежнему работает.
+  terminal: 3.4,
+  rise: 3.0,
+  standing: 2.0,
+  walking: 3.6,
+  sitting: 2.4,
+  settle: 1.6,
+  monitor: 4.0,
+  handoff: 2.6,
 } as const;
 
 export const WAKEUP_TOTAL =

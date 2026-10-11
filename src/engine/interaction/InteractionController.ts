@@ -182,7 +182,9 @@ export class InteractionController {
     applyEffects(effects, {
       onItemAdded: (itemId: string, _quantity: number) => {
         const def = getItemDefinition(itemId);
-        notifyItemReceived(def?.name ?? itemId, def?.rarity);
+        // FIX v4.46: передаём описание предмета в тост — игрок сразу видит,
+        // что взял и зачем (репорт: «для чего нужны предметы — не ясно»).
+        notifyItemReceived(def?.name ?? itemId, def?.rarity, def?.description);
       },
       startCombat: this.deps.startCombatFromStory,
     });

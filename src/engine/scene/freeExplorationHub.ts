@@ -28,6 +28,12 @@ function showHubLocationContext(hubId: string, revisit: boolean): void {
     return;
   }
 
+  // FIX v4.46 (дублирование надписей при входе в сцену): первый вход в хаб
+  // с entryText уже покрыт SceneEntryTextOverlay (имя сцены + атмосферный
+  // текст). Дублирующий game:notification с тем же именем сцены убран —
+  // остаётся только короткий тост на повторных заходах.
+  if (getSceneConfig(def.sceneId).entryText) return;
+
   const introText = resolveExploreHubIntroText(hubId);
   if (!introText) return;
 

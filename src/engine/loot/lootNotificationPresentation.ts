@@ -181,8 +181,14 @@ export function buildSkillUpPayload(skill: TrainablePlayerSkill, level: number):
 export function buildItemReceivedPayload(
   name: string,
   rarity?: LootRarity,
+  description?: string,
 ): LootNotificationPayload {
-  return { type: 'item', label: name, rarity };
+  // FIX v4.46 («для чего нужны предметы — не ясно»): в тост подбора
+  // добавляем описание предмета и подсказку, где посмотреть/применить.
+  const detail = description
+    ? `${description} · Инвентарь: I`
+    : 'Инвентарь: I';
+  return { type: 'item', label: name, detail, rarity };
 }
 
 export function buildCombatLootPayload(

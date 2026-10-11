@@ -82,7 +82,9 @@ export function resolveNpcWorldPosition(
 }
 
 const NPC_MAX_RANGE = NPC_INTERACTION_QUERY_RANGE;
-const ZONE_RANGE_PADDING = 1.55;
+// FIX v4.46: паддинг радиуса зоны 1.55 → 1.25 м — крупные зоны мебели
+// (кровать/шкаф 2-3 м шириной) давали maxRange ~3-4 м: «подойти» не требовалось.
+const ZONE_RANGE_PADDING = 1.25;
 
 /** Score a target by distance and whether the player faces it (horizontal only). */
 export function scoreInteractionTarget(

@@ -78,12 +78,29 @@ describe('enterSceneFreeExplorationHub', () => {
     );
 
     vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
-    expect(eventBusEmit).toHaveBeenCalledWith(
+    // FIX v4.46: у volodka_room есть entryText — титр-карту входа показывает
+    // SceneEntryTextOverlay, дубль-уведомление хаба подавлено.
+    expect(eventBusEmit).not.toHaveBeenCalledWith(
       'game:notification',
-      expect.objectContaining({
-        type: 'scene',
-        subtitle: expect.stringContaining('Комната'),
-      }),
+      expect.anything(),
+    );
+  });
+
+  it('v4.46: first-visit hub toast suppressed when scene has entryText (rooftop)', () => {
+    // Все игровые сцены определяют entryText — титр-карту входа показывает
+    // SceneEntryTextOverlay; дубль-уведомление хаба подавляется всегда.
+    // Этот тест фиксирует контракт: если у сцены есть entryText — тоста нет.
+    enterSceneFreeExplorationHub('rooftop_explore_mode');
+
+    expect(dispatchGameAction).toHaveBeenCalledWith({
+      type: 'story/setCurrentNodeId',
+      nodeId: 'rooftop_explore_mode',
+    });
+    expect(closeNarrativeOverlay).toHaveBeenCalled();
+    vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
+    expect(eventBusEmit).not.toHaveBeenCalledWith(
+      'game:notification',
+      expect.anything(),
     );
   });
 
@@ -102,7 +119,7 @@ describe('enterSceneFreeExplorationHub', () => {
     });
   });
 
-  it('supports home_evening closed-overlay hub', () => {
+  it('supports home_evening closed-overlay hub (entryText dedupe v4.46)', () => {
     enterSceneFreeExplorationHub('home_evening_explore_mode');
 
     expect(dispatchGameAction).toHaveBeenCalledWith({
@@ -111,16 +128,14 @@ describe('enterSceneFreeExplorationHub', () => {
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
     vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
-    expect(eventBusEmit).toHaveBeenCalledWith(
+    // home_evening имеет entryText («Тёплый свет…») — дубль-тост подавлен.
+    expect(eventBusEmit).not.toHaveBeenCalledWith(
       'game:notification',
-      expect.objectContaining({
-        type: 'scene',
-        subtitle: expect.stringContaining('кухня'),
-      }),
+      expect.anything(),
     );
   });
 
-  it('supports Act II closed-overlay hubs', () => {
+  it('supports Act II closed-overlay hubs (entryText dedupe v4.46)', () => {
     enterSceneFreeExplorationHub('cafe_explore_mode');
 
     expect(dispatchGameAction).toHaveBeenCalledWith({
@@ -129,16 +144,14 @@ describe('enterSceneFreeExplorationHub', () => {
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
     vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
-    expect(eventBusEmit).toHaveBeenCalledWith(
+    // cafe_evening имеет entryText («Кофе, синий свет…») — дубль-тост подавлен.
+    expect(eventBusEmit).not.toHaveBeenCalledWith(
       'game:notification',
-      expect.objectContaining({
-        type: 'scene',
-        subtitle: expect.stringContaining('Синяя яма'),
-      }),
+      expect.anything(),
     );
   });
 
-  it('supports Act III closed-overlay hubs', () => {
+  it('supports Act III closed-overlay hubs (entryText dedupe v4.46)', () => {
     enterSceneFreeExplorationHub('park_explore_mode');
 
     expect(dispatchGameAction).toHaveBeenCalledWith({
@@ -147,12 +160,10 @@ describe('enterSceneFreeExplorationHub', () => {
     });
     expect(closeNarrativeOverlay).toHaveBeenCalled();
     vi.advanceTimersByTime(EXPLORATION_HUD_HANDOFF.HUB_LOCATION_TOAST_MS);
-    expect(eventBusEmit).toHaveBeenCalledWith(
+    // park_day имеет entryText («Листва шуршит…») — дубль-тост подавлен.
+    expect(eventBusEmit).not.toHaveBeenCalledWith(
       'game:notification',
-      expect.objectContaining({
-        type: 'scene',
-        subtitle: expect.stringContaining('Парк'),
-      }),
+      expect.anything(),
     );
   });
 

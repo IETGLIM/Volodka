@@ -18,6 +18,10 @@ import { reconcileGuidedStory } from '@/engine/GuidedStoryManager';
 import { runGlobalCombatEnd } from '@/engine/core/GlobalCleanupService';
 import { resolveSceneThought, type ThoughtContext } from '@/data/sceneEntryThoughts';
 import {
+  startLocomotionFailsafeWatchdog,
+  stopLocomotionFailsafeWatchdog,
+} from '@/engine/player/locomotionFailsafe';
+import {
   canShowReactiveThought,
   getPostCombatThought,
   getPoemCollectedThought,
@@ -91,6 +95,15 @@ export function useGameLifecycleManager(mode: string) {
 
   useEffect(() => withHmrCleanup(initWorldEventDirector()), []);
 
+  // v4.46: страхующий watchdog локомоции — снимает залипшие модульные гейты
+  // (panel/minigame/QTE/cinematicHold/interaction FSM), когда игра в чистом
+  // исследовании, а движение всё ещё заблокировано (репорт: «в коридоре
+  // движение перестаёт работать»). Живёт всё время геймплея.
+  useEffect(() => {
+    startLocomotionFailsafeWatchdog();
+    return () => stopLocomotionFailsafeWatchdog();
+  }, []);
+
   // Fire the scene-entry thought for the INITIAL scene when exploration mode
   // first begins. The scene:enter EventBus event only fires on scene TRANSITIONS,
   // not for the first scene set during game load / new game. This effect bridges
@@ -160,6 +173,12 @@ export function useGameLifecycleManager(mode: string) {
 
         const sceneName = SCENE_CONFIG[newScene]?.name ?? '';
         if (!sceneName || !isMountedRef.current) return;
+
+        // FIX v4.46 (дублирование надписей при входе в сцену): если у сцены
+        // задан entryText, её имя+описание уже показывает SceneEntryTextOverlay
+        // (сценарная титр-карта после перехода). Баннер здесь дублировал имя
+        // сцены вторым слоем поверх. Баннер остаётся только для сцен БЕЗ entryText.
+        if (SCENE_CONFIG[newScene]?.entryText) return;
 
         setSceneBanner(formatSceneBanner(newScene as SceneId, sceneName));
         timers.schedule('scene:banner', () => {

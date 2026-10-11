@@ -67,7 +67,7 @@ const geo_pln_3 = new PlaneGeometry(7, 3);
 const geo_box_4 = new BoxGeometry(1, 2.2, 0.06);
 const geo_box_5 = new BoxGeometry(0.05, 2.2, 0.08);
 const geo_box_6 = new BoxGeometry(1, 0.05, 0.08);
-const geo_box_7 = new BoxGeometry(0.9, 2.15, 0.04);
+const geo_box_7 = new BoxGeometry(1.0, 2.2, 0.04);
 const geo_cyl_8 = new CylinderGeometry(0.012, 0.012, 0.1, 6);
 const geo_box_9 = new BoxGeometry(0.5, 0.6, 0.005);
 const geo_box_10 = new BoxGeometry(0.8, 2, 0.55);
@@ -306,7 +306,15 @@ function AuthoredRoomProp({
   );
 }
 
-/** Kenney door.glb leaf under roomDoorRef hinge — Medium+ replaces box geo_box_7. */
+/** Kenney door.glb leaf under roomDoorRef hinge — Medium+ replaces box geo_box_7.
+ *  FIX v4.46 («размер текстуры двери не совпадает с масштабом проёма»):
+ *  проём в комнате Володьки — 1.0 м × 2.2 м (см. geo_box_4/jambs geo_box_5,
+ *  header geo_box_6). Kenney-дверь нативно 1.0×2.1 — при равномерном фите по
+ *  высоте оставался 10 см зазор под перекладиной, а шарнир стоял на -0.45
+ *  (полотно съезжало на +5 см вправо от центра проёма). Теперь полотно
+ *  масштабируется в проём точно: X/Z — по ширине 1.0 м (шарнир на левой
+ *  стойке -0.5), Y — мягкая неравномерная доводка 2.1→2.2 (4.8% — на глаз
+ *  неотличимо), закрывающая верхний зазор. */
 function AuthoredHingedDoorLeaf({ castShadow }: { castShadow: boolean }) {
   const def = getPropModelDefinition('kenney_door');
   const gltf = useGLTF(def!.url, true, true, extendLoader);
@@ -315,10 +323,16 @@ function AuthoredHingedDoorLeaf({ castShadow }: { castShadow: boolean }) {
     targetSizeM: def!.targetSizeM,
     fitAxis: def!.fitAxis,
   });
-  // Hinge at group origin (left edge): shift by half target width after fit.
-  const halfW = (def!.targetSizeM?.[0] ?? 1) * 0.5;
+  // Ровно в проём: ширина/глубина — как в нативном аспекте (фит по высоте 2.1),
+  // высота — доводится до 2.2 лёгким растяжением по Y.
+  const DOOR_OPENING_W = 1.0;
+  const DOOR_OPENING_H = 2.2;
+  const nativeH = def!.targetSizeM?.[1] ?? 2.1;
+  const yStretch = DOOR_OPENING_H / nativeH;
+  // Hinge at group origin (left edge of the opening): shift by half opening width.
+  const halfW = DOOR_OPENING_W * 0.5;
   return (
-    <group position={[halfW, footY, 0]} scale={fitScale} rotation={[0, Math.PI, 0]}>
+    <group position={[halfW, footY, 0]} scale={[fitScale, fitScale * yStretch, fitScale]} rotation={[0, Math.PI, 0]}>
       <primitive object={scene} />
     </group>
   );
@@ -698,11 +712,13 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         </mesh>
           </>
         ) : null}
-        <group position={[-0.45, 0, D / 2 - 0.06]} ref={roomDoorRef}>
+        {/* FIX v4.46: шарнир ровно на левой стойке проёма (x=-0.5) — раньше
+            стоял на -0.45 и полотно съезжало на +5 см от центра проёма. */}
+        <group position={[-0.5, 0, D / 2 - 0.06]} ref={roomDoorRef}>
           {useGltfFurniture ? (
             <Suspense
               fallback={
-                <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7}>
+                <mesh position={[0.5, 1.1, 0]} geometry={geo_box_7}>
                   <primitive object={mat_3} attach="material" />
                 </mesh>
               }
@@ -711,12 +727,12 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
             </Suspense>
           ) : (
             <>
-              <mesh position={[0.45, 1.1, 0]} geometry={geo_box_7}>
+              <mesh position={[0.5, 1.1, 0]} geometry={geo_box_7}>
                 <primitive object={mat_3} attach="material" />
               </mesh>
-              <mesh position={[0.78, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
-              <mesh position={[0.45, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
-              <mesh position={[0.45, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
+              <mesh position={[0.88, 1.05, 0.03]} rotation={[0, 0, Math.PI / 2]} geometry={geo_cyl_8} material={mat_4} />
+              <mesh position={[0.5, 1.4, 0.025]} geometry={geo_box_9} material={mat_5} />
+              <mesh position={[0.5, 0.7, 0.025]} geometry={geo_box_9} material={mat_5} />
             </>
           )}
         </group>

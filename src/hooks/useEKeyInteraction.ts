@@ -27,6 +27,11 @@ import { isCanvasAreaTarget } from '@/engine/input/domUtils';
 import { getGamePhase } from '@/shared/gamePhase';
 import { attemptMeleeStrike } from '@/engine/combat/realtime/meleeStrike';
 
+/** FIX v4.46 («взаимодействие кликом на любом расстоянии»): жёсткий потолок
+ *  дистанции до цели для «E»/ЛКМ. Зональные/выходные range остаются как есть,
+ *  но дальше этого предела взаимодействие не срабатывает вовсе. */
+const INTERACTION_MAX_DISTANCE_M = 3.2;
+
 export interface UseEKeyInteractionOptions {
   livePlayerPositionRef: MutableRefObject<Vector3>;
   isOverlayBlockingRef: MutableRefObject<boolean>;
@@ -105,6 +110,10 @@ export function useEKeyInteraction({
     // Match InteractiveTriggers HUD prompt ranking (not raw hits[0] alone).
     const primary = getTopPrompts(hits)[0];
     if (!primary) return false;
+
+    // FIX v4.46: абсолютный потолок дистанции — крупная зона (мебель 2-3 м)
+    // раньше давала maxRange до ~3.5+1.55 м и «дотягивалась» через полкомнаты.
+    if (primary.distance > INTERACTION_MAX_DISTANCE_M) return false;
 
     const handled = executeInteractionHitRef.current(primary);
     if (!handled) return false;

@@ -3,7 +3,7 @@ import { ControllerSession } from '@/engine/controller/ControllerSession';
 import { useGameStore } from '@/store/gameStore';
 import { useGamePrimitive } from '@/store/selectors';
 import { getActiveCutsceneId } from '@/store/stores/cutsceneStore';
-import { getLiveCurrentSceneId } from '@/store/stores/explorationStore';
+import { getLiveCurrentSceneId, getLivePlayerPosition } from '@/store/stores/explorationStore';
 import { getLiveGamePhase, getUIStoreState } from '@/store/stores/uiStore';
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
@@ -154,7 +154,14 @@ export function useCutsceneController() {
     setCinematicPresentationMode('third_person');
 
     const playbackSceneId = getLiveCurrentSceneId() as SceneId;
-    const resolvedWaypoints = resolveCutsceneWaypoints(cutscene, playbackSceneId);
+    // FIX v4.46: якорь spawn_offset-кат-сцен — живая позиция игрока, а не
+    // defaultSpawn сцены (игрок входит через конкретный выход/проём).
+    // Guard: позиция по умолчанию [0,0,0] означает «ещё не тикали» — фоллбек
+    // на старое поведение (спавн сцены).
+    const live = getLivePlayerPosition();
+    const liveAnchor =
+      live && (live[0] !== 0 || live[2] !== 0) ? (live as [number, number, number]) : undefined;
+    const resolvedWaypoints = resolveCutsceneWaypoints(cutscene, playbackSceneId, liveAnchor);
     const timeline = cutsceneDefToTimeline({ ...cutscene, waypoints: resolvedWaypoints });
 
     store.setCutscene(cutscene.id, resolvedWaypoints);

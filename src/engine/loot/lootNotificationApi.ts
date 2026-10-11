@@ -31,8 +31,8 @@ export function notifySkillUp(skill: TrainablePlayerSkill, level: number): void 
   pushLootNotification(buildSkillUpPayload(skill, level));
 }
 
-export function notifyItemReceived(name: string, rarity?: LootRarity): void {
-  pushLootNotification(buildItemReceivedPayload(name, rarity));
+export function notifyItemReceived(name: string, rarity?: LootRarity, description?: string): void {
+  pushLootNotification(buildItemReceivedPayload(name, rarity, description));
 }
 
 export function notifyCombatLoot(name: string, rarity: LootRarity): void {

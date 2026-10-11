@@ -5,12 +5,14 @@
  */
 
 export const PROLOGUE_PERFECTION = {
-  bootLinesPerCharMs: 12,
-  bootLinePauseMs: 85,
-  bootTotalTargetMs: 4200,
-  breathDurationMs: 2200,
+  bootLinesPerCharMs: 9,
+  bootLinePauseMs: 60,
+  // FIX v4.46: пролог ужат (репорт игрока: «длинный и скучный»).
+  // boot 4.2→2.4с, breath 2.2→1.5с, title 2.4→1.9с; + пропуск Esc всегда.
+  bootTotalTargetMs: 2400,
+  breathDurationMs: 1500,
   eyeOpenDurationMs: 1400,
-  titleCardDurationMs: 2400,
+  titleCardDurationMs: 1900,
 
   innerMonologue: [
     'Система загружается... Память фрагментирована на 37%.',
