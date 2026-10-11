@@ -142,6 +142,151 @@ const INTENSITY_TEMPO_MULTIPLIER: Record<MusicIntensityLayer, number> = {
   combat: 1.28,
 };
 
+/* ──────────────────── v4.47.0: Музыкальная вариативность ────────────────────
+ * Полевой отчёт владельца: «нормальная музыка практически отсутствует —
+ * однообразная». Диагноз по коду: (1) гармония — пьяное блуждание по
+ * ступеням ОДНОГО лада без каденций и прогрессий, все аккорды одного
+ * диатонического качества; (2) мелодия — одиночная случайная нота раз в
+ * 10–30 с, без фраз и мотивов — как музыки не существует; (3) бас гудит
+ * ОДНУ ноту всю сцену (создаётся при старте, частота не меняется) и не
+ * следует за аккордами; (4) три слоя играют всегда одинаково — нет пауз
+ * («дыхания»), нет смены плотности от интенсивности.
+ *
+ * Фикс — четыре независимых улучшения: пул прогрессий с качествами
+ * аккордов (sus/add9/септимы), генератор мелодических ФРАЗ с повторами
+ * мотива, бас за корнем текущего аккорда с движением на квинту/октаву,
+ * «дыхание» пэда и плотность мелодии от слоя интенсивности. */
+
+/** Стартовый множитель вероятности фразы по слою интенсивности. */
+const PHRASE_START_MULT: Record<MusicIntensityLayer, number> = {
+  exploration: 1,
+  tension: 1.6,
+  combat: 2.2,
+};
+
+/** Пул гармонических прогрессий в ступенях лада (0 = тоника).
+ * Замена блужданию: реальные гармонические ходы с каденциями. */
+const PROGRESSION_LIBRARY: readonly (readonly number[])[] = [
+  [0, 5, 2, 6], // i – VI – III – VII (кинематографический минор)
+  [0, 3, 6, 4], // i – iv – VII – V (рок-баллада)
+  [0, 6, 5, 6], // i – VII – VI – VII (анданте)
+  [0, 3, 0, 4], // i – iv – i – V (каденция ямба)
+  [5, 4, 0, 3], // VI – V – i – iv (разворот)
+  [0, 2, 5, 3], // i – III – VI – iv (мажорный ход)
+  [0, 4, 5, 3], // i – V – VI – iv (эпик)
+  [3, 0, 6, 0], // iv – i – VII – i (остинатное покачивание)
+];
+
+/** Выбрать следующую прогрессию из пула (не равную текущей).
+ * Повтор текущей допускается снаружи — для узнаваемости мотива. */
+function pickNextProgression(current: readonly number[]): readonly number[] {
+  if (PROGRESSION_LIBRARY.length <= 1) return current;
+  let next = current;
+  let guard = 0;
+  while (next === current && guard++ < 8) {
+    next = pickRandom(PROGRESSION_LIBRARY);
+  }
+  return next;
+}
+
+/** Качество созвучия — от ступени лада (взвешенный выбор). */
+export type ChordQuality = 'triad' | 'seventh' | 'sus2' | 'sus4' | 'add9' | 'open5';
+
+const CHORD_QUALITY_WEIGHTS: Readonly<Record<number, ReadonlyArray<[ChordQuality, number]>>> = {
+  // Тоника: чистое трезвучие + краски add9/sus2
+  0: [['triad', 6], ['add9', 2], ['sus2', 2]],
+  // Субдоминанта и доминанта — напряжение: септимы и sus4
+  3: [['triad', 4], ['seventh', 3], ['sus4', 3]],
+  4: [['triad', 4], ['seventh', 3], ['sus4', 3]],
+  5: [['triad', 5], ['add9', 2], ['seventh', 3]],
+  6: [['triad', 4], ['seventh', 4], ['open5', 2]],
+};
+
+const DEFAULT_CHORD_QUALITY_WEIGHTS: ReadonlyArray<[ChordQuality, number]> = [
+  ['triad', 7],
+  ['seventh', 3],
+];
+
+/** Взвешенный выбор качества аккорда по ступени лада. */
+export function pickWeightedQualityForDegree(degree: number): ChordQuality {
+  const scaleDegree = ((degree % 7) + 7) % 7;
+  const weights = CHORD_QUALITY_WEIGHTS[scaleDegree] ?? DEFAULT_CHORD_QUALITY_WEIGHTS;
+  const total = weights.reduce((sum, [, w]) => sum + w, 0);
+  let roll = Math.random() * total;
+  for (const [quality, w] of weights) {
+    roll -= w;
+    if (roll <= 0) return quality;
+  }
+  return weights[weights.length - 1][0];
+}
+
+/** Сгенерировать мотив мелодии (MIDI-ноты): контур + привязка к аккорду.
+ * Первая нота — аккордовая (консонанс гарантирован), далее шаги по ладу
+ * в пределах квинты–октавы. Возвращает 3–6 нот. */
+export function generateMelodyMotif(
+  scale: ScaleDef,
+  rootMidi: number,
+  chordMidi: readonly number[],
+  intensity: MusicIntensityLayer = 'exploration',
+): number[] {
+  const numNotes = intensity === 'combat'
+    ? 4 + Math.floor(Math.random() * 3) // 4–6: плотнее
+    : 3 + Math.floor(Math.random() * 4); // 3–6
+  const octaveShift = Math.random() < 0.6 ? 12 : 24; // средний/верхний регистр
+
+  // Старт — случайная аккордовая нота в выбранном регистре
+  const chordStart = pickRandom(chordMidi.length > 0 ? chordMidi : [rootMidi]) + octaveShift;
+  // Приводим к диапазону root+12…root+36 (C4…C6 при root C3)
+  const clampedStart = Math.min(Math.max(chordStart, rootMidi + 12), rootMidi + 36);
+
+  const notes: number[] = [clampedStart];
+  let current = clampedStart;
+  const numScaleSteps = scale.intervals.length;
+
+  // Контур: арка / спуск / подъём / волна — мелодия «дышит» направлением
+  const contour = pickRandom(['arch', 'descend', 'ascend', 'wave'] as const);
+
+  for (let i = 1; i < numNotes; i++) {
+    // Направление по контуру
+    let dir: 1 | -1 = Math.random() < 0.5 ? 1 : -1;
+    if (contour === 'descend') dir = -1;
+    else if (contour === 'ascend') dir = 1;
+    else if (contour === 'arch') dir = i < numNotes / 2 ? 1 : -1;
+    else if (contour === 'wave') dir = i % 2 === 0 ? 1 : -1;
+
+    // v4.47.0: шаг на 1–2 СТУПЕНИ лада (не полутона!) — ноты всегда
+    // принадлежат ладу, консонанс с пэдом гарантирован
+    const rel = ((current - rootMidi) % 12 + 12) % 12;
+    let degreeIdx = 0;
+    scale.intervals.forEach((iv, idx) => { if (iv <= rel) degreeIdx = idx; });
+    const octaveBase = current - rel; // нота «корня» октавы текущей ноты
+    const step = Math.random() < 0.7 ? 1 : 2;
+    const newIdx = degreeIdx + dir * step;
+
+    let candidate: number;
+    if (newIdx < 0) {
+      candidate = octaveBase - 12 + scale.intervals[newIdx + numScaleSteps];
+    } else if (newIdx >= numScaleSteps) {
+      candidate = octaveBase + 12 + scale.intervals[newIdx - numScaleSteps];
+    } else {
+      candidate = octaveBase + scale.intervals[newIdx];
+    }
+
+    // Держимся в диапазоне октавы от старта; выход — повтор ноты
+    // (повтор — тоже музыкальный ход, «настойчивость»)
+    if (candidate > clampedStart + 12 || candidate < clampedStart - 12) {
+      candidate = current;
+    }
+    notes.push(candidate);
+    current = candidate;
+  }
+
+  // Диапазонная страховка — не выходим за пределы лада ± октава от корня
+  const inRange = notes.every((n) => n >= rootMidi && n <= rootMidi + 48);
+  if (!inRange) return [clampedStart];
+  return notes;
+}
+
 /* ──────────────────── v4.8.4: Lookahead-планировщик («A Tale of Two Clocks») ────────────────────
  * Раньше бас/мелодия шли через setInterval(beatMs), а аккорды — через цепочку setTimeout.
  * Проблемы: (1) дрожание таймера ±4мс+ размывало ритм; (2) в скрытом табе Chrome троттлит
@@ -714,31 +859,51 @@ function buildChord(
   voices: number,
   useSeventh: boolean,
   useOpenFifths: boolean,
+  quality?: ChordQuality,
 ): number[] {
   const notes: number[] = [];
   const numScaleNotes = scale.intervals.length;
 
-  if (useOpenFifths) {
-    // Root and fifth only
-    const rootInterval = scale.intervals[degree % numScaleNotes];
-    // Fifth is typically 4 scale degrees up
-    const fifthInterval = scale.intervals[(degree + 4) % numScaleNotes];
-    const octaveShift = Math.floor((degree + 4) / numScaleNotes);
+  /** Ступень лада → MIDI-нота (с октавным переносом). */
+  const degreeMidi = (deg: number): number => {
+    const octaveShift = Math.floor(deg / numScaleNotes);
+    const intervalIndex = ((deg % numScaleNotes) + numScaleNotes) % numScaleNotes;
+    return rootMidi + scale.intervals[intervalIndex] + octaveShift * 12;
+  };
 
-    notes.push(rootMidi + rootInterval);
-    notes.push(rootMidi + fifthInterval + octaveShift * 12);
+  if (useOpenFifths || quality === 'open5') {
+    // Root and fifth only
+    notes.push(degreeMidi(degree));
+    notes.push(degreeMidi(degree + 4));
+    return notes;
+  }
+
+  // v4.47.0: фактурные качества созвучий (взвешенно по ступени)
+  if (quality === 'sus2') {
+    // 1 – 2 – 5 (сус2: «подвешенное» неопределённое звучание)
+    notes.push(degreeMidi(degree), degreeMidi(degree + 1), degreeMidi(degree + 4));
+    return notes;
+  }
+  if (quality === 'sus4') {
+    // 1 – 4 – 5 (сус4: напряжение перед разрешением)
+    notes.push(degreeMidi(degree), degreeMidi(degree + 3), degreeMidi(degree + 4));
+    return notes;
+  }
+  if (quality === 'add9') {
+    // 1 – 3 – 5 – 9 (расширенное трезвучие, «мерцающая» краска)
+    notes.push(
+      degreeMidi(degree), degreeMidi(degree + 2),
+      degreeMidi(degree + 4), degreeMidi(degree + 7),
+    );
     return notes;
   }
 
   // Stack thirds: root (degree), 3rd (degree+2), 5th (degree+4), 7th (degree+6)
-  const totalVoices = useSeventh ? Math.max(voices, 4) : voices;
+  const useSeventhChord = useSeventh || quality === 'seventh';
+  const totalVoices = useSeventhChord ? Math.max(voices, 4) : voices;
 
   for (let v = 0; v < totalVoices; v++) {
-    const scaleStep = degree + v * 2; // Stack in thirds
-    const octaveShift = Math.floor(scaleStep / numScaleNotes);
-    const intervalIndex = ((scaleStep % numScaleNotes) + numScaleNotes) % numScaleNotes;
-    const midiNote = rootMidi + scale.intervals[intervalIndex] + octaveShift * 12;
-    notes.push(midiNote);
+    notes.push(degreeMidi(degree + v * 2)); // Stack in thirds
   }
 
   return notes;
@@ -801,6 +966,19 @@ class MusicEngine {
   private padDryGain: GainNode | null = null;
   /** Current chord degree (index into scale) */
   private currentChordDegree = 0;
+  /** v4.47.0: текущая прогрессия (ступени лада) и позиция в ней. */
+  private chordProgression: readonly number[] = PROGRESSION_LIBRARY[0];
+  private progressionPos = 0;
+  /** v4.47.0: счётчик смен до следующего «дыхания» пэда. */
+  private padRestCountdown = 4 + Math.floor(Math.random() * 4);
+  /** v4.47.0: очередь нот мелодической фразы (MIDI). */
+  private melodyQueue: number[] = [];
+  /** v4.47.0: пауза между фразами (в шагах мелодической сетки). */
+  private phraseRestSteps = 0;
+  /** v4.47.0: отложенная пауза — активируется, когда текущая фраза доиграна. */
+  private phraseRestStepsPending = 0;
+  /** v4.47.0: последний мотив — для повтора с вариацией. */
+  private lastPhrase: number[] | null = null;
   /** Pad voices scheduled for crossfade retirement (each batch keeps its own timer) */
   private pendingPadRetirements: Array<{
     voices: Array<{ osc: OscillatorNode; gain: GainNode }>;
@@ -1156,6 +1334,12 @@ class MusicEngine {
     this.currentScene = null;
     this.currentConfig = null;
     this.currentChordDegree = 0;
+    // v4.47.0: сброс прогрессии и мелодических фраз — новый бэд начинает чисто
+    this.progressionPos = 0;
+    this.melodyQueue = [];
+    this.phraseRestSteps = 0;
+    this.phraseRestStepsPending = 0;
+    this.lastPhrase = null;
     // Clear any act-mood override so the next scene bed starts un-tinted.
     // SceneAudioController.onSceneEnter re-applies the appropriate override.
     this.actMoodOverrideActive = null;
@@ -1226,7 +1410,16 @@ class MusicEngine {
     this.cleanupAllNodes();
 
     this.currentConfig = config;
-    this.currentChordDegree = Math.floor(Math.random() * config.scale.intervals.length);
+    // v4.47.0: старт со случайной прогрессии из пула — с первой же смены
+    // аккорды идут гармоническим ходом, а не блужданием
+    this.chordProgression = pickRandom(PROGRESSION_LIBRARY);
+    this.progressionPos = 0;
+    this.currentChordDegree = this.chordProgression[0] % config.scale.intervals.length;
+    this.padRestCountdown = 2 + Math.floor(Math.random() * 3);
+    this.melodyQueue = [];
+    this.phraseRestSteps = 0;
+    this.phraseRestStepsPending = 0;
+    this.lastPhrase = null;
 
     const now = ctx.currentTime;
 
@@ -1345,6 +1538,10 @@ class MusicEngine {
       this.retirePadVoices(outgoing, now, 2);
     }
     // Build chord from scale
+    // v4.47.0: качество созвучия — взвешенно по ступени (sus/add9/септимы)
+    const quality = config.useOpenFifths
+      ? 'open5'
+      : pickWeightedQualityForDegree(this.currentChordDegree);
     const chordMidi = buildChord(
       config.scale,
       config.rootMidi,
@@ -1352,6 +1549,7 @@ class MusicEngine {
       config.chordVoices,
       config.useSeventhChords,
       config.useOpenFifths,
+      quality,
     );
 
     // Create oscillators for each chord voice
@@ -1551,30 +1749,138 @@ class MusicEngine {
 
     guard = 0;
     while (this.nextMelodyTime < now + ahead && guard++ < SCHEDULE_LOOP_GUARD_BEATS) {
-      // Решение о ноте принимается в момент планирования — то же распределение,
-      // что раньше, но огибающая стартует точно на сетке.
-      if (this.masterGainNode && Math.random() <= config.melodyChance * MELODY_CHANCE_BOOST) {
-        this.playMelodyNote(config, this.nextMelodyTime);
-      }
+      // v4.47.0: мелодия — фразы с паузами и повторами мотива вместо
+      // одиноких случайных нот. Решение принимается в момент планирования,
+      // огибающая стартует точно на сетке.
+      this.scheduleMelodyPhraseNote(config, this.nextMelodyTime);
       this.nextMelodyTime += this.melodyStepSec(config);
     }
 
     guard = 0;
     while (this.nextChordTime < now + ahead && guard++ < SCHEDULE_LOOP_GUARD_CHORDS) {
-      this.advanceChordDegree(config);
-      this.playPadChord(config, this.nextChordTime);
+      const degree = this.advanceChordProgression(config);
+      if (degree !== null) {
+        this.playPadChord(config, this.nextChordTime);
+      } else {
+        // «Дыхание»: один интервал без пэда — бас и мелодия продолжают
+        this.restPadChord(this.nextChordTime);
+      }
       this.nextChordTime += this.chordIntervalSec(config);
     }
   }
 
-  /** Пульс баса на точной сетке: атака 0.1с → спад до 30% → релиз к концу бита. */
+  /** v4.47.0: планирование мелодии по фразам.
+   * Пока очередь нот не пуста — играем её; иначе с вероятностью
+   * melodyChance×буст×множитель интенсивности начинаем новую фразу
+   * (новый мотив или повтор прошлого с вариацией). */
+  private scheduleMelodyPhraseNote(config: SceneMusicConfig, time: number): void {
+    if (!this.masterGainNode) return;
+
+    // Пауза между фразами — тикаем молча
+    if (this.phraseRestSteps > 0) {
+      this.phraseRestSteps--;
+      return;
+    }
+
+    // Играем очередь текущей фразы
+    if (this.melodyQueue.length > 0) {
+      const midiNote = this.melodyQueue.shift();
+      if (midiNote !== undefined) {
+        this.playMelodyNote(config, time, midiNote);
+        // Микропауза внутри фразы (25%): воздух между нотами мотива
+        if (Math.random() < 0.25) this.phraseRestSteps = 1;
+      }
+      return;
+    }
+
+    // Фраза доиграна — активируем отложенную паузу и тикаем молча
+    if (this.phraseRestStepsPending > 0) {
+      this.phraseRestSteps = this.phraseRestStepsPending;
+      this.phraseRestStepsPending = 0;
+      this.phraseRestSteps--;
+      return;
+    }
+
+    // Очередь пуста — шанс начать новую фразу
+    const startChance = Math.min(
+      0.9,
+      config.melodyChance * MELODY_CHANCE_BOOST * PHRASE_START_MULT[this.intensityLayer],
+    );
+    if (Math.random() > startChance) return;
+
+    const chordMidi = buildChord(
+      config.scale,
+      config.rootMidi,
+      this.currentChordDegree,
+      config.chordVoices,
+      config.useSeventhChords,
+      config.useOpenFifths,
+    );
+
+    // 50% — повтор прошлого мотива с вариацией (узнаваемость!), иначе новый
+    if (this.lastPhrase && this.lastPhrase.length > 0 && Math.random() < 0.5) {
+      let phrase = [...this.lastPhrase];
+      const variant = Math.random();
+      if (variant < 0.35) {
+        // Транспозиция на ±1–2 полутона в пределах диапазона
+        const shift = Math.random() < 0.5 ? 2 : -2;
+        phrase = phrase.map((n) => Math.max(config.rootMidi, Math.min(config.rootMidi + 36, n + shift)));
+      } else if (variant < 0.65) {
+        // Ретроград — те же ноты в обратном порядке
+        phrase = phrase.reverse();
+      } // иначе — точный повтор
+      this.melodyQueue = phrase;
+    } else {
+      this.melodyQueue = generateMelodyMotif(
+        config.scale,
+        config.rootMidi,
+        chordMidi,
+        this.intensityLayer,
+      );
+      this.lastPhrase = [...this.melodyQueue];
+    }
+
+    // После фразы — пауза 4–14 шагов (дыхание мелодии)
+    // планируем от длины очереди: пауза начнётся, когда очередь опустеет
+    const extraRest = 4 + Math.floor(Math.random() * 11);
+    this.phraseRestStepsPending = extraRest;
+  }
+
+  /** Пульс баса на точной сетке: атака 0.1с → спад до 30% → релиз к концу бита.
+   * v4.47.0: бас следует за корнем ТЕКУЩЕГО аккорда (раньше — одна нота
+   * на всю сцену), с движением на квинту/октаву и плотностью от интенсивности. */
   private scheduleBassPulse(config: SceneMusicConfig, t: number, beatIndex: number): void {
     const bassGain = this.bassGain;
     if (!bassGain) return;
 
-    // Пульс на 1-й и 3-й доле такта (как в прежнем setInterval-варианте)
+    // Пульс на 1-й и 3-й доле такта (как в прежнем setInterval-варианте);
+    // tension добавляет синкопу на 3-ю долю, combat — пульс на каждую долю
     const beatInBar = beatIndex % 4;
-    if (beatInBar !== 0 && beatInBar !== 2) return;
+    const layer = this.intensityLayer;
+    const playsThisBeat =
+      layer === 'combat'
+        ? true
+        : layer === 'tension'
+          ? (beatInBar === 0 || beatInBar === 2 || (beatInBar === 3 && Math.random() < 0.3))
+          : (beatInBar === 0 || beatInBar === 2);
+    if (!playsThisBeat) return;
+
+    // v4.47.0: частота баса — корень текущего аккорда (ступень лада),
+    // на 3-й доле с шансом 25% — ход на квинту или октаву (движение!)
+    if (this.bassOsc) {
+      const numDegrees = config.scale.intervals.length;
+      const degreeInterval = config.scale.intervals[
+        ((this.currentChordDegree % numDegrees) + numDegrees) % numDegrees
+      ];
+      const rootMidi = config.rootMidi + degreeInterval - 12; // октавой ниже пэда
+      let bassMidi = rootMidi;
+      if (beatInBar === 2 && Math.random() < 0.25) {
+        bassMidi = Math.random() < 0.6 ? rootMidi + 7 : rootMidi + 12; // квинта или октава
+      }
+      try {
+        this.bassOsc.frequency.setValueAtTime(midiToFreq(bassMidi), t);
+      } catch { /* узел мог быть остановлен — пульс пропускаем */ }
+    }
 
     const beatDur = this.beatDurationSec(config);
     const bassLevel = config.bassGain * this.musicVolume * BASS_GAIN_BOOST;
@@ -1588,17 +1894,35 @@ class MusicEngine {
     }
   }
 
-  /** Случайное блуждание по ступеням лада со смещением к I/IV/V (общее для всех сеток). */
-  private advanceChordDegree(config: SceneMusicConfig): void {
+  /** v4.47.0: продвинуть гармонию по пулу прогрессий.
+   * Возвращает степень лада нового аккорда или null — интервал «дыхания»
+   * (пэд молчит один интервал, бас/мелодия продолжают — воздух в фактуре). */
+  private advanceChordProgression(config: SceneMusicConfig): number | null {
+    this.progressionPos++;
+    if (this.progressionPos >= this.chordProgression.length) {
+      this.progressionPos = 0;
+      // 30% — та же прогрессия (узнаваемость), иначе новая из пула
+      if (Math.random() >= 0.3) {
+        this.chordProgression = pickNextProgression(this.chordProgression);
+      }
+      // «Дыхание» приурочено к границе прогрессий — структурно, а не случайно
+      this.padRestCountdown--;
+      if (this.padRestCountdown <= 0) {
+        this.padRestCountdown = 2 + Math.floor(Math.random() * 3); // дыхание каждые ~2–4 цикла
+        return null;
+      }
+    }
     const numDegrees = config.scale.intervals.length;
-    const commonDegrees = [0, 3, 4]; // I, IV, V в ступенях лада
-    if (Math.random() < 0.4) {
-      // 40% шанс прыжка на «общую» ступень
-      this.currentChordDegree = pickRandom(commonDegrees) % numDegrees;
-    } else {
-      // Шаг на 1-2 ступени
-      const step = Math.random() < 0.6 ? 1 : 2;
-      this.currentChordDegree = (this.currentChordDegree + step) % numDegrees;
+    this.currentChordDegree = this.chordProgression[this.progressionPos] % numDegrees;
+    return this.currentChordDegree;
+  }
+
+  /** v4.47.0: мягкий фейд текущего пэда без запуска нового («дыхание»). */
+  private restPadChord(startTime: number): void {
+    const outgoing = this.padOscillators;
+    this.padOscillators = [];
+    if (outgoing.length > 0) {
+      this.retirePadVoices(outgoing, startTime, 3);
     }
   }
 
@@ -1626,7 +1950,7 @@ class MusicEngine {
       missed++;
     }
     for (let i = 0; i < missed; i++) {
-      this.advanceChordDegree(config);
+      this.advanceChordProgression(config);
     }
   }
 
@@ -1671,7 +1995,7 @@ class MusicEngine {
   /* ═══════════════════ MELODY LAYER ═══════════════════ */
 
   /** Play a single melody note from the scale */
-  private playMelodyNote(config: SceneMusicConfig, startTime?: number): void {
+  private playMelodyNote(config: SceneMusicConfig, startTime?: number, phraseNote?: number): void {
     const ctx = this.ctx;
     const dest = this.masterGainNode;
     if (!ctx || !dest) return;
@@ -1681,14 +2005,18 @@ class MusicEngine {
     // для прямых вызовов (тесты), где горизонт планирования не задан.
     const now = typeof startTime === 'number' && Number.isFinite(startTime) ? startTime : ctx.currentTime;
 
-    // Pick a random scale degree
-    const degree = Math.floor(Math.random() * config.scale.intervals.length);
-    const interval = config.scale.intervals[degree];
-
-    // Octave range: C3 (48) to C5 (72) → pick random octave
-    const octaveRange = [0, 12, 24]; // Root octave, +1, +2
-    const octaveShift = pickRandom(octaveRange);
-    const midiNote = config.rootMidi + interval + octaveShift;
+    // v4.47.0: нота фразы приходит готовой (консонанс к аккорду заложен
+    // генератором мотива); фолбэк — прежняя случайная ступень лада
+    let midiNote: number;
+    if (typeof phraseNote === 'number' && Number.isFinite(phraseNote)) {
+      midiNote = phraseNote;
+    } else {
+      const degree = Math.floor(Math.random() * config.scale.intervals.length);
+      const interval = config.scale.intervals[degree];
+      const octaveRange = [0, 12, 24];
+      const octaveShift = pickRandom(octaveRange);
+      midiNote = config.rootMidi + interval + octaveShift;
+    }
     const freq = midiToFreq(midiNote);
 
     // Create oscillator

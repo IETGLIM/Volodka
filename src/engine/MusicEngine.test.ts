@@ -73,9 +73,73 @@ vi.mock('@/shared/dev/hmrDispose', () => ({
 
 import {
   disposeMusicEngine,
+  generateMelodyMotif,
   musicEngine,
+  pickWeightedQualityForDegree,
   reviveMusicEngine,
 } from './MusicEngine';
+
+const VALID_QUALITIES: ReadonlySet<string> = new Set([
+  'triad', 'seventh', 'sus2', 'sus4', 'add9', 'open5',
+]);
+
+/* ─── v4.47.0: регресс-тесты музыкальной вариативности (прогрессии/фразы) ─── */
+describe('MusicEngine musical variety (v4.47.0)', () => {
+  it('pickWeightedQualityForDegree возвращает только допустимые качества', () => {
+    for (let i = 0; i < 200; i++) {
+      const q = pickWeightedQualityForDegree(Math.floor(Math.random() * 14));
+      expect(VALID_QUALITIES.has(q)).toBe(true);
+    }
+  });
+
+  it('тоника (ступень 0) не даёт sus4 — напряжение остаётся на D-функции', () => {
+    // Статистическая гарантия: 200 прогонов, sus4 отсутствует в весах тоники
+    for (let i = 0; i < 200; i++) {
+      expect(pickWeightedQualityForDegree(0)).not.toBe('sus4');
+    }
+  });
+
+  it('generateMelodyMotif: 3–6 нот, все в ладе, первая — аккордовая', () => {
+    // C minor pentatonic, root C3 (48), аккорд C-Eb-G
+    const scale = { name: 'test', intervals: [0, 3, 5, 7, 10] };
+    const chord = [48, 51, 55];
+    for (let i = 0; i < 100; i++) {
+      const motif = generateMelodyMotif(scale, 48, chord, 'exploration');
+      expect(motif.length).toBeGreaterThanOrEqual(3);
+      expect(motif.length).toBeLessThanOrEqual(6);
+      // Первая нота — аккордовая (+12/+24), консонанс гарантирован
+      expect(chord.map((c) => c + 12).concat(chord.map((c) => c + 24))).toContain(motif[0]);
+      // Все ноты принадлежат ладу (периодичность октавы)
+      for (const n of motif) {
+        const pitchClass = ((n - 48) % 12 + 12) % 12;
+        expect(scale.intervals).toContain(pitchClass);
+        expect(n).toBeGreaterThanOrEqual(48);
+        expect(n).toBeLessThanOrEqual(48 + 48);
+      }
+    }
+  });
+
+  it('generateMelodyMotif: combat-фразы плотнее (4–6 нот)', () => {
+    const scale = { name: 'test', intervals: [0, 2, 3, 5, 7, 8, 10] };
+    const chord = [50, 53, 57];
+    for (let i = 0; i < 100; i++) {
+      const motif = generateMelodyMotif(scale, 50, chord, 'combat');
+      expect(motif.length).toBeGreaterThanOrEqual(4);
+      expect(motif.length).toBeLessThanOrEqual(6);
+    }
+  });
+
+  it('generateMelodyMotif: диапазон мотива — в пределах октавы от старта', () => {
+    const scale = { name: 'test', intervals: [0, 3, 5, 7, 10] };
+    const chord = [48, 51, 55];
+    for (let i = 0; i < 100; i++) {
+      const motif = generateMelodyMotif(scale, 48, chord);
+      const min = Math.min(...motif);
+      const max = Math.max(...motif);
+      expect(max - min).toBeLessThanOrEqual(12);
+    }
+  });
+});
 
 /* ─── v4.38.0: инструментированный мок — регресс-тесты слышимости шины ───
  * Фон: «музыка отсутствует» — padGain создавался в 0 и никогда не взводился
