@@ -11,7 +11,7 @@ import {
 import { journalTelemetry } from '@/engine/journal/journalTelemetry';
 import { DualPaneList } from '@/components/game/journal/DualPaneList';
 import { ConsequenceRecapPanel } from '@/components/game/journal/ConsequenceRecapPanel';
-import { CyberSkeleton } from '@/components/game/CyberLoadingScreen';
+import { CyberSkeleton } from '@/components/game/loading/CyberSkeleton';
 import { formatJournalNoteTime } from '@/components/game/journal/useJournalListNavigation';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useVisitedNodeTimestamps, useVisitedNodes } from '@/store/selectors';

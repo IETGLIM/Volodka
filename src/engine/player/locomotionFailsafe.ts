@@ -15,8 +15,9 @@
  * перманентно мёртвого WASD.
  */
 
-import { getGameStore } from '@/store/gameStore';
-import { readGamePhase } from '@/shared/gamePhase';
+import {
+  readLocomotionGateSnapshotFromEngine,
+} from '@/shared/gameBridge/storeLifecycleHost';
 import { devWarn } from '@/shared/utils/devLog';
 import {
   isCinematicHoldActive,
@@ -68,21 +69,20 @@ function forceReleaseStuckGates(): void {
 }
 
 function tick(): void {
-  let store: ReturnType<typeof getGameStore>;
-  try {
-    store = getGameStore();
-  } catch {
-    return; // store не готов (HMR/teardown) — пропускаем тик
-  }
+  /* FIX (v4.48): движок не должен импортировать @/store — флаги приходят
+   * через gameBridge-хост (поставщик в bindApplicationLayers). Поведение
+   * watchdog не изменено. */
+  const snapshot = readLocomotionGateSnapshotFromEngine();
+  if (!snapshot) return; // store не готов (HMR/teardown) — пропускаем тик
 
-  const phase = readGamePhase(store);
+  const phase = snapshot.phase;
 
   // «Чистое исследование»: фаза exploration, ни одного стор-источника лока.
   const pureExploration =
     phase === 'exploration' &&
-    !store.showStoryOverlay &&
-    !store.diegeticNarrative &&
-    !store.activeCutsceneId;
+    !snapshot.showStoryOverlay &&
+    !snapshot.diegeticNarrative &&
+    !snapshot.activeCutscene;
 
   if (!pureExploration) {
     strikes = 0;

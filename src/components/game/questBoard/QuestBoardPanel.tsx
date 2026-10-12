@@ -2,7 +2,7 @@ import { useId } from 'react';
 import { AlertCircle, ScrollText } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
-import { CyberSkeleton } from '@/components/game/CyberLoadingScreen';
+import { CyberSkeleton } from '@/components/game/loading/CyberSkeleton';
 import { QuestBoardMissionCard } from '@/components/game/questBoard/QuestBoardMissionCard';
 import { QuestBoardTabs } from '@/components/game/questBoard/QuestBoardTabs';
 import { useQuestBoardController } from '@/components/game/questBoard/useQuestBoardController';

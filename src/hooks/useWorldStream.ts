@@ -71,5 +71,3 @@ export function useWorldStream(enabled = true): UseWorldStreamResult {
   };
 }
 
-/** @deprecated use useWorldStream */
-export { useWorldStream as useWorldChunks };

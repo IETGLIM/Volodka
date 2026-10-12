@@ -7,6 +7,8 @@ import { bindStoreEngineHost } from '@/store/storeEngineHost';
 import { bindStoreSubscribeProfiler } from '@/store/dev/storeSubscribeProfiler';
 import { bindStoreLifecycleHost } from '@/shared/gameBridge/storeLifecycleHost';
 import { resetPlayerXpBatch } from '@/store/playerXpBatch';
+import { getGameStore } from '@/store/gameStore';
+import { readGamePhase } from '@/shared/gamePhase';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { resetGuidedStoryManager, canStartQuest } from '@/engine/GuidedStoryManager';
 import { resetEngineModuleRuntimeState } from '@/engine/engineRuntimeReset';
@@ -36,7 +38,24 @@ export function bindApplicationLayers(): void {
     resetSceneLoadedGate: cancelPendingSceneLoaded,
   });
 
-  bindStoreLifecycleHost({ resetPlayerXpBatch });
+  bindStoreLifecycleHost({
+    resetPlayerXpBatch,
+    /* v4.48: поставщик флагов для locomotionFailsafe (движок не импортирует
+     * @/store — архитектурное правило enforced eslint'ом). */
+    readLocomotionGateSnapshot: () => {
+      try {
+        const s = getGameStore();
+        return {
+          phase: readGamePhase(s),
+          showStoryOverlay: Boolean(s.showStoryOverlay),
+          diegeticNarrative: Boolean(s.diegeticNarrative),
+          activeCutscene: Boolean(s.activeCutsceneId),
+        };
+      } catch {
+        return null;
+      }
+    },
+  });
   bindStoreSubscribeProfiler(wrapStoreSubscribe);
   bindSceneTransitionBridge(requestSceneTransition);
 
