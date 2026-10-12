@@ -33,7 +33,13 @@ export function PoetryPowerBar() {
         aria-label={POETRY_POWER_BAR_LABELS.barRegion}
       >
         <TooltipProvider delayDuration={200}>
-          <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-xl bg-black/60 border border-amber-900/30 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.3),0_0_10px_rgba(226,168,75,0.05)] max-w-[calc(100vw-1rem)]">
+          {/* FIX (v4.48.8, QA цикла #7): cap 38rem на sm+ — при 6+ слотах панель
+              с max-w-[calc(100vw-1rem)] тянулась почти на всю ширину и заходила
+              под правую колонку квест-тостов (зона «стихи» vs «КВЕСТ НАЧАТ»,
+              1280×577). Контент-размер ранних стадий не тронут, поздняя игра
+              скроллится (overflow-x-auto ниже). 38rem при 1280 даёт правую
+              кромку ≈944px — правее левой кромки тостов ≈952px. */}
+          <div className="flex items-center gap-1.5 sm:gap-2 px-3 py-2 rounded-xl bg-black/60 border border-amber-900/30 backdrop-blur-md shadow-[0_0_20px_rgba(0,0,0,0.3),0_0_10px_rgba(226,168,75,0.05)] max-w-[calc(100vw-1rem)] sm:max-w-[38rem]">
             <div
               className="flex flex-col items-center gap-0.5 mr-1 pr-2 border-r border-amber-900/30 shrink-0"
               aria-hidden="true"

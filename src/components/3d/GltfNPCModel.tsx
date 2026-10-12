@@ -35,6 +35,14 @@ import { composeNpcFitScale } from '@/engine/npc/npcSilhouetteVariance';
 import { useFrameTick } from '@/engine/frame/useFrameTick';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { useNpcProceduralLayers } from '@/hooks/useNpcProceduralLayers';
+import {
+  DEFAULT_NPC_ANIMATION_LOD,
+  accumulateNpcMixerDelta,
+  resolveNpcAnimationLod,
+  resolveNpcShadowCasting,
+  scaleNpcAnimationLodThresholds,
+  type NpcAnimationLodLevel,
+} from '@/engine/lod/npcAnimationLod';
 
 const extendLoader = extendGltfLoader as unknown as NonNullable<Parameters<typeof useGLTF>[3]>;
 
@@ -58,6 +66,15 @@ interface GltfNPCModelInnerProps {
   livePlayerPositionRef: React.MutableRefObject<Vector3>;
 }
 
+/** Apply the current shadow policy to every mesh of a skinned clone.
+ *  Called on rare distance-tier crossings only — traversal cost is negligible. */
+function applyNpcCastShadow(scene: Group, castShadow: boolean): void {
+  scene.traverse((obj) => {
+    const mesh = obj as Mesh;
+    if (mesh.isMesh) mesh.castShadow = castShadow;
+  });
+}
+
 function GltfNPCModelInner({
   definition,
   url,
@@ -78,6 +95,21 @@ function GltfNPCModelInner({
   const fitRef = useRef<Group>(null);
   const { scene, mixer } = useSkinnedGltfClone(gltf.scene, gltf.animations, { castShadow: true });
   const [fit, setFit] = useState<Fit>({ scale: modelScale, rotX: 0, y: 0 });
+
+  // ── Animation LOD (v4.48.8): distance-tiered mixer refresh + shadow gating ──
+  // The dominant per-frame cost of a skinned character is mixer.update (bone
+  // pose recomputation), not triangles — geometric LODs were retired in
+  // v4.7.1 as the rigs are already low-poly. Hysteresis tiers live in refs:
+  // zero re-renders, only rare shadow traversals mutate the scene.
+  const animLodRef = useRef<NpcAnimationLodLevel>('full');
+  const castShadowRef = useRef(true);
+  const mixerAccRef = useRef(0);
+  const npcWorldPosRef = useRef(new Vector3());
+  const { preset: animLodPreset } = useGraphicsQuality();
+  const animLodThresholds = useMemo(
+    () => scaleNpcAnimationLodThresholds(DEFAULT_NPC_ANIMATION_LOD, animLodPreset.lodBias),
+    [animLodPreset.lodBias],
+  );
   const appearance = useMemo(
     () => resolveNpcAppearance(definition.id, definition.appearance),
     [definition.id, definition.appearance],
@@ -185,6 +217,11 @@ function GltfNPCModelInner({
     });
   }, [scene, appearance, definition.id]);
 
+  const isTalking =
+    interactionState === InteractionState.Dialogue ||
+    interactionState === InteractionState.Lock ||
+    isInteractionTarget;
+
   useRegisterNpcFrame(definition.id, 'mixer', ({ delta }) => {
     // Skip animation updates when the NPC is not at 'full' LOD level.
     // mixer.update on skinned meshes is one of the most expensive per-frame
@@ -194,9 +231,44 @@ function GltfNPCModelInner({
       // Clamp delta to prevent animation jumps on frame stalls (GC pauses,
       // tab backgrounding, etc). 0.05s = ~3 frames at 60fps.
       const dt = Math.min(delta, 0.05);
-      mixer.update(dt);
+
+      // Distance tiers (player → NPC): full rate in the interaction band,
+      // 30 Hz beyond ~9 m, 15 Hz beyond ~15 m (hysteresis-stable, scaled by
+      // lodBias). Dialogue/interaction partners are pinned to full rate.
+      // Cheap vector math on refs — no re-renders, no allocations.
+      const anchor = fitRef.current;
+      if (anchor) {
+        const dist = anchor
+          .getWorldPosition(npcWorldPosRef.current)
+          .distanceTo(livePlayerPositionRef.current);
+        animLodRef.current = resolveNpcAnimationLod(
+          dist,
+          animLodRef.current,
+          animLodThresholds,
+          isTalking,
+        );
+        const wantsShadows = resolveNpcShadowCasting(dist, castShadowRef.current, animLodThresholds);
+        if (wantsShadows !== castShadowRef.current) {
+          castShadowRef.current = wantsShadows;
+          applyNpcCastShadow(scene, wantsShadows);
+        }
+      }
+
+      // Animation time stays exact: the accumulated real delta is flushed on
+      // refresh frames, so throttled poses keep correct speed.
+      const step = accumulateNpcMixerDelta(mixerAccRef.current, dt, animLodRef.current);
+      mixerAccRef.current = step.acc;
+      if (step.updateDelta !== null) {
+        mixer.update(step.updateDelta);
+      }
     }
   }, { enabled: visible });
+
+  // Sync freshly built clones (initial build + dual-LOD url swaps) to the
+  // current shadow policy — useSkinnedGltfClone always starts castShadow: true.
+  useLayoutEffect(() => {
+    applyNpcCastShadow(scene, castShadowRef.current);
+  }, [scene]);
 
   useNpcProceduralLayers({
     npcId: definition.id,
@@ -205,11 +277,6 @@ function GltfNPCModelInner({
     playerPositionRef: livePlayerPositionRef,
     enabled: visible && idleClipReady,
   });
-
-  const isTalking =
-    interactionState === InteractionState.Dialogue ||
-    interactionState === InteractionState.Lock ||
-    isInteractionTarget;
 
   return (
     <group
@@ -326,6 +393,7 @@ function GltfNPCModelScene({
         isInteractionTarget={isInteractionTarget}
         activity={activity}
         patrolActivity={patrolActivity}
+        visible={lodVisible}
         livePlayerPositionRef={livePlayerPositionRef}
       />
     );
