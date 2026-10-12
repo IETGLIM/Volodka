@@ -14,7 +14,7 @@
     "assets:optimize-textures": "node scripts/optimize-polyhaven-textures.mjs",
     "assets:polyhaven-ktx2": "node scripts/generate-polyhaven-ktx2.mjs",
     "build:analyze": "npm run validate && tsc --noEmit && vite build --mode analyze && npm run budgets",
-    "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts && npx tsx --tsconfig tsconfig.json scripts/analyze-model-placement.ts",
+    "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts && npx tsx --tsconfig tsconfig.json scripts/analyze-model-placement.ts && npm run validate:protected",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:act1-extended": "npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts",
     "assets:bootstrap": "node scripts/bootstrap-production-assets.mjs",
@@ -48,13 +48,14 @@
     "test:unit:watch": "vitest",
     "test:e2e": "npm run build && playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "check": "npm run lint && npm run typecheck && npm run validate:content && npm run assets:validate && npm run build && npm run verify:deploy",
+    "check": "npm run lint && npm run typecheck && npm run validate:content && npm run validate:protected && npm run assets:validate && npm run build && npm run verify:deploy",
     "budgets": "node scripts/check-bundle-budgets.mjs --report",
     "budgets:check": "node scripts/check-bundle-budgets.mjs",
     "deploy:archive": "node scripts/create-deploy-archive.mjs",
     "build:itch": "vite build --base=./",
     "archive:itch": "node scripts/create-itch-archive.mjs",
-    "verify:deploy": "npx tsx --tsconfig tsconfig.json scripts/verify-deploy-assets.ts"
+    "verify:deploy": "npx tsx --tsconfig tsconfig.json scripts/verify-deploy-assets.ts",
+    "validate:protected": "npx tsx --tsconfig tsconfig.json scripts/validate-protected-content.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",

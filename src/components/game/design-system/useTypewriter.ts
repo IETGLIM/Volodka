@@ -10,6 +10,28 @@ export interface UseTypewriterOptions {
   active?: boolean;
 }
 
+/* PRESENTATION FIX (v4.48): паузы на знаках — поэзия «дышит» без правки
+ * текста. Точка/восклицание — длинная пауза, запятая — короткая, тире —
+ * средняя. Оценка в долях speed, чтобы масштабировалась с настройкой. */
+function punctuationPauseMs(ch: string, speed: number): number {
+  switch (ch) {
+    case '.':
+    case '!':
+    case '?':
+    case '…':
+      return speed * 6;
+    case '—':
+    case '–':
+    case ':':
+    case ';':
+      return speed * 3.5;
+    case ',':
+      return speed * 2;
+    default:
+      return 0;
+  }
+}
+
 /** Shared typewriter hook for menu subtitles + intro prose. */
 export function useTypewriter({
   text,
@@ -40,7 +62,9 @@ export function useTypewriter({
           setDone(true);
           return;
         }
-        setTimeout(tick, speed);
+        // v4.48: пауза после только что напечатанного знака препинания
+        const justTyped = text[charIndex - 1] ?? '';
+        setTimeout(tick, speed + punctuationPauseMs(justTyped, speed));
       };
       tick();
     }, delay);

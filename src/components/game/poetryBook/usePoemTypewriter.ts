@@ -1,5 +1,27 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+/* PRESENTATION FIX (v4.48): стихотворный тайпрайтер «дышит» без правки
+ * текста: пауза после знаков препинания (в долях speed), на конце строки
+ * и удвоенная на строфах (пустые строки). */
+function punctuationPauseFactor(ch: string): number {
+  switch (ch) {
+    case '.':
+    case '!':
+    case '?':
+    case '…':
+      return 5;
+    case '—':
+    case '–':
+    case ':':
+    case ';':
+      return 3;
+    case ',':
+      return 1.5;
+    default:
+      return 0;
+  }
+}
+
 export function usePoemTypewriter(
   lines: string[],
   active: boolean,
@@ -62,14 +84,22 @@ export function usePoemTypewriter(
         st.charIdx++;
 
         if (line === '') {
+          // Строфа — длинная пауза тишины между блоками стиха
           st.current[st.lineIdx] = '';
           st.lineIdx++;
           st.charIdx = 0;
+          lastUpdate += speed * 12;
         } else {
           st.current[st.lineIdx] = line.slice(0, st.charIdx);
           if (st.charIdx >= line.length) {
             st.lineIdx++;
             st.charIdx = 0;
+            // Конец стихотворной строки — пауза перед следующей
+            lastUpdate += speed * 7;
+          } else {
+            // v4.48: пауза после только что напечатанного знака
+            const justTyped = line[st.charIdx - 1] ?? '';
+            lastUpdate += speed * punctuationPauseFactor(justTyped);
           }
         }
 
