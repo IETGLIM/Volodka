@@ -148,7 +148,11 @@ body {
   align-items: stretch;
   min-width: 0;
   padding-inline: 1rem;
-  padding-block: max(1rem, env(safe-area-inset-top, 1rem)) max(1rem, env(safe-area-inset-bottom, 1rem));
+  /* ПОЛИШ (v4.48.5): нижний отступ 2.5rem — когда панель выше вьюпорта и
+   * скроллится (my-auto зажимает к верху), последний элемент (ЗАКРЫТЬ)
+   * не прилипает к нижней кромке: у скролл-конца появляется воздух.
+   * При достатке места my-auto центрирует контент, отступ не виден. */
+  padding-block: max(1rem, env(safe-area-inset-top, 1rem)) max(2.5rem, env(safe-area-inset-bottom, 2.5rem));
   overflow-y: auto;
   overscroll-behavior: contain;
 }

@@ -18,10 +18,6 @@ vi.mock('@/engine/AudioEngine', () => ({
   },
 }));
 
-vi.mock('@/hooks/use-toast', () => ({
-  toast: vi.fn(),
-}));
-
 vi.mock('@/hooks/useEffectiveReducedMotion', () => ({
   useEffectiveReducedMotion: () => true,
 }));
@@ -52,5 +48,14 @@ describe('MiniGameHub', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Запустить Взломщик кода' }));
     expect(emitMock).toHaveBeenCalledWith('minigame:open', { gameType: 'codebreaker' });
     expect(onClose).toHaveBeenCalledOnce();
+  });
+
+  it('FIX v4.48.5: ошибка запуска показывается инлайн (раньше уходила в несмонтированный use-toast)', () => {
+    hasHandlersMock.mockReturnValue(false);
+    const onClose = vi.fn();
+    render(<MiniGameHub open onClose={onClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Запустить Взломщик кода' }));
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(onClose).not.toHaveBeenCalled();
   });
 });

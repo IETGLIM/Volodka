@@ -26,7 +26,7 @@ Single singleton (`eventBus`) with a flat runtime API. Types live in domain modu
 | Lore | `lore:` | 1 | uiSlice | EventNotificationPopup |
 | Cutscene | `cutscene:` | 2 | GameOrchestrator | CutsceneOverlay |
 | Achievement | `achievement:` | 1 | worldSlice | AchievementNotification |
-| Crafting | `crafting:`, `item:` | 2 | playerEconomySlice | CraftingDiscoveryToast |
+| Crafting | `crafting:`, `item:` | 2 | playerEconomySlice | toastQueue/TransientToastStack |
 | Photo | `photo:` | 3 | PhotoMode, HUD, GameOrchestrator | PhotoMode, HUD |
 | World | `world:` | 3 | useWorldClock, useWorldChunks | useWorldClock |
 | Story | `story:` | 4 | GuidedStoryManager | StoryGuidanceHUD, GameOrchestrator |

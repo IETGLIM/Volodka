@@ -19,7 +19,9 @@ import {
   tryOpenDialogue,
   tryOpenStory,
 } from '@/engine/interaction/narrativeOpenHelpers';
-import { notifyItemReceived } from '@/components/game/LootNotification';
+/* FIX (v4.48.5): импорт из компонентного barrel (components/game/LootNotification)
+ * заменён на прямой engine-API — движок не должен зависеть от слоя компонентов. */
+import { notifyItemReceived } from '@/engine/loot/lootNotificationApi';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import {
   closeMinigame,

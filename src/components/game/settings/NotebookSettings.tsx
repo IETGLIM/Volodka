@@ -178,7 +178,11 @@ export function SettingsChipsRow<T extends string>({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(opt.id)}
-            className="rounded-md border px-2.5 py-1 font-serif text-[12px] tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300/60 focus-visible:outline-offset-2"
+            /* ПОЛИШ (v4.48.5): px-2.5→px-2 + whitespace-nowrap — ряд из 5
+             * пресетов качества (Авто…Ультра) влезает в одну строку панели
+             * w-[21rem]; nowrap исключает разрыв внутри слова на узких
+             * панелях. */
+            className="whitespace-nowrap rounded-md border px-2 py-1 font-serif text-[12px] tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300/60 focus-visible:outline-offset-2"
             style={{
               color: active ? AMBER_STRONG : STONE_MUTED,
               backgroundColor: active ? `rgba(${AMBER}, 0.14)` : 'rgba(28, 25, 23, 0.5)',

@@ -10,10 +10,6 @@ export function buildStatChangeAnnouncement(statName: string, value: number): st
   return `Изменение: ${formatStatChangeText(statName, value)}`;
 }
 
-export function buildItemGainedAnnouncement(name: string): string {
-  return `Получено: ${name}`;
-}
-
 export function buildKarmaShiftLabel(delta: number, currentKarma: number): string {
   if (delta > 0) {
     return currentKarma >= 70 ? 'Свет' : 'Добро';

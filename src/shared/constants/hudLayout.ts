@@ -26,10 +26,12 @@ export const EXPLORATION_HUD_LAYOUT = {
   BOTTOM_POETRY: 124,
   /** PoetryPowerBar row (~56px) */
   BOTTOM_POETRY_HEIGHT: 56,
-  /** Crafting discovery toasts — above poetry bar */
+  /** Crafting discovery toasts — above poetry bar.
+   *  FIX (v4.48.5): слот-константы SYSTEM_ALERT_ABOVE_CRAFTING_OFFSET и
+   *  bottomSystemAlertPx удалены — системные алерты переехали в единый
+   *  нижне-левый flex-стек (toastQueue/TransientToastStack), отдельный
+   *  fixed-слот больше не нужен. */
   BOTTOM_CRAFTING_TOAST: 188,
-  /** System alerts stack above crafting toasts (crafting + quick-use tier gap). */
-  SYSTEM_ALERT_ABOVE_CRAFTING_OFFSET: 56,
   /** Contextual [E] prompt — above poetry bar, centered */
   BOTTOM_INTERACT_PROMPT: 196,
   /** Diegetic dialogue panel max text height (px) */
@@ -196,12 +198,6 @@ export function bottomStaminaBarPx(isMobile = false): number {
 
 export function bottomCraftingToastPx(isMobile = false): number {
   return EXPLORATION_HUD_LAYOUT.BOTTOM_CRAFTING_TOAST + mobileBottomReserve(isMobile);
-}
-
-export function bottomSystemAlertPx(isMobile = false): number {
-  return (
-    bottomCraftingToastPx(isMobile) + EXPLORATION_HUD_LAYOUT.SYSTEM_ALERT_ABOVE_CRAFTING_OFFSET
-  );
 }
 
 export function bottomInteractPromptPx(isMobile = false): number {

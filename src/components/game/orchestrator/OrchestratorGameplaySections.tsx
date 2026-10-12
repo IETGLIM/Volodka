@@ -50,8 +50,7 @@ import { QuickUseBar } from '../QuickUseBar';
 import { EventNotificationPopup } from '../EventNotificationPopup';
 import { LoreDiscoveryToast } from '../LoreDiscoveryToast';
 import { WeatherAlertNotification } from '../WeatherAlertNotification';
-import { CraftingDiscoveryToast } from '../CraftingDiscoveryToast';
-import { GameSystemToast } from '../GameSystemToast';
+import { TransientToastStack } from '@/components/game/toastQueue/TransientToastStack';
 const LazyCompassHUD = lazy(() =>
   import('../CompassHUD').then((m) => ({ default: m.CompassHUD })),
 );
@@ -85,7 +84,6 @@ const LazyCutsceneOverlay = lazy(() =>
 // standalone IntroWakeOverlay component was deleted as dead code.
 import { PoetryPowerBar } from '@/components/game/PoetryPowerBar';
 import { PoemActiveEffectsHud } from '@/components/game/poemActiveEffects/PoemActiveEffectsHud';
-import { ItemGainedPopupLayer } from '@/components/game/microAnimations/ItemGainedPopupLayer';
 import { StatChangeLayer } from '@/components/game/microAnimations/StatChangeLayer';
 import { KarmaShiftLayer } from '@/components/game/microAnimations/KarmaShiftLayer';
 import { FloatingActionIndicator } from '@/components/game/hud/parts/FloatingActionIndicator';
@@ -262,7 +260,10 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
         }}
       >
         <NotificationToasts />
-        <CraftingDiscoveryToast />
+        {/* FIX (v4.48.5, консолидация): крафт + системные алерты — одна
+         * очередь (toastQueueStore) и один рендерер вместо двух компонентов
+         * с дублированным useState/таймерами. */}
+        <TransientToastStack />
         <LootNotification />
       </div>
       <Suspense fallback={null}>
@@ -275,10 +276,10 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
         <LazyPlayerLostHintToast />
       </Suspense>
       <WeatherAlertNotification />
-      <GameSystemToast />
       {/* MUST stay mounted during exploration: listens for ui:loot_notification on EventBus. */}
       {/* LootNotification перенесён в стек выше (FIX v4.48) — рендер там. */}
-      <ItemGainedPopupLayer />
+      {/* ItemGainedPopupLayer удалён (v4.48.5): ни одного продюсера showItemGained
+       * в кодовой базе — слой не срабатывал никогда (мёртвая система). */}
       {/* Localized stat-change pips (karma/energy/stress/XP) — pool-based, TTL-bounded.
           Complements the FloatingText layer with anchor-positioned, color-coded feedback. */}
       <StatChangeLayer />

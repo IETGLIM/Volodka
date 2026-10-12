@@ -17,7 +17,6 @@ import {
   getHubCardStaggerDelay,
   safePlayHubSfx,
 } from '@/engine/minigame/hub/minigameHubPresentation';
-import { toast } from '@/hooks/use-toast';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 
 import { devWarn } from '@/shared/utils/devLog';
@@ -30,6 +29,11 @@ export function MiniGameHubContent({ onClose }: MiniGameHubContentProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [liveMessage, setLiveMessage] = useState('');
+  /* FIX (v4.48.5): раньше ошибка запуска уходила в toast() из use-toast —
+   * рендерер (ToastViewport) нигде не смонтирован, сообщение НАВСЕГДА
+   * пропадало. Теперь ошибка показывается инлайн, прямо в хабе, где
+   * пользователь кликнул (aria-live дублирует её для скринридера). */
+  const [launchError, setLaunchError] = useState<string | null>(null);
 
   useEffect(() => {
     setLiveMessage(buildHubOpenAnnouncement());
@@ -42,11 +46,7 @@ export function MiniGameHubContent({ onClose }: MiniGameHubContentProps) {
         if (import.meta.env.DEV) {
           devWarn('[MiniGameHub] launch failed:', result.reason, gameType);
         }
-        toast({
-          title: MINIGAME_HUB_LABELS.unavailableTitle,
-          description: buildLaunchFailureMessage(result.reason),
-          variant: 'destructive',
-        });
+        setLaunchError(buildLaunchFailureMessage(result.reason));
         return;
       }
 
@@ -160,6 +160,19 @@ export function MiniGameHubContent({ onClose }: MiniGameHubContentProps) {
           />
 
           <div className="relative z-10 px-6 pb-5">
+            {launchError && (
+              <p
+                role="alert"
+                className="mx-auto mb-4 max-w-md rounded border px-3 py-2 text-center font-mono text-[11px] leading-relaxed"
+                style={{
+                  background: 'rgba(30, 12, 16, 0.72)',
+                  borderColor: 'rgba(198, 85, 72, 0.4)',
+                  color: '#e0a49a',
+                }}
+              >
+                {MINIGAME_HUB_LABELS.unavailableTitle}: {launchError}
+              </p>
+            )}
             <div
               role="list"
               aria-label={MINIGAME_HUB_LABELS.title}

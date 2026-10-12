@@ -1,8 +1,5 @@
-/* eslint-disable react-refresh/only-export-components -- co-located helpers and lazy exports */
 export { NotificationToastsPanel as NotificationToasts } from '@/components/game/notificationToasts/NotificationToastsPanel';
-export {
-  showEnergyToast,
-  showKarmaToast,
-  showSkillToast,
-  showStressToast,
-} from '@/engine/toast/notificationToastApi';
+
+/* FIX (v4.48.5): реэкспорт show*Karma/Energy/Stress/SkillToast удалён —
+ * API не имел ни одного внешнего вызывающего (стат-тосты приходят через
+ * стор-зеркало). notificationToastApi.ts удалён. */
