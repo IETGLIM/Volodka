@@ -5,8 +5,14 @@
  * ← R3F post-frame tick) is a fragile multi-hop chain. When it breaks the player sees
  * «Не удалось загрузить сцену / canvas:first-frame watchdog timeout» and gameplay
  * stalls. This module records a rolling log of the relevant events on
- * `window.__volodkaDebug` so the flow can be inspected in production (Vercel) via a
- * console one-liner — without needing a local dev server.
+ * `window.__volodkaSceneLoadDebug` so the flow can be inspected in production
+ * (Vercel) via a console one-liner — without needing a local dev server.
+ *
+ * FIX (v4.48.3): своё пространство имён. Раньше здесь жил `window.__volodkaDebug`,
+ * который DEV-мост RPGGameCanvas (RuntimeDebugBridge) затирал объектом
+ * { r3f, snapshot } без `log` → каждый canvas:first-frame после монтирования
+ * канваса падал «Cannot read properties of undefined (reading 'push')» и
+ * scene-load-диагностика молча умирала.
  *
  * Cost: a handful of object allocations per scene transition. No per-frame work.
  */
@@ -21,7 +27,7 @@ type DebugEntry = {
   d?: unknown;
 };
 
-type VolodkaDebug = {
+type VolodkaSceneLoadDebug = {
   log: DebugEntry[];
   sceneLoads: number;
   sceneFailures: number;
@@ -31,12 +37,16 @@ type VolodkaDebug = {
   snapshot: () => string;
 };
 
-function ensureDebug(): VolodkaDebug {
+type DebugWindow = typeof window & {
+  __volodkaSceneLoadDebug?: VolodkaSceneLoadDebug;
+};
+
+function ensureDebug(): VolodkaSceneLoadDebug {
   if (typeof window === 'undefined') return noopDebug;
-  const existing = (window as unknown as { __volodkaDebug?: VolodkaDebug }).__volodkaDebug;
+  const existing = (window as DebugWindow).__volodkaSceneLoadDebug;
   if (existing) return existing;
   const log: DebugEntry[] = [];
-  const dbg: VolodkaDebug = {
+  const dbg: VolodkaSceneLoadDebug = {
     log,
     sceneLoads: 0,
     sceneFailures: 0,
@@ -44,11 +54,11 @@ function ensureDebug(): VolodkaDebug {
     degradedLoads: 0,
     snapshot: () => JSON.stringify(dbg, null, 2),
   };
-  (window as unknown as { __volodkaDebug?: VolodkaDebug }).__volodkaDebug = dbg;
+  (window as DebugWindow).__volodkaSceneLoadDebug = dbg;
   return dbg;
 }
 
-const noopDebug: VolodkaDebug = {
+const noopDebug: VolodkaSceneLoadDebug = {
   log: [],
   sceneLoads: 0,
   sceneFailures: 0,
@@ -60,6 +70,9 @@ const noopDebug: VolodkaDebug = {
 function record(event: string, data?: unknown): void {
   const dbg = ensureDebug();
   if (dbg === noopDebug) return;
+  // Защита от будущих коллизий глобального имени: без log — молча выходим,
+  // диагностика не должна ронять обработчики EventBus.
+  if (!Array.isArray(dbg.log)) return;
   dbg.log.push({ t: Math.round(performance.now()), e: event, d: data });
   if (dbg.log.length > MAX_ENTRIES) dbg.log.shift();
 }

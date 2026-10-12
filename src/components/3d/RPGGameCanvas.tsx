@@ -790,15 +790,18 @@ function CanvasFrameloopController({ idle }: { idle: boolean }) {
 
 /**
  * DEV-only мост диагностики доменов «масштабы/позиционирование/камера».
- * Экспонирует window.__volodkaDebug.snapshot(): живые позиция/поворот камеры,
+ * Экспонирует window.__volodkaRuntimeDebug.snapshot(): живые позиция/поворот камеры,
  * позицию игрока, счётчики сцены и bbox модели игрока. Только import.meta.env.DEV.
+ * FIX (v4.48.3): раньше жил на window.__volodkaDebug и затирал объект
+ * scene-load-диагностики (sceneLoadDebug.ts) → EventBus-ошибка на каждом
+ * canvas:first-frame после монтирования канваса.
  */
 function RuntimeDebugBridge({ livePlayerPositionRef, livePlayerRotationRef }: Pick<RPGGameCanvasShellProps, 'livePlayerPositionRef' | 'livePlayerRotationRef'>) {
   const get = useThree((state) => state.get);
 
   useEffect(() => {
     if (!import.meta.env.DEV) return;
-    const w = window as unknown as { __volodkaDebug?: { snapshot: () => Record<string, unknown>; r3f: () => unknown } };
+    const w = window as unknown as { __volodkaRuntimeDebug?: { snapshot: () => Record<string, unknown>; r3f: () => unknown } };
     const deg = (rad: number): number => Math.round((rad * 180) / Math.PI * 10) / 10;
     const round3 = (v: number): number => Math.round(v * 1000) / 1000;
     const camPos = new Vector3();
@@ -807,7 +810,7 @@ function RuntimeDebugBridge({ livePlayerPositionRef, livePlayerRotationRef }: Pi
     const probeBox = new Box3();
     const probeSize = new Vector3();
 
-    w.__volodkaDebug = {
+    w.__volodkaRuntimeDebug = {
       r3f: () => get(),
       snapshot: () => {
         const { camera, scene, gl } = get();
@@ -855,7 +858,7 @@ function RuntimeDebugBridge({ livePlayerPositionRef, livePlayerRotationRef }: Pi
       },
     };
     return () => {
-      delete w.__volodkaDebug;
+      delete w.__volodkaRuntimeDebug;
     };
   }, [get, livePlayerPositionRef, livePlayerRotationRef]);
 
