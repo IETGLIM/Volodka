@@ -12,23 +12,45 @@
  * - Skips non-GET requests and cross-origin resources
  */
 
-const CACHE_NAME = 'volodka-shell-v3';
+// v4.48.12: bump — precache теперь включает entry-бандлы (см. ниже), старый
+// shell-кэш без бандлов не должен переживать активацию новой версии SW.
+const CACHE_NAME = 'volodka-shell-v4';
 const MEDIA_CACHE_NAME = 'volodka-media-v4'; // v4.33.0: bump — deploy keep-set changed (ambient rigs re-added), bust stale cache-first entries
 
 /**
- * Assets to pre-cache on install.
- * These are the critical files needed for the app shell to render.
- * Hashed JS/CSS bundles from Vite are NOT listed here — they are
- * cached on first fetch via the cache-first strategy.
+ * App-shell URLs to pre-cache on install. These alone are enough for the
+ * offline page to render — but NOT for the game, which also needs its
+ * JS/CSS entry bundles (see PRECACHE_BUNDLE_URLS below).
  */
-const PRECACHE_URLS = ['/', '/manifest.json', '/logo.svg', '/icon.svg'];
+const SHELL_PRECACHE_URLS = ['/', '/manifest.json', '/logo.svg', '/icon.svg'];
 
 /**
- * Regex matching Vite's hashed static assets:
- * /assets/*.[0-9a-f]{8}.(js|css|wasm|svg|png|jpg|woff2)
- * Also matches /basis/ and /draco/ decoder files.
+ * v4.48.12 (P1 fix): hashed entry bundles (JS/CSS) extracted from the BUILT
+ * index.html at build time by scripts/inject-sw-precache.mjs. Раньше список
+ * был пуст, а STATIC_ASSET_RE не совпадал с реальным шаблоном Vite
+ * ([name]-[8 base64url]) — офлайн-оболочка имела HTML, но не могла
+ * запуститься без скриптов. Инъекция идемпотентна: скрипт заменяет ВЕСЬ
+ * литерал массива при каждом прогоне. Бандлы остаются best-effort: одна
+ * флакующая загрузка при install не валит установку SW целиком — дыры
+ * закрывает cache-first fetch-хендлер при первом успешном визите.
  */
-const STATIC_ASSET_RE = /^\/assets\/[\w.-]+\.[0-9a-f]{8}\.(?:js|css|wasm|svg|png|jpg|woff2|webp)(?:\?.*)?$/;
+const PRECACHE_BUNDLE_URLS = [
+  // __PRECACHE_BUNDLES__
+];
+
+/**
+ * Regex matching Vite's hashed static assets.
+ * v4.48.12 (P1 fix): Vite хэширует как [name]-[8 base64url-символов] —
+ * например /assets/index-BoZTl6CZ.js, /assets/index-COn_IUUM.css,
+ * /assets/cormorant-500-italic-cyrillic-BL4-EpBx.woff2. Прежний шаблон
+ * ожидал [name].[8 hex] и НЕ совпадал ни с одним прод-файлом, поэтому все
+ * бандлы уходили в pass-through и офлайн не кэшировались. Префикс пути
+ * сделан mount-агностичным (?:.+/)? — вложенный хостинг (/volodka/ и т.п.)
+ * резолвится так же, как корень. Каждый путь бандла из собранного
+ * index.html валидируется против ЭТОГО правила на сборке
+ * (scripts/inject-sw-precache.mjs) и в тестах (vite/swCacheRules.test.ts).
+ */
+const STATIC_ASSET_RE = /^(?:.*\/)?assets\/[\w.@-]+-[\w-]{8}\.(?:js|mjs|css|wasm|svg|png|jpe?g|gif|ico|woff2?|ttf|webp|avif|ktx2|hdr|bin|glb|gltf|mp3|ogg|wav)(?:\?.*)?$/;
 const DECODER_RE = /^\/(?:basis|draco)\/.*\.(?:js|wasm)(?:\?.*)?$/;
 
 /**
@@ -95,18 +117,21 @@ async function seedMediaSizeTable(cache) {
  */
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) =>
-        cache.addAll(PRECACHE_URLS).catch(() => {
-          // Shell URLs must precache; physics WASM is best-effort.
-          return cache.addAll(PRECACHE_URLS);
-        }),
-      )
-      .then(() =>
-        caches.open(CACHE_NAME).then((cache) => cache.add('/rapier/rapier_wasm3d_bg.wasm').catch(() => undefined)),
-      )
-      .then(() => self.skipWaiting()),
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      // Shell URLs must precache: сначала батчем, затем по одному, чтобы
+      // один сбойный URL не оставил оболочку без остальных.
+      try {
+        await cache.addAll(SHELL_PRECACHE_URLS);
+      } catch {
+        await Promise.all(SHELL_PRECACHE_URLS.map((url) => cache.add(url).catch(() => undefined)));
+      }
+      // Entry-бандлы (инъекция сборки) + физический WASM — best-effort:
+      // cache-first fetch-хендлер добьёт пропуски при первом успешном визите.
+      await Promise.all(PRECACHE_BUNDLE_URLS.map((url) => cache.add(url).catch(() => undefined)));
+      await cache.add('/rapier/rapier_wasm3d_bg.wasm').catch(() => undefined);
+      await self.skipWaiting();
+    })(),
   );
 });
 

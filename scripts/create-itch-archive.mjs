@@ -16,6 +16,7 @@
  * Пайплайн:
  *   1. vite build --base=./          (dist/)
  *   2. prune-deploy-assets.ts        (убрать недостижимые ассеты из public/)
+ *   2.5 inject-sw-precache.mjs       (P1: прекэш entry-бандлов в dist/sw.js + гард STATIC_ASSET_RE)
  *   3. staging: dist/ + ITCH-README.txt + метаданные
  *   4. zip: index.html в корне архива
  *
@@ -138,6 +139,13 @@ async function main() {
     console.error('[FAIL] dist/index.html не найден — сначала соберите.');
     process.exit(1);
   }
+  // v4.48.12 (P1): прекэш entry-бандлов в dist/sw.js + гард совпадения
+  // STATIC_ASSET_RE с реальными путями. ВНЕ !SKIP_BUILD-ветки: скрипт
+  // идемпотентен (заменяет весь литерал PRECACHE_BUNDLE_URLS), поэтому и
+  // перепаковка готового dist/ (--no-build) получает свежую инъекцию.
+  console.log('\n[2.5/4] Inject SW precache bundles...');
+  execSync('node scripts/inject-sw-precache.mjs', { cwd: ROOT, stdio: 'inherit' });
+
   assertRelativeBase();
 
   console.log('\n[3/4] Staging...');

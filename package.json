@@ -6,9 +6,9 @@
   "scripts": {
     "dev": "vite",
     "dev:inspect": "vite --mode inspect",
-    "build": "vite build",
-    "build:vercel": "vite build && npx tsx --tsconfig tsconfig.json scripts/prune-deploy-assets.ts",
-    "build:full": "npm run assets:prepare && npm run validate && npm run assets:validate && tsc --noEmit && vite build && npx tsx --tsconfig tsconfig.json scripts/prune-deploy-assets.ts && npm run budgets && npm run verify:deploy",
+    "build": "vite build && node scripts/inject-sw-precache.mjs",
+    "build:vercel": "vite build && npx tsx --tsconfig tsconfig.json scripts/prune-deploy-assets.ts && node scripts/inject-sw-precache.mjs",
+    "build:full": "npm run assets:prepare && npm run validate && npm run assets:validate && tsc --noEmit && vite build && npx tsx --tsconfig tsconfig.json scripts/prune-deploy-assets.ts && node scripts/inject-sw-precache.mjs && npm run budgets && npm run verify:deploy",
     "assets:optimize-models": "node scripts/optimize-models.mjs",
     "assets:optimize-polyhaven": "node scripts/optimize-polyhaven.mjs",
     "assets:optimize-textures": "node scripts/optimize-polyhaven-textures.mjs",
