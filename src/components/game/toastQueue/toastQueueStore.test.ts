@@ -1,12 +1,15 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
+  dismissAllLootToasts,
   dismissToastQueueEntry,
   enqueueCraftingToast,
+  enqueueLootToast,
   enqueueSystemAlert,
   getToastQueueState,
   resetToastQueueForTests,
   subscribeToastQueue,
 } from '@/components/game/toastQueue/toastQueueStore';
+import { LOOT_NOTIFICATION_DISMISS_MS } from '@/engine/loot/lootNotificationConstants';
 
 describe('toastQueueStore — единая очередь транзиентных тостов (v4.48.5)', () => {
   beforeEach(() => {
@@ -80,5 +83,71 @@ describe('toastQueueStore — единая очередь транзиентны
 
     vi.advanceTimersByTime(5000);
     expect(getToastQueueState().crafting).toHaveLength(0);
+  });
+
+  /* ─── Фаза 2 (v4.48.6): канал loot ─── */
+
+  it('лут-тост попадает в очередь и истекает по LOOT_NOTIFICATION_DISMISS_MS', () => {
+    const listener = vi.fn();
+    const unsub = subscribeToastQueue(listener);
+
+    enqueueLootToast({ type: 'item', label: 'Ключ', detail: 'Инвентарь: I', rarity: 'rare' });
+
+    const loot = getToastQueueState().loot;
+    expect(loot).toHaveLength(1);
+    expect(loot[0]!.channel).toBe('loot');
+    expect(loot[0]!.payload.label).toBe('Ключ');
+    expect(loot[0]!.durationMs).toBe(LOOT_NOTIFICATION_DISMISS_MS);
+    expect(listener).toHaveBeenCalled();
+
+    vi.advanceTimersByTime(LOOT_NOTIFICATION_DISMISS_MS);
+    expect(getToastQueueState().loot).toHaveLength(0);
+    unsub();
+  });
+
+  it('лут-очередь держит максимум 5 карточек, старейшая вытесняется', () => {
+    for (let i = 1; i <= 6; i += 1) {
+      enqueueLootToast({ type: 'item', label: `Предмет ${i}` });
+      vi.advanceTimersByTime(100);
+    }
+
+    const loot = getToastQueueState().loot;
+    expect(loot).toHaveLength(5);
+    expect(loot.map((entry) => entry.payload.label)).toEqual([
+      'Предмет 2', 'Предмет 3', 'Предмет 4', 'Предмет 5', 'Предмет 6',
+    ]);
+
+    // Вытесненная карточка не воскресает: живые истекают по своим срокам.
+    // t в цикле = 600мс; истечения живых: 3100…3500 (созданы в 100…500).
+    vi.advanceTimersByTime(2400); // t=3000 — все 5 живы
+    expect(getToastQueueState().loot).toHaveLength(5);
+    vi.advanceTimersByTime(400); // t=3400 — ушли 3100…3400, остался «Предмет 6» (3500)
+    expect(getToastQueueState().loot).toHaveLength(1);
+    expect(getToastQueueState().loot[0]!.payload.label).toBe('Предмет 6');
+  });
+
+  it('dismissAllLootToasts снимает все лут-карточки и их таймеры (Escape-семантика)', () => {
+    enqueueLootToast({ type: 'xp', label: '+10 опыта' });
+    vi.advanceTimersByTime(100);
+    enqueueLootToast({ type: 'item', label: 'Кружка' });
+    expect(getToastQueueState().loot).toHaveLength(2);
+
+    dismissAllLootToasts();
+    expect(getToastQueueState().loot).toHaveLength(0);
+
+    vi.advanceTimersByTime(5000);
+    expect(getToastQueueState().loot).toHaveLength(0);
+  });
+
+  it('dismissAllLootToasts не трогает крафт и системные алерты', () => {
+    enqueueCraftingToast({ recipeId: 'r1', recipeName: 'Тёплый код', rarity: 'common' });
+    enqueueSystemAlert({ kind: 'save_failed', message: 'Диск переполнен' });
+    enqueueLootToast({ type: 'item', label: 'Кружка' });
+
+    dismissAllLootToasts();
+
+    expect(getToastQueueState().loot).toHaveLength(0);
+    expect(getToastQueueState().crafting).toHaveLength(1);
+    expect(getToastQueueState().system).toHaveLength(1);
   });
 });

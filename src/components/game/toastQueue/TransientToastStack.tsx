@@ -1,13 +1,18 @@
-/* ─── Volodka RPG – TransientToastStack (единая очередь крафта и системных алертов) ───
+/* ─── Volodka RPG – TransientToastStack (единая очередь крафта, системных алертов и лута) ───
  * Консолидация (v4.48.5, фаза 1): заменяет CraftingDiscoveryToast (245 строк)
- * и GameSystemToast (170 строк). Оба канала теперь читают один стор
- * (toastQueueStore) и рисуются в одном flex-ребёнке нижне-левого стека —
- * системный алерт появляется НАД крафт-карточками (flex-col-reverse).
+ * и GameSystemToast (170 строк).
+ * Фаза 2 (v4.48.6): сюда же переехал лут — LootNotification + хук
+ * useLootNotifications удалены (собственный useState + таймеры + Escape-сброс).
+ * Все три канала теперь читают один стор (toastQueueStore) и рисуются в одном
+ * flex-ребёнке нижне-левого стека — в DOM-порядке крафт → системный алерт → лут
+ * (flex-col-reverse: лут визуально выше алерта, алерт выше крафта — как раньше).
  *
  * Сохранено 1:1 из прежних компонентов:
- *   - слот-арбитраж (crafting=30, system=58 critical — алерт всегда виден);
+ *   - слот-арбитраж (crafting=30, system=58 critical, loot=20);
  *   - гейты: menu/intro и suppressGameplayToasts прячут всё;
  *   - визуал карточек (rarity-иконки/акценты, иконки сейв/лоад, countdown);
+ *   - Escape снимает только лут (capture + preventDefault — семантика хука);
+ *   - sr-only живой анонс последней лут-карточки (role=status aria-live=polite);
  *   - reduced-motion ветки.
  */
 
@@ -15,6 +20,8 @@ import { useEffect, type CSSProperties, type FC } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { AlertTriangle, Crown, FlaskConical, Gem, RotateCcw, Save, Sparkles } from 'lucide-react';
 import { eventBus, EventBusPriority } from '@/engine/EventBus';
+import { LOOT_NOTIFICATION_EVENT } from '@/engine/loot/lootNotificationConstants';
+import { buildLootAnnouncement } from '@/engine/loot/lootNotificationPresentation';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGamePhase } from '@/store/selectors';
@@ -22,11 +29,14 @@ import { useSuppressGameplayToasts } from '@/hooks/useSuppressGameplayToasts';
 import type { ItemRarity } from '@/data/items';
 import { getSystemAlertTitle, type SystemAlertKind } from '@/engine/system/systemPresentation';
 import {
+  dismissAllLootToasts,
   dismissToastQueueEntry,
   enqueueCraftingToast,
+  enqueueLootToast,
   enqueueSystemAlert,
 } from '@/components/game/toastQueue/toastQueueStore';
 import { useToastQueue } from '@/components/game/toastQueue/useToastQueue';
+import { LootToastCard } from '@/components/game/toastQueue/LootToastCard';
 
 /* ─── Rarity visual config (из CraftingDiscoveryToast) ─── */
 
@@ -239,7 +249,7 @@ export function TransientToastStack() {
   const mode = useGamePhase();
   const suppressToasts = useSuppressGameplayToasts();
   const reducedMotion = useEffectiveReducedMotion();
-  const { craftingEntries, systemEntries, dismiss } = useToastQueue();
+  const { craftingEntries, systemEntries, lootEntries, dismiss } = useToastQueue();
 
   const craftingSlot = useNotificationSlot(
     'crafting',
@@ -252,9 +262,15 @@ export function TransientToastStack() {
     systemEntries.length > 0,
     { critical: true },
   );
+  const lootSlot = useNotificationSlot(
+    'loot',
+    NOTIFY_PRIORITY.loot,
+    lootEntries.length > 0,
+  );
 
   /* Мосты EventBus → очередь (жизненный цикл = жизненный цикл стека,
-   * как у прежних компонентов-подписчиков). */
+   * как у прежних компонентов-подписчиков). Лут раньше подписывался
+   * в useLootNotifications с тем же приоритетом EventBusPriority.UI. */
   useEffect(() => {
     const unsubCrafting = eventBus.on('crafting:discovered', (payload) => {
       enqueueCraftingToast(payload);
@@ -266,20 +282,43 @@ export function TransientToastStack() {
       },
       EventBusPriority.UI,
     );
+    const unsubLoot = eventBus.on(
+      LOOT_NOTIFICATION_EVENT,
+      (payload) => {
+        enqueueLootToast(payload);
+      },
+      EventBusPriority.UI,
+    );
     return () => {
       unsubCrafting();
       unsubSystem();
+      unsubLoot();
     };
   }, []);
+
+  /* Escape снимает все лут-карточки (семантика прежнего useLootNotifications:
+   * capture + preventDefault, слушатель активен только при живом луте). */
+  const lootCount = lootEntries.length;
+  useEffect(() => {
+    if (lootCount === 0) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      dismissAllLootToasts();
+    };
+    window.addEventListener('keydown', onKeyDown, true);
+    return () => window.removeEventListener('keydown', onKeyDown, true);
+  }, [lootCount]);
 
   useEffect(() => {
     return () => {
       /* При размонтировании стека очередь опустошается — в противном случае
        * после возврата в exploration показались бы протухшие карточки
        * (события между сессиями не переигрываются). */
-      if (craftingEntries.length > 0 || systemEntries.length > 0) {
+      if (craftingEntries.length > 0 || systemEntries.length > 0 || lootEntries.length > 0) {
         for (const entry of craftingEntries) dismissToastQueueEntry(entry.id);
         for (const entry of systemEntries) dismissToastQueueEntry(entry.id);
+        for (const entry of lootEntries) dismissToastQueueEntry(entry.id);
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps -- только на unmount
@@ -288,15 +327,23 @@ export function TransientToastStack() {
   if (mode === 'menu' || mode === 'intro') return null;
   if (suppressToasts) return null;
 
+  const liveLootAnnouncement = lootEntries.length > 0
+    ? buildLootAnnouncement(lootEntries[lootEntries.length - 1]!.payload)
+    : '';
+
   return (
     <div
       className="pointer-events-none flex flex-col-reverse gap-2"
       data-exploration-ui
       data-testid="transient-toast-stack"
     >
+      {/* Живой анонс лута для скринридеров (прежний контейнер LootNotification). */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {liveLootAnnouncement}
+      </div>
       <AnimatePresence mode="popLayout">
-        {/* В flex-col-reverse поздние DOM-дети рисуются ВЫШЕ: системный
-         * алерт (критичный) — над крафт-очередью. */}
+        {/* В flex-col-reverse поздние DOM-дети рисуются ВЫШЕ: крафт внизу,
+         * системный алерт (критичный) над ним, лут — сверху, как раньше. */}
         {craftingSlot && craftingEntries.map((entry, index) => (
           <CraftingQueueCard
             key={entry.id}
@@ -312,6 +359,14 @@ export function TransientToastStack() {
             entry={entry}
             reducedMotion={reducedMotion}
             onDismiss={dismiss}
+          />
+        ))}
+        {lootSlot && lootEntries.map((entry) => (
+          <LootToastCard
+            key={entry.id}
+            notification={entry.payload}
+            reducedMotion={reducedMotion}
+            onDismiss={() => dismiss(entry.id)}
           />
         ))}
       </AnimatePresence>

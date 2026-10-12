@@ -7,12 +7,23 @@
  *   - crafting: максимум 3 карточки (старейшая вытесняется) — как раньше;
  *   - system:   один активный алерт, новый заменяет предыдущий — как раньше.
  *
+ * ФАЗА 2 (v4.48.6): сюда же переехал лут — раньше useLootNotifications держал
+ * собственный useState + таймеры + trim(5). Канал loot повторяет прежнюю
+ * семантику 1:1: максимум LOOT_NOTIFICATION_MAX_VISIBLE карточек (старейшая
+ * вытесняется), авто-истечение LOOT_NOTIFICATION_DISMISS_MS, Escape снимает все.
+ *
  * Рендер — TransientToastStack (единственный потребитель). Слот-арбитр
- * useNotificationSlot остаётся прежним (crafting=30, system=58 critical) —
- * поведение арбитража не меняется, меняется только владение состоянием.
+ * useNotificationSlot остаётся прежним (crafting=30, system=58 critical,
+ * loot=20) — поведение арбитража не меняется, меняется только владение
+ * состоянием.
  */
 
 import type { ItemRarity } from '@/data/items';
+import {
+  LOOT_NOTIFICATION_DISMISS_MS,
+  LOOT_NOTIFICATION_MAX_VISIBLE,
+} from '@/engine/loot/lootNotificationConstants';
+import type { LootNotificationPayload } from '@/engine/loot/lootNotificationTypes';
 import {
   getSystemAlertDurationMs,
   type SystemAlertKind,
@@ -39,11 +50,23 @@ export type ToastQueueSystemEntry = {
   durationMs: number;
 };
 
-export type ToastQueueEntry = ToastQueueCraftingEntry | ToastQueueSystemEntry;
+export type ToastQueueLootEntry = {
+  id: string;
+  channel: 'loot';
+  payload: LootNotificationPayload;
+  createdAt: number;
+  durationMs: number;
+};
+
+export type ToastQueueEntry =
+  | ToastQueueCraftingEntry
+  | ToastQueueSystemEntry
+  | ToastQueueLootEntry;
 
 export interface ToastQueueState {
   crafting: ToastQueueCraftingEntry[];
   system: ToastQueueSystemEntry[];
+  loot: ToastQueueLootEntry[];
 }
 
 /* ─── Constants ─── */
@@ -54,7 +77,7 @@ const CRAFTING_MAX_ENTRIES = 3;
 /* ─── Module singleton store ─── */
 
 let sequence = 0;
-let state: ToastQueueState = { crafting: [], system: [] };
+let state: ToastQueueState = { crafting: [], system: [], loot: [] };
 const listeners = new Set<() => void>();
 const expiryTimers = new Map<string, ReturnType<typeof setTimeout>>();
 
@@ -63,12 +86,17 @@ function emitChange(): void {
 }
 
 function removeEntry(id: string): void {
-  if (!state.crafting.some((entry) => entry.id === id) && !state.system.some((entry) => entry.id === id)) {
+  if (
+    !state.crafting.some((entry) => entry.id === id)
+    && !state.system.some((entry) => entry.id === id)
+    && !state.loot.some((entry) => entry.id === id)
+  ) {
     return;
   }
   state = {
     crafting: state.crafting.filter((entry) => entry.id !== id),
     system: state.system.filter((entry) => entry.id !== id),
+    loot: state.loot.filter((entry) => entry.id !== id),
   };
   emitChange();
 }
@@ -112,6 +140,44 @@ export function enqueueCraftingToast(payload: {
   }
   state = { ...state, crafting: trimmed };
   scheduleExpiry(entry);
+  emitChange();
+}
+
+/** Лут-уведомление (предмет/опыт/навык/стих/карма): максимум 5, старейшая вытесняется. */
+export function enqueueLootToast(payload: LootNotificationPayload): void {
+  sequence += 1;
+  const entry: ToastQueueLootEntry = {
+    id: `loot-toast-${sequence}`,
+    channel: 'loot',
+    payload,
+    createdAt: Date.now(),
+    durationMs: LOOT_NOTIFICATION_DISMISS_MS,
+  };
+  const merged = [...state.loot, entry];
+  const trimmed = merged.slice(Math.max(0, merged.length - LOOT_NOTIFICATION_MAX_VISIBLE));
+  for (const evicted of merged.slice(0, merged.length - trimmed.length)) {
+    const timer = expiryTimers.get(evicted.id);
+    if (timer) {
+      clearTimeout(timer);
+      expiryTimers.delete(evicted.id);
+    }
+  }
+  state = { ...state, loot: trimmed };
+  scheduleExpiry(entry);
+  emitChange();
+}
+
+/** Escape-семантика прежнего useLootNotifications: снять все лут-карточки разом. */
+export function dismissAllLootToasts(): void {
+  if (state.loot.length === 0) return;
+  for (const entry of state.loot) {
+    const timer = expiryTimers.get(entry.id);
+    if (timer) {
+      clearTimeout(timer);
+      expiryTimers.delete(entry.id);
+    }
+  }
+  state = { ...state, loot: [] };
   emitChange();
 }
 
@@ -160,6 +226,6 @@ export function getToastQueueState(): ToastQueueState {
 export function resetToastQueueForTests(): void {
   for (const timer of expiryTimers.values()) clearTimeout(timer);
   expiryTimers.clear();
-  state = { crafting: [], system: [] };
+  state = { crafting: [], system: [], loot: [] };
   sequence = 0;
 }

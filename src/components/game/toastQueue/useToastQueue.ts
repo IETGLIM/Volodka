@@ -9,6 +9,7 @@ import {
   getToastQueueState,
   subscribeToastQueue,
   type ToastQueueCraftingEntry,
+  type ToastQueueLootEntry,
   type ToastQueueSystemEntry,
 } from '@/components/game/toastQueue/toastQueueStore';
 
@@ -18,6 +19,7 @@ const EXIT_ANIMATION_GRACE_MS = 400;
 export interface ToastQueueView {
   craftingEntries: ToastQueueCraftingEntry[];
   systemEntries: ToastQueueSystemEntry[];
+  lootEntries: ToastQueueLootEntry[];
   dismiss: (id: string) => void;
 }
 
@@ -37,6 +39,9 @@ export function useToastQueue(): ToastQueueView {
   const systemEntries = state.system.filter(
     (entry) => isEntryLive(entry.createdAt, entry.durationMs, now),
   );
+  const lootEntries = state.loot.filter(
+    (entry) => isEntryLive(entry.createdAt, entry.durationMs, now),
+  );
 
-  return { craftingEntries, systemEntries, dismiss };
+  return { craftingEntries, systemEntries, lootEntries, dismiss };
 }

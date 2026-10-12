@@ -27,7 +27,6 @@ import {
 import { usePanelStack } from './PanelStackContext';
 import type { MinigamePanelSetters } from '@/shared/constants/minigames';
 import type { ExamineData } from '@/shared/types/game';
-import { LootNotification } from '../LootNotification';
 import { NotificationToasts } from '../NotificationToasts';
 import { ExaminePanel } from '../ExaminePanel';
 import { InteractionHintPopup } from '../InteractionHintPopup';
@@ -260,11 +259,12 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
         }}
       >
         <NotificationToasts />
-        {/* FIX (v4.48.5, консолидация): крафт + системные алерты — одна
-         * очередь (toastQueueStore) и один рендерер вместо двух компонентов
-         * с дублированным useState/таймерами. */}
+        {/* FIX (v4.48.5 фаза 1 + v4.48.6 фаза 2, консолидация): крафт +
+         * системные алерты + лут — одна очередь (toastQueueStore) и один
+         * рендерер вместо трёх компонентов с дублированным
+         * useState/таймерами (CraftingDiscoveryToast, GameSystemToast,
+         * LootNotification/useLootNotifications удалены). */}
         <TransientToastStack />
-        <LootNotification />
       </div>
       <Suspense fallback={null}>
         <LazyQuestNotificationSystem />

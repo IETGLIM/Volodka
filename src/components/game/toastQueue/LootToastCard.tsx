@@ -9,15 +9,18 @@ import {
   getRarityLeftBorderAccent,
   resolveLootToastSurfaceClass,
 } from '@/engine/loot/lootNotificationPresentation';
-import type { LootNotificationItem } from '@/engine/loot/lootNotificationTypes';
+import type { LootNotificationPayload } from '@/engine/loot/lootNotificationTypes';
 import { cn } from '@/lib/utils';
 
+/* FIX (v4.48.6, фаза 2 консолидации): проп сужен до payload — id карточке
+ * не нужен (ключ задаёт стек), стор хранит id в ToastQueueLootEntry. */
 type LootToastCardProps = {
-  notification: LootNotificationItem;
+  notification: LootNotificationPayload;
   reducedMotion: boolean;
+  onDismiss?: () => void;
 };
 
-function LootToastIcon({ type, className }: { type: LootNotificationItem['type']; className: string }) {
+function LootToastIcon({ type, className }: { type: LootNotificationPayload['type']; className: string }) {
   switch (type) {
     case 'skill':
     case 'xp':
@@ -38,6 +41,7 @@ function LootToastIcon({ type, className }: { type: LootNotificationItem['type']
 export const LootToastCard = memo(function LootToastCard({
   notification,
   reducedMotion,
+  onDismiss,
 }: LootToastCardProps) {
   const visual = getLootVisualConfig(notification);
   const rarityBadge = notification.rarity ? getRarityBadgeLabel(notification.rarity) : null;
@@ -56,6 +60,9 @@ export const LootToastCard = memo(function LootToastCard({
         notification.rarity ? getRarityLeftBorderAccent(notification.rarity) : '',
         resolveLootToastSurfaceClass(notification),
       )}
+      /* Фаза 2 (v4.48.6): клик по карточке снимает её — как у крафта и
+       * системных алертов в едином стеке (раньше лут был click-through). */
+      onClick={onDismiss}
     >
       <div className="flex items-center gap-2.5">
         <LootToastIcon type={notification.type} className={visual.iconClass} />

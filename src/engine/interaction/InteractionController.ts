@@ -20,7 +20,8 @@ import {
   tryOpenStory,
 } from '@/engine/interaction/narrativeOpenHelpers';
 /* FIX (v4.48.5): импорт из компонентного barrel (components/game/LootNotification)
- * заменён на прямой engine-API — движок не должен зависеть от слоя компонентов. */
+ * заменён на прямой engine-API — движок не должен зависеть от слоя компонентов.
+ * FIX (v4.48.6): barrel удалён совсем (лут переехал в toastQueueStore). */
 import { notifyItemReceived } from '@/engine/loot/lootNotificationApi';
 import { applyEffects } from '@/shared/utils/applyEffects';
 import {
