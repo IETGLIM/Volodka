@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "4.48.12",
+  "version": "4.48.13",
   "private": true,
   "type": "module",
   "scripts": {
@@ -55,7 +55,8 @@
     "build:itch": "vite build --base=./",
     "archive:itch": "node scripts/create-itch-archive.mjs",
     "verify:deploy": "npx tsx --tsconfig tsconfig.json scripts/verify-deploy-assets.ts",
-    "validate:protected": "npx tsx --tsconfig tsconfig.json scripts/validate-protected-content.ts"
+    "validate:protected": "npx tsx --tsconfig tsconfig.json scripts/validate-protected-content.ts",
+    "validate:story": "vitest run src/data/story/storyRegistryContract.test.ts src/data/story/buildStoryNodes.test.ts --project unit"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",
