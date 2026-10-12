@@ -27,6 +27,7 @@ type PoemDetailViewProps = Pick<
   | 'handleBack'
   | 'handlePrevPoem'
   | 'handleNextPoem'
+  | 'readPoemIds'
 > & {
   /** Переключатель вида (свиток ↔ разворот тетради); без него футер прежний. */
   viewMode?: 'spread' | 'scroll';
@@ -47,12 +48,14 @@ export function PoemDetailView({
   handleBack,
   handlePrevPoem,
   handleNextPoem,
+  readPoemIds,
   viewMode = 'scroll',
   onToggleViewMode,
 }: PoemDetailViewProps) {
   if (!selectedPoem) return null;
 
   const liveText = displayedLines.filter(Boolean).join('\n');
+  const isRead = readPoemIds.has(selectedPoem.id);
 
   return (
     <div className="h-full">
@@ -87,6 +90,24 @@ export function PoemDetailView({
               <p className="text-sm text-amber-300/50 italic font-serif">{selectedPoem.subtitle}</p>
             )}
             <p className="text-xs text-amber-600/50 mt-1.5 font-serif">{selectedPoem.author}</p>
+            {/* Штамп «прочитано» — паритет с разворотом (v4.48.11) */}
+            {isRead && (
+              <motion.div
+                initial={reducedMotion ? false : { opacity: 0, scale: 1.5, rotate: -14 }}
+                animate={{ opacity: 1, scale: 1, rotate: -8 }}
+                transition={
+                  reducedMotion
+                    ? { duration: 0 }
+                    : { type: 'spring', stiffness: 260, damping: 18, delay: 0.15 }
+                }
+                className="flex justify-center mt-2.5"
+              >
+                <span className="vk-book-stamp" aria-hidden="true">
+                  {POETRY_BOOK_LABELS.readStamp}
+                </span>
+                <span className="sr-only">{POETRY_BOOK_LABELS.readStampAria}</span>
+              </motion.div>
+            )}
           </div>
 
           {selectedPoem.themes.length > 0 && (
@@ -222,17 +243,21 @@ type PoemListViewProps = Pick<
   | 'collectedPoems'
   | 'contentRef'
   | 'handleSelectPoem'
+  | 'readPoemIds'
+  | 'readPoemsCount'
 >;
 
 function PoemListButton({
   poem,
   onSelect,
   isNewlyCollected,
+  isRead,
   reducedMotion,
 }: {
   poem: Poem;
   onSelect: (id: string) => void;
   isNewlyCollected?: boolean;
+  isRead?: boolean;
   reducedMotion?: boolean;
 }) {
   const power = getPoemPower(poem.id);
@@ -291,7 +316,23 @@ function PoemListButton({
           </div>
         </div>
         {!isHidden && (
-          <span className="text-[10px] text-amber-700/30 shrink-0 mt-0.5 font-serif">#{poem.order}</span>
+          <span className="flex items-center gap-1.5 shrink-0 mt-0.5">
+            {/* Точка непрочитанного (v4.48.11): янтарная капля чернил,
+                гаснет после полного прочтения текста */}
+            {!isRead && (
+              <>
+                <span className="size-1.5 rounded-full bg-amber-400/80 shadow-[0_0_4px_rgba(251,191,36,0.35)]" aria-hidden="true" />
+                <span className="sr-only">{POETRY_BOOK_LABELS.unreadHint}</span>
+              </>
+            )}
+            <span className="text-[10px] text-amber-700/30 font-serif">#{poem.order}</span>
+          </span>
+        )}
+        {isHidden && !isRead && (
+          <span className="flex items-center shrink-0 mt-0.5">
+            <span className="size-1.5 rounded-full bg-cyan-400/60 shadow-[0_0_4px_rgba(34,211,238,0.3)]" aria-hidden="true" />
+            <span className="sr-only">{POETRY_BOOK_LABELS.unreadHint}</span>
+          </span>
         )}
       </div>
     </button>
@@ -306,6 +347,8 @@ export function PoemListView({
   collectedPoems,
   contentRef,
   handleSelectPoem,
+  readPoemIds,
+  readPoemsCount,
 }: PoemListViewProps) {
   const reducedMotion = useEffectiveReducedMotion();
   const newlyCollected = useNewlyCollectedPoemIds(collectedPoems);
@@ -335,6 +378,7 @@ export function PoemListView({
                     poem={poem}
                     onSelect={handleSelectPoem}
                     isNewlyCollected={newlyCollected.has(poem.id)}
+                    isRead={readPoemIds.has(poem.id)}
                     reducedMotion={reducedMotion}
                   />
                 ))}
@@ -355,6 +399,7 @@ export function PoemListView({
                     poem={poem}
                     onSelect={handleSelectPoem}
                     isNewlyCollected={newlyCollected.has(poem.id)}
+                    isRead={readPoemIds.has(poem.id)}
                     reducedMotion={reducedMotion}
                   />
                 ))}
@@ -397,8 +442,27 @@ export function PoemListView({
           )}
         </div>
       </ScrollArea>
-      <div className="flex items-center justify-center py-2 border-t border-amber-800/15 shrink-0">
-        <span className="text-[10px] text-amber-600/30 font-serif">{POETRY_BOOK_LABELS.tableOfContents}</span>
+      <div className="flex items-center justify-between gap-3 px-6 py-2 border-t border-amber-800/15 shrink-0">
+        <span className="text-[10px] text-amber-600/30 font-serif shrink-0">{POETRY_BOOK_LABELS.tableOfContents}</span>
+        {/* Прогресс чтения (v4.48.11): тонкая линия — доля прочитанных
+            из собранных; в оглавлении видно, сколько ещё перечесть */}
+        {collectedCount > 0 && (
+          <div className="flex items-center gap-2 flex-1 min-w-0">
+            <div
+              className="flex-1 h-px bg-amber-900/25 rounded-full overflow-hidden"
+              role="img"
+              aria-label={POETRY_BOOK_LABELS.readProgressAria(readPoemsCount, collectedCount)}
+            >
+              <div
+                className="h-full bg-amber-400/50 transition-[width] duration-500"
+                style={{ width: `${Math.min(100, Math.round((readPoemsCount / collectedCount) * 100))}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-amber-600/40 font-serif shrink-0">
+              {POETRY_BOOK_LABELS.headerReadCount(readPoemsCount, collectedCount)}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

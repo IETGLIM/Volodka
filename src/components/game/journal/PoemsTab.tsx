@@ -41,6 +41,7 @@ const PoemGridCard = memo(function PoemGridCard({
   title,
   isCollected,
   isHidden,
+  isRead,
   isNewlyCollected,
   reducedMotion,
   onSelect,
@@ -49,6 +50,7 @@ const PoemGridCard = memo(function PoemGridCard({
   title: string;
   isCollected: boolean;
   isHidden: boolean;
+  isRead?: boolean;
   isNewlyCollected?: boolean;
   reducedMotion?: boolean;
   onSelect: (id: string) => void;
@@ -83,7 +85,17 @@ const PoemGridCard = memo(function PoemGridCard({
         <span className={`text-sm truncate ${isCollected ? 'text-slate-200' : 'text-slate-600'}`}>
           {isCollected ? title : '???'}
         </span>
+        {/* Точка непрочитанного (v4.48.11): паритет с «Собранием стихов» */}
+        {isCollected && !isRead && (
+          <span
+            className={`size-1.5 rounded-full shrink-0 ml-auto ${isHidden ? 'bg-cyan-400/60 shadow-[0_0_4px_rgba(34,211,238,0.3)]' : 'bg-amber-400/80 shadow-[0_0_4px_rgba(251,191,36,0.35)]'}`}
+            aria-hidden="true"
+          />
+        )}
       </div>
+      {isCollected && !isRead && (
+        <span className="sr-only">{POETRY_BOOK_LABELS.unreadHint}</span>
+      )}
       {isCollected && poemPower && (
         <span className="text-[10px] text-cyan-500/60 ml-5">⚡ {poemPower.name}</span>
       )}
@@ -182,6 +194,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
         handleBack={reader.handleBack}
         handlePrevPoem={reader.handlePrevPoem}
         handleNextPoem={reader.handleNextPoem}
+        readPoemIds={reader.readPoemIds}
         viewMode={reader.viewMode}
         onToggleViewMode={reader.handleToggleViewMode}
       />
@@ -339,6 +352,9 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
           <p className="text-xs text-slate-500">
             <Feather className="size-3 inline mr-1 text-amber-400/60" aria-hidden />
             {collectedPoems.length} из {POEMS.length} найдено
+            {reader.readPoemsCount > 0 && (
+              <span className="text-slate-600"> · {POETRY_BOOK_LABELS.headerReadShort(reader.readPoemsCount)}</span>
+            )}
           </p>
           <Badge variant="outline" className="text-[10px] border-cyan-800/40 text-cyan-400/70">
             Стих — это сила
@@ -358,6 +374,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
                   title={poem.title}
                   isCollected={collectedPoems.includes(poem.id)}
                   isHidden={false}
+                  isRead={reader.readPoemIds.has(poem.id)}
                   isNewlyCollected={newlyCollected.has(poem.id)}
                   reducedMotion={reducedMotion}
                   onSelect={handleSelectPoem}
@@ -380,6 +397,7 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
                   title={poem.title}
                   isCollected={collectedPoems.includes(poem.id)}
                   isHidden
+                  isRead={reader.readPoemIds.has(poem.id)}
                   isNewlyCollected={newlyCollected.has(poem.id)}
                   reducedMotion={reducedMotion}
                   onSelect={handleSelectPoem}

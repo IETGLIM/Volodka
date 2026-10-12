@@ -7,6 +7,7 @@ import { getAllPoemPowers, getPoemPower } from '@/engine/PoemPowerSystem';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGameStore } from '@/store/gameStore';
 import { usePoemTypewriter } from '@/components/game/poetryBook/usePoemTypewriter';
+import { usePoetryReadProgress } from '@/components/game/poetryBook/usePoetryReadProgress';
 import {
   resolveDefaultPoemViewMode,
   writeStoredPoemViewMode,
@@ -75,6 +76,17 @@ export function usePoetryBookController(open: boolean, onClose: () => void) {
     reducedMotion,
     POEM_TYPEWRITER_CHAR_DELAY_MS,
   );
+
+  // Прогресс чтения (v4.48.11): отметка «прочитано», когда игрок видел
+  // ПОЛНЫЙ текст стиха. Сверяем содержимое, а не только флаг done: на смене
+  // стиха флаг сбрасывается в эффекте машинописца — один кадр после выбора
+  // нового стиха done ещё старый, и отметка по флагу была бы преждевременной.
+  const { readPoemIds, readPoemsCount, markPoemRead } = usePoetryReadProgress();
+  useEffect(() => {
+    if (!selectedPoem || !done) return;
+    if (displayedLines.join('\n') !== selectedPoem.lines.join('\n')) return;
+    markPoemRead(selectedPoem.id);
+  }, [selectedPoem, done, displayedLines, markPoemRead]);
 
   const currentPoemIndex = selectedPoemId
     ? collected.findIndex((poem) => poem.id === selectedPoemId)
@@ -166,6 +178,8 @@ export function usePoetryBookController(open: boolean, onClose: () => void) {
     currentPoemIndex,
     collectedPowersCount,
     totalPowerCount,
+    readPoemIds,
+    readPoemsCount,
     handleClose,
     handleBack,
     handleSelectPoem,

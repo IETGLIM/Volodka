@@ -43,6 +43,12 @@ export const POETRY_BOOK_LABELS = {
   viewModeScroll: 'Свиток',
   spreadSheetLabel: (leaf: string) => `ночная тетрадь · лист ${leaf}`,
   spreadRegion: (title: string) => `Разворот стиха «${title}»`,
+  headerReadShort: (read: number) => `прочитано ${read}`,
+  headerReadCount: (read: number, total: number) => `прочитано ${read} из ${total}`,
+  readProgressAria: (read: number, total: number) => `Прогресс чтения: ${read} из ${total}`,
+  readStamp: 'прочитано',
+  readStampAria: 'Стих прочитан',
+  unreadHint: 'Не прочитано',
 } as const;
 
 /** Display labels for poem theme tags (keys match poem data). */

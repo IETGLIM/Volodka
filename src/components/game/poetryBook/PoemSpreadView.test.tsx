@@ -27,6 +27,7 @@ function makeProps(overrides: Partial<Parameters<typeof PoemSpreadView>[0]> = {}
     handleBack: vi.fn(),
     handlePrevPoem: vi.fn(),
     handleNextPoem: vi.fn(),
+    readPoemIds: new Set<string>(),
     viewMode: 'spread' as const,
     onToggleViewMode: vi.fn(),
     ...overrides,
@@ -112,5 +113,18 @@ describe('PoemSpreadView', () => {
       <PoemSpreadView {...makeProps({ selectedPoem: null })} />,
     );
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it('shows the read stamp only for poems already read', () => {
+    // Не прочитан — штампа нет (и скрытой подписи тоже)
+    const unread = render(<PoemSpreadView {...makeProps()} />);
+    expect(screen.queryByText('прочитано')).not.toBeInTheDocument();
+    expect(screen.queryByText('Стих прочитан')).not.toBeInTheDocument();
+    unread.unmount();
+
+    // Прочитан — штамп на титуле + скрытая подпись для скринридера
+    render(<PoemSpreadView {...makeProps({ readPoemIds: new Set([poem.id]) })} />);
+    expect(screen.getByText('прочитано')).toBeInTheDocument();
+    expect(screen.getByText('Стих прочитан')).toBeInTheDocument();
   });
 });

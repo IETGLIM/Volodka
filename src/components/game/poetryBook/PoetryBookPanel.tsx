@@ -37,6 +37,9 @@ function PoetryBookInner({ open, onClose }: PoetryBookProps) {
         <div className="flex flex-col items-end">
           <span className="text-xs text-amber-600/60">
             {POETRY_BOOK_LABELS.headerCount(book.collectedCount, book.totalPoems)}
+            {book.readPoemsCount > 0 && (
+              <span className="text-amber-500/40"> · {POETRY_BOOK_LABELS.headerReadShort(book.readPoemsCount)}</span>
+            )}
           </span>
           <span className="text-[10px] text-amber-400/50">{POETRY_BOOK_LABELS.headerTagline}</span>
         </div>
@@ -113,6 +116,7 @@ function PoetryBookInner({ open, onClose }: PoetryBookProps) {
                       handleBack={book.handleBack}
                       handlePrevPoem={book.handlePrevPoem}
                       handleNextPoem={book.handleNextPoem}
+                      readPoemIds={book.readPoemIds}
                       viewMode={book.viewMode}
                       onToggleViewMode={book.handleToggleViewMode}
                     />
@@ -131,6 +135,7 @@ function PoetryBookInner({ open, onClose }: PoetryBookProps) {
                       handleBack={book.handleBack}
                       handlePrevPoem={book.handlePrevPoem}
                       handleNextPoem={book.handleNextPoem}
+                      readPoemIds={book.readPoemIds}
                       viewMode={book.viewMode}
                       onToggleViewMode={book.handleToggleViewMode}
                     />
@@ -158,6 +163,8 @@ function PoetryBookInner({ open, onClose }: PoetryBookProps) {
                     collectedPoems={book.collectedPoems}
                     contentRef={book.contentRef}
                     handleSelectPoem={book.handleSelectPoem}
+                    readPoemIds={book.readPoemIds}
+                    readPoemsCount={book.readPoemsCount}
                   />
                 </motion.div>
               )}

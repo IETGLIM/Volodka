@@ -22,6 +22,7 @@ type PoemSpreadViewProps = Pick<
   | 'handleBack'
   | 'handlePrevPoem'
   | 'handleNextPoem'
+  | 'readPoemIds'
 > & {
   /** Текущий вид — рисует иконку переключателя (в развороте он предложит свиток). */
   viewMode: 'spread' | 'scroll';
@@ -49,6 +50,7 @@ export function PoemSpreadView({
   handleBack,
   handlePrevPoem,
   handleNextPoem,
+  readPoemIds,
   viewMode,
   onToggleViewMode,
 }: PoemSpreadViewProps) {
@@ -56,6 +58,7 @@ export function PoemSpreadView({
 
   const liveText = displayedLines.filter(Boolean).join('\n');
   const leaf = toRoman(selectedPoem.order || currentPoemIndex + 1);
+  const isRead = readPoemIds.has(selectedPoem.id);
 
   return (
     <div className="h-full flex flex-col min-h-0">
@@ -97,6 +100,26 @@ export function PoemSpreadView({
                     )}
                     <p className="text-xs text-amber-600/50 mt-1.5 font-serif">{selectedPoem.author}</p>
                   </div>
+
+                  {/* Штамп «прочитано» (v4.48.11): печать чернилами на титуле —
+                      появляется у стихов, чей текст игрок уже видел полностью */}
+                  {isRead && (
+                    <motion.div
+                      initial={reducedMotion ? false : { opacity: 0, scale: 1.5, rotate: -14 }}
+                      animate={{ opacity: 1, scale: 1, rotate: -8 }}
+                      transition={
+                        reducedMotion
+                          ? { duration: 0 }
+                          : { type: 'spring', stiffness: 260, damping: 18, delay: 0.15 }
+                      }
+                      className="flex justify-center mb-4"
+                    >
+                      <span className="vk-book-stamp" aria-hidden="true">
+                        {POETRY_BOOK_LABELS.readStamp}
+                      </span>
+                      <span className="sr-only">{POETRY_BOOK_LABELS.readStampAria}</span>
+                    </motion.div>
+                  )}
 
                   {selectedPoem.themes.length > 0 && (
                     <div className="flex flex-wrap justify-center gap-1.5 mb-4">

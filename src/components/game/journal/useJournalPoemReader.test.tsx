@@ -135,4 +135,32 @@ describe('useJournalPoemReader', () => {
     expect(result.current.totalPages).toBe(COLLECTED_IDS.length);
     expect(result.current.pageNumber).toBe(indexOfPoem('poem_1') + 1);
   });
+
+  it('marks a poem read instantly in scroll mode (text is fully visible)', async () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const { result } = renderReader('poem_1');
+
+    expect(result.current.viewMode).toBe('scroll');
+    await waitFor(() => expect(result.current.readPoemIds.has('poem_1')).toBe(true));
+    expect(result.current.readPoemsCount).toBe(1);
+    expect(window.localStorage.getItem('volodka:poetry-read')).toBe(JSON.stringify(['poem_1']));
+  });
+
+  it('marks a poem read in spread mode once the full text is displayed', async () => {
+    window.localStorage.setItem('volodka:poetry-view-mode', 'spread');
+    const { result } = renderReader('poem_1');
+
+    expect(result.current.viewMode).toBe('spread');
+    await waitFor(() => expect(result.current.readPoemIds.has('poem_1')).toBe(true));
+    // reduced motion → машинописец мгновенен, отметка приходит с полным текстом
+    expect(result.current.displayedLines).toEqual(poem_1.lines);
+  });
+
+  it('does not mark anything read while no poem is selected', () => {
+    vi.spyOn(window, 'matchMedia').mockReturnValue({ matches: false } as MediaQueryList);
+    const { result } = renderReader(null);
+
+    expect(result.current.readPoemsCount).toBe(0);
+    expect(window.localStorage.getItem('volodka:poetry-read')).toBeNull();
+  });
 });

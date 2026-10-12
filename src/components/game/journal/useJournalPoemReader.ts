@@ -5,6 +5,7 @@ import { POEM_TYPEWRITER_CHAR_DELAY_MS } from '@/engine/poetryBook/poetryBookCon
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGameStore } from '@/store/gameStore';
 import { usePoemTypewriter } from '@/components/game/poetryBook/usePoemTypewriter';
+import { usePoetryReadProgress } from '@/components/game/poetryBook/usePoetryReadProgress';
 import {
   resolveDefaultPoemViewMode,
   writeStoredPoemViewMode,
@@ -75,6 +76,22 @@ export function useJournalPoemReader({ selectedPoemId, selectPoem }: JournalPoem
     POEM_TYPEWRITER_CHAR_DELAY_MS,
   );
 
+  // Прогресс чтения (v4.48.11): в свитке текст виден ЦЕЛИКОМ сразу — стих
+  // прочитан при открытии; в развороте — когда машинописец дописал (сверяем
+  // содержимое, а не только флаг done: на смене стиха флаг сбрасывается
+  // в эффекте машинописца — один кадр после выбора нового он ещё старый).
+  const { readPoemIds, readPoemsCount, markPoemRead } = usePoetryReadProgress();
+  useEffect(() => {
+    if (!selectedPoem) return;
+    if (viewMode === 'scroll') {
+      markPoemRead(selectedPoem.id);
+      return;
+    }
+    if (!done) return;
+    if (displayedLines.join('\n') !== selectedPoem.lines.join('\n')) return;
+    markPoemRead(selectedPoem.id);
+  }, [selectedPoem, viewMode, done, displayedLines, markPoemRead]);
+
   const currentPoemIndex = selectedPoemId
     ? collected.findIndex((poem) => poem.id === selectedPoemId)
     : -1;
@@ -124,6 +141,8 @@ export function useJournalPoemReader({ selectedPoemId, selectPoem }: JournalPoem
     pageNumber,
     totalPages,
     currentPoemIndex,
+    readPoemIds,
+    readPoemsCount,
     contentRef,
     handleBack,
     handlePrevPoem,
