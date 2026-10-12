@@ -41,7 +41,7 @@ import {
   LUT,
   DepthOfField,
   GodRays,
-  // v4.45.2: N8AO импорт убран — пасс временно отключён (NaN, см. комментарий ниже)
+  N8AO,
 } from '@react-three/postprocessing';
 import {
   BlendFunction,
@@ -82,6 +82,8 @@ import { disposeEffectComposer, type PostprocessingComposerLike } from '@/engine
 import { setPostfxActive } from '@/engine/graphics/postfxActiveState';
 import { getNeutralProceduralLut3DTexture } from '@/engine/graphics/proceduralLutTextures';
 import { shouldUseDenseSceneAmbientOcclusion } from '@/config/sceneVisualProfiles';
+import { shouldMountN8aoWithProbe } from '@/engine/graphics/ambientOcclusionGate';
+import { NanScrubEffect } from '@/engine/three/nanScrubEffect';
 import { GodRaysSunMesh } from '@/components/3d/GodRaysSunMesh';
 import { MotionBlurEffect } from '@/components/3d/MotionBlurEffect';
 import { eventBus } from '@/engine/EventBus';
@@ -123,6 +125,8 @@ const Scanline = safeWrapEffect(ScanlineEffect, { blendFunction: BlendFunction.O
 const Noise = safeWrapEffect(NoiseEffect, { blendFunction: BlendFunction.COLOR_DODGE });
 const ToneMapping = safeWrapEffect(ToneMappingEffect);
 const SMAA = safeWrapEffect(SMAAEffect);
+/** v4.48.7: NaN-скраб — страховка от poisoned-кадра (см. nanScrubEffect.ts). */
+const NanScrub = safeWrapEffect(NanScrubEffect);
 
 /** DOF — third-person dialogue focuses via world-space NPC target (autofocus).
  *  Fallback focusDistance used only when no dialogueFocusTarget is resolved yet. */
@@ -402,6 +406,19 @@ function PostFXPipeline() {
   const smaaPreset = preset.id === 'ultra' ? SMAAPreset.MEDIUM : SMAAPreset.LOW;
   const dofHeight = preset.id === 'ultra' ? 720 : 480;
 
+  // ── N8AO (v4.48.7): возвращён после NaN-расследования v4.45.2. ──
+  // Гейт: high/ultra десктоп, не софтверный рендер (SwiftShader давал NaN —
+  // см. ambientOcclusionGate.ts), не visualLite. Отладочный обход —
+  // localStorage 'volodka:force-n8ao'='1'. Пер-сценное вкл/выкл и конфиг —
+  // императивно (applier + покадровый тик через n8aoRef). Страховка от
+  // poisoned-кадра — NanScrub-эффект сразу после пасса.
+  const wantsN8aoMount = shouldMountN8aoWithProbe({
+    selectedPreset,
+    resolvedPresetId: preset.id,
+    visualLite,
+    coarsePointer,
+  });
+
   // ── Part 5: GodRays postprocessing (screen-space volumetric light shafts) ──
   // Ultra-only, reduced-motion-gated. Пасс персистентен: пер-сценное
   // вкл/выкл — через pass.enabled (applier), opacity анимируется тиком.
@@ -479,6 +496,7 @@ function PostFXPipeline() {
     useAgx ? 'agx' : 'aces',
     wantsGodRaysMount && godRaysSunReady ? 'gr' : '-',
     vignetteEnabled ? 'v' : '-',
+    wantsN8aoMount ? 'ao' : '-',
   ].join(':');
 
   // ── Дети композера: фиксированный суперсед пассов, props — константы.
@@ -540,10 +558,29 @@ function PostFXPipeline() {
           blendFunction={BlendFunction.NORMAL}
         />
         <Scanline ref={scanlineRef as any} blendFunction={BlendFunction.OVERLAY} density={1.2} />
-        {/* v4.45.2: N8AO ВРЕМЕННО ОТКЛЮЧЁН — его пасс выдаёт NaN (SwiftShader +
-            реальная сцена/глубина), отравляя весь кадр после композера (чёрный
-            экран на ultra). Раньше маскировалось крашем wrapEffect. AO не работал
-            ни в одной версии; вернуть после расследования n8ao NaN (см. worklog). */}
+        {/* v4.48.7: N8AO возвращён после NaN-расследования v4.45.2. Гейт —
+            shouldMountN8aoWithProbe (high/ultra десктоп, не SwiftShader — там
+            пасс выдавал NaN и отравлял кадр чёрным экраном). halfRes=false:
+            N8AO half-res MRT может делить глубину с input композера и
+            триггерить glBlitFramebuffer identical-attachment ошибку (n8ao#53).
+            Пер-сценные вкл/выкл и конфигурация — через pass.enabled/configuration
+            (applier + тик). */}
+        {wantsN8aoMount ? (
+          <N8AO
+            ref={n8aoRef as any}
+            aoRadius={0.45}
+            intensity={2.5}
+            distanceFalloff={0.5}
+            halfRes={false}
+            color="black"
+          />
+        ) : null as any}
+        {/* v4.48.7: NaN-скраб — детерминированная зачистка NaN/Inf сразу после
+            N8AO до остальных эффектов (сливается с ними в один EffectPass —
+            цена ~несколько ALU на пиксель). Даже если какой-то экзотический
+            GPU воспроизведёт NaN-баг N8AO, кадр не отравится (v4.45.2:
+            чёрный экран на ultra). */}
+        {wantsN8aoMount ? <NanScrub /> : null as any}
         {/* Part 3: Cinematic DOF — always mounted on high/ultra desktop, bokehScale animated 0↔target via ref.
             Smooth 0.4s easeInOutCubic transition when dialogue/cutscene opens/closes.
             Focus target follows the active NPC (dialogueFocusTarget singleton). */}
