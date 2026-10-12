@@ -1,0 +1,291 @@
+/* ─── Volodka RPG – «Ночная тетрадь»: сцена интро-стиха (v4.48.4) ───
+ * Концепт: стих, спрятанный в коде, переписывается в тетрадь.
+ * Разворот тетради на тёмной бумаге: буквы материализуются из матричного
+ * дождя в чернила (см. MatrixPoemAssembly), на полях — карандашные заметки
+ * Володьки (src/data/poemMargins.ts). Тексты стихов не трогаются —
+ * меняется только подача.
+ *
+ * Палитра — токены «Ночной тетради» (tokens.css): --vk-ink / --vk-paper /
+ * --vk-amber / --vk-silver. Все классы с префиксом .vk-intro-.
+ * Производительность: только статичные CSS-градиенты и один keyframe
+ * фонаря (отключается при prefers-reduced-motion). Ни одного canvas/JS-цикла.
+ */
+
+/* Ночь вокруг тетради — тёплое чернильное поле с лёгким отсветом фонаря */
+.vk-intro-night {
+  background:
+    radial-gradient(120% 90% at 30% 12%, rgba(38, 30, 16, 0.42) 0%, transparent 55%),
+    radial-gradient(140% 110% at 78% 88%, rgba(10, 16, 24, 0.65) 0%, transparent 60%),
+    linear-gradient(180deg, #05070b 0%, #04060a 100%);
+}
+
+/* Тетрадный лист (разворот): шапка-метка → разворот → заметка на полях.
+   Страховка на сверхнизких вьюпортах: лист скроллится, кинобары (7dvh) не съедают контент. */
+.vk-intro-sheet {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(64rem, calc(100vw - 1.5rem));
+  max-width: 100%;
+  max-height: calc(100dvh - 15dvh - 1.5rem);
+  min-height: 0;
+  border-radius: 3px;
+  border: 1px solid rgba(157, 179, 200, 0.13);
+  background:
+    linear-gradient(155deg, #171b26 0%, #11141d 46%, #0e1119 100%);
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.62),
+    0 4px 14px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(234, 228, 214, 0.055),
+    inset 0 -30px 52px rgba(0, 0, 0, 0.48),
+    inset 0 30px 52px rgba(0, 0, 0, 0.34);
+  overflow: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(157, 179, 200, 0.22) transparent;
+}
+.vk-intro-sheet::-webkit-scrollbar {
+  width: 6px;
+}
+.vk-intro-sheet::-webkit-scrollbar-thumb {
+  background: rgba(157, 179, 200, 0.22);
+  border-radius: 3px;
+}
+
+/* Сам разворот. ВАЖНО: базовое правило ДО media-запроса — иначе равная
+   специфичность перебивает колонки разворота (урок v4.48.4: страницы
+   стекались в одну колонку, корешок схлопывался в нулевую высоту). */
+.vk-intro-spread {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 0;
+  /* на узких вьюпортах контент идёт от верха листа — оставляем место
+     под оверлей-шапку «ночная тетрадь · лист N» */
+  margin-top: 2.2rem;
+}
+
+/* Разворот: две страницы с корешком (lg+); заметка — под левой страницей,
+   чтобы не отъедать высоту у стиха */
+@media (min-width: 1024px) {
+  .vk-intro-spread {
+    grid-template-columns: 1fr 1px 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    /* на развороте страницы центрированы — шапка живёт в верхних полях */
+    margin-top: 0;
+  }
+  .vk-intro-page--left {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .vk-intro-spine {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .vk-intro-page--right {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .vk-intro-note-row {
+    grid-column: 1;
+    grid-row: 2;
+    align-self: end;
+  }
+}
+
+/* Бумажное зерно — статичный SVG-шум, не анимируется */
+.vk-intro-sheet::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.055;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)' opacity='0.7'/%3E%3C/svg%3E");
+}
+
+/* Чернильные затёки на полях: пара тёмных клякс и янтарное «чайное кольцо».
+   Статичные radial-градиенты — ноль стоимости на кадр. */
+.vk-intro-sheet::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(7rem 5rem at 96% 103%, rgba(3, 5, 8, 0.5) 0%, transparent 62%),
+    radial-gradient(4.2rem 3.4rem at 3% -4%, rgba(3, 5, 8, 0.4) 0%, transparent 58%),
+    radial-gradient(3rem 2.4rem at 87% 8%, rgba(3, 5, 8, 0.3) 0%, transparent 60%),
+    radial-gradient(circle at 11% 88%, transparent 0 1.05rem, rgba(226, 168, 75, 0.05) 1.12rem, transparent 1.3rem);
+}
+
+/* Корешок разворота */
+.vk-intro-spine {
+  position: relative;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 0, 0, 0.55) 50%, transparent 100%);
+}
+.vk-intro-spine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, rgba(157, 179, 200, 0.14) 18%, rgba(157, 179, 200, 0.14) 82%, transparent);
+}
+
+/* Страница разворота */
+.vk-intro-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem 1.25rem 1.5rem;
+  min-width: 0;
+}
+@media (min-width: 640px) {
+  .vk-intro-page {
+    padding: 2rem 2.25rem 2.25rem;
+  }
+}
+@media (min-width: 1024px) {
+  .vk-intro-page {
+    padding: 2.5rem 2.75rem 2.5rem;
+  }
+}
+
+/* Шапка листа: метки «ночная тетрадь · лист N» по краям — оверлей в
+   верхних полях бумаги (не отъедает высоту у стиха) */
+.vk-intro-sheethead {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.8rem 1.25rem 0;
+  pointer-events: none;
+  z-index: 2;
+}
+@media (min-width: 640px) {
+  .vk-intro-sheethead {
+    padding: 1rem 2.25rem 0;
+  }
+}
+@media (min-width: 1024px) {
+  .vk-intro-sheethead {
+    padding: 1.1rem 2.75rem 0;
+  }
+}
+
+/* Строка заметки под стихом (мобайл) / под левой страницей (lg+) */
+.vk-intro-note-row {
+  position: relative;
+  padding: 0.25rem 1.25rem 1.3rem;
+}
+@media (min-width: 640px) {
+  .vk-intro-note-row {
+    padding: 0.35rem 2.25rem 1.6rem;
+  }
+}
+@media (min-width: 1024px) {
+  .vk-intro-note-row {
+    padding: 0.25rem 2.75rem 1.5rem;
+  }
+}
+
+/* Поля правой страницы: янтарная вертикальная линия и её «двойник» —
+   чуть смещённая размытая копия, как неровно проведённые чернила */
+.vk-intro-marginline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 1.05rem;
+  width: 1px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(226, 168, 75, 0.26) 14%, rgba(226, 168, 75, 0.26) 86%, transparent);
+}
+.vk-intro-marginline::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 1px;
+  filter: blur(1.5px);
+  opacity: 0.5;
+  background: linear-gradient(180deg, transparent, rgba(226, 168, 75, 0.4) 20%, rgba(226, 168, 75, 0.4) 80%, transparent);
+}
+
+/* Метки листа в шапке тетради */
+.vk-intro-sheetlabel {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 0.6rem;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: rgba(110, 127, 144, 0.75);
+  white-space: nowrap;
+}
+
+/* Тёплый отсвет фонаря позади листа — единственный анимированный слой */
+.vk-intro-lantern {
+  position: absolute;
+  inset: -18% -10%;
+  pointer-events: none;
+  background: radial-gradient(46% 42% at 50% 34%, rgba(226, 168, 75, 0.11) 0%, transparent 68%);
+  animation: vkIntroLantern 5.4s ease-in-out infinite alternate;
+  will-change: opacity, transform;
+}
+@keyframes vkIntroLantern {
+  0% { opacity: 0.72; transform: translate3d(0, 0, 0) scale(1); }
+  38% { opacity: 0.95; transform: translate3d(0.4%, -0.5%, 0) scale(1.015); }
+  64% { opacity: 0.8; transform: translate3d(-0.3%, 0.4%, 0) scale(0.995); }
+  100% { opacity: 1; transform: translate3d(0.2%, 0.2%, 0) scale(1.01); }
+}
+
+/* Заметка «на полях» — карандаш Володьки (данные: poemMargins.ts) */
+.vk-intro-note {
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgba(169, 166, 152, 0.85);
+  transform: rotate(-0.5deg);
+  text-shadow: 0 0 1px rgba(234, 228, 214, 0.14);
+  position: relative;
+  padding-left: 0.85rem;
+  max-width: 46rem;
+}
+.vk-intro-note::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.2em;
+  bottom: 0.2em;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, rgba(169, 166, 152, 0), rgba(169, 166, 152, 0.45), rgba(169, 166, 152, 0));
+}
+.vk-intro-note-label {
+  font-family: 'Courier New', 'Consolas', monospace;
+  font-style: normal;
+  font-size: 0.58rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: rgba(226, 168, 75, 0.55);
+}
+
+/* Мобильные безопасные зоны для листа */
+@media (max-width: 639px) {
+  .vk-intro-sheet {
+    width: calc(100vw - 1rem - env(safe-area-inset-left) - env(safe-area-inset-right));
+  }
+}
+
+/* Уважение к reduced motion: фонарь замирает */
+@media (prefers-reduced-motion: reduce) {
+  .vk-intro-lantern {
+    animation: none;
+  }
+}

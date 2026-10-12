@@ -3,6 +3,11 @@
  * tumbles in as a scrambling green glyph, then "stands up" and locks into the
  * real character with a typewriter keystroke. Lines resolve left-to-right.
  *
+ * v4.48.4 «Ночная тетрадь»: собранные буквы больше не фосфорные — они
+ * ЧЕРНИЛЬНЫЕ (тёплая бумага на тёмном листе, см. intro-notebook.css).
+ * Драматургия: буквы рождаются зелёным кодом и при фиксации «высыхают»
+ * в чернила — стих переписывается из кода в тетрадь.
+ *
  * The poem text itself is the work of Владимир Лебедев and is never altered —
  * only the way it is revealed is animated here. The whole poem is sized to fit
  * the viewport so the final lines are always visible (no scrolling).
@@ -25,12 +30,21 @@ interface MatrixPoemAssemblyProps {
   poem: Poem;
   onComplete: () => void;
   reduceMotion: boolean;
+  /** v4.48.4: шапку (титул/автор) можно вынести на левую страницу разворота —
+   *  тогда компонент рисует только тело стиха. По умолчанию рисует сам. */
+  showHeader?: boolean;
+  /** v4.48.4: вертикальный бюджет стиха в vh. На развороте тетради хром
+   *  (шапка/поля/заметка) съедает высоту — родитель передаёт меньший бюджет
+   *  (напр. 52 на десктопном развороте, 70 — прежнее поведение — на мобайл). */
+  heightBudgetVh?: number;
 }
 
 export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
   poem,
   onComplete,
   reduceMotion,
+  showHeader = true,
+  heightBudgetVh = 70,
 }: MatrixPoemAssemblyProps) {
   const { renderLines, totalChars, charByGi, lineStartGis } = useMemo(() => {
     const lines: Slot[][] = [];
@@ -61,11 +75,12 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
   }, [poem.lines]);
 
   // Viewport-scaled font so all lines fit (no scroll, final lines always visible).
+  // heightBudgetVh: сколько вертикали в vh можно отдать телу стиха.
   const bodyFontSize = useMemo(() => {
     const visualLines = poem.lines.length || 1;
-    const vh = Math.max(0.9, Math.min(1.9, 70 / (visualLines * 1.4)));
+    const vh = Math.max(0.9, Math.min(1.9, heightBudgetVh / (visualLines * 1.4)));
     return `clamp(0.55rem, ${vh.toFixed(2)}vh, 1.05rem)`;
-  }, [poem.lines.length]);
+  }, [poem.lines.length, heightBudgetVh]);
 
   const [revealed, setRevealed] = useState(reduceMotion ? totalChars : 0);
   const [scrambleSeed, setScrambleSeed] = useState(0);
@@ -128,54 +143,60 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
       transition={{ duration: 1 }}
       style={{ willChange: 'opacity' }}
     >
-      {/* Soft glow behind poem */}
+      {/* Warm lantern glow behind the poem page (Ночная тетрадь) */}
       <div
         className="absolute inset-0 -z-10 pointer-events-none"
         style={{
           background:
-            'radial-gradient(ellipse at center, rgba(70, 185, 110, 0.10) 0%, transparent 65%)',
+            'radial-gradient(ellipse at center, rgba(226, 168, 75, 0.09) 0%, transparent 66%)',
           filter: 'blur(34px)',
         }}
       />
 
-      {/* Title + author */}
-      <motion.div
-        className="text-center mb-2 sm:mb-3"
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1.2 }}
-        style={{ willChange: 'opacity, transform' }}
-      >
-        <h2
-          className="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide mb-1"
-          style={{
-            fontFamily: '"Courier New", "Consolas", monospace',
-            color: 'rgba(190, 255, 225, 0.95)',
-            textShadow: '0 0 22px rgba(70, 185, 110, 0.35)',
-          }}
+      {/* Title + author — v4.48.4: можно вынести на левую страницу разворота */}
+      {showHeader && (
+        <motion.div
+          className="text-center mb-2 sm:mb-3"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2 }}
+          style={{ willChange: 'opacity, transform' }}
         >
-          {poem.title}
-        </h2>
-        <p
-          className="text-[10px] sm:text-xs tracking-[0.2em] uppercase"
-          style={{
-            fontFamily: '"Courier New", "Consolas", monospace',
-            color: 'rgba(120, 200, 170, 0.6)',
-          }}
-        >
-          — {poem.author}
-        </p>
-        <div
-          className="mt-2 mx-auto w-20 h-px"
-          style={{
-            background:
-              'linear-gradient(90deg, transparent, rgba(70, 185, 110, 0.5), transparent)',
-          }}
-        />
-      </motion.div>
+          <h2
+            className="text-lg sm:text-xl md:text-2xl font-semibold tracking-wide mb-1"
+            style={{
+              fontFamily: '"Georgia", "Times New Roman", serif',
+              color: 'rgba(234, 228, 214, 0.95)',
+              textShadow: '0 0 18px rgba(226, 168, 75, 0.22)',
+            }}
+          >
+            {poem.title}
+          </h2>
+          <p
+            className="text-[10px] sm:text-xs tracking-[0.2em] uppercase"
+            style={{
+              fontFamily: '"Courier New", "Consolas", monospace',
+              color: 'rgba(226, 168, 75, 0.62)',
+            }}
+          >
+            — {poem.author}
+          </p>
+          <div
+            className="mt-2 mx-auto w-20 h-px"
+            style={{
+              background:
+                'linear-gradient(90deg, transparent, rgba(226, 168, 75, 0.45), transparent)',
+            }}
+          />
+        </motion.div>
+      )}
 
-      {/* Assembling poem body — fits the viewport, no scrolling */}
+      {/* Assembling poem body — fits the viewport, no scrolling.
+          A11y: текст стиха целиком отдаётся в aria-label фигуры,
+          визуальные глифы (включая катакану-скрамбл) скрыты от SR. */}
       <div
+        role="figure"
+        aria-label={`${poem.title}. ${poem.author}. ${poem.lines.join('\n')}`}
         className="w-full text-center"
         style={{ fontFamily: '"Courier New", "Consolas", monospace', fontSize: bodyFontSize }}
       >
@@ -184,7 +205,7 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
             return <div key={`gap-${li}`} style={{ height: '0.5em' }} aria-hidden />;
           }
           return (
-            <p key={`line-${li}`} style={{ margin: 0, lineHeight: 1.38 }}>
+            <p key={`line-${li}`} style={{ margin: 0, lineHeight: 1.38 }} aria-hidden>
               {slots.map((slot, ci) => {
                 const key = `c-${li}-${ci}`;
                 if (slot.gi < 0) {
@@ -203,14 +224,14 @@ export const MatrixPoemAssembly = memo(function MatrixPoemAssembly({
                     <span
                       key={key}
                       style={{
-                        color: 'rgba(225, 255, 240, 0.95)',
+                        color: 'rgba(234, 228, 214, 0.95)',
                         textShadow:
-                          '0 0 12px rgba(70, 185, 110, 0.45), 0 0 24px rgba(70, 185, 110, 0.18)',
+                          '0 0 1px rgba(234, 228, 214, 0.3), 0 0 14px rgba(226, 168, 75, 0.16)',
                         transform: 'translateY(0)',
                         opacity: 1,
                         display: 'inline-block',
                         transition:
-                          'transform 180ms ease-out, opacity 180ms ease-out, color 180ms',
+                          'transform 180ms ease-out, opacity 180ms ease-out, color 260ms ease-out, text-shadow 260ms ease-out',
                       }}
                     >
                       {slot.ch}
