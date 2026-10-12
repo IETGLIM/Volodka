@@ -17,76 +17,102 @@ type Props = {
   onClose: PanelCloseHandlers;
 };
 
-const PAUSE_ACTIONS: Array<{
+type PauseAction = {
   id: string;
   label: string;
+  /** Честная горячая клавиша (показывается справа, приглушённо). */
+  hint?: string;
   tone?: 'danger' | 'muted';
   run: (ctx: {
     dispatchPanel: PanelCoordinatorResult['dispatchPanel'];
     closeAllPanels: PanelCoordinatorResult['closeAllPanels'];
     closePanelByType: PanelCoordinatorResult['closePanelByType'];
   }) => void;
-}> = [
+};
+
+/* v4.48.1 «Разворот тетради» (эхо): плоский список из 8+1 пунктов
+ * собран в 3 смысловые секции с тихими янтарными ярлыками. Деструктивное
+ * «В главное меню» отодвинуто в отдельную нижнюю зону — раньше оно стояло
+ * через строку от «Загрузить» и ловилось случайными кликами. */
+const PAUSE_GROUPS: Array<{ label: string; actions: PauseAction[] }> = [
   {
-    id: 'quick-save',
-    label: 'Быстрое сохранение',
-    run: ({ closeAllPanels }) => {
-      // v4.8.6: честный тост по исходу (раньше кнопка молчала и при блокировке
-      // боем/диалогом, и при ошибке записи).
-      quickSaveGame();
-      closeAllPanels();
-    },
+    label: 'Сохранения',
+    actions: [
+      {
+        id: 'quick-save',
+        label: 'Быстрое сохранение',
+        hint: 'F5',
+        run: ({ closeAllPanels }) => {
+          // v4.8.6: честный тост по исходу (раньше кнопка молчала и при блокировке
+          // боем/диалогом, и при ошибке записи).
+          quickSaveGame();
+          closeAllPanels();
+        },
+      },
+      {
+        id: 'load',
+        label: 'Загрузить',
+        hint: 'F9',
+        run: ({ closeAllPanels }) => {
+          // v4.8.6: подтверждение/предупреждение вместо молчаливого патча;
+          // в бою/кат-сцене/диалоге загрузка теперь безопасно отклоняется.
+          quickLoadGame();
+          closeAllPanels();
+        },
+      },
+      {
+        id: 'saves',
+        label: 'Управление сохранениями',
+        run: ({ dispatchPanel }) => dispatchPanel('saveSlot'),
+      },
+    ],
   },
   {
-    id: 'saves',
-    label: 'Управление сохранениями',
-    run: ({ dispatchPanel }) => dispatchPanel('saveSlot'),
+    label: 'Персона',
+    actions: [
+      {
+        id: 'profile',
+        label: 'Профиль персонажа',
+        run: ({ dispatchPanel }) => dispatchPanel('characterProfile'),
+      },
+      {
+        id: 'relations',
+        label: 'Отношения',
+        run: ({ dispatchPanel }) => dispatchPanel('npcRelation'),
+      },
+      {
+        id: 'achievements',
+        label: 'Достижения',
+        run: ({ dispatchPanel }) => dispatchPanel('achievements'),
+      },
+    ],
   },
   {
-    id: 'load',
-    label: 'Загрузить',
-    run: ({ closeAllPanels }) => {
-      // v4.8.6: подтверждение/предупреждение вместо молчаливого патча;
-      // в бою/кат-сцене/диалоге загрузка теперь безопасно отклоняется.
-      quickLoadGame();
-      closeAllPanels();
-    },
-  },
-  {
-    id: 'profile',
-    label: 'Профиль персонажа',
-    run: ({ dispatchPanel }) => dispatchPanel('characterProfile'),
-  },
-  {
-    id: 'relations',
-    label: 'Отношения',
-    run: ({ dispatchPanel }) => dispatchPanel('npcRelation'),
-  },
-  {
-    id: 'achievements',
-    label: 'Достижения',
-    run: ({ dispatchPanel }) => dispatchPanel('achievements'),
-  },
-  {
-    id: 'settings',
-    label: 'Настройки',
-    run: ({ dispatchPanel }) => dispatchPanel('settings'),
-  },
-  {
-    id: 'main-menu',
-    label: 'В главное меню',
-    tone: 'danger',
-    run: ({ closeAllPanels }) => {
-      closeAllPanels();
-      // WS23: Direct synchronous calls — requestAnimationFrame introduced a race
-      // where resetGame's patch (mainMenuOpen:false via skipIntro) could clobber
-      // the subsequent setMainMenuOpen(true) if React reconciled between them.
-      // Now both happen in the same synchronous tick; setMainMenuOpen(true) wins.
-      useGameStore.getState().resetGame();
-      useGameStore.getState().setMainMenuOpen(true);
-    },
+    label: 'Система',
+    actions: [
+      {
+        id: 'settings',
+        label: 'Настройки',
+        run: ({ dispatchPanel }) => dispatchPanel('settings'),
+      },
+    ],
   },
 ];
+
+const EXIT_TO_MAIN_MENU: PauseAction = {
+  id: 'main-menu',
+  label: 'В главное меню',
+  tone: 'danger',
+  run: ({ closeAllPanels }) => {
+    closeAllPanels();
+    // WS23: Direct synchronous calls — requestAnimationFrame introduced a race
+    // where resetGame's patch (mainMenuOpen:false via skipIntro) could clobber
+    // the subsequent setMainMenuOpen(true) if React reconciled between them.
+    // Now both happen in the same synchronous tick; setMainMenuOpen(true) wins.
+    useGameStore.getState().resetGame();
+    useGameStore.getState().setMainMenuOpen(true);
+  },
+};
 
 export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
   const { isPanelOpen } = usePanelStack();
@@ -142,7 +168,7 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 8 }}
                 transition={{ duration: 0.32, ease: [0.16, 1, 0.3, 1] }}
-                className="relative z-10 w-full max-w-sm px-6"
+                className="relative z-10 mx-auto w-full max-w-sm px-6"
                 {...pauseDialog.dialogProps}
                 data-testid="pause-menu"
               >
@@ -152,38 +178,70 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
                   </p>
                   <h2
                     {...pauseDialog.titleProps}
-                    className="font-serif text-3xl tracking-[0.2em] text-stone-100/95 mb-8"
+                    className="font-serif text-3xl tracking-[0.2em] text-stone-100/95 mb-6"
                   >
                     Пауза
                   </h2>
 
                   <div className="w-full flex flex-col gap-1" role="menu" aria-label="Меню паузы">
-                    {PAUSE_ACTIONS.map((action) => (
-                      <button
-                        key={action.id}
-                        type="button"
-                        role="menuitem"
-                        onClick={() =>
-                          action.run({ dispatchPanel, closeAllPanels, closePanelByType })
-                        }
-                        className={`cinematic-menu-item ${
-                          action.tone === 'danger' ? 'cinematic-menu-item--danger' : ''
-                        }`}
-                      >
-                        {action.label}
-                      </button>
-                    ))}
-
-                    <div className="h-px w-16 mx-auto my-3 bg-gradient-to-r from-transparent via-stone-400/25 to-transparent" />
-
+                    {/* Продолжить — первичное действие (как в главном меню):
+                        самый частый выбор — наверху и с янтарным голосом. */}
                     <button
                       ref={pauseDialog.closeButtonRef}
                       type="button"
                       role="menuitem"
+                      data-testid="pause-menu-continue"
                       onClick={() => closePanelByType('menu')}
-                      className="cinematic-menu-item cinematic-menu-item--muted"
+                      className="cinematic-menu-item cinematic-menu-item--primary mb-2"
                     >
                       Продолжить
+                    </button>
+
+                    {PAUSE_GROUPS.map((group) => (
+                      <div key={group.label} className="flex flex-col gap-1">
+                        <div className="mt-2 mb-1 flex items-center gap-2.5 px-4" aria-hidden="true">
+                          <span className="h-px flex-1 bg-gradient-to-r from-transparent to-stone-400/20" />
+                          <span className="font-serif text-[9px] tracking-[0.34em] uppercase text-stone-400/45">
+                            {group.label}
+                          </span>
+                          <span className="h-px flex-1 bg-gradient-to-l from-transparent to-stone-400/20" />
+                        </div>
+                        {group.actions.map((action) => (
+                          <button
+                            key={action.id}
+                            type="button"
+                            role="menuitem"
+                            onClick={() =>
+                              action.run({ dispatchPanel, closeAllPanels, closePanelByType })
+                            }
+                            className={`cinematic-menu-item ${
+                              action.tone === 'danger' ? 'cinematic-menu-item--danger' : ''
+                            }`}
+                          >
+                            <span className="relative z-10 flex w-full items-center justify-between gap-3">
+                              <span>{action.label}</span>
+                              {action.hint ? (
+                                <span className="font-sans text-[10px] tracking-[0.2em] text-stone-500/50 normal-case">
+                                  {action.hint}
+                                </span>
+                              ) : null}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    ))}
+
+                    {/* Опасная зона: визуально отделена, случайный клик исключён */}
+                    <div className="mt-4 mb-1 flex items-center gap-2.5 px-4" aria-hidden="true">
+                      <span className="h-px flex-1 bg-gradient-to-r from-transparent via-stone-400/25 to-transparent" />
+                    </div>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => EXIT_TO_MAIN_MENU.run({ dispatchPanel, closeAllPanels, closePanelByType })}
+                      className="cinematic-menu-item cinematic-menu-item--danger"
+                    >
+                      {EXIT_TO_MAIN_MENU.label}
                     </button>
                   </div>
 
