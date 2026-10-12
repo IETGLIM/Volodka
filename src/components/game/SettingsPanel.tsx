@@ -1,5 +1,12 @@
-
-/* ─── Volodka RPG – Settings Panel (Cyberpunk Terminal Aesthetic) ─── */
+/* ─── Volodka RPG – Settings Panel («Ночная тетрадь», полный режим) ───
+ *
+ * Панель настроек паузы — режим «full» единой системы настроек
+ * (приоритет №2 аудита v4.48). v4.48.3: кибер-cyan хром заменён общими
+ * примитивами «Тетради» (src/components/game/settings/NotebookSettings.tsx) —
+ * тот же визуальный язык, что у компактной панели в главном меню.
+ * Логика и контракт доступности не изменились: role="switch", нативные
+ * range-инпуты, FocusTrap, Escape, data-testid="settings-panel".
+ */
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -13,11 +20,6 @@ import {
   formatQualityPresetDetailRu,
   type QualityPresetId,
 } from '@/engine/graphics/qualityPresets';
-import {
-  CyberSlider,
-  CyberToggle,
-  SectionDivider,
-} from '@/components/game/design-system';
 import {
   DIFFICULTY_META,
   GAME_DIFFICULTY_ORDER,
@@ -63,6 +65,14 @@ import {
 } from '@/engine/accessibility/accessibilitySettings';
 import type { AccessibilitySettingsSnapshot } from '@/engine/accessibility/accessibilitySettings';
 import { useAccessibilitySettings } from '@/hooks/useAccessibilitySettings';
+import {
+  SettingsSection,
+  SettingsSwitchRow,
+  SettingsSliderRow,
+  SettingsChipsRow,
+  SettingsSelectRow,
+  SettingsHint,
+} from '@/components/game/settings/NotebookSettings';
 
 // ─── Types ───
 
@@ -183,212 +193,209 @@ function VisualSettingsTab({
       transition={{ duration: 0.2 }}
       className="flex flex-col gap-4"
     >
-      <div className="flex flex-col gap-2">
-        <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
-          Качество графики
-        </span>
-        <div className="flex flex-wrap gap-1.5">
-          {QUALITY_OPTIONS.map((opt) => {
-            const active = selectedPreset === opt.id;
-            return (
-              <button
-                key={opt.id}
-                type="button"
-                onClick={() => setPreset(opt.id)}
-                className="px-2.5 py-1 rounded-md font-mono text-[11px] tracking-wide transition-colors border"
-                style={{
-                  color: active ? 'rgb(var(--cyber-cyan-rgb) / 0.95)' : 'rgba(148, 163, 184, 0.65)',
-                  backgroundColor: active ? 'rgb(var(--cyber-cyan-rgb) / 0.12)' : 'rgba(15, 23, 42, 0.5)',
-                  borderColor: active ? 'rgb(var(--cyber-cyan-rgb) / 0.45)' : 'rgba(71, 85, 105, 0.35)',
-                }}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
-        <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed">
-          {formatQualityPresetDetailRu(selectedPreset, preset)}
-        </p>
-      </div>
-      <SectionDivider />
-      <CyberToggle
-        label="Пост-обработка"
-        checked={postfx}
-        onChange={(v) => { setPostfx(v); persist('volodka_postfx', v); applyVisualSettings(); }}
-      />
-      <CyberToggle
-        label="Сканлайны"
-        checked={scanlines}
-        onChange={(v) => { setScanlines(v); persist('volodka_scanlines', v); applyVisualSettings(); }}
-      />
-      <CyberToggle
-        label="Частицы"
-        checked={particles}
-        onChange={(v) => { setParticles(v); persist('volodka_particles', v); applyVisualSettings(); }}
-      />
-      <CyberToggle
-        label="Тряска камеры"
-        checked={camShake}
-        onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); applyVisualSettings(); }}
-      />
-      <CyberToggle
-        label="AgX тонмаппинг (ultra)"
-        checked={agx}
-        onChange={(v) => { setAgx(v); persist('volodka_agx', v); applyVisualSettings(); }}
-      />
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Современный кинематографичный тонмаппинг на пресете «Ультра». AgX темнее ACES — экспозиция автокомпенсируется (+0.15).
-      </p>
-      <SectionDivider />
-      <CyberToggle
-        label="Виньетка"
-        checked={vignette}
-        onChange={(v) => { setVignette(v); persist('volodka_vignette', v); applyVisualSettings(); }}
-      />
-      <CyberToggle
-        label="Хроматическая аберрация"
-        checked={chromatic}
-        onChange={(v) => { setChromatic(v); persist('volodka_chromatic', v); applyVisualSettings(); }}
-      />
-      <CyberToggle
-        label="Зернистость плёнки"
-        checked={filmGrain}
-        onChange={(v) => { setFilmGrain(v); persist('volodka_film_grain', v); applyVisualSettings(); }}
-      />
-      <SectionDivider />
-      <CyberSlider
-        label="Яркость"
-        value={brightness}
-        min={50}
-        max={150}
-        onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); applyVisualSettings(); }}
-        unit="%"
-      />
-      <SectionDivider />
-      <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
-        Доступность
-      </span>
-      <div className="flex flex-col gap-2">
-        <label className="font-mono text-[11px] text-slate-400">Режим для дальтоников</label>
-        <select
-          className="bg-slate-900/80 border border-cyan-900/40 rounded px-2 py-1.5 font-mono text-xs text-cyan-200"
+      <SettingsSection title="Графика" flush>
+        <SettingsChipsRow
+          ariaLabel="Качество графики"
+          options={QUALITY_OPTIONS}
+          value={selectedPreset}
+          onChange={setPreset}
+        />
+        <SettingsHint>{formatQualityPresetDetailRu(selectedPreset, preset)}</SettingsHint>
+      </SettingsSection>
+
+      <SettingsSection title="Эффекты">
+        <SettingsSwitchRow
+          label="Пост-обработка"
+          checked={postfx}
+          onChange={(v) => { setPostfx(v); persist('volodka_postfx', v); applyVisualSettings(); }}
+        />
+        <SettingsSwitchRow
+          label="Сканлайны"
+          checked={scanlines}
+          onChange={(v) => { setScanlines(v); persist('volodka_scanlines', v); applyVisualSettings(); }}
+        />
+        <SettingsSwitchRow
+          label="Частицы"
+          checked={particles}
+          onChange={(v) => { setParticles(v); persist('volodka_particles', v); applyVisualSettings(); }}
+        />
+        <SettingsSwitchRow
+          label="Тряска камеры"
+          checked={camShake}
+          onChange={(v) => { setCamShake(v); persist('volodka_cam_shake', v); applyVisualSettings(); }}
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Кинематографичность">
+        <SettingsSwitchRow
+          label="AgX тонмаппинг (ultra)"
+          checked={agx}
+          onChange={(v) => { setAgx(v); persist('volodka_agx', v); applyVisualSettings(); }}
+        />
+        <SettingsHint>
+          Современный кинематографичный тонмаппинг на пресете «Ультра». AgX темнее ACES — экспозиция автокомпенсируется (+0.15).
+        </SettingsHint>
+        <SettingsSwitchRow
+          label="Виньетка"
+          checked={vignette}
+          onChange={(v) => { setVignette(v); persist('volodka_vignette', v); applyVisualSettings(); }}
+        />
+        <SettingsSwitchRow
+          label="Хроматическая аберрация"
+          checked={chromatic}
+          onChange={(v) => { setChromatic(v); persist('volodka_chromatic', v); applyVisualSettings(); }}
+        />
+        <SettingsSwitchRow
+          label="Зернистость плёнки"
+          checked={filmGrain}
+          onChange={(v) => { setFilmGrain(v); persist('volodka_film_grain', v); applyVisualSettings(); }}
+        />
+        <SettingsSliderRow
+          label="Яркость"
+          value={brightness}
+          min={50}
+          max={150}
+          onChange={(v) => { setBrightness(v); persist('volodka_brightness', v); applyVisualSettings(); }}
+          unit="%"
+        />
+      </SettingsSection>
+
+      <SettingsSection title="Доступность">
+        <SettingsSelectRow
+          label="Режим для дальтоников"
           value={a11y.colorBlindMode}
-          onChange={(e) => {
-            setColorBlindMode(parseColorBlindMode(e.target.value));
+          options={[
+            { id: 'none', label: 'Выключен' },
+            { id: 'protanopia', label: 'Протанопия' },
+            { id: 'deuteranopia', label: 'Дейтеранопия' },
+            { id: 'tritanopia', label: 'Тританопия' },
+          ]}
+          onChange={(mode) => {
+            setColorBlindMode(parseColorBlindMode(mode));
           }}
-        >
-          <option value="none">Выключен</option>
-          <option value="protanopia">Протанопия</option>
-          <option value="deuteranopia">Дейтеранопия</option>
-          <option value="tritanopia">Тританопия</option>
-        </select>
-      </div>
-      <CyberToggle
-        label="Уменьшить анимации"
-        checked={a11y.reducedMotionOverride}
-        onChange={(v) => {
-          setReducedMotionOverride(v);
-        }}
-      />
-      <CyberToggle
-        label="Отключить анимации загрузки"
-        checked={a11y.loadingFxDisabled}
-        onChange={(v) => {
-          setLoadingFxDisabled(v);
-        }}
-      />
-      <CyberToggle
-        label="Пропускать ритуал чтения стихов"
-        checked={a11y.skipPoemCutscenes}
-        onChange={(v) => {
-          setSkipPoemCutscenes(v);
-        }}
-      />
-      <CyberToggle
-        label="Высокий контраст"
-        checked={a11y.highContrast}
-        onChange={(v) => {
-          setHighContrast(v);
-        }}
-      />
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Увеличивает контраст текста, добавляет белые контуры к кнопкам и панелям.
-      </p>
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Без кинематографического чтения — сила стиха применяется сразу.
-      </p>
-      <CyberSlider
-        label="Размер субтитров"
-        value={accessibilitySliderPercent(a11y.subtitleScale)}
-        min={SUBTITLE_SLIDER.min}
-        max={SUBTITLE_SLIDER.max}
-        onChange={(v) => {
-          setSubtitleScale(createSubtitleScale(v / 100));
-        }}
-        unit="%"
-      />
-      <CyberSlider
-        label="Скорость текста"
-        value={accessibilitySliderPercent(a11y.textSpeed)}
-        min={TEXT_SPEED_SLIDER.min}
-        max={TEXT_SPEED_SLIDER.max}
-        onChange={(v) => {
-          setTextSpeed(createTextSpeed(v / 100));
-        }}
-        unit="%"
-      />
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Скорость печати в диалогах и сюжете. Размер субтитров на скорость не влияет.
-      </p>
-      <CyberSlider
-        label="Скорость ходьбы"
-        value={accessibilitySliderPercent(a11y.locomotionSpeed)}
-        min={LOCOMOTION_SLIDER.min}
-        max={LOCOMOTION_SLIDER.max}
-        onChange={(v) => {
-          setLocomotionSpeed(createLocomotionSpeed(v / 100));
-        }}
-        unit="%"
-      />
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Множитель скорости бега и ходьбы персонажа в исследовании.
-      </p>
-      <CyberSlider
-        label="Масштаб интерфейса"
-        value={accessibilitySliderPercent(a11y.uiTextScale)}
-        min={UI_TEXT_SCALE_SLIDER.min}
-        max={UI_TEXT_SCALE_SLIDER.max}
-        onChange={(v) => {
-          setUiTextScale(createUiTextScale(v / 100));
-        }}
-        unit="%"
-      />
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Глобальный масштаб текста интерфейса (WCAG 1.4.4). Влияет на HUD, меню и панели.
-      </p>
-      <CyberToggle
-        label="Масштабирование жестом (пинч)"
-        checked={a11y.pinchZoomEnabled}
-        onChange={(v) => {
-          setPinchZoomEnabled(v);
-        }}
-      />
-      <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-2">
-        Разрешает приближение интерфейса жестом (WCAG 1.4.10). По умолчанию выключено,
-        чтобы случайный пинч не сбивал управление в бою. Для увеличения текста
-        удобнее «Масштаб интерфейса» — он не ломает разметку HUD.
-      </p>
+        />
+        <SettingsSwitchRow
+          label="Уменьшить анимации"
+          checked={a11y.reducedMotionOverride}
+          onChange={(v) => {
+            setReducedMotionOverride(v);
+          }}
+        />
+        <SettingsSwitchRow
+          label="Отключить анимации загрузки"
+          checked={a11y.loadingFxDisabled}
+          onChange={(v) => {
+            setLoadingFxDisabled(v);
+          }}
+        />
+        <SettingsSwitchRow
+          label="Пропускать ритуал чтения стихов"
+          checked={a11y.skipPoemCutscenes}
+          onChange={(v) => {
+            setSkipPoemCutscenes(v);
+          }}
+        />
+        <SettingsHint>
+          Без кинематографического чтения — сила стиха применяется сразу.
+        </SettingsHint>
+        <SettingsSwitchRow
+          label="Высокий контраст"
+          checked={a11y.highContrast}
+          onChange={(v) => {
+            setHighContrast(v);
+          }}
+        />
+        <SettingsHint>
+          Увеличивает контраст текста, добавляет белые контуры к кнопкам и панелям.
+        </SettingsHint>
+        <SettingsSliderRow
+          label="Размер субтитров"
+          value={accessibilitySliderPercent(a11y.subtitleScale)}
+          min={SUBTITLE_SLIDER.min}
+          max={SUBTITLE_SLIDER.max}
+          onChange={(v) => {
+            setSubtitleScale(createSubtitleScale(v / 100));
+          }}
+          unit="%"
+        />
+        <SettingsSliderRow
+          label="Скорость текста"
+          value={accessibilitySliderPercent(a11y.textSpeed)}
+          min={TEXT_SPEED_SLIDER.min}
+          max={TEXT_SPEED_SLIDER.max}
+          onChange={(v) => {
+            setTextSpeed(createTextSpeed(v / 100));
+          }}
+          unit="%"
+        />
+        <SettingsHint>
+          Скорость печати в диалогах и сюжете. Размер субтитров на скорость не влияет.
+        </SettingsHint>
+        <SettingsSliderRow
+          label="Скорость ходьбы"
+          value={accessibilitySliderPercent(a11y.locomotionSpeed)}
+          min={LOCOMOTION_SLIDER.min}
+          max={LOCOMOTION_SLIDER.max}
+          onChange={(v) => {
+            setLocomotionSpeed(createLocomotionSpeed(v / 100));
+          }}
+          unit="%"
+        />
+        <SettingsHint>
+          Множитель скорости бега и ходьбы персонажа в исследовании.
+        </SettingsHint>
+        <SettingsSliderRow
+          label="Масштаб интерфейса"
+          value={accessibilitySliderPercent(a11y.uiTextScale)}
+          min={UI_TEXT_SCALE_SLIDER.min}
+          max={UI_TEXT_SCALE_SLIDER.max}
+          onChange={(v) => {
+            setUiTextScale(createUiTextScale(v / 100));
+          }}
+          unit="%"
+        />
+        <SettingsHint>
+          Глобальный масштаб текста интерфейса (WCAG 1.4.4). Влияет на HUD, меню и панели.
+        </SettingsHint>
+        <SettingsSwitchRow
+          label="Масштабирование жестом (пинч)"
+          checked={a11y.pinchZoomEnabled}
+          onChange={(v) => {
+            setPinchZoomEnabled(v);
+          }}
+        />
+        <SettingsHint>
+          Разрешает приближение интерфейса жестом (WCAG 1.4.10). По умолчанию выключено,
+          чтобы случайный пинч не сбивал управление в бою. Для увеличения текста
+          удобнее «Масштаб интерфейса» — он не ломает разметку HUD.
+        </SettingsHint>
+      </SettingsSection>
     </motion.div>
   );
 }
 
 // ─── Tab definitions ───
 
-const TABS: { id: SettingsTab; icon: string; label: string }[] = [
-  { id: 'audio', icon: '🔊', label: 'Аудио' },
-  { id: 'visual', icon: '👁', label: 'Визуал' },
-  { id: 'controls', icon: '🎮', label: 'Управление' },
+const TABS: { id: SettingsTab; label: string }[] = [
+  { id: 'audio', label: 'Аудио' },
+  { id: 'visual', label: 'Визуал' },
+  { id: 'controls', label: 'Управление' },
+];
+
+// ─── Keyboard shortcuts reference ───
+
+const KEYBOARD_ROWS: [string, string][] = [
+  ['W A S D', 'Движение'],
+  ['Shift', 'Бег'],
+  ['Space', 'Прыжок'],
+  ['E', 'Взаимодействие'],
+  ['I', 'Инвентарь'],
+  ['J', 'Журнал'],
+  ['Q', 'Задания'],
+  ['P', 'Стихи'],
+  ['Tab / M', 'Карта мира'],
+  ['Esc', 'Пауза'],
+  ['F1', 'Справка'],
 ];
 
 // ─── Inner content component (remounts on each open, uses lazy init) ───
@@ -478,52 +485,55 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             transition={{ duration: 0.2 }}
             className="flex flex-col gap-4"
           >
-            <CyberSlider
-              label="Музыка"
-              value={musicVol}
-              min={0}
-              max={100}
-              onChange={(v) => { setMusicVol(v); persist('volodka_music_volume', v); applyAudioSettings(); }}
-              unit="%"
-            />
-            <CyberSlider
-              label="Звуковые эффекты"
-              value={sfxVol}
-              min={0}
-              max={100}
-              onChange={(v) => { setSfxVol(v); persist('volodka_sfx_volume', v); applyAudioSettings(); }}
-              unit="%"
-            />
-            <CyberSlider
-              label="Окружение"
-              value={ambientVol}
-              min={0}
-              max={100}
-              onChange={(v) => { setAmbientVol(v); persist('volodka_ambient_volume', v); applyAudioSettings(); }}
-              unit="%"
-            />
-            <SectionDivider />
-            <CyberToggle
-              label="Без звука"
-              checked={muted}
-              onChange={(v) => { setMuted(v); persist('volodka_muted', v); applyAudioSettings(); }}
-            />
-            <CyberToggle
-              label="Озвучка реплик (синтез речи)"
-              checked={voiceOver}
-              onChange={(v) => {
-                setVoiceOver(v);
-                persist('volodka_voice_over_enabled', v);
-                writeVoiceOverEnabled(v);
-                if (!v) stopVoiceLinePlayback();
-              }}
-            />
-            <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed">
-              Реплики диалогов проговариваются системным синтезатором речи.
-              Понадобится русский голос в ОС; субтитры реплик показываются
-              внизу экрана. Голосовые файлы (VO) озвучиваются независимо
-              от этой настройки.
-            </p>
+            <SettingsSection title="Микшер" flush>
+              <SettingsSliderRow
+                label="Музыка"
+                value={musicVol}
+                min={0}
+                max={100}
+                onChange={(v) => { setMusicVol(v); persist('volodka_music_volume', v); applyAudioSettings(); }}
+                unit="%"
+              />
+              <SettingsSliderRow
+                label="Звуковые эффекты"
+                value={sfxVol}
+                min={0}
+                max={100}
+                onChange={(v) => { setSfxVol(v); persist('volodka_sfx_volume', v); applyAudioSettings(); }}
+                unit="%"
+              />
+              <SettingsSliderRow
+                label="Окружение"
+                value={ambientVol}
+                min={0}
+                max={100}
+                onChange={(v) => { setAmbientVol(v); persist('volodka_ambient_volume', v); applyAudioSettings(); }}
+                unit="%"
+              />
+            </SettingsSection>
+            <SettingsSection title="Тишина и озвучка">
+              <SettingsSwitchRow
+                label="Без звука"
+                checked={muted}
+                onChange={(v) => { setMuted(v); persist('volodka_muted', v); applyAudioSettings(); }}
+              />
+              <SettingsSwitchRow
+                label="Озвучка реплик (синтез речи)"
+                checked={voiceOver}
+                onChange={(v) => {
+                  setVoiceOver(v);
+                  persist('volodka_voice_over_enabled', v);
+                  writeVoiceOverEnabled(v);
+                  if (!v) stopVoiceLinePlayback();
+                }}
+              />
+              <SettingsHint>
+                Реплики диалогов проговариваются системным синтезатором речи.
+                Понадобится русский голос в ОС; субтитры реплик показываются
+                внизу экрана. Голосовые файлы (VO) озвучиваются независимо
+                от этой настройки.
+              </SettingsHint>
+            </SettingsSection>
           </motion.div>
         );
 
@@ -563,52 +573,54 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             transition={{ duration: 0.2 }}
             className="flex flex-col gap-4"
           >
-            <CyberSlider
-              label="Чувствительность мыши"
-              value={mouseSens}
-              min={1}
-              max={10}
-              onChange={(v) => { setMouseSens(v); persist('volodka_mouse_sens', v); applyVisualSettings(); }}
-            />
-            <CyberToggle
-              label="Инвертировать Y-ось"
-              checked={invertY}
-              onChange={(v) => { setInvertY(v); persist('volodka_invert_y', v); applyVisualSettings(); }}
-            />
-            <CyberToggle
-              label="Захват курсора (FPS)"
-              checked={pointerLock}
-              onChange={(v) => { setPointerLock(v); persist('volodka_pointer_lock', v); applyVisualSettings(); }}
-            />
-            <CyberToggle
-              label="Пропускать кат-сцены входа в локации"
-              checked={skipArrival}
-              onChange={(v) => {
-                setSkipArrival(v);
-                writeSkipArrivalCinematics(v);
-              }}
-            />
-            <p className="text-[10px] font-mono text-slate-500/80 leading-relaxed -mt-2">
-              Пропускает короткие вступительные проходы камеры при входе в локацию.
-              Сюжетные сцены и встречи не затрагиваются.
-            </p>
-            <CyberToggle
-              label="Виброотклик (вибрация)"
-              checked={haptics}
-              onChange={(v) => {
-                setHaptics(v);
-                writeHapticsEnabled(v);
-              }}
-            />
-            <p className="text-[10px] font-mono text-slate-500/80 leading-relaxed -mt-2">
-              Тактильная отдача на мобильных: касания кнопок, урон, повышение
-              уровня, завершение квеста. Действует сразу, без перезагрузки.
-            </p>
-            <SectionDivider />
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
-                Сложность игры
-              </span>
+            <SettingsSection title="Мышь" flush>
+              <SettingsSliderRow
+                label="Чувствительность мыши"
+                value={mouseSens}
+                min={1}
+                max={10}
+                onChange={(v) => { setMouseSens(v); persist('volodka_mouse_sens', v); applyVisualSettings(); }}
+              />
+              <SettingsSwitchRow
+                label="Инвертировать Y-ось"
+                checked={invertY}
+                onChange={(v) => { setInvertY(v); persist('volodka_invert_y', v); applyVisualSettings(); }}
+              />
+              <SettingsSwitchRow
+                label="Захват курсора (FPS)"
+                checked={pointerLock}
+                onChange={(v) => { setPointerLock(v); persist('volodka_pointer_lock', v); applyVisualSettings(); }}
+              />
+            </SettingsSection>
+
+            <SettingsSection title="Кат-сцены и тактильность">
+              <SettingsSwitchRow
+                label="Пропускать кат-сцены входа в локации"
+                checked={skipArrival}
+                onChange={(v) => {
+                  setSkipArrival(v);
+                  writeSkipArrivalCinematics(v);
+                }}
+              />
+              <SettingsHint>
+                Пропускает короткие вступительные проходы камеры при входе в локацию.
+                Сюжетные сцены и встречи не затрагиваются.
+              </SettingsHint>
+              <SettingsSwitchRow
+                label="Виброотклик (вибрация)"
+                checked={haptics}
+                onChange={(v) => {
+                  setHaptics(v);
+                  writeHapticsEnabled(v);
+                }}
+              />
+              <SettingsHint>
+                Тактильная отдача на мобильных: касания кнопок, урон, повышение
+                уровня, завершение квеста. Действует сразу, без перезагрузки.
+              </SettingsHint>
+            </SettingsSection>
+
+            <SettingsSection title="Сложность игры">
               <div className="grid grid-cols-5 gap-2">
                 {(GAME_DIFFICULTY_ORDER as readonly GameDifficulty[]).map((id) => {
                   const meta = DIFFICULTY_META[id];
@@ -621,13 +633,13 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                         setDifficulty(id);
                         useGameStore.getState().setGameDifficulty(id);
                       }}
-                      className={`px-1.5 py-2 font-mono text-[10px] uppercase tracking-wide border rounded transition-all text-center ${
+                      className={`px-1.5 py-2 font-serif text-[11px] uppercase tracking-wide border rounded-md transition-all text-center ${
                         isActive ? 'scale-105' : 'hover:scale-[1.02]'
                       }`}
                       style={{
-                        color: isActive ? meta.color : 'rgba(148, 163, 184, 0.65)',
-                        backgroundColor: isActive ? meta.glowColor : 'rgba(15, 23, 42, 0.5)',
-                        borderColor: isActive ? meta.color + '80' : 'rgba(71, 85, 105, 0.35)',
+                        color: isActive ? meta.color : 'rgba(168, 162, 158, 0.7)',
+                        backgroundColor: isActive ? meta.glowColor : 'rgba(28, 25, 23, 0.5)',
+                        borderColor: isActive ? meta.color + '80' : 'rgba(120, 113, 108, 0.3)',
                         boxShadow: isActive ? `0 0 12px ${meta.glowColor}` : 'none',
                       }}
                     >
@@ -637,52 +649,31 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                   );
                 })}
               </div>
-              <p className="font-mono text-[10px] text-slate-500/80 leading-relaxed -mt-1">
-                {DIFFICULTY_META[difficulty].description}
-              </p>
-            </div>
-            <SectionDivider />
-            {/* Keyboard shortcuts hint */}
-            <div className="flex flex-col gap-2">
-              <span className="font-mono text-xs text-cyan-400/50 uppercase tracking-[0.15em]">
-                Горячие клавиши
-              </span>
-              <div
-                className="rounded-md border border-slate-700/30 p-3"
-                style={{ backgroundColor: 'rgba(15, 23, 42, 0.5)' }}
-              >
+              <SettingsHint>{DIFFICULTY_META[difficulty].description}</SettingsHint>
+            </SettingsSection>
+
+            <SettingsSection title="Горячие клавиши">
+              <div className="rounded-md border border-stone-500/15 p-3" style={{ backgroundColor: 'rgba(28, 25, 23, 0.5)' }}>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5">
-                  {[
-                    ['W A S D', 'Движение'],
-                    ['Shift', 'Бег'],
-                    ['Space', 'Прыжок'],
-                    ['E', 'Взаимодействие'],
-                    ['I', 'Инвентарь'],
-                    ['J', 'Журнал'],
-                    ['Q', 'Задания'],
-                    ['P', 'Стихи'],
-                    ['Tab / M', 'Карта мира'],
-                    ['Esc', 'Пауза'],
-                    ['F1', 'Справка'],
-                  ].map(([key, desc]) => (
+                  {KEYBOARD_ROWS.map(([key, desc]) => (
                     <div key={key} className="flex items-center gap-2">
                       <kbd
                         className="inline-flex items-center justify-center min-w-[32px] h-5 px-1.5 rounded border font-mono text-[10px]"
                         style={{
-                          backgroundColor: 'rgba(15, 23, 42, 0.7)',
-                          borderColor: 'rgba(100, 116, 139, 0.25)',
-                          color: 'rgba(203, 213, 225, 0.7)',
+                          backgroundColor: 'rgba(28, 25, 23, 0.7)',
+                          borderColor: 'rgba(120, 113, 108, 0.25)',
+                          color: 'rgba(214, 211, 209, 0.7)',
                           boxShadow: '0 1px 2px rgba(0, 0, 0, 0.3)',
                         }}
                       >
                         {key}
                       </kbd>
-                      <span className="font-mono text-[11px] text-slate-400/60">{desc}</span>
+                      <span className="font-serif text-[11px] text-stone-400/60">{desc}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            </div>
+            </SettingsSection>
           </motion.div>
         );
     }
@@ -691,7 +682,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
   return (
     <FocusTrap initialFocusRef={closeButtonRef}>
     <motion.div
-      className="relative z-10 w-full max-w-lg mx-4"
+      className="relative z-10 my-auto w-full max-w-lg mx-4"
       initial={{ scale: 0.9, opacity: 0, y: 30 }}
       animate={{ scale: 1, opacity: 1, y: 0 }}
       exit={{ scale: 0.9, opacity: 0, y: 30 }}
@@ -701,53 +692,31 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
       }}
       {...dialogProps}
     >
-      <h2 {...titleProps} className="sr-only">Настройки</h2>
-      <div
-        className="rounded-lg border overflow-hidden"
-        style={{
-          background:
-            'linear-gradient(180deg, rgba(8, 12, 18, 0.98) 0%, rgba(5, 8, 14, 0.99) 100%)',
-          borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.2)',
-          boxShadow:
-            '0 0 60px rgb(var(--cyber-cyan-rgb) / 0.06), 0 8px 40px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgb(var(--cyber-cyan-rgb) / 0.05)',
-          clipPath:
-            'polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px))',
-        }}
-      >
-        {/* ── Terminal Header ── */}
-        <div
-          className="flex items-center justify-between px-4 py-2.5 border-b"
-          style={{
-            borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.15)',
-            backgroundColor: 'rgba(0, 0, 0, 0.4)',
-          }}
-        >
-          <div className="flex items-center gap-2">
-            {/* Colored dots */}
-            <span className="h-2 w-2 rounded-full bg-emerald-500/80" />
-            <span className="h-2 w-2 rounded-full bg-amber-400/80" />
-            <span className="h-2 w-2 rounded-full bg-red-500/80" />
-            <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em] text-cyan-500/35">
-              volodka://settings
-            </span>
-          </div>
+      <div className="cinematic-menu-panel">
+        {/* ── Header «Тетради» ── */}
+        <header className="relative px-5 pb-2 pt-4">
+          <p className="font-serif text-[10px] tracking-[0.3em] uppercase text-stone-400/55 mb-1 text-center">
+            Параметры
+          </p>
+          <h2 {...titleProps} className="font-serif text-2xl tracking-[0.16em] text-stone-100/90 text-center">
+            Настройки
+          </h2>
           <button
             ref={closeButtonRef}
             type="button"
             onClick={onClose}
-            /* FIX (v4.17.1): тач-таргет ≥44px (было 28×28 — меньше минимума
-             * для сенсорных экранов). */
-            className="w-11 h-11 -mr-2 -mt-2 flex items-center justify-center rounded-md text-slate-500 hover:text-slate-200 hover:bg-white/5 transition-colors font-mono text-base"
+            /* Тач-таргет ≥44px (контракт v4.17.1) */
+            className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-md font-serif text-base text-stone-400/70 transition-colors hover:bg-white/5 hover:text-stone-100"
             aria-label="Закрыть настройки"
           >
             ✕
           </button>
-        </div>
+        </header>
 
-        {/* ── Tab Buttons ── */}
+        {/* ── Tabs ── */}
         <div
-          className="flex border-b px-4 pt-3 gap-1"
-          style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
+          className="flex justify-center gap-1 border-b px-4 pt-1"
+          style={{ borderColor: 'rgba(120, 113, 108, 0.2)' }}
         >
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -755,26 +724,20 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className="relative flex items-center gap-1.5 px-3 py-2 font-mono text-xs tracking-wide transition-colors rounded-t-md"
+                className="relative px-3 py-2 font-serif text-[13px] uppercase tracking-[0.18em] transition-colors rounded-t-md"
                 style={{
-                  color: isActive
-                    ? 'rgb(var(--cyber-cyan-rgb) / 0.9)'
-                    : 'rgba(148, 163, 184, 0.5)',
-                  backgroundColor: isActive
-                    ? 'rgb(var(--cyber-cyan-rgb) / 0.08)'
-                    : 'transparent',
+                  color: isActive ? 'rgba(240, 214, 158, 0.9)' : 'rgba(168, 162, 158, 0.55)',
+                  backgroundColor: isActive ? 'rgba(226, 168, 75, 0.07)' : 'transparent',
                 }}
               >
-                <span className="text-sm">{tab.icon}</span>
                 <span>{tab.label}</span>
-                {/* Active indicator */}
                 {isActive && (
                   <motion.div
                     className="absolute bottom-0 left-0 right-0 h-0.5"
                     style={{
                       background:
-                        'linear-gradient(90deg, transparent, rgb(var(--cyber-cyan-rgb) / 0.6), transparent)',
-                      boxShadow: '0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3)',
+                        'linear-gradient(90deg, transparent, rgba(226, 168, 75, 0.6), transparent)',
+                      boxShadow: '0 0 8px rgba(226, 168, 75, 0.3)',
                     }}
                     layoutId="settings-tab-indicator"
                     transition={{
@@ -790,92 +753,41 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
         </div>
 
         {/* ── Tab Content ── */}
-        <div className="px-5 py-5 min-h-[260px] max-h-[55vh] overflow-y-auto custom-scrollbar">
+        <div className="px-5 py-4 min-h-[260px] max-h-[55vh] overflow-y-auto custom-scrollbar">
           <AnimatePresence mode="wait">{renderContent()}</AnimatePresence>
         </div>
 
         {/* ── Footer ── */}
         <div
-          className="px-5 py-3 border-t flex items-center justify-between"
-          style={{ borderColor: 'rgb(var(--cyber-cyan-rgb) / 0.1)' }}
+          className="border-t flex items-center justify-between px-5 py-3"
+          style={{ borderColor: 'rgba(120, 113, 108, 0.2)' }}
         >
-          {/* Reset button */}
           <motion.button
             onClick={resetSettings}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="font-mono text-[11px] tracking-wider uppercase px-3 py-1.5 rounded border transition-colors"
-            style={{
-              color: 'rgba(226, 168, 75, 0.7)',
-              borderColor: 'rgba(226, 168, 75, 0.2)',
-              backgroundColor: 'rgba(226, 168, 75, 0.05)',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(226, 168, 75, 0.4)';
-              e.currentTarget.style.background = 'rgba(226, 168, 75, 0.1)';
-              e.currentTarget.style.color = 'rgba(226, 168, 75, 0.9)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = 'rgba(226, 168, 75, 0.2)';
-              e.currentTarget.style.background = 'rgba(226, 168, 75, 0.05)';
-              e.currentTarget.style.color = 'rgba(226, 168, 75, 0.7)';
-            }}
+            className="rounded-md border px-3 py-1.5 font-serif text-[11px] uppercase tracking-[0.2em] text-[rgba(240,214,158,0.85)] bg-[rgba(226,168,75,0.06)] border-[rgba(226,168,75,0.25)] transition-colors hover:border-[rgba(226,168,75,0.5)] hover:bg-[rgba(226,168,75,0.12)] hover:text-[rgba(240,214,158,1)]"
           >
             Сбросить настройки
           </motion.button>
 
-          {/* ESC hint */}
           <div className="flex items-center gap-1.5">
             <kbd
               className="inline-flex items-center justify-center px-1.5 h-5 rounded border font-mono text-[10px]"
               style={{
-                backgroundColor: 'rgba(15, 23, 42, 0.6)',
-                borderColor: 'rgba(100, 116, 139, 0.25)',
-                color: 'rgba(148, 163, 184, 0.5)',
+                backgroundColor: 'rgba(28, 25, 23, 0.6)',
+                borderColor: 'rgba(120, 113, 108, 0.25)',
+                color: 'rgba(168, 162, 158, 0.5)',
               }}
             >
               Esc
             </kbd>
-            <span className="font-mono text-[10px] text-slate-500/40 tracking-wide">
+            <span className="font-serif text-[10px] text-stone-500/40 tracking-wide">
               назад
             </span>
           </div>
         </div>
       </div>
-
-      {/* Corner glow decorations */}
-      <div
-        className="absolute -top-px -left-px w-8 h-8 pointer-events-none"
-        style={{
-          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
-          borderLeft: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
-          boxShadow: '-2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
-        }}
-      />
-      <div
-        className="absolute -top-px -right-px w-8 h-8 pointer-events-none"
-        style={{
-          borderTop: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
-          borderRight: '2px solid rgb(var(--cyber-cyan-rgb) / 0.3)',
-          boxShadow: '2px -2px 10px rgb(var(--cyber-cyan-rgb) / 0.1)',
-        }}
-      />
-      <div
-        className="absolute -bottom-px -left-px w-8 h-8 pointer-events-none"
-        style={{
-          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
-          borderLeft: '2px solid rgba(226, 168, 75, 0.2)',
-          boxShadow: '-2px 2px 10px rgba(226, 168, 75, 0.05)',
-        }}
-      />
-      <div
-        className="absolute -bottom-px -right-px w-8 h-8 pointer-events-none"
-        style={{
-          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
-          borderRight: '2px solid rgba(226, 168, 75, 0.2)',
-          boxShadow: '2px 2px 10px rgba(226, 168, 75, 0.05)',
-        }}
-      />
     </motion.div>
     </FocusTrap>
   );
@@ -901,7 +813,7 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
     <AnimatePresence mode="wait">
       {open && (
         <motion.div
-          className="fixed inset-0 flex items-center justify-center"
+          className="fixed inset-0 flex items-center justify-center overflow-y-auto"
           style={{ zIndex: UI_LAYERS.MENU }}
           data-testid="settings-panel"
           initial={{ opacity: 0 }}
@@ -917,15 +829,6 @@ export function SettingsPanel({ open, onClose }: SettingsPanelProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-          />
-
-          {/* Scanlines overlay on backdrop */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              background:
-                'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.04) 2px, rgba(0, 0, 0, 0.04) 4px)',
-            }}
           />
 
           {/* Panel content — remounts on each open for fresh localStorage reads */}
