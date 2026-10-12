@@ -11,11 +11,18 @@ import {
   bottomCenterHintSecondaryPx,
   bottomCenterHintTertiaryPx,
   bottomInteractPromptPx,
+  bottomMoralCompassPx,
   bottomStatusEffectsPx,
   explorationAchievementCardSafeTopPx,
+  explorationAchievementCenterTopPx,
+  explorationBottomStackHeightPx,
   explorationDayNightTopPx,
+  explorationEventToastTopPx,
+  explorationLootTopPx,
+  explorationLoreToastTopPx,
   explorationMinimapTopPx,
   explorationQuestCardTopPx,
+  explorationToastStackBottomPx,
   explorationWeatherTopPx,
 } from './hudLayout';
 
@@ -111,6 +118,40 @@ describe('слот-сетка HUD: правый нижний угол (микс�
     const helpTop = bottomStatusEffectsPx() + 44;
     // Визуализатор — над помощью.
     expect(bottomAudioVisualizerPx()).toBeGreaterThanOrEqual(helpTop + 44);
+  });
+});
+
+describe('слот-сетка HUD: v4.48 — левая колонка, центровые тосты, нижне-левый стек', () => {
+  it('lore-тосты — под полным бюджетом фида (не делят якорь)', () => {
+    expect(explorationLoreToastTopPx()).toBe(
+      explorationLootTopPx() + EXPLORATION_HUD_LAYOUT.HUD_FEED_BAND_HEIGHT + GAP,
+    );
+    // Фид (top 66, до 3 карточек) кончается выше лор-тостов.
+    expect(explorationLootTopPx() + EXPLORATION_HUD_LAYOUT.HUD_FEED_BAND_HEIGHT)
+      .toBeLessThanOrEqual(explorationLoreToastTopPx());
+  });
+
+  it('достижения — top-center под полосой событий (не делят слот с день/ночь)', () => {
+    expect(explorationAchievementCenterTopPx()).toBe(
+      explorationEventToastTopPx() + EXPLORATION_HUD_LAYOUT.EVENT_TOAST_BAND_HEIGHT + GAP,
+    );
+    // Слот 596 в правой колонке теперь только у день/ночь.
+    expect(explorationDayNightTopPx()).toBe(explorationAchievementCardSafeTopPx());
+  });
+
+  it('нижне-левый стек тостов — над всей нижней центровой цепочкой', () => {
+    expect(explorationToastStackBottomPx(false)).toBeGreaterThanOrEqual(
+      explorationBottomStackHeightPx(false) + GAP,
+    );
+    expect(explorationToastStackBottomPx(true)).toBeGreaterThanOrEqual(
+      explorationBottomStackHeightPx(true) + GAP,
+    );
+  });
+
+  it('моральный компас — выше аудио-визуализатора (не налегает на кнопку помощи)', () => {
+    expect(bottomMoralCompassPx()).toBeGreaterThanOrEqual(bottomAudioVisualizerPx() + 44);
+    // И выше кнопки помощи (statusEffects + 44 + высота 48).
+    expect(bottomMoralCompassPx()).toBeGreaterThanOrEqual(bottomStatusEffectsPx() + 92);
   });
 });
 

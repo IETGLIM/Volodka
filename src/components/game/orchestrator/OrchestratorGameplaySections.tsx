@@ -1,6 +1,8 @@
 import { lazy, memo, Suspense, useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { explorationToastStackBottomPx } from '@/shared/constants/hudLayout';
+import { useMobileDetection } from './useMobileDetection';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useSceneTransitionOverlayController } from '@/hooks/useSceneTransitionOverlayController';
 import {
@@ -123,7 +125,6 @@ import BuffDebuffTracker from '@/components/game/hud/parts/BuffDebuffTracker';
 import { SkillRechargeHUD } from '@/components/game/hud/parts/SkillRechargeHUD';
 import { useTrophyAchievementWatcher } from '@/engine/achievements/achievementWatcher';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
-import { useMobileDetection } from './useMobileDetection';
 import { useGameStore } from '@/store/gameStore';
 import { getSceneLocationCategory } from '@/config/sceneLocationCategories';
 import {
@@ -242,11 +243,28 @@ function isAnyMinigameOpen(props: GameplayMinigameProps): boolean {
 /** Exploration-only notification toasts and guidance. */
 export const GameplayExplorationNotifications = memo(function GameplayExplorationNotifications() {
   const profile = useGameplayPresentationProfile();
+  const isMobile = useMobileDetection();
   if (!isExplorationHudProfile(profile)) return null;
 
   return (
     <>
-      <NotificationToasts />
+      {/* FIX (v4.48, overlap): единый нижне-левый flex-стек транзиентных
+        * тостов (стат-пипсы → крафт → лут). Раньше у лута и стат-тостов
+        * были собственные fixed-позиции, налегавшие на фид (top 66) и
+        * квест-карту (top 462), а крафт делил слот с режиссурой первых
+        * минут (188/186). Flex-стек исключает наложения по построению. */}
+      <div
+        className="fixed left-3 sm:left-4 flex flex-col-reverse items-start gap-2 pointer-events-none"
+        data-exploration-ui
+        style={{
+          bottom: `calc(${explorationToastStackBottomPx(isMobile)}px + env(safe-area-inset-bottom, 0px))`,
+          zIndex: UI_LAYERS.TOASTS,
+        }}
+      >
+        <NotificationToasts />
+        <CraftingDiscoveryToast />
+        <LootNotification />
+      </div>
       <Suspense fallback={null}>
         <LazyQuestNotificationSystem />
       </Suspense>
@@ -257,11 +275,9 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
         <LazyPlayerLostHintToast />
       </Suspense>
       <WeatherAlertNotification />
-      <CraftingDiscoveryToast />
       <GameSystemToast />
       {/* MUST stay mounted during exploration: listens for ui:loot_notification on EventBus. */}
-      <LootNotification />
-      {/* Session 9: item pickup popups (rarity-colored) — listens for showItemGained() calls. */}
+      {/* LootNotification перенесён в стек выше (FIX v4.48) — рендер там. */}
       <ItemGainedPopupLayer />
       {/* Localized stat-change pips (karma/energy/stress/XP) — pool-based, TTL-bounded.
           Complements the FloatingText layer with anchor-positioned, color-coded feedback. */}

@@ -269,7 +269,7 @@ export function DayNightCycleIndicator() {
     <>
       {/* Desktop: Full SVG arc widget */}
       <div
-        className="fixed pointer-events-none hidden lg:block hud-right-column-widget hud-widget-daynight"
+        className="fixed pointer-events-none hidden lg:block hud-right-column-widget hud-widget-daynight hud-vh-guard-daynight"
         style={{ top: explorationDayNightTopPx(), right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET, zIndex: UI_LAYERS.HUD + 1, ...quietStyle }}
         role="img"
         aria-label={ariaLabel}

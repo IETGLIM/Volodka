@@ -13,7 +13,7 @@ import { eventBus } from '@/engine/EventBus';
 import { playAchievementUnlockSound } from '@/engine/achievementAudio';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
-import { explorationAchievementCardSafeTopPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
+import { explorationAchievementCenterTopPx } from '@/shared/constants/hudLayout';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { CATEGORY_META, RARITY_META, TROPHY_ACHIEVEMENTS, type AchievementCategory } from '@/data/achievements';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
@@ -326,13 +326,16 @@ export function AchievementNotification() {
   return (
     <>
       <AriaLiveRegion message={liveAnnounce} priority="assertive" />
+      {/* FIX (v4.48, overlap): слот 596 в правой колонке делили два виджета —
+        * тосты достижений и постоянный индикатор день/ночь. Достижения —
+        * праздничный транзиент: теперь top-center под полосой событий. */}
       <div
-      className="fixed flex flex-col items-end gap-2 pointer-events-none"
+      className="fixed flex flex-col items-center gap-2 pointer-events-none -translate-x-1/2"
       data-exploration-ui
       style={{
         zIndex: UI_LAYERS.TOASTS + 1,
-        top: explorationAchievementCardSafeTopPx(),
-        right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET,
+        top: explorationAchievementCenterTopPx(),
+        left: '50%',
         pointerEvents: 'none',
       }}
     >

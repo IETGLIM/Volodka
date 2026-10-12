@@ -24,8 +24,13 @@ export const UI_LAYERS = {
   TOASTS: 35,
   /** Examine panel */
   EXAMINE: 38,
-  /** Mini-games (codebreaker, terminal, bash) */
-  MINIGAME: 40,
+  /** Mini-games (codebreaker, terminal, bash).
+   *  FIX (v4.48, overlap): было 40 — НИЖЕ хотбара (QuickAccessToolbar =
+   *  MOBILE_CONTROLS-1 = 41) и тач-контролов (42). На тач-устройстве
+   *  плавающий джойстик перехватывал ввод мини-игры (слушает всю левую
+   *  половину экрана). Теперь мини-игры ВЫШЕ всего HUD-слоя, но ниже
+   *  боевого UI (50) и меню паузы (58). */
+  MINIGAME: 46,
   /** Pause / settings menu — below panels, above examine */
   MENU: 58,
   /** Combat UI */

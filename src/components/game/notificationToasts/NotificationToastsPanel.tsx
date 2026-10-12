@@ -5,8 +5,6 @@ import { useNotificationToastController } from '@/components/game/notificationTo
 import { shouldHideNotificationToastContainer } from '@/engine/toast/notificationToastPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
-import { explorationStatToastTopPx } from '@/shared/constants/hudLayout';
-import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 function NotificationToastsPanelInner() {
   const reducedMotion = useEffectiveReducedMotion();
@@ -27,15 +25,16 @@ function NotificationToastsPanelInner() {
   });
 
   return (
+    /* FIX (v4.48, overlap): убрана собственная fixed-позиция (top 462 —
+     * середина квест-карты правой колонки). Панель — flex-ребёнок единого
+     * нижне-левого стека транзиентных тостов (OrchestratorGameplaySections). */
     <div
       role="status"
       aria-live="polite"
       aria-hidden={hidden}
       data-exploration-ui
-      className="notification-toast-container fixed right-3 flex flex-col items-end gap-2 sm:right-4 backdrop-blur-[4px] rounded-lg p-0.5"
+      className="notification-toast-container flex flex-col items-start gap-2 backdrop-blur-[4px] rounded-lg p-0.5"
       style={{
-        top: explorationStatToastTopPx(),
-        zIndex: UI_LAYERS.TOASTS,
         opacity: hidden ? 0 : 1,
         visibility: hidden ? 'hidden' : 'visible',
         pointerEvents: hidden ? 'none' : 'none',

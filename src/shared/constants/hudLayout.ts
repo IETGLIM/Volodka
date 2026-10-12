@@ -39,7 +39,11 @@ export const EXPLORATION_HUD_LAYOUT = {
   BOTTOM_STATUS_EFFECTS: 72,
   /** Live poem TTL chips — above status effects on the left */
   BOTTOM_POEM_ACTIVE_EFFECTS: 124,
-  BOTTOM_MORAL_COMPASS: 128,
+  /** Moral compass widget — above the audio visualizer.
+   *  FIX (v4.48, overlap): было 128 — виджет налегал на кнопку помощи
+   *  (116 + высота 48 = 164). Цепочка правого нижнего угла: миксер (16)
+   *  → статусы (72) → помощь (116) → визуализатор (168) → компас (220). */
+  BOTTOM_MORAL_COMPASS: 220,
   BOTTOM_AUTOSAVE: 16,
   BOTTOM_QUEST_TOAST: 76,
   RIGHT_INSET_COMPACT: 16,
@@ -47,6 +51,12 @@ export const EXPLORATION_HUD_LAYOUT = {
   MOBILE_BOTTOM_CONTROLS_RESERVE: 168,
   /** Approximate height of the DayNightCycleIndicator widget */
   DAY_NIGHT_HEIGHT: 145,
+  /** FIX (v4.48): высота полосы top-center тостов событий (EventNotificationPopup)
+   *  под которой центрируются тосты достижений. */
+  EVENT_TOAST_BAND_HEIGHT: 140,
+  /** FIX (v4.48): бюджет высоты левой колонки фида (HUDNotificationFeed:
+   *  до 3 карточек ~90px). Lore-тосты больше не делят якорь с фидом. */
+  HUD_FEED_BAND_HEIGHT: 300,
 } as const;
 
 function mobileBottomReserve(isMobile: boolean): number {
@@ -101,9 +111,27 @@ export function explorationAchievementCardSafeTopPx(): number {
   return explorationQuestCardTopPx() + QUEST_OBJECTIVE_CARD_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }
 
-/** Stat/karma toasts — below achievement column */
-export function explorationStatToastTopPx(): number {
-  return explorationAchievementTopPx() + 88;
+/** Stat/karma toasts — REMOVED in v4.48: были top-центр правой колонки
+ *  (minimapBottom+94 = середина квест-карты). Стат-тосты переехали в
+ *  нижне-левый flex-стек (см. explorationToastStackBottomPx). */
+
+/** FIX (v4.48, overlap): тосты достижений переехали из правой колонки
+ *  (слот 596 совпадал с постоянным виджетом день/ночь) в top-center —
+ *  под полосой событий. Праздничный момент — по центру, как в играх. */
+export function explorationAchievementCenterTopPx(): number {
+  return (
+    explorationEventToastTopPx()
+    + EXPLORATION_HUD_LAYOUT.EVENT_TOAST_BAND_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+  );
+}
+
+/** FIX (v4.48, overlap): единый нижне-левый flex-стек транзиентных тостов
+ *  (стат-пипсы, крафт, лут). Раньше лут и фид делили один якорь (top 66,
+ *  лут рисовался поверх фида), а стат-тосты наезжали на квест-карту.
+ *  Стек стоит над всей нижней центровой цепочкой. */
+export function explorationToastStackBottomPx(isMobile = false): number {
+  return explorationBottomStackHeightPx(isMobile) + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }
 
 /** Event popups (combat/scene) — top-CENTER, ниже топ-бара и бара здоровья
@@ -115,11 +143,14 @@ export function explorationEventToastTopPx(): number {
   return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP + 38;
 }
 
-/** Lore/codex discovery toasts — top-left under objective strip */
+/** Lore/codex discovery toasts — top-left ПОД колонкой фида.
+ *  FIX (v4.48, overlap): раньше слот = objectiveStrip+6 = 146 — внутри
+ *  вертикального диапазона фида (66..~330, до 3 карточек). Теперь лор
+ *  появляется под полным бюджетом фида. */
 export function explorationLoreToastTopPx(): number {
   return (
-    explorationObjectiveTopPx()
-    + EXPLORATION_HUD_LAYOUT.OBJECTIVE_STRIP_HEIGHT
+    explorationLootTopPx()
+    + EXPLORATION_HUD_LAYOUT.HUD_FEED_BAND_HEIGHT
     + EXPLORATION_HUD_LAYOUT.SLOT_GAP
   );
 }

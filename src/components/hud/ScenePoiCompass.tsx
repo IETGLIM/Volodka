@@ -200,7 +200,7 @@ const RadarInner = memo(function RadarInner({
   return (
     <div
       ref={containerRef}
-      className="fixed pointer-events-none hidden lg:block hud-right-column-widget"
+      className="fixed pointer-events-none hidden lg:block hud-right-column-widget hud-vh-guard-poi"
       data-testid="scene-poi-compass"
       style={{
         top: explorationPoiCompassTopPx(),

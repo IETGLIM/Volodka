@@ -42,6 +42,7 @@ import {
   LucideIcon,
 } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 /* ─── Type Definitions ─── */
 
@@ -156,6 +157,15 @@ const POSITION_STYLES: Record<TrackerPosition, React.CSSProperties> = {
   'top-right': { top: 84, right: 16 },
   'bottom-left': { bottom: 16, left: 16 },
   'bottom-right': { bottom: 16, right: 16 },
+};
+
+/* FIX (v4.48, overlap): на тач-устройствах миникарта висит на
+ * top: 56 + safe-area, высота 222 — фиксированные 84px клали баффы
+ * прямо на карту. Мобильный top-right опускает трекер под её нижний
+ * край (56 + 222 + зазор 14 = 292 + safe-area). */
+const MOBILE_TOP_RIGHT: React.CSSProperties = {
+  top: 'calc(env(safe-area-inset-top, 0px) + 292px)',
+  right: 8,
 };
 
 /* ─── Utility Functions ─── */
@@ -602,7 +612,9 @@ const BuffDebuffTracker = memo(function BuffDebuffTracker({
   /* ── Computed Values ── */
   
   const iconSize = compact ? ICON_SIZES.compact : ICON_SIZES.normal;
-  const positionStyle = POSITION_STYLES[position];
+  const isMobile = useIsMobile();
+  const positionStyle =
+    isMobile && position === 'top-right' ? MOBILE_TOP_RIGHT : POSITION_STYLES[position];
 
   // Split effects into visible and hidden
   const visibleEffects = effects.slice(0, maxVisible);

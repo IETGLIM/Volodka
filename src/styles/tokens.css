@@ -118,13 +118,23 @@ html { background: #000 !important; }
   --z-dialogue: 30;
   --z-toasts: 35;
   --z-examine: 38;
-  --z-minigame: 40;
+  /* FIX (v4.48): лестница синхронизирована с uiLayers.ts — добавлены
+   * отсутствовавшие --z-voice-subtitle / --z-drag-ghost /
+   * --z-notification-root / --z-poem-power-*; мини-игры подняты выше
+   * тач-контролов (джойстик перехватывал ввод мини-игр). */
+  --z-voice-subtitle: 37;
+  --z-minigame: 46;
   --z-mobile-controls: 42;
   --z-menu: 58;
   --z-combat: 50;
   --z-damage-flash: 51;
   --z-panel: 60;
   --z-tooltip: 62;
+  --z-drag-ghost: 63;
+  --z-notification-root: 65;
+  --z-poem-world-effect: 91;
+  --z-poem-power-effect: 92;
+  --z-poem-power-effect-label: 93;
   --z-cinematic-transition: 95;
   --z-loading: 100;
   --z-dev-panel: 200;

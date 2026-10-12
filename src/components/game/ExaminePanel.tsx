@@ -105,7 +105,10 @@ export function ExaminePanel({
           exit={{ opacity: 0, y: 12 }}
           className="fixed left-0 right-0 px-4 pointer-events-auto"
           style={{
-            zIndex: UI_LAYERS.DIALOGUE,
+            /* FIX (v4.48): был слой DIALOGUE (30) при живом EXAMINE (38) —
+             * слой осмотра фактически не использовался. Теперь панель
+             * осмотр на своём слое: выше тостов, ниже мини-игр. */
+            zIndex: UI_LAYERS.EXAMINE,
             bottom: diegeticDialogueBottomPadCss(isMobile, !suppressBottomHud),
           }}
           role="dialog"

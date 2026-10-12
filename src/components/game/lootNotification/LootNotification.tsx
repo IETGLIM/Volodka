@@ -5,8 +5,6 @@ import { useLootNotifications } from '@/components/game/lootNotification/useLoot
 import { buildLootAnnouncement } from '@/engine/loot/lootNotificationPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
-import { explorationLootTopPx } from '@/shared/constants/hudLayout';
-import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 export const LootNotification = memo(function LootNotification() {
   const reducedMotion = useEffectiveReducedMotion();
@@ -18,9 +16,11 @@ export const LootNotification = memo(function LootNotification() {
     : '';
 
   return (
+    /* FIX (v4.48, overlap): убрана fixed-позиция (top 66 — тот же якорь,
+     * что у HUDNotificationFeed: лут рисовался поверх фида, z 35 против 12).
+     * Теперь лут — flex-ребёнок нижне-левого стека транзиентных тостов. */
     <div
-      className="fixed left-3 sm:left-4 flex flex-col gap-2 pointer-events-none"
-      style={{ top: explorationLootTopPx(), zIndex: UI_LAYERS.TOASTS }}
+      className="flex flex-col items-start gap-2 pointer-events-none"
       data-exploration-ui
       role="status"
       aria-live="polite"
