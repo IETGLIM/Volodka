@@ -1,0 +1,65 @@
+/* ─── Volodka RPG – «Собрание стихов»: разворот тетради (v4.48.9) ───
+ * Разворот «Ночной тетради» внутри панели стихов: те же токены и классы
+ * .vk-intro-* (intro-notebook.css), что и в интро-стихе — единая подача.
+ * Модификаторы .vk-book-* адаптируют лист под панель: лист растягивается
+ * на всю ширину панели, страницы скроллятся независимо, строка янтарной
+ * разметки полей остаётся неподвижной при прокрутке длинных стихов.
+ *
+ * Тексты стихов не трогаются (hash-снапшот validate:protected) —
+ * меняется только подача. Ноль canvas/JS-циклов: только статичный CSS.
+ */
+
+/* Лист тетради внутри панели: вместо ширины интро-экрана — вся ширина
+   панели; высоту ограничивает контейнер панели. Специфичность (0,2,0)
+   намеренно бьёт одиночный .vk-intro-sheet независимо от порядка импорта. */
+.vk-intro-sheet.vk-book-sheet {
+  width: 100%;
+  max-height: 100%;
+  min-height: 0;
+  border-radius: 2px;
+}
+
+/* Страница разворота в панели: собственный скролл (длинные стихи не
+   должны ломать разворот), центрирование коротких через my-auto внутри.
+   Растягивается на всю страницу (родитель .vk-intro-page — flex-column),
+   а у правой страницы линия полей остаётся снаружи скролла. */
+.vk-intro-page.vk-book-page {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(157, 179, 200, 0.18) transparent;
+}
+.vk-book-page::-webkit-scrollbar {
+  width: 5px;
+}
+.vk-book-page::-webkit-scrollbar-thumb {
+  background: rgba(157, 179, 200, 0.18);
+  border-radius: 3px;
+}
+
+/* Строки стиха на правой странице: лёгкий чернильный ореол, как от
+   перьевого нажима на тёмной бумаге (дешёвый text-shadow, без blur-фильтров) */
+.vk-book-ink {
+  text-shadow: 0 0 1px rgba(234, 228, 214, 0.1);
+}
+
+/* Небольшой лист-номер в шапке разворота — уже есть .vk-intro-sheetlabel;
+   здесь только приглушённый вариант для имени автора справа */
+.vk-book-sheetlabel-dim {
+  color: rgba(110, 127, 144, 0.45);
+}
+
+/* Уважение к reduced-motion: в панели фонарь тоже замирает
+   (у intro-notebook.css своё правило — дублируем на случай изоляции файла) */
+@media (prefers-reduced-motion: reduce) {
+  .vk-intro-lantern {
+    animation: none;
+  }
+}

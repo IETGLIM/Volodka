@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { PanelWrapper } from '@/components/game/PanelWrapper';
 import { PoemDetailView, PoemListView } from '@/components/game/poetryBook/PoemViews';
+import { PoemSpreadView } from '@/components/game/poetryBook/PoemSpreadView';
 import { PoetryBookTabs } from '@/components/game/poetryBook/PoetryBookTabs';
 import { PowersTab } from '@/components/game/poetryBook/PowersTab';
 import { usePoetryBookController } from '@/components/game/poetryBook/usePoetryBookController';
@@ -20,6 +21,7 @@ export type PoetryBookProps = {
 function PoetryBookInner({ open, onClose }: PoetryBookProps) {
   const book = usePoetryBookController(open, onClose);
   const pageTurnVariants = getPageTurnVariants(book.reducedMotion);
+  const spreadActive = book.selectedPoem !== null && book.viewMode === 'spread';
 
   return (
     <PanelWrapper
@@ -29,7 +31,7 @@ function PoetryBookInner({ open, onClose }: PoetryBookProps) {
       urlPath={POETRY_BOOK_LABELS.urlPath}
       accentColor="amber"
       layout="centered"
-      maxWidth="max-w-xl"
+      maxWidth={spreadActive ? 'max-w-3xl' : 'max-w-xl'}
       icon={<BookOpen className="size-5 text-amber-400/80" aria-hidden="true" />}
       headerExtra={(
         <div className="flex flex-col items-end">
@@ -96,21 +98,43 @@ function PoetryBookInner({ open, onClose }: PoetryBookProps) {
                   id="poetry-book-panel-poems"
                   aria-labelledby="poetry-book-tab-poems"
                 >
-                  <PoemDetailView
-                    selectedPoem={book.selectedPoem}
-                    displayedLines={book.displayedLines}
-                    done={book.done}
-                    skipAll={book.skipAll}
-                    marginNote={book.marginNote}
-                    pageNumber={book.pageNumber}
-                    totalPages={book.totalPages}
-                    currentPoemIndex={book.currentPoemIndex}
-                    reducedMotion={book.reducedMotion}
-                    contentRef={book.contentRef}
-                    handleBack={book.handleBack}
-                    handlePrevPoem={book.handlePrevPoem}
-                    handleNextPoem={book.handleNextPoem}
-                  />
+                  {spreadActive ? (
+                    <PoemSpreadView
+                      selectedPoem={book.selectedPoem}
+                      displayedLines={book.displayedLines}
+                      done={book.done}
+                      skipAll={book.skipAll}
+                      marginNote={book.marginNote}
+                      pageNumber={book.pageNumber}
+                      totalPages={book.totalPages}
+                      currentPoemIndex={book.currentPoemIndex}
+                      reducedMotion={book.reducedMotion}
+                      contentRef={book.contentRef}
+                      handleBack={book.handleBack}
+                      handlePrevPoem={book.handlePrevPoem}
+                      handleNextPoem={book.handleNextPoem}
+                      viewMode={book.viewMode}
+                      onToggleViewMode={book.handleToggleViewMode}
+                    />
+                  ) : (
+                    <PoemDetailView
+                      selectedPoem={book.selectedPoem}
+                      displayedLines={book.displayedLines}
+                      done={book.done}
+                      skipAll={book.skipAll}
+                      marginNote={book.marginNote}
+                      pageNumber={book.pageNumber}
+                      totalPages={book.totalPages}
+                      currentPoemIndex={book.currentPoemIndex}
+                      reducedMotion={book.reducedMotion}
+                      contentRef={book.contentRef}
+                      handleBack={book.handleBack}
+                      handlePrevPoem={book.handlePrevPoem}
+                      handleNextPoem={book.handleNextPoem}
+                      viewMode={book.viewMode}
+                      onToggleViewMode={book.handleToggleViewMode}
+                    />
+                  )}
                 </motion.div>
               ) : (
                 <motion.div

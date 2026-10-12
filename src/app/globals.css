@@ -56,6 +56,7 @@
 
 /* ── v4.48.4: интро-стих на развороте «Ночной тетради» (классы .vk-intro-*) ── */
 @import "../styles/intro-notebook.css";
+@import "../styles/poetry-book.css";
 
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,

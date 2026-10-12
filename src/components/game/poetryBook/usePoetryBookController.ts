@@ -7,6 +7,11 @@ import { getAllPoemPowers, getPoemPower } from '@/engine/PoemPowerSystem';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useGameStore } from '@/store/gameStore';
 import { usePoemTypewriter } from '@/components/game/poetryBook/usePoemTypewriter';
+import {
+  resolveDefaultPoemViewMode,
+  writeStoredPoemViewMode,
+  type PoemViewMode,
+} from '@/components/game/poetryBook/poemViewMode';
 
 /** Stable empty array — avoids creating a new [] on every render. */
 const EMPTY_LINES: string[] = [];
@@ -21,6 +26,8 @@ export function usePoetryBookController(open: boolean, onClose: () => void) {
   const [selectedPoemId, setSelectedPoemId] = useState<string | null>(null);
   const [pageDirection, setPageDirection] = useState(0);
   const [activeTab, setActiveTab] = useState<PoetryBookTab>('poems');
+  // Вид чтения: липкий выбор игрока, иначе авто (lg+ → разворот тетради)
+  const [viewMode, setViewMode] = useState<PoemViewMode>(() => resolveDefaultPoemViewMode());
   const contentRef = useRef<HTMLDivElement>(null);
 
   const collected = useMemo(
@@ -117,6 +124,14 @@ export function usePoetryBookController(open: boolean, onClose: () => void) {
     setSelectedPoemId(null);
   }, []);
 
+  const handleToggleViewMode = useCallback(() => {
+    setViewMode((prev) => {
+      const next: PoemViewMode = prev === 'spread' ? 'scroll' : 'spread';
+      writeStoredPoemViewMode(next);
+      return next;
+    });
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     contentRef.current?.focus();
@@ -132,6 +147,8 @@ export function usePoetryBookController(open: boolean, onClose: () => void) {
     reducedMotion,
     contentRef,
     activeTab,
+    viewMode,
+    handleToggleViewMode,
     selectedPoem,
     selectedPoemId,
     pageDirection,

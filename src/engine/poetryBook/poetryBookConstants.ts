@@ -38,6 +38,11 @@ export const POETRY_BOOK_LABELS = {
   powerReady: 'Готово',
   powerFromPoem: (title: string) => `Из: «${title}»`,
   typewriterLive: (title: string) => `Текст стиха «${title}»`,
+  viewModeToggleAria: (spread: boolean) => (spread ? 'Показать простым свитком' : 'Показать разворотом тетради'),
+  viewModeSpread: 'Разворот',
+  viewModeScroll: 'Свиток',
+  spreadSheetLabel: (leaf: string) => `ночная тетрадь · лист ${leaf}`,
+  spreadRegion: (title: string) => `Разворот стиха «${title}»`,
 } as const;
 
 /** Display labels for poem theme tags (keys match poem data). */

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { BookOpen, ChevronLeft, ChevronRight, Feather, Lock, Sparkles } from 'lucide-react';
+import { BookOpen, ChevronLeft, ChevronRight, Feather, Lock, NotebookPen, Sparkles } from 'lucide-react';
 import { POEMS } from '@/data/poems';
 import type { Poem } from '@/shared/types/game';
 import { getPoemPower } from '@/engine/PoemPowerSystem';
@@ -27,7 +27,11 @@ type PoemDetailViewProps = Pick<
   | 'handleBack'
   | 'handlePrevPoem'
   | 'handleNextPoem'
->;
+> & {
+  /** Переключатель вида (свиток ↔ разворот тетради); без него футер прежний. */
+  viewMode?: 'spread' | 'scroll';
+  onToggleViewMode?: () => void;
+};
 
 export function PoemDetailView({
   selectedPoem,
@@ -43,6 +47,8 @@ export function PoemDetailView({
   handleBack,
   handlePrevPoem,
   handleNextPoem,
+  viewMode = 'scroll',
+  onToggleViewMode,
 }: PoemDetailViewProps) {
   if (!selectedPoem) return null;
 
@@ -186,6 +192,22 @@ export function PoemDetailView({
           {POETRY_BOOK_LABELS.nextPoem}
           <ChevronRight className="size-3.5" aria-hidden="true" />
         </button>
+        {onToggleViewMode && (
+          <>
+            <span className="w-px h-4 bg-amber-800/20" aria-hidden="true" />
+            <button
+              type="button"
+              onClick={onToggleViewMode}
+              aria-label={POETRY_BOOK_LABELS.viewModeToggleAria(viewMode === 'spread')}
+              aria-pressed={viewMode === 'spread'}
+              title={POETRY_BOOK_LABELS.viewModeToggleAria(viewMode === 'spread')}
+              className="flex items-center gap-1.5 text-xs text-amber-500/50 hover:text-amber-300 transition-colors font-serif"
+            >
+              <NotebookPen className="size-3.5" aria-hidden="true" />
+              <span className="hidden sm:inline">{POETRY_BOOK_LABELS.viewModeSpread}</span>
+            </button>
+          </>
+        )}
       </div>
     </div>
   );
