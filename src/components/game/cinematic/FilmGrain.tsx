@@ -10,16 +10,22 @@ export interface FilmGrainProps {
 /** Film grain overlay — menu, intro, cutscenes. */
 export const FilmGrain = memo(function FilmGrain({ opacity = 0.04, zIndex = 55 }: FilmGrainProps) {
   return (
-    <div
-      className="absolute inset-0 pointer-events-none"
-      style={{
-        zIndex,
-        opacity,
-        backgroundImage: GRAIN_SVG,
-        backgroundSize: '128px 128px',
-        mixBlendMode: 'overlay',
-        animation: 'cinematic-grain 0.4s steps(8) infinite',
-      }}
-    />
+    /* Внешний — только clip (overflow-hidden, БЕЗ z-index: иначе изолируется
+       stacking context и mix-blend-mode перестанет смешиваться со сценой).
+       Внутренний — jitter-анимация; сдвиги не раздуют scrollable-overflow
+       скроллируемых шелков, т.к. обрезаются внешним. */
+    <div className="absolute inset-0 overflow-hidden pointer-events-none" aria-hidden="true">
+      <div
+        className="absolute -inset-[8%]"
+        style={{
+          zIndex,
+          opacity,
+          backgroundImage: GRAIN_SVG,
+          backgroundSize: '128px 128px',
+          mixBlendMode: 'overlay',
+          animation: 'cinematic-grain 0.4s steps(8) infinite',
+        }}
+      />
+    </div>
   );
 });

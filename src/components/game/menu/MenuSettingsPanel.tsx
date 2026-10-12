@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { FocusTrap } from '@/components/a11y/FocusTrap';
+import { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { audioEngine } from '@/engine/AudioEngine';
 import { safePlayMenuSfx } from '@/engine/menu/menuPresentation';
 import { useMenuVisualToggles } from '@/store/selectors';
@@ -44,30 +46,33 @@ function MatrixRainToggle() {
 }
 
 export function MenuSettingsPanel({ musicEnabled, onToggleMusic, onClose }: MenuSettingsPanelProps) {
+  // Единый a11y-контракт с панелью паузы: role=dialog + aria-labelledby + FocusTrap
+  const settingsDialog = usePanelDialog();
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 flex items-center justify-center cinematic-menu-shell"
+      className="fixed inset-0 flex items-center cinematic-menu-shell"
       style={{ zIndex: UI_LAYERS.MENU }}
       onClick={onClose}
-      role="dialog"
-      aria-modal="true"
-      aria-label="Настройки"
+      {...settingsDialog.dialogProps}
     >
       <div className="absolute inset-0 bg-black/78" aria-hidden="true" />
+      {/* my-auto: центрирование, которое не режет панель при переполнении */}
+      <div className="my-auto">
+      <FocusTrap initialFocusRef={settingsDialog.closeButtonRef}>
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 8 }}
-        className="relative z-10 w-80 cinematic-menu-panel px-5 py-5"
+        className="relative z-10 mx-auto w-80 max-w-full cinematic-menu-panel px-5 py-5"
         onClick={(event) => event.stopPropagation()}
       >
         <p className="font-serif text-[11px] tracking-[0.3em] uppercase text-stone-400/55 mb-2 text-center">
           Параметры
         </p>
-        <h2 className="font-serif text-2xl tracking-[0.16em] text-stone-100/90 text-center mb-5">
+        <h2 id={settingsDialog.titleId} className="font-serif text-2xl tracking-[0.16em] text-stone-100/90 text-center mb-5">
           Настройки
         </h2>
 
@@ -106,6 +111,7 @@ export function MenuSettingsPanel({ musicEnabled, onToggleMusic, onClose }: Menu
 
         <div className="pt-4 flex justify-center">
           <button
+            ref={settingsDialog.closeButtonRef}
             type="button"
             onClick={onClose}
             aria-label="Закрыть настройки"
@@ -115,6 +121,8 @@ export function MenuSettingsPanel({ musicEnabled, onToggleMusic, onClose }: Menu
           </button>
         </div>
       </motion.div>
+      </FocusTrap>
+      </div>
     </motion.div>
   );
 }

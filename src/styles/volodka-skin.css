@@ -134,12 +134,23 @@ body {
 }
 
 /* ── 3. ГЛАВНОЕ МЕНЮ ── */
+/* ВАЖНО: шелк используется ТОЛЬКО обёртками `fixed inset-0` (пауза, настройки,
+   «об авторе»). Никакого position здесь нельзя задавать: relative перебивает
+   Tailwind `.fixed` (равная специфичность, скин грузится позже) — панели
+   проваливаются в поток и уезжают под вьюпорт (было с v4.45.0 до v4.48.2).
+  Containing block для absolute-детей даёт сам fixed. Центрирование по вертикали —
+  через my-auto на поточном ребёнке (НЕ justify-center: при переполнении он
+  обрезает панель с обоих концов), overflow-y — чтобы высокие панели (пауза на
+  низких вьюпортах/мобайл-ландшафте) оставались доступными до последнего пункта. */
 .cinematic-menu-shell {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   min-width: 0;
+  padding-inline: 1rem;
+  padding-block: max(1rem, env(safe-area-inset-top, 1rem)) max(1rem, env(safe-area-inset-bottom, 1rem));
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .cinematic-menu-panel {

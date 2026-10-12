@@ -141,7 +141,7 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.28 }}
-            className="fixed inset-0 flex items-center justify-center cinematic-menu-shell"
+            className="fixed inset-0 flex items-center cinematic-menu-shell"
             style={{ zIndex: UI_LAYERS.MENU }}
             data-testid="pause-menu-root"
           >
@@ -162,6 +162,8 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
             <CinematicBars />
             <FilmGrain opacity={0.028} zIndex={1} />
 
+            {/* my-auto: центрирование, которое не режет панель при переполнении (низкие вьюпорты/мобайл-ландшафт) */}
+            <div className="my-auto">
             <FocusTrap initialFocusRef={pauseDialog.closeButtonRef}>
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -251,6 +253,7 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
                 </div>
               </motion.div>
             </FocusTrap>
+            </div>
           </motion.div>
         </PanelStackSlot>
       )}
