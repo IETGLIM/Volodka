@@ -169,7 +169,16 @@ export function SettingsChipsRow<T extends string>({
   ariaLabel,
 }: SettingsChipsRowProps<T>) {
   return (
-    <div className="flex flex-wrap gap-1.5" role="group" aria-label={ariaLabel}>
+    /* ПОЛИШ (v4.48.5): auto-fill сетка вместо flex-wrap — чипы растягиваются
+     * равномерно и без «сироты» в любой панели: в компактной (w-[21rem]) —
+     * 3 колонки (3+2), в широкой панели паузы — 4–5+ в ряд. minmax 5.5rem
+     * вмещает самый длинный пресет («Среднее»/«Высокое») без переноса слова. */
+    <div
+      className="grid gap-1.5"
+      style={{ gridTemplateColumns: 'repeat(auto-fill, minmax(5.5rem, 1fr))' }}
+      role="group"
+      aria-label={ariaLabel}
+    >
       {options.map((opt) => {
         const active = value === opt.id;
         return (
@@ -178,11 +187,7 @@ export function SettingsChipsRow<T extends string>({
             type="button"
             aria-pressed={active}
             onClick={() => onChange(opt.id)}
-            /* ПОЛИШ (v4.48.5): px-2.5→px-2 + whitespace-nowrap — ряд из 5
-             * пресетов качества (Авто…Ультра) влезает в одну строку панели
-             * w-[21rem]; nowrap исключает разрыв внутри слова на узких
-             * панелях. */
-            className="whitespace-nowrap rounded-md border px-2 py-1 font-serif text-[12px] tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300/60 focus-visible:outline-offset-2"
+            className="whitespace-nowrap rounded-md border px-2 py-1 text-center font-serif text-[12px] tracking-wide transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-300/60 focus-visible:outline-offset-2"
             style={{
               color: active ? AMBER_STRONG : STONE_MUTED,
               backgroundColor: active ? `rgba(${AMBER}, 0.14)` : 'rgba(28, 25, 23, 0.5)',
