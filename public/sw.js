@@ -57,7 +57,7 @@ const DECODER_RE = /^\/(?:basis|draco)\/.*\.(?:js|wasm)(?:\?.*)?$/;
  * Physics WASM runtime — required for Rapier to boot. Immutable per deploy,
  * small enough (~1.5 MB) to pre-cache on install so the game can start offline.
  */
-const RAPIER_RE = /^\/rapier\/rapier_wasm3d_bg\.wasm$/;
+const RAPIER_PRECACHE_URL = '/rapier/rapier_wasm3d_bg.wasm';
 
 /**
  * Heavy immutable game media — cached on first successful fetch.
@@ -83,6 +83,16 @@ const MEDIA_CACHE_MAX_ENTRIES = 120;
  * entry-count cap above.
  */
 const MEDIA_CACHE_MAX_BYTES = 180 * 1024 * 1024;
+
+/**
+ * v4.48.12: жёсткий потолок на каждый прекэш-fetch при install. Живой кейс из
+ * QA: в части окружений (headless-браузеры, проксирующие шлюзы, флапающая
+ * сеть) отдельные fetch из контекста SW могут висеть вечно — без таймаута
+ * это блокирует install и активацию SW целиком. 15с на файл × параллельный
+ * прогон = install не дольше ~15с при ЛЮБОМ поведении сети; пропуски
+ * добивает cache-first fetch-хендлер при первом успешном визите.
+ */
+const PRECACHE_TIMEOUT_MS = 15000;
 
 /**
  * v4.8.4: in-memory size table (url → estimated bytes) for byte-budget
@@ -113,27 +123,41 @@ async function seedMediaSizeTable(cache) {
 }
 
 /**
- * Install event — pre-cache the app shell (+ physics WASM).
+ * Install event — pre-cache the app shell, entry bundles and physics WASM.
+ * v4.48.12: всё гоняется ПАРАЛЛЕЛЬНО и ПО-ФАЙЛОВО через precacheOne с
+ * жёстким таймаутом (никаких addAll-батчей: один зависший/сбойный ответ
+ * больше не может ни сорвать весь прекэш, ни подвесить install), а
+ * skipWaiting выполняется безусловно — установка не может «зависнуть».
  */
 self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      // Shell URLs must precache: сначала батчем, затем по одному, чтобы
-      // один сбойный URL не оставил оболочку без остальных.
-      try {
-        await cache.addAll(SHELL_PRECACHE_URLS);
-      } catch {
-        await Promise.all(SHELL_PRECACHE_URLS.map((url) => cache.add(url).catch(() => undefined)));
-      }
-      // Entry-бандлы (инъекция сборки) + физический WASM — best-effort:
-      // cache-first fetch-хендлер добьёт пропуски при первом успешном визите.
-      await Promise.all(PRECACHE_BUNDLE_URLS.map((url) => cache.add(url).catch(() => undefined)));
-      await cache.add('/rapier/rapier_wasm3d_bg.wasm').catch(() => undefined);
+      const urls = [...SHELL_PRECACHE_URLS, ...PRECACHE_BUNDLE_URLS, RAPIER_PRECACHE_URL];
+      await Promise.all(urls.map((url) => precacheOne(cache, url)));
       await self.skipWaiting();
     })(),
   );
 });
+
+/**
+ * Best-effort precache одного файла с жёстким таймаутом (см. PRECACHE_TIMEOUT_MS).
+ * Нехэшированный/зависший/ошибочный ответ просто пропускается — это осознанная
+ * семантика «лучшего из возможного»: precache ускоряет офлайн-старт, но
+ * НЕ является единственным механизмом кэширования.
+ */
+async function precacheOne(cache, url) {
+  try {
+    const timeout =
+      typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function'
+        ? { signal: AbortSignal.timeout(PRECACHE_TIMEOUT_MS) }
+        : {};
+    const response = await fetch(url, { cache: 'reload', ...timeout });
+    if (response && response.ok) await cache.put(url, response);
+  } catch {
+    // Best-effort: дыру закроет cache-first fetch-хендлер при первом визите.
+  }
+}
 
 /**
  * Activate event — clean up old caches.
@@ -169,7 +193,7 @@ self.addEventListener('fetch', (event) => {
   // Strategy 1: Cache-first for Vite hashed static assets, decoders and
   // the physics WASM runtime. These are immutable per deploy, so a cache
   // hit is always correct.
-  if (STATIC_ASSET_RE.test(path) || DECODER_RE.test(path) || RAPIER_RE.test(path)) {
+  if (STATIC_ASSET_RE.test(path) || DECODER_RE.test(path) || path === RAPIER_PRECACHE_URL) {
     event.respondWith(cacheFirst(request, CACHE_NAME));
     return;
   }

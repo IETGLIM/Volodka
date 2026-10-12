@@ -146,4 +146,14 @@ describe.skipIf(!hasBuiltArtifacts)('собранный index.html ↔ прав�
     expect(builtSw).toMatch(/STATIC_ASSET_RE\.test\(path\)/);
     expect(builtSw).toMatch(/cacheFirst\(request, CACHE_NAME\)/);
   });
+
+  it('install защищён от зависания: каждый прекэш-fetch с жёстким таймаутом', () => {
+    // QA-кейс: fetch из контекста SW может висеть вечно в части окружений —
+    // без потолка install блокирует активацию SW целиком.
+    expect(builtSw).toMatch(/AbortSignal\.timeout\(PRECACHE_TIMEOUT_MS\)/);
+    expect(builtSw).toMatch(/urls\.map\(\(url\) => precacheOne\(cache, url\)\)/);
+    expect(builtSw).toMatch(/await self\.skipWaiting\(\)/);
+    // addAll-батчей больше нет: один сбой не роняет весь прекэш.
+    expect(builtSw).not.toMatch(/cache\.addAll\(/);
+  });
 });
