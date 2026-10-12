@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useRef, useState, startTransition } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, startTransition } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Volume2, VolumeX } from 'lucide-react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { MenuAboutPanel } from '@/components/game/menu/MenuAboutPanel';
 import { MenuBackgroundEffects } from '@/components/game/menu/MenuBackgroundEffects';
@@ -127,8 +126,16 @@ function MenuScreenPanelInner() {
   const menu = useMenuScreen(actions);
   const savePreview = useMenuSavePreview(menu.hasSave);
 
+  /* v4.48 «Разворот тетради»: пункт «Продолжить» существует ТОЛЬКО при
+     наличии сохранения — на первом запуске меню из трёх строк честнее
+     и тише, чем список с мёртвой строкой «нет сохранения». */
+  const visibleMenuItems = useMemo(
+    () => menu.menuItems.filter((item) => item.id !== 'continue' || menu.hasSave),
+    [menu.menuItems, menu.hasSave],
+  );
+
   useMenuNavigation({
-    items: menu.menuItems,
+    items: visibleMenuItems,
     selectedIndex: menu.selectedIndex,
     setSelectedIndex: menu.setSelectedIndex,
     onSelect: menu.handleMenuAction,
@@ -194,55 +201,69 @@ function MenuScreenPanelInner() {
     >
       <MenuBackgroundEffects fx={fx} tier={deviceTier} matrixRainEnabled={matrixRainEnabled} contentMotion={contentMotion} />
 
-      {/* v4.45.0: нижний скрим — отделяет землю от неба, даёт глубину кадру
-          (арт-ревью: «низ сливается в чёрную массу»). */}
+      {/* v4.45.0: нижний скрим — отделяет землю от неба, даёт глубину кадру. */}
       <div
         className="absolute inset-x-0 bottom-0 h-[38vh] pointer-events-none"
         style={{ background: 'linear-gradient(to top, rgba(5,7,12,0.62) 0%, rgba(5,7,12,0.28) 46%, transparent 100%)' }}
         aria-hidden
       />
 
-      {/* v4.45.0: композиция «воздуха» — титр в верхней трети, панель ниже,
-          низ экрана дышит ночным небом. m-auto заменён на поток с верхним
-          отступом; на низких вьюпортах остаётся прокрутка. */}
-      <div className="relative z-10 flex h-[100dvh] w-full flex-col items-center overflow-y-auto overscroll-contain px-4 pt-[9vh] pb-24 md:pt-[11vh]">
-        <div className="flex w-full flex-col items-center">
-          <div className="cinematic-menu-brand-stage flex flex-col items-center px-4">
+      {/* ─── v4.48 «Разворот тетради» ───
+          Две страницы разворота на фоне ночного города:
+          левая — титр, подзаголовок, посвящение (тихая зона);
+          правая — «наборные строки» меню (зона действий).
+          Один герой-акцент: янтарная нить выбранной строки.
+          Вся остальная типографика молчит. */}
+      <div className="relative z-10 h-[100dvh] w-full overflow-y-auto overscroll-contain">
+        <div className="menu-notebook-grid mx-auto grid min-h-full w-full max-w-6xl grid-cols-1 content-center items-center gap-10 px-5 py-[10vh] sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-14 lg:px-14">
+          {/* Левая страница: бренд-зона */}
+          <div className="cinematic-menu-brand-stage flex flex-col items-center lg:items-start lg:text-left">
             <AaaLuxTitle text={MENU_TITLE} animate={contentMotion} visited={visited} />
             <MenuTypewriterSubtitle text={MENU_SUBTITLE} delay={d(0.5, visited)} enabled={contentMotion} />
 
-            {/* Теглайн + автор стихов — единый тихий блок (было два
-                разрозненных motion.p с задержками 1.9/2.6с). */}
+            {/* Теглайн + автор стихов — единый тихий блок */}
             <motion.div
               initial={contentMotion ? { opacity: 0, y: 6 } : false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: d(0.8, visited), duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="mt-4 flex flex-col items-center gap-1.5"
+              className="mt-5 flex flex-col items-center gap-1.5 lg:items-start"
             >
-              <p className="menu-compact-hide max-w-[34rem] text-center font-serif text-[15px] md:text-base tracking-[0.26em] leading-relaxed" style={{ color: 'rgba(210,205,192,0.78)' }}>
+              <p className="menu-compact-hide max-w-[30rem] text-center font-serif text-[15px] md:text-base tracking-[0.22em] leading-relaxed lg:text-left" style={{ color: 'rgba(210,205,192,0.72)' }}>
                 {MENU_TAGLINE}
               </p>
               <p
-                className="font-serif text-xs md:text-[13px] tracking-[0.24em] italic"
+                className="font-serif text-xs md:text-[13px] tracking-[0.22em] italic"
                 style={{ color: 'var(--hud-filmic-ink-meta)' }}
               >
                 {MENU_POET_CREDIT}
               </p>
             </motion.div>
+
+            {/* Посвящение — сердце игры. Тихая янтарная нить над строкой. */}
+            <motion.div
+              initial={contentMotion ? { opacity: 0 } : false}
+              animate={{ opacity: 1 }}
+              transition={{ delay: d(1.1, visited), duration: 0.9 }}
+              className="menu-compact-tight mt-10 flex flex-col items-center gap-2 lg:mt-20 lg:items-start"
+            >
+              <div className="w-24 h-px bg-gradient-to-r from-transparent via-[rgba(226,168,75,0.35)] to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-[rgba(226,168,75,0.35)] lg:to-[rgba(226,168,75,0.1)]" />
+              <p className="font-serif text-xs sm:text-sm md:text-[15px] tracking-[0.16em] italic dedication-glow text-center max-w-[28rem] leading-relaxed lg:text-left" style={{ color: 'rgba(234,228,214,0.78)' }}>
+                {MENU_DEDICATION}
+              </p>
+            </motion.div>
           </div>
 
+          {/* Правая страница: строки-действия */}
           <motion.div
             ref={menuRef}
             initial={contentMotion ? { opacity: 0, y: 16, filter: 'blur(4px)' } : false}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
             transition={{ duration: 0.6, delay: d(0.7, visited), ease: [0.16, 1, 0.3, 1] }}
-            className="menu-compact-tight mt-12 w-full max-w-[21rem]"
+            className="menu-compact-tight w-full max-w-[23rem] justify-self-center lg:justify-self-end"
           >
-            {/* Панель — материал «мутного стекла» задаётся единым скином
-                (cinematic-menu-panel); янтарная нить по кромке — в ::before. */}
-            <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav py-3">
+            <div className="relative overflow-hidden cinematic-menu-panel cinematic-menu-primary-nav py-4">
               <MenuNavigationList
-                items={menu.menuItems}
+                items={visibleMenuItems}
                 selectedIndex={menu.selectedIndex}
                 setSelectedIndex={menu.setSelectedIndex}
                 onSelect={wrappedHandleMenuAction}
@@ -251,68 +272,32 @@ function MenuScreenPanelInner() {
                 fastAnimation={visited}
               />
             </div>
-          </motion.div>
 
-          {/* Посвящение — сердце игры, сразу под меню, тихой янтарной нитью */}
-          <motion.div
-            initial={contentMotion ? { opacity: 0 } : false}
-            animate={{ opacity: 1 }}
-            transition={{ delay: d(1.1, visited), duration: 0.9 }}
-            className="menu-compact-tight mt-10 flex flex-col items-center gap-2"
-          >
-            <div className="w-24 h-px bg-gradient-to-r from-transparent via-[rgba(226,168,75,0.35)] to-transparent" />
-            <p className="font-serif text-xs sm:text-sm md:text-[15px] tracking-[0.18em] italic dedication-glow text-center max-w-[30rem] leading-relaxed px-4" style={{ color: 'rgba(234,228,214,0.82)' }}>
-              {MENU_DEDICATION}
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={contentMotion ? { opacity: 0 } : false}
-            animate={{ opacity: 1 }}
-            transition={{ delay: d(1.3, visited), duration: 0.7 }}
-            className="mt-5 hidden md:flex menu-compact-hide flex-wrap items-center justify-center gap-x-5 gap-y-1.5"
-            aria-hidden="true"
-          >
-            <span className="text-[10px] tracking-[0.24em] uppercase" style={{ color: 'rgba(169,166,152,0.55)' }}>↑↓ Навигация</span>
-            <span className="w-px h-3 bg-white/10" />
-            <span className="text-[10px] tracking-[0.24em] uppercase" style={{ color: 'rgba(169,166,152,0.55)' }}>Enter Выбрать</span>
-            <span className="w-px h-3 bg-white/10 hidden md:block" />
-            <span className="text-[10px] tracking-[0.24em] uppercase hidden md:block" style={{ color: 'rgba(169,166,152,0.4)' }}>Esc Назад</span>
+            {/* Единственная строка управления — вместо колонки из трёх подсказок */}
+            <motion.p
+              initial={contentMotion ? { opacity: 0 } : false}
+              animate={{ opacity: 1 }}
+              transition={{ delay: d(1.3, visited), duration: 0.7 }}
+              className="mt-4 hidden text-center text-[10px] tracking-[0.3em] uppercase md:block menu-compact-hide lg:text-left"
+              style={{ color: 'rgba(169,166,152,0.4)' }}
+              aria-hidden="true"
+            >
+              ↑↓ · Enter · Esc
+            </motion.p>
           </motion.div>
         </div>
       </div>
 
-      {/* v4.43.0: чипы живут в зоне единых CinematicBars (6vh/min 24px) —
-          без пиксельной арифметики calc(max(7vh,36px)+12px) из v4.39.0,
-          которая поднимала их над УДАЛЁННЫМ жёстким леттербоксом z-[60]. */}
-      <motion.button
-        type="button"
-        initial={contentMotion ? { opacity: 0 } : false}
-        animate={{ opacity: 1 }}
-        transition={{ delay: d(1.0, visited) }}
-        onClick={() => {
-          menu.toggleMusic();
-          safePlayMenuSfx(audioEngine.playSfx.bind(audioEngine), 'click');
-        }}
-        className="absolute right-6 bottom-8 z-50 flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/30 backdrop-blur-md border border-white/10 hover:border-[rgba(226,168,75,0.4)] hover:bg-black/50 transition-all duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[rgba(226,168,75,0.5)]"
-        style={{ color: 'rgba(169,166,152,0.8)' }}
-        aria-label={menu.musicEnabled ? 'Выключить музыку' : 'Включить музыку'}
-      >
-        {menu.musicEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
-        <span className="text-[10px] font-medium tracking-[0.22em] uppercase hover:text-[rgba(234,228,214,0.95)]">
-          {menu.musicEnabled ? 'Музыка' : 'Тишина'}
-        </span>
-      </motion.button>
-
+      {/* Билд-метка — единственный чип меню (музыка переехала в настройки:
+          v4.48 убирает дубль управления) */}
       <motion.div
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
         transition={{ delay: d(1.2, visited) }}
-        className="absolute bottom-8 left-6 z-30 px-2.5 py-1 rounded-full bg-black/25 backdrop-blur-md border border-white/[0.07]"
+        className="absolute bottom-6 left-6 z-30 px-2.5 py-1"
         aria-hidden="true"
       >
-        {/* v4.36.1: билд-метка «версия · sha» — видно, какой коммит играет. */}
-        <span className="text-[10px] tracking-[0.18em]" style={{ color: 'rgba(169,166,152,0.55)' }}>v{APP_BUILD}</span>
+        <span className="text-[10px] tracking-[0.18em]" style={{ color: 'rgba(169,166,152,0.38)' }}>v{APP_BUILD}</span>
       </motion.div>
 
       <AnimatePresence>{menu.showAbout ? <MenuAboutPanel onClose={menu.closeAbout} /> : null}</AnimatePresence>

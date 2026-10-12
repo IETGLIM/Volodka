@@ -88,7 +88,9 @@ export const MenuNavigationList = memo(function MenuNavigationList({
               }
             }}
             style={style}
-            className={getFilmicMenuItemClass(isSelected, isDisabled)}
+            /* v4.48: «Новая игра» — главное действие, единственный пункт
+             * с собственным голосом (янтарь); остальные строки — серебро. */
+            className={`${getFilmicMenuItemClass(isSelected, isDisabled)}${item.id === 'new' ? ' cinematic-menu-item--primary' : ''}`}
           >
             <span className="relative z-10 flex flex-col items-start gap-1 text-left">
               <span className="tracking-[0.3em] uppercase">{item.label}</span>
@@ -98,8 +100,8 @@ export const MenuNavigationList = memo(function MenuNavigationList({
                 </span>
               ) : null}
               {item.id === 'continue' && savePreview ? (
-                <span className="text-[11px] font-serif tracking-wide normal-case" style={{ color: 'rgba(169,166,152,0.65)' }}>
-                  Ур.{savePreview.level} · {savePreview.sceneName} · {savePreview.poemsCollected}/{savePreview.poemsTotal}
+                <span className="text-[11px] font-serif tracking-wide normal-case italic" style={{ color: 'rgba(169,166,152,0.65)' }}>
+                  {savePreview.sceneName} · Ур.{savePreview.level} · {savePreview.poemsCollected}/{savePreview.poemsTotal} стихов
                 </span>
               ) : null}
             </span>

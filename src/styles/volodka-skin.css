@@ -683,3 +683,37 @@ body {
   color: var(--vk-amber);
   font-variant-numeric: tabular-nums;
 }
+
+/* ─── v4.48 «Разворот тетради»: двухстраничная композиция главного меню ───
+   Левая страница (бренд: титр, подзаголовок, посвящение) дышит;
+   правая — только строки-действия. На <lg разворот складывается в
+   одну страницу с прежним вертикальным порядком. */
+.menu-notebook-grid {
+  /* Строки меню крупнее и свободнее, чем в v4.45 — «страница тетради» */
+  --menu-item-gap: 0.35rem;
+}
+
+.menu-notebook-grid .cinematic-menu-item {
+  padding-top: 0.9rem;
+  padding-bottom: 0.9rem;
+  font-size: 0.95rem;
+}
+
+@media (min-width: 1024px) {
+  .menu-notebook-grid .cinematic-menu-item {
+    font-size: 1rem;
+    padding-left: 2.4rem;
+  }
+  .menu-notebook-grid .cinematic-menu-item--selected {
+    padding-left: 2.7rem;
+  }
+}
+
+/* «Новая игра» — главное действие: единственный янтарный пункт */
+.cinematic-menu-item--primary {
+  color: rgba(226, 168, 75, 0.88);
+}
+.cinematic-menu-item--primary:hover:not(:disabled),
+.cinematic-menu-item--primary.cinematic-menu-item--selected {
+  color: #f0c685;
+}
