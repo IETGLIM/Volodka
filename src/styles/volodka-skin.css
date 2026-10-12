@@ -157,6 +157,18 @@ body {
   overscroll-behavior: contain;
 }
 
+/* ПОЛИШ (v4.48.10): на низких вьюпортах (<720px по высоте) верхний
+ * letterbox-бар меню (6vh, min 24px) перекрывал ярлык «Между сценами»
+ * над панелью паузы при scrollTop=0 (my-auto зажимает контент к верху,
+ * где верхний паддинг был всего 1rem < бара). Даём шапке зазор больше
+ * бара: 6vh + 10px воздуха, минимум 34px (> 24px минимума бара).
+ * Высокие вьюпорты не трогаем — там my-auto центрирует, оверлап невозможен. */
+@media (max-height: 719px) {
+  .cinematic-menu-shell {
+    padding-block-start: max(calc(6vh + 10px), 34px);
+  }
+}
+
 .cinematic-menu-panel {
   position: relative;
   background: linear-gradient(180deg, rgba(14, 17, 25, 0.72), rgba(9, 11, 17, 0.82));

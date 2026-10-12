@@ -5,6 +5,7 @@ import {
   Eye,
   Feather,
   Lock,
+  NotebookPen,
   Sparkles,
   Zap,
 } from 'lucide-react';
@@ -17,6 +18,9 @@ import {
  * используется канонический хук из poetryBook (общий UI-clock вместо
  * собственного интервала на каждую вкладку журнала). */
 import { usePoemCooldownSeconds } from '@/components/game/poetryBook/usePoemCooldownSeconds';
+import { POETRY_BOOK_LABELS } from '@/engine/poetryBook/poetryBookConstants';
+import { PoemSpreadView } from '@/components/game/poetryBook/PoemSpreadView';
+import { useJournalPoemReader } from '@/components/game/journal/useJournalPoemReader';
 import { requestPoemPowerActivation } from '@/engine/poemReading/poemReadingOrchestrator';
 import { journalTelemetry } from '@/engine/journal/journalTelemetry';
 import { JOURNAL_THEME_COLORS } from '@/components/game/journal/journalConstants';
@@ -111,6 +115,19 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
     journalTelemetry.track({ action: 'poem_view', itemId: poemId, tab: 'poems' });
   }, []);
 
+  /* Читатель разворота (v4.48.10): машинописец, заметка на полях, пейджер
+   * по собранным и разделяемый с «Собранием стихов» вид 'spread'|'scroll'. */
+  const reader = useJournalPoemReader({
+    selectedPoemId,
+    selectPoem: useCallback((poemId: string | null) => {
+      if (poemId === null) {
+        setSelectedPoemId(null);
+        return;
+      }
+      handleSelectPoem(poemId);
+    }, [handleSelectPoem]),
+  });
+
   const handleActivate = useCallback(() => {
     if (!selectedPoemId || !power) return;
     if (!canUsePower(selectedPoemId) || activating) return;
@@ -146,6 +163,30 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
         || poem.themes.some((theme) => theme.toLowerCase().includes(query)),
     );
   }, [hiddenPoems, searchQuery]);
+
+  /* Разворот «Ночной тетради» — тот же вид, что в «Собрании стихов»:
+   * левая страница (титул/сила), правая — текст у линии полей. */
+  if (selectedPoem && reader.viewMode === 'spread') {
+    return (
+      <PoemSpreadView
+        selectedPoem={reader.selectedPoem}
+        displayedLines={reader.displayedLines}
+        done={reader.done}
+        skipAll={reader.skipAll}
+        marginNote={reader.marginNote}
+        pageNumber={reader.pageNumber}
+        totalPages={reader.totalPages}
+        currentPoemIndex={reader.currentPoemIndex}
+        reducedMotion={reader.reducedMotion}
+        contentRef={reader.contentRef}
+        handleBack={reader.handleBack}
+        handlePrevPoem={reader.handlePrevPoem}
+        handleNextPoem={reader.handleNextPoem}
+        viewMode={reader.viewMode}
+        onToggleViewMode={reader.handleToggleViewMode}
+      />
+    );
+  }
 
   if (selectedPoem) {
     const available = canUsePower(selectedPoem.id);
@@ -219,6 +260,19 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
               ))}
             </div>
 
+            {/* Заметка Володьки «на полях» — паритет с разворотом
+                (в свитке текст виден сразу, заметка тоже) */}
+            {reader.marginNote && (
+              <div className="mt-5 mx-auto max-w-md px-4 py-3 rounded border border-amber-900/25 bg-amber-950/10">
+                <p className="text-[10px] tracking-[0.25em] uppercase text-amber-600/50 mb-1.5 font-serif">
+                  {POETRY_BOOK_LABELS.marginNoteHeading}
+                </p>
+                <p className="text-sm text-amber-200/60 italic leading-relaxed font-serif break-words">
+                  {reader.marginNote.text}
+                </p>
+              </div>
+            )}
+
             {power && (
               <div
                 className={`mt-5 p-3 rounded-xl border transition-all duration-300 ${
@@ -256,6 +310,22 @@ export function PoemsTab({ searchQuery }: PoemsTabProps) {
                 ) : null}
               </div>
             )}
+
+            {/* Переключатель вида чтения — паритет с разворотом и «Собранием»:
+                выбор липкий (общий localStorage-ключ), действует в обоих местах */}
+            <div className="flex justify-center mt-5">
+              <button
+                type="button"
+                onClick={reader.handleToggleViewMode}
+                aria-pressed={false}
+                aria-label={POETRY_BOOK_LABELS.viewModeToggleAria(false)}
+                title={POETRY_BOOK_LABELS.viewModeToggleAria(false)}
+                className="flex items-center gap-1.5 text-xs text-cyan-400/50 hover:text-cyan-300 transition-colors"
+              >
+                <NotebookPen className="size-3.5" aria-hidden />
+                {POETRY_BOOK_LABELS.viewModeSpread}
+              </button>
+            </div>
           </div>
         </ScrollArea>
       </div>
