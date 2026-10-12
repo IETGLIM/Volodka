@@ -1,15 +1,19 @@
 /** Locomotion and character-controller constants for PhysicsPlayer */
 
-export const WALK_SPEED = 4;
+/** v4.48.13: walk slowed 4 → 2.6 m/s — room-scale exploration felt rushed
+ *  (QA report: «движение персонажа надо замедлить»). Procedural animation
+ *  frequencies and footstep cadence are scaled to match (see
+ *  useProceduralPlayerAnimation.ts / playerFinalizeFrame.ts). */
+export const WALK_SPEED = 2.6;
 /** Sprint speed: 1.8× walk speed. */
 export const RUN_SPEED = WALK_SPEED * 1.8;
 /** Smooth acceleration/deceleration lambda for keyboard velocity lerp.
  * 0.12 per-frame factor → lambda ≈ 7.67 (frame-rate independent via MathUtils.damp). */
 export const VELOCITY_LERP_LAMBDA = 7.67;
 /** Crouch speed (m/s) — significantly slower than walk. */
-export const CROUCH_SPEED = 1.8;
+export const CROUCH_SPEED = 1.4;
 /** Block/walk speed (m/s) — slightly slower than walk. */
-export const BLOCK_SPEED = 2.5;
+export const BLOCK_SPEED = 1.9;
 /** Absolute cap on horizontal speed (m/s). Prevents perk stacking or
  *  external velocity injection from producing extreme speeds. */
 export const MAX_HORIZONTAL_SPEED = 15;
@@ -19,7 +23,7 @@ export const KEYBOARD_ACCEL = 55;
 export const KEYBOARD_DECEL = 12;
 export const JUMP_FORCE = 5.5;
 export const GRAVITY = -15;
-export const FOOTSTEP_INTERVAL = 0.4;
+export const FOOTSTEP_INTERVAL = 0.6;
 export const PLAYER_HEIGHT = 1.75;
 export const PLAYER_CROUCH_HEIGHT = 1.2;
 export const PLAYER_RADIUS = 0.3;

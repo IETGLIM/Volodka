@@ -115,6 +115,9 @@ import { InnerMonologueOverlay } from '@/components/game/InnerMonologueOverlay';
 const LazyDataTerminalOverlay = lazy(() =>
   import('@/components/game/DataTerminalOverlay').then((m) => ({ default: m.DataTerminalOverlay })),
 );
+const LazyTerminalCallCutscene = lazy(() =>
+  import('@/components/game/terminal/TerminalCallCutscene').then((m) => ({ default: m.TerminalCallCutscene })),
+);
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
 import { ScenePoiCompass } from '@/components/hud/ScenePoiCompass';
 import EnvironmentalEffectsOverlay from '@/components/game/hud/parts/EnvironmentalEffectsOverlay';
@@ -306,6 +309,10 @@ export const GameplayEventNotifications = memo(function GameplayEventNotificatio
       )}
       <Suspense fallback={null}>
         <LazyDataTerminalOverlay />
+      </Suspense>
+      {/* v4.48.13: кат-сцена созвона перед терминальным QTE/миниигром (bash-зелёная схема). */}
+      <Suspense fallback={null}>
+        <LazyTerminalCallCutscene />
       </Suspense>
     </>
   );

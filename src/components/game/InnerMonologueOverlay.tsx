@@ -5,6 +5,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
+import {
+  getImmersiveVoiceOwner,
+  onImmersiveVoiceFreed,
+  onImmersiveVoiceThoughtPreempted,
+  releaseImmersiveVoiceChannel,
+  requestImmersiveVoiceChannel,
+} from '@/engine/presentation/immersiveVoiceChannel';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
@@ -19,6 +26,10 @@ const DEFAULT_DURATION_MS = 4000;
 /** Typewriter speed — slightly faster than dialogue for internal thoughts. */
 const THOUGHT_TYPEWRITER_SPEED = 22;
 
+/** v4.48.13: bounded FIFO — a burst of scene-entry thoughts never stacks
+ *  more than this many behind an active voice line / another thought. */
+const MAX_PENDING_THOUGHTS = 3;
+
 interface ThoughtState {
   text: string;
   duration: number;
@@ -30,6 +41,11 @@ interface ThoughtState {
  * "thought bubble" card.  Listens to `volodka:thought` on the EventBus and
  * auto-dismisses after the configured duration (default 4 s).
  *
+ * v4.48.13: thoughts and the Голос voice-line subtitles share ONE immersive
+ * presentation lane (see immersiveVoiceChannel.ts) — a thought waits (FIFO,
+ * max 3) while a voice line plays, and a playing thought is preempted when
+ * the Голос starts, then re-shown. No more simultaneous inner-voice texts.
+ *
  * On mount, shows a sample thought after 2 s to demonstrate the system.
  */
 export function InnerMonologueOverlay() {
@@ -38,6 +54,9 @@ export function InnerMonologueOverlay() {
   const keyCounter = useRef(0);
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const initialThoughtShown = useRef(false);
+  const pendingRef = useRef<ThoughtState[]>([]);
+  /** Mirror of the on-screen thought — sync refs without render dependency. */
+  const presentingRef = useRef<ThoughtState | null>(null);
 
   const clearDismissTimer = useCallback(() => {
     if (dismissTimerRef.current != null) {
@@ -46,18 +65,39 @@ export function InnerMonologueOverlay() {
     }
   }, []);
 
+  const tryPresentNext = useCallback(() => {
+    if (presentingRef.current) return; // already showing a thought
+    if (pendingRef.current.length === 0) return;
+    // Channel busy (voice or another presenter) — stay queued.
+    if (!requestImmersiveVoiceChannel('thought')) return;
+    const next = pendingRef.current.shift()!;
+    keyCounter.current += 1;
+    const presented = { ...next, key: keyCounter.current };
+    presentingRef.current = presented;
+    setThought(presented);
+  }, []);
+
   const dismiss = useCallback(() => {
     clearDismissTimer();
+    presentingRef.current = null;
     setThought(null);
+    // Free the lane — the freed-listener surfaces the next queued thought.
+    releaseImmersiveVoiceChannel('thought');
   }, [clearDismissTimer]);
 
   const showThought = useCallback(
     (text: string, duration: number) => {
-      clearDismissTimer();
-      keyCounter.current += 1;
-      setThought({ text, duration, key: keyCounter.current });
+      // Dedup: identical thought already on screen — do not restart it.
+      if (presentingRef.current?.text === text) return;
+      const queue = pendingRef.current;
+      const last = queue[queue.length - 1];
+      // Dedup back-to-back identical queued thoughts (idle system can re-emit).
+      if (last?.text === text) return;
+      if (queue.length >= MAX_PENDING_THOUGHTS) queue.shift();
+      queue.push({ text, duration, key: 0 });
+      tryPresentNext();
     },
-    [clearDismissTimer],
+    [tryPresentNext],
   );
 
   /* ── Auto-dismiss after duration ── */
@@ -75,6 +115,35 @@ export function InnerMonologueOverlay() {
     });
     return unsub;
   }, [showThought]);
+
+  /* ── Immersive voice lane: retry queue when the Голос frees the channel,
+        and re-queue the current thought when the Голос preempts it ── */
+  useEffect(() => {
+    const unsubFreed = onImmersiveVoiceFreed(() => tryPresentNext());
+    const unsubPreempted = onImmersiveVoiceThoughtPreempted(() => {
+      clearDismissTimer();
+      const current = presentingRef.current;
+      if (current) {
+        pendingRef.current.unshift({ text: current.text, duration: current.duration, key: 0 });
+        presentingRef.current = null;
+        setThought(null);
+      }
+    });
+    return () => {
+      unsubFreed();
+      unsubPreempted();
+    };
+  }, [tryPresentNext, clearDismissTimer]);
+
+  /* ── Unmount hygiene: never leave the lane held by a dead overlay ── */
+  useEffect(() => {
+    return () => {
+      if (getImmersiveVoiceOwner() === 'thought') {
+        releaseImmersiveVoiceChannel('thought');
+      }
+      pendingRef.current = [];
+    };
+  }, []);
 
   /* ── Sample thought on first scene entry only (respects React strict-mode double-mount) ── */
   useEffect(() => {

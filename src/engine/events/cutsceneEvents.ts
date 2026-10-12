@@ -25,6 +25,10 @@ export interface CutsceneEvents {
     managedByTimeline?: boolean;
   };
   'cutscene:overlay_end': Record<string, never>;
+  /** Terminal call cutscene (v4.48.13): bash-green terminal + colleague chat
+   *  plays before the room terminal's QTE/minigame chain. */
+  'terminal_call:start': Record<string, never>;
+  'terminal_call:end': Record<string, never>;
   /** Trigger camera shake during cutscenes (e.g. hostile NPC encounters). */
   'cutscene:camera_shake': {
     intensity: number;

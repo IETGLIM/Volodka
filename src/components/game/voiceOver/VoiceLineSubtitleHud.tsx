@@ -22,6 +22,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import {
+  releaseImmersiveVoiceChannel,
+  requestImmersiveVoiceChannel,
+} from '@/engine/presentation/immersiveVoiceChannel';
 
 interface ActiveSubtitle {
   nodeId: string;
@@ -50,6 +54,9 @@ export function VoiceLineSubtitleHud() {
   useEffect(() => {
     const unsubStart = eventBus.on('audio:voice_line_start', (payload) => {
       if (!payload.text) return;
+      // v4.48.13: голос владеет единым каналом «внутреннего голоса» —
+      // активная мысль Володьки прячется и вернётся после реплики.
+      requestImmersiveVoiceChannel('voice');
       clearTimer();
       setSubtitle({
         nodeId: payload.nodeId,
@@ -61,6 +68,7 @@ export function VoiceLineSubtitleHud() {
       timeoutRef.current = setTimeout(() => {
         setSubtitle(null);
         timeoutRef.current = null;
+        releaseImmersiveVoiceChannel('voice');
       }, estimateDurationMs(payload.text));
     });
 
@@ -68,6 +76,7 @@ export function VoiceLineSubtitleHud() {
       setSubtitle((prev) => {
         if (prev && prev.nodeId === payload.nodeId) {
           clearTimer();
+          releaseImmersiveVoiceChannel('voice');
           return null;
         }
         return prev;
@@ -78,6 +87,8 @@ export function VoiceLineSubtitleHud() {
       unsubStart();
       unsubEnd();
       clearTimer();
+      // Unmount hygiene — never hold the immersive lane from a dead HUD.
+      releaseImmersiveVoiceChannel('voice');
     };
   }, [clearTimer]);
 

@@ -39,6 +39,7 @@ import {
 } from '@/engine/interaction/interactionEndDedup';
 import { consumeEKey } from '@/engine/input/eKeyConsumption';
 import { startQteMinigameGate } from '@/engine/qte/qteTriggers';
+import { beginTerminalCall, isTerminalCallActive } from '@/engine/interaction/terminalCallFlow';
 import { isInteractionLocked } from '@/engine/interaction/interactionSession';
 import { isCinematicTimelineActive } from '@/engine/cinematic/cinematicTimelineOrchestrator';
 import { devWarn } from '@/shared/utils/devLog';
@@ -86,6 +87,13 @@ async function triggerLinkedContent(zone: TriggerZone): Promise<void> {
     // перед терминалом; без поля/при занятом экране — миниигра сразу
     // (поведение идентично прежнему прямому emit). Экран результата QTE
     // уже ушёл к моменту открытия — цепочку оркестрирует qte:closed.
+    // v4.48.13: кат-сцена созвона (bash-зелёный терминал + коллеги) играет
+    // ПЕРЕД гейтом — репорт «при выборе терминала должна быть кат-сцена с
+    // экраном терминала и созвоном с коллегами».
+    if (zone.id === 'room_terminal' && !isTerminalCallActive()) {
+      beginTerminalCall(zone);
+      return;
+    }
     startQteMinigameGate(zone);
     return;
   }

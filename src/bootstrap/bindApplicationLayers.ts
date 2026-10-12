@@ -8,6 +8,7 @@ import { bindStoreSubscribeProfiler } from '@/store/dev/storeSubscribeProfiler';
 import { bindStoreLifecycleHost } from '@/shared/gameBridge/storeLifecycleHost';
 import { resetPlayerXpBatch } from '@/store/playerXpBatch';
 import { getGameStore } from '@/store/gameStore';
+import { useCutsceneStore } from '@/store/stores/cutsceneStore';
 import { readGamePhase } from '@/shared/gamePhase';
 import { requestSceneTransition } from '@/engine/scene/sceneTransition';
 import { resetGuidedStoryManager, canStartQuest } from '@/engine/GuidedStoryManager';
@@ -54,6 +55,11 @@ export function bindApplicationLayers(): void {
       } catch {
         return null;
       }
+    },
+    /* v4.48.13: движковая катсцена (терминальный созвон) — живой срез
+     * cutsceneStore минуя facade (см. комментарий к getActiveCutsceneId). */
+    setActiveCutscene: (cutsceneId) => {
+      useCutsceneStore.getState().setCutscene(cutsceneId, []);
     },
   });
   bindStoreSubscribeProfiler(wrapStoreSubscribe);

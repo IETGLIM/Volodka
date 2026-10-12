@@ -375,7 +375,7 @@ export function useProceduralPlayerAnimation(
     const idleRightLegRotX = Math.sin(t * 0.6 + Math.PI) * 0.02;
 
     // ── WALK pose ──
-    const walkSpeed = 8;
+    const walkSpeed = 5.2; /* v4.48.13: 8 → 5.2, stride matches slowed walk (2.6 m/s) */
     const walkArmSwing = 0.4;
     const walkLegSwing = 0.4;
     const walkBobAmount = 0.018;
@@ -392,7 +392,7 @@ export function useProceduralPlayerAnimation(
     const walkHeadRotZ = Math.sin(t * walkSpeed * 0.5) * 0.015;
 
     // ── RUN pose ──
-    const runSpeed = 12;
+    const runSpeed = 7.8; /* v4.48.13: 12 → 7.8, matches slowed sprint (4.68 m/s) */
     const runArmSwing = 0.65;
     const runLegSwing = 0.6;
     const runBobAmount = 0.022;

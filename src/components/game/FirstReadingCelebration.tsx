@@ -84,12 +84,25 @@ export function FirstReadingCelebrationView({
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
+    // FIX v4.48.13 («окно „Первое чтение" невозможно закрыть"): в 3D-исследовании
+    // курсор захвачен pointer lock — клики уходят в canvas, мимо оверлея.
+    // Отпускаем захват на всё время показа торжества.
+    try {
+      document.exitPointerLock?.();
+    } catch {
+      /* no pointer lock — fine */
+    }
+
     const onKeyDown = (event: KeyboardEvent) => {
       const currentPhase = phaseRef.current;
 
-      if (event.key === 'Escape' && currentPhase === 'complete') {
+      if (event.key === 'Escape') {
         event.preventDefault();
-        callbacksRef.current.finish();
+        if (currentPhase === 'quote') {
+          callbacksRef.current.advanceFromQuote();
+        } else {
+          callbacksRef.current.finish();
+        }
         return;
       }
 
@@ -156,6 +169,27 @@ export function FirstReadingCelebrationView({
                 'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(157,179,200,0.08) 2px, rgba(157,179,200,0.08) 4px)',
             }}
           />
+
+          {/* FIX v4.48.13: явная кнопка закрытия в ОБЕИХ фазах — раньше фаза
+              цитаты не имела никакого закрывающего контрола, и при активном
+              pointer lock окно выглядело «неубиваемым». */}
+          <button
+            type="button"
+            data-testid="first-reading-celebration-close"
+            onClick={(e) => {
+              e.stopPropagation();
+              finish();
+            }}
+            aria-label="Закрыть окно Первого чтения"
+            className="absolute top-4 right-4 z-20 w-10 h-10 rounded-lg flex items-center justify-center font-mono text-lg pointer-events-auto transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400/70"
+            style={{
+              color: 'rgba(157,179,200,0.85)',
+              border: '1px solid rgba(157,179,200,0.3)',
+              background: 'rgba(0,0,0,0.45)',
+            }}
+          >
+            ✕
+          </button>
 
           <AnimatePresence mode="wait">
             {phase === 'quote' ? (

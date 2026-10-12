@@ -20,6 +20,9 @@ export interface StoreLifecycleHost {
   /** v4.48: источник флагов для locomotionFailsafe (опционально —
    * старые биндинги в тестах не обязаны его предоставлять). */
   readLocomotionGateSnapshot?(): LocomotionGateSnapshot | null;
+  /** v4.48.13: движковая установка/сброс катсцены (терминальный созвон)
+   * без импорта @/store из engine-слоя. Опционально для старых биндингов. */
+  setActiveCutscene?(cutsceneId: string | null): void;
 }
 
 let host: StoreLifecycleHost | null = null;
@@ -38,6 +41,16 @@ export function readLocomotionGateSnapshotFromEngine(): LocomotionGateSnapshot |
     return host?.readLocomotionGateSnapshot?.() ?? null;
   } catch {
     return null; // HMR/teardown — стор недоступен
+  }
+}
+
+/** v4.48.13: установить/снять катсцену из движка (null — снять).
+ *  Мягкий no-op, если биндинг не установлен (тесты/HMR). */
+export function setActiveCutsceneFromEngine(cutsceneId: string | null): void {
+  try {
+    host?.setActiveCutscene?.(cutsceneId);
+  } catch {
+    /* HMR/teardown — стор недоступен */
   }
 }
 

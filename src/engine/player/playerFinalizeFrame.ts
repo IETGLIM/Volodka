@@ -1,5 +1,7 @@
 import { eventBus } from '@/engine/EventBus';
 import { audioEngine } from '@/engine/AudioEngine';
+import { RUN_SPEED, WALK_SPEED } from '@/engine/player/playerConstants';
+import { smoothstep } from '@/engine/player/playerLocomotionPresentation';
 import { KCC_STUCK_FRAMES_BEFORE_RECREATE } from '@/engine/player/playerConstants';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { triggerLandingFovDip } from '@/engine/camera/landingImpact';
@@ -11,12 +13,14 @@ import {
 import { shouldAttemptKccRecreate } from '@/engine/player/kccRecoveryState';
 import type { PlayerMovementDeps } from '@/engine/player/playerFrameTypes';
 
-/** Base footstep interval at walk speed (seconds) — unchanged from session 1. */
-const BASE_FOOTSTEP_INTERVAL = 0.4;
+/** Base footstep interval at walk speed (seconds). v4.48.13: walk slowed
+ *  4 → 2.6 m/s, so the cadence stretches proportionally (~0.4 × 4/2.6 ≈ 0.61). */
+const BASE_FOOTSTEP_INTERVAL = 0.6;
 /** Minimum footstep interval at sprint speed — produces rapid but audible cadence. */
-const MIN_FOOTSTEP_INTERVAL = 0.2;
-/** Player horizontal speed where footstep interval is at minimum (m/s). */
-const FULL_SPRINT_SPEED = 7.0;
+const MIN_FOOTSTEP_INTERVAL = 0.3;
+/** Player horizontal speed where footstep interval is at minimum (m/s).
+ *  v4.48.13: derived from RUN_SPEED so cadence tuning follows locomotion tuning. */
+const FULL_SPRINT_SPEED = RUN_SPEED;
 /** Pitch variation range per step — adds subtle timbre variety (0.9–1.1). */
 const STEP_PITCH_RANGE = 0.1;
 /** Upper threshold for switching from idle to walk/run (m/s).
@@ -175,9 +179,11 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
 
     // AAA Phase B cinematic sprint-start edge (exact walk→sprint cross)
     // Emitted once per transition so dust, camera, audio, lean can react with launch weight.
-    const isSprinting = horizontalSpeed > 5.5;
-    const runWeight = Math.min(1, Math.max(0, (horizontalSpeed - 4) / 3));
-    if (!wasIdle && isSprinting && horizontalSpeed > 5.3 && prevAnimForFootstep !== 'run') {
+    // v4.48.13: thresholds derive from WALK_SPEED/RUN_SPEED instead of stale
+    // hardcoded 4/5.5 values (they desynced when walk speed was retuned).
+    const isSprinting = horizontalSpeed > WALK_SPEED + (RUN_SPEED - WALK_SPEED) * 0.5;
+    const runWeight = smoothstep(WALK_SPEED, RUN_SPEED, horizontalSpeed);
+    if (!wasIdle && isSprinting && horizontalSpeed > WALK_SPEED + (RUN_SPEED - WALK_SPEED) * 0.42 && prevAnimForFootstep !== 'run') {
       eventBus.emit('player:sprint_start', {
         position: [finalPos.x, finalPos.y, finalPos.z],
         speed: horizontalSpeed,
@@ -220,8 +226,8 @@ export function finalizePlayerFrame(deps: PlayerMovementDeps): void {
     if (deps.footstepTimerRef.current >= stepInterval) {
       deps.footstepTimerRef.current = 0;
       const pos = rb.translation();
-      const isSprinting = horizontalSpeed > 5.5;
-      const runWeight = Math.min(1, Math.max(0, (horizontalSpeed - 4) / 3)); // continuous 0-1 walk→run
+      const isSprinting = horizontalSpeed > WALK_SPEED + (RUN_SPEED - WALK_SPEED) * 0.5;
+      const runWeight = smoothstep(WALK_SPEED, RUN_SPEED, horizontalSpeed); // continuous 0-1 walk→run
 
       // Emit for future subscribers (NPC hearing, particle dust, etc.).
       // Now carries rich continuous locomotion data for AAA tactile sync.
