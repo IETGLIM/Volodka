@@ -120,13 +120,17 @@ export function NeonSignFixture({
 }
 
 /** Street lamp fixture — warm point light + small emissive sphere at the top.
- *  Typical use: street_night, city_square, park paths. */
+ *  Typical use: street_night, city_square, park paths.
+ *  PERF FIX (v4.48): castShadow по умолчанию false. Каждая point-тень =
+ *  6 проходов рендера куба; уличная сцена с 4 лампами стоила до ~24
+ *  shadow-проходов в кадр. Тени от ламп включаются вызывающим кодом
+ *  только на hero-сценах high/ultra (см. SceneLightFixtures.tsx). */
 export function StreetLampFixture({
   position,
   color = '#ffcc88',
   intensity = 3,
   distance = 12,
-  castShadow = true,
+  castShadow = false,
   animated = 'pulse',
   seed = 0,
 }: Omit<LightFixtureBaseProps, 'emissiveMesh'>) {

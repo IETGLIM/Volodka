@@ -27,6 +27,7 @@ const RECOVERY_COOLDOWN_MS = 20_000;
 
 let unsubViolations: (() => void) | null = null;
 let cleanCheckInterval: ReturnType<typeof setInterval> | null = null;
+/** Fractional strikes: fps-fail = +1, drawCalls-fail = +0.5 (см. v4.48). */
 let strikes = 0;
 let lastStrikeMs = 0;
 let lastFailMs: number | null = null;
@@ -36,6 +37,15 @@ let enabled = true;
 
 function hasFpsFail(violations: BudgetViolation[]): boolean {
   return violations.some((v) => v.id === 'fps' && v.severity === 'fail');
+}
+
+/* PERF FIX (v4.48): GPU-давление раньше падения FPS. Превышение
+ * per-scene бюджета drawCalls раньше только warning'алось — автопилот
+ * качества реагировал уже ПОСЛЕ обвала FPS. Теперь sustained drawCalls-fail
+ * тоже копит страйки, но вдвое медленнее (30с вместо 15с) — GPU-давление
+ * деградирует пресет заранее, не дожидаясь фризов. */
+function hasDrawCallsFail(violations: BudgetViolation[]): boolean {
+  return violations.some((v) => v.id === 'drawCalls' && v.severity === 'fail');
 }
 
 function softenVisualSettingsOnDegrade(): void {
@@ -93,7 +103,15 @@ function onRuntimeBudgetViolations(violations: BudgetViolation[]): void {
 
   if (lastStrikeMs > 0 && now - lastStrikeMs < STRIKE_INTERVAL_MS) return;
   lastStrikeMs = now;
-  strikes += 1;
+  /* FPS-fail = полный страйк; drawCalls-fail = полустрайк (×2 — страйк).
+   * Деградация: 15с плохого FPS ИЛИ 30с перегруза draw calls. */
+  if (hasFpsFail(violations)) {
+    strikes += 1;
+  } else if (hasDrawCallsFail(violations)) {
+    strikes += 0.5;
+  } else {
+    return;
+  }
 
   if (strikes < STRIKES_REQUIRED) return;
 

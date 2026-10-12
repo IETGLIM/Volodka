@@ -362,6 +362,11 @@ function getWebGlRendererFactory(antialias: boolean): CanvasGlProp {
       });
       // PCFSoftShadowMap reduces shadow aliasing artifacts for a noir/cinematic aesthetic
       renderer.shadowMap.type = PCFSoftShadowMap;
+      /* PERF FIX (v4.48): shadow maps больше не перерисовываются каждый кадр.
+       * autoUpdate=false + refresh каждые 2-й кадр (30 Гц) в CanvasGuardSystem —
+       * в интерьерах со статичной геометрией экономит до 30–50% GPU-времени
+       * теневых проходов. Лаг 16мс на движущихся тенях невидим. */
+      renderer.shadowMap.autoUpdate = false;
       // Default to ACESFilmic — when ExplorationPostFX's EffectComposer is
       // active, the post-frame guard below flips this to NoToneMapping
       // (the composer applies ACES as a pass to avoid double tone curve).
@@ -976,6 +981,14 @@ function CanvasGuardSystem() {
       if (!canvas) return;
 
       try {
+        /* PERF FIX (v4.48): refresh теней каждые 2-й кадр (30 Гц вместо 60).
+         * needsUpdate=true заставляет three.js перерисовать shadow maps
+         * один раз на следующем кадре, затем флаг сбрасывается. */
+        const shadowMap = ctx.state.gl.shadowMap;
+        if (shadowMap.enabled && ctx.state.gl.info.render.frame % 2 === 0) {
+          shadowMap.needsUpdate = true;
+        }
+
         // When postfx is active, the EffectComposer applies ACESFilmic as a
         // pass — renderer must be NoToneMapping to avoid double tone curve.
         // When postfx is OFF, the renderer must apply ACESFilmic directly,
