@@ -147,6 +147,16 @@ export function CinematicTimelineRunner() {
     // The 5-minute timer starts ticking; player must reach the terminal.
     dispatchGameAction({ type: 'quest/activate', questId: 'morning_sync' });
 
+    // FIX v4.48.19: уведомление о синке — гарантированный канал. Фаза monitor
+    // катсцены показывает письмо оверлеем, но QA (v4.48.19) выявила, что тексты
+    // wake-таймлайна не доходят до CutsceneOverlay (титр «Володька.» не
+    // рендерился вообще — преждесуществующая брешь цепочки, см. P2 в worklog).
+    // Мысль через immersiveVoiceChannel неуязвима: канал поставит её в очередь
+    // на время плашки 'start' и покажет сразу после выбора игрока — тот же
+    // нарративный бит, но с доказанной доставкой. Эмит — внутри стейджинг-таймера
+    // (после открытия плашки): мысль сразу уходит в очередь, без частичного
+    // показа на титульном окне.
+
     const clearPrologueTimer = (): void => {
       if (prologueTimerRef.current) {
         clearTimeout(prologueTimerRef.current);
@@ -232,6 +242,12 @@ export function CinematicTimelineRunner() {
       if (getActiveCinematicTimelineId() === 'intro_wakeup') {
         completeCinematicTimeline('intro_wakeup');
       }
+      // Синк-уведомление — сразу в очередь канала (см. комментарий выше):
+      // плашка держит полосу, мысль покажется после выбора игрока.
+      eventBus.emit('volodka:thought', {
+        text: 'На терминале мигает уведомление: «Скоро синк. Необходимо присутствие». Гильдия не ждёт.',
+        duration: 5000,
+      });
     }, wakeTimelineStillActive ? WAKE_STAGING_MS : 0);
   };
 
