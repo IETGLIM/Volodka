@@ -22,6 +22,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useGameSelector } from '@/store/gameStore';
 import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
 import { useOrchestratorNarrativeOverlay } from '@/store/selectors';
+import {
+  getImmersiveVoiceOwner,
+  onImmersiveVoiceAcquired,
+  onImmersiveVoiceFreed,
+} from '@/engine/presentation/immersiveVoiceChannel';
 import { triggerPoemCinematicVfx } from '@/engine/poemWorld/aaaPoemCinematicVfx';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
@@ -65,7 +70,20 @@ export function FirstMinutesDirector() {
    * (diegetic-плашка или story-оверлей), режиссёрский хинт молчит — один
    * текстовый фокус за раз. Вернётся после закрытия. */
   const { showStoryOverlay, diegeticNarrative } = useOrchestratorNarrativeOverlay();
-  const hintSuppressed = showStoryOverlay || Boolean(diegeticNarrative);
+  /* v4.48.17: хинт ждёт и полосу презентации — мысль Володьки после закрытия
+   * плашки показывается первой, хинт возвращается, когда полоса свободна
+   * (иначе мысль bottom:120 и хинт bottom:186 пересекаются). */
+  const [laneBusy, setLaneBusy] = useState(() => getImmersiveVoiceOwner() !== null);
+  useEffect(() => {
+    setLaneBusy(getImmersiveVoiceOwner() !== null);
+    const unsubAcquired = onImmersiveVoiceAcquired(() => setLaneBusy(true));
+    const unsubFreed = onImmersiveVoiceFreed(() => setLaneBusy(false));
+    return () => {
+      unsubAcquired();
+      unsubFreed();
+    };
+  }, []);
+  const hintSuppressed = showStoryOverlay || Boolean(diegeticNarrative) || laneBusy;
 
   // VFX при сборе poem_2 — инк + хор
   const prevPoemRef = useRef(hasPoem2);

@@ -34,6 +34,9 @@ let activeOwner: ImmersiveVoiceOwner | null = null;
 type FreedListener = (info: { previous: ImmersiveVoiceOwner | null }) => void;
 const freedListeners = new Set<FreedListener>();
 const thoughtPreemptedListeners = new Set<() => void>();
+/** v4.48.17: наблюдатели захвата полосы (хинты ждут, пока владелец есть). */
+type AcquiredListener = (info: { owner: ImmersiveVoiceOwner; previous: ImmersiveVoiceOwner | null }) => void;
+const acquiredListeners = new Set<AcquiredListener>();
 
 function notifyFreed(previous: ImmersiveVoiceOwner | null): void {
   for (const fn of [...freedListeners]) {
@@ -49,6 +52,16 @@ function notifyThoughtPreempted(): void {
   for (const fn of [...thoughtPreemptedListeners]) {
     try {
       fn();
+    } catch {
+      /* listener errors must not break the channel */
+    }
+  }
+}
+
+function notifyAcquired(owner: ImmersiveVoiceOwner, previous: ImmersiveVoiceOwner | null): void {
+  for (const fn of [...acquiredListeners]) {
+    try {
+      fn({ owner, previous });
     } catch {
       /* listener errors must not break the channel */
     }
@@ -71,18 +84,22 @@ export function getImmersiveVoiceOwner(): ImmersiveVoiceOwner | null {
  */
 export function requestImmersiveVoiceChannel(next: ImmersiveVoiceOwner): boolean {
   if (activeOwner === next) return true;
+  const previous: ImmersiveVoiceOwner | null = activeOwner;
   if (activeOwner === null) {
     activeOwner = next;
+    notifyAcquired(next, previous);
     return true;
   }
   if (next === 'voice' && activeOwner === 'thought') {
     activeOwner = 'voice';
     notifyThoughtPreempted();
+    notifyAcquired(next, previous);
     return true;
   }
   if (next === 'dialogue' && activeOwner === 'thought') {
     activeOwner = 'dialogue';
     notifyThoughtPreempted();
+    notifyAcquired(next, previous);
     return true;
   }
   return false;
@@ -105,6 +122,14 @@ export function onImmersiveVoiceFreed(fn: FreedListener): () => void {
   return () => freedListeners.delete(fn);
 }
 
+/** v4.48.17: subscribe to lane-acquired notifications (owner changed).
+ *  Fires only on actual ownership transitions — the holders' periodic
+ *  re-requests (no-op `activeOwner === next`) do NOT notify. */
+export function onImmersiveVoiceAcquired(fn: AcquiredListener): () => void {
+  acquiredListeners.add(fn);
+  return () => acquiredListeners.delete(fn);
+}
+
 /** Subscribe to thought preemption (voice taking over mid-thought). */
 export function onImmersiveVoiceThoughtPreempted(fn: () => void): () => void {
   thoughtPreemptedListeners.add(fn);
@@ -116,4 +141,5 @@ export function resetImmersiveVoiceChannelForTests(): void {
   activeOwner = null;
   freedListeners.clear();
   thoughtPreemptedListeners.clear();
+  acquiredListeners.clear();
 }
