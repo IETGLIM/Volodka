@@ -4,6 +4,7 @@
  */
 
 import {
+  BED_FLOOR_SPOT,
   BED_POSITION,
   BED_SIT_EDGE,
   CHAIR_POSITION,
@@ -85,18 +86,40 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[1]) },
     },
     {
+      // FIX v4.48.14 («стоит в ботинках на кровати»): слезаем с матраса В ПОЗЕ
+      // СИДЯ — сползаем с края на пол (BED_FLOOR_SPOT, вне матраса x=[1.04, 2.52]).
+      // Раньше следующая фаза (standing) начиналась прямо на BED_SIT_EDGE с
+      // клипом idle: Володька ~0.8с стоял в ботинках на кровати, затем
+      // «сплывал» на пол. Теперь между «сидит на краю» и «стоит на полу»
+      // есть честный переход сидя.
+      id: 'dismount',
+      duration: WAKEUP_PHASE.dismount,
+      actor: {
+        mode: 'in_place',
+        clip: 'sitting',
+        keyframes: [
+          { t: 0, position: vec3(BED_SIT_EDGE), rotation: [0, Math.PI * 0.15, 0], facingY: Math.PI * 0.5 },
+          { t: 0.55, position: [(BED_SIT_EDGE.x + BED_FLOOR_SPOT.x) / 2, 0.3, (BED_SIT_EDGE.z + BED_FLOOR_SPOT.z) / 2], rotation: [0, Math.PI * 0.08, 0], facingY: Math.PI * 0.65 },
+          { t: 1, position: vec3(BED_FLOOR_SPOT), rotation: [0, 0, 0], facingY: Math.PI * 0.8 },
+        ],
+      },
+      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[2]) },
+    },
+    {
       id: 'standing',
       duration: WAKEUP_PHASE.standing,
       actor: {
         mode: 'in_place',
         clip: 'idle',
+        // FIX v4.48.14: стартуем с BED_FLOOR_SPOT (на полу, вне матраса),
+        // а не с BED_SIT_EDGE (на кровати) — на матрасе больше не стоим.
         keyframes: [
-          { t: 0, position: vec3(BED_SIT_EDGE), facingY: Math.PI * 0.5 },
-          { t: 0.4, position: [(BED_SIT_EDGE.x + STAND_POSITION.x) / 2, 0.01, (BED_SIT_EDGE.z + STAND_POSITION.z) / 2], facingY: walkFacing * 0.5 },
+          { t: 0, position: vec3(BED_FLOOR_SPOT), facingY: Math.PI * 0.8 },
+          { t: 0.4, position: [(BED_FLOOR_SPOT.x + STAND_POSITION.x) / 2, 0.01, (BED_FLOOR_SPOT.z + STAND_POSITION.z) / 2], facingY: (Math.PI * 0.8 + walkFacing) / 2 },
           { t: 1, position: vec3(STAND_POSITION), facingY: walkFacing },
         ],
       },
-      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[2]) },
+      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[3]) },
       lightCue: 'warm_practical',
       audioCue: 'notify',
     },
@@ -111,7 +134,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
           { t: 1, position: vec3(DESK_POSITION), facingY: walkFacing },
         ],
       },
-      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[3]) },
+      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[4]) },
       audioCue: 'footstep',
     },
     {
@@ -127,7 +150,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
           { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },
         ],
       },
-      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[4]) },
+      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[5]) },
       audioCue: 'ui_open',
     },
     {
@@ -141,7 +164,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
           { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },
         ],
       },
-      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[5]) },
+      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[6]) },
     },
     {
       // Phase: monitor — camera pushes in close to the screen.
@@ -157,7 +180,7 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
           { t: 1, position: vec3(CHAIR_POSITION), facingY: sitFacing },
         ],
       },
-      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[6]) },
+      camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[7]) },
       audioCue: 'notify',
     },
     {

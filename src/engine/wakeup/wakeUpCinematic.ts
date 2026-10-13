@@ -10,9 +10,14 @@ export const WAKEUP_PHASE = {
   // суммарно было 31.7с ДО первого управления. Сокращено до ~21с —
   // ритм сохранён (терминал→подъём→стойка→шаг→стул→монитор→передача),
   // каждый бит ужат на ~30%. Скип по Esc по-прежнему работает.
+  // FIX v4.48.14 («стоит в ботинках на кровати»): добавлена фаза dismount —
+  // слезание с матраса В ПОЗЕ СИДЯ. Раньше standing (2.0с) начинался прямо на
+  // матрасе с клипом idle — Володька ~0.8с стоял в ботинках на кровати. 0.8с
+  // передали dismount, standing ужат до 1.2с — WAKEUP_TOTAL не изменился.
   terminal: 3.4,
   rise: 3.0,
-  standing: 2.0,
+  dismount: 0.8,
+  standing: 1.2,
   walking: 3.6,
   sitting: 2.4,
   settle: 1.6,
@@ -23,6 +28,7 @@ export const WAKEUP_PHASE = {
 export const WAKEUP_TOTAL =
   WAKEUP_PHASE.terminal +
   WAKEUP_PHASE.rise +
+  WAKEUP_PHASE.dismount +
   WAKEUP_PHASE.standing +
   WAKEUP_PHASE.walking +
   WAKEUP_PHASE.sitting +
@@ -40,6 +46,11 @@ export const WAKEUP_FALLBACK_MS = (WAKEUP_TOTAL + 2) * 1000;
 export const BED_POSITION = new Vector3(1.78, 0.55, 2.05);
 // Поза сидя на краю кровати — для естественного вставания, а не телепорта стоя
 export const BED_SIT_EDGE = new Vector3(1.15, 0.55, 2.05);
+// FIX v4.48.14 («стоит в ботинках на кровати»): точка НА ПОЛУ у кровати, куда
+// Володька слезает в позе сидя в фазе dismount. Кровать занимает x=[1.04, 2.52]
+// (центр [1.78, 2.05], half-width ~0.74) — x=0.92 гарантированно вне матраса,
+// рядом с тапочками на полу. Фаза standing теперь стартует отсюда, а не с матраса.
+export const BED_FLOOR_SPOT = new Vector3(0.92, 0.01, 1.95);
 // STAND_POSITION — центр комнаты, 1.5м от двери (z=3.5), 1.13м от кровати.
 // Оставлен [0.0,0.01,1.5] но добавлен safe margin от кресла.
 export const STAND_POSITION = new Vector3(0.0, 0.01, 1.2);
@@ -83,6 +94,15 @@ export const WAKEUP_CAMERA_WAYPOINTS: WakeCameraWaypoint[] = [
     fov: 46,
     duration: WAKEUP_PHASE.rise,
     controlPoint: new Vector3(1.05, 1.58, 0.85),
+  },
+  {
+    // FIX v4.48.14: новый вейпоинт для фазы dismount — камера плавно дрейфует
+    // вдоль кровати, держа в кадре сползание с матраса на пол (BED_FLOOR_SPOT).
+    position: new Vector3(0.55, 1.34, 2.62),
+    lookAt: new Vector3(0.92, 0.72, 1.95),
+    fov: 47,
+    duration: WAKEUP_PHASE.dismount,
+    controlPoint: new Vector3(1.02, 1.5, 2.6),
   },
   {
     position: new Vector3(-1.42, 1.48, 1.68),
@@ -216,13 +236,14 @@ export function applyHandoffCamera(
 }
 
 export function choreographyPhase(elapsed: number): {
-  phase: 'terminal' | 'bed' | 'stand' | 'walk' | 'sit';
+  phase: 'terminal' | 'bed' | 'dismount' | 'stand' | 'walk' | 'sit';
   localT: number;
 } {
   const d = WAKEUP_PHASE;
   const t1 = d.terminal;
   const t2 = t1 + d.rise;
-  const t3 = t2 + d.standing;
+  const t2b = t2 + d.dismount;
+  const t3 = t2b + d.standing;
   const t4 = t3 + d.walking;
 
   if (elapsed < t1) {
@@ -231,8 +252,11 @@ export function choreographyPhase(elapsed: number): {
   if (elapsed < t2) {
     return { phase: 'bed', localT: (elapsed - t1) / d.rise };
   }
+  if (elapsed < t2b) {
+    return { phase: 'dismount', localT: (elapsed - t2) / d.dismount };
+  }
   if (elapsed < t3) {
-    return { phase: 'stand', localT: (elapsed - t2) / d.standing };
+    return { phase: 'stand', localT: (elapsed - t2b) / d.standing };
   }
   if (elapsed < t4) {
     return { phase: 'walk', localT: (elapsed - t3) / d.walking };

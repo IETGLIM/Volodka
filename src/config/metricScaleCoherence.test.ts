@@ -44,8 +44,9 @@ describe('metricScaleCoherence', () => {
   });
 
   it('wake standing/walking camera lookAt targets eye band for 1.75 m player', () => {
-    const standing = WAKEUP_CAMERA_WAYPOINTS[2];
-    const walking = WAKEUP_CAMERA_WAYPOINTS[3];
+    // v4.48.14: индексы сдвинуты — вейпоинт dismount вставлен на позицию 2.
+    const standing = WAKEUP_CAMERA_WAYPOINTS[3];
+    const walking = WAKEUP_CAMERA_WAYPOINTS[4];
     expect(standing.lookAt.y).toBeGreaterThan(1.4);
     expect(standing.lookAt.y).toBeLessThan(1.7);
     expect(walking.lookAt.y).toBeGreaterThan(1.35);
