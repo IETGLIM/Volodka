@@ -146,6 +146,31 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     propOffset: [0.42, 0.1, 0.12],
   },
   {
+    // v4.48.19 «сид четвёртого голоса» — кассетный плеер на столе. Мастер-принцип:
+    // не рассказать о тайне, а дать её ПОСЛУШАТЬ. Чужая кассета с гулом под полом —
+    // первая нить, которая потом потянется к Трофиму, Бабе Зине и Зари-М.
+    // Гейт interacted_desk — не шумит в первые секунды (лимит 2 промпта на экран);
+    // one-time + hiddenWhenFlag — прослушанное уходит, оставив флаг-крючок.
+    id: 'room_cassette_player',
+    sceneId: 'volodka_room',
+    position: [0.55, 1.0, -2.45],
+    size: [0.35, 0.3, 0.35],
+    enterToast: 'На кассете чужой почерком: «04:11».',
+    interactionType: 'use',
+    interactionLabel: 'Включить плеер',
+    linkedStoryNodeId: 'room_cassette_tape',
+    requiredFlag: 'interacted_desk',
+    hiddenWhenFlag: 'cassette_listened',
+    isOneTime: true,
+    examineData: {
+      title: 'Кассетный плеер',
+      description: 'Старый плеер между колонкой и кружкой. Внутри — кассета без наклейки.',
+      detailText: 'Серая кассета, только царапиной подписано: «04:11». Ты не помнишь, чтобы записывал её. Ты вообще не помнишь её.',
+      icon: '📼',
+    },
+    effects: [],
+  },
+  {
     // FIX S12-A2: was [-2.2, 1.0, 0] (left wall mid-room, no visual bookshelf
     // there). Moved to [1.65, 1.0, -2.55] to match the visual bookshelf
     // (Medium+ AuthoredRoomProp woodenBookshelfWorn + Low procedural kit both
@@ -353,7 +378,7 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     examineData: {
       title: 'Кровать',
       description: 'Неубранная постель. Подушка помята с одной стороны.',
-      detailText: 'Одеяло сползло на пол. На тумбочке — стопка эстетических журналов и пустая кружка. Кровать — единственное место, где можно забыть.',
+      detailText: 'Одеяло сползло на пол, на краю — старая футболка, вывернутая наизнанку. Пустая кружка нашла место прямо на полу. Кровать — единственное место, где можно забыть.',
       icon: '🛏️',
     },
     effects: [
@@ -362,13 +387,17 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
   {
+    // FIX v4.48.19: раньше зона «потолочного вентилятора» висела на [0,2.8,0] —
+    // вентилятора на потолке нет, а 3D-дистанция (2.8м) была больше range (1.75м)
+    // → зона была НЕДОСТИЖИМА. Теперь зона ведёт к настольному вентилятору на
+    // столе (виден на всех пресетах, Medium+ — FIX VolodkaRoomVisual).
     id: 'room_fan',
     sceneId: 'volodka_room',
-    position: [0, 2.8, 0],
-    size: [1.5, 1.0, 1.5],
+    position: [-0.8, 0.95, -2.55],
+    size: [0.7, 0.9, 0.7],
     interactionType: 'examine',
     examineData: {
-      title: 'Потолочный вентилятор',
+      title: 'Настольный вентилятор',
       description: 'Старый вентилятор крутится медленно, едва разгоняя спёртый воздух.',
       detailText: 'Лопасти скрипят в такт. Иногда замирает, потом снова начинает крутиться. Как жизнь — крутится-крутится, а толку мало.',
       icon: '🌀',
@@ -379,9 +408,12 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
   {
+    // FIX v4.48.19: зона перенесена к реальному визуалу фото-рамки
+    // ([2.35,1.5,1.55], обе ветки визуала) — раньше висела на [1.8,1.5,1.5],
+    // у пустой стены рядом с кроватью.
     id: 'room_photo_frame',
     sceneId: 'volodka_room',
-    position: [1.8, 1.5, 1.5],
+    position: [2.3, 1.5, 1.55],
     size: [0.5, 0.7, 0.3],
     interactionType: 'examine',
     examineData: {

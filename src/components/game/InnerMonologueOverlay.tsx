@@ -53,7 +53,11 @@ export function InnerMonologueOverlay() {
   const [thought, setThought] = useState<ThoughtState | null>(null);
   const keyCounter = useRef(0);
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const initialThoughtShown = useRef(false);
+  // FIX v4.48.19: initialThoughtShown + демо-мысль удалены. Захардкоженная
+  // «Ещё один день... нужно собрать себя.» срабатывала через 2с после маунта
+  // и дублировала настоящую входную мысль сцены из sceneEntryThoughts (3.5с) —
+  // две мысли подряд на первой минуте. Единственная первая мысль — входная
+  // мысль сцены из данных, не костыль в компоненте.
   const pendingRef = useRef<ThoughtState[]>([]);
   /** Mirror of the on-screen thought — sync refs without render dependency. */
   const presentingRef = useRef<ThoughtState | null>(null);
@@ -143,17 +147,6 @@ export function InnerMonologueOverlay() {
       }
       pendingRef.current = [];
     };
-  }, []);
-
-  /* ── Sample thought on first scene entry only (respects React strict-mode double-mount) ── */
-  useEffect(() => {
-    if (initialThoughtShown.current) return;
-    initialThoughtShown.current = true;
-    const timer = setTimeout(() => {
-      showThought('Ещё один день... нужно собрать себя.', DEFAULT_DURATION_MS);
-    }, 2000);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   /* ── Typewriter ── */

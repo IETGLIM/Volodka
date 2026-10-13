@@ -9,8 +9,11 @@
  * - Poem чтение — просто флаг, без VFX
  *
  * Стало:
- * - Diegetic подсветка стола и полки (InteractionHighlight с пульсом)
- * - Контекстный typewriter hint с ротацией
+ * - Контекстный typewriter hint с ротацией (getFirstReadingHint)
+ *   [FIX v4.48.19: шапка раньше обещала «Diegetic подсветку стола и полки
+ *   (InteractionHighlight с пульсом)» — такой подсветки в компоненте нет и
+ *   не было: InteractionHighlight — событийное свечение ПОСЛЕ взаимодействия.
+ *   Убрано из документации, чтобы не вводить в заблуждение.]
  * - Poem VFX triggerPoemCinematicVfx('poem_2') — ink + choir + bloom 0.22 + tint
  * - Прогресс-дотсы для 2 целей first_reading
  * - Morning sync urgency: vignette + countdown когда время на исходе

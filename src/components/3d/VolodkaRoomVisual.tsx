@@ -823,6 +823,23 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         <DeskRgbKeyboard position={[0, deskSurfaceY + 0.01, 0.22]} />
         <DeskMouse position={[0.28, deskSurfaceY + 0.01, 0.2]} rotationY={0.25} />
 
+        {/* FIX v4.48.19: настольный вентилятор теперь виден и на Medium+ —
+            раньше зона осмотра room_fan вела к невидимому объекту (визуал
+            существовал только в Low-ките). Тот же процедурный комплект,
+            тот же fanGroupRef (вращает useVolodkaRoomAnimations). */}
+        {useGltfFurniture ? (
+          <group position={[-0.8, deskSurfaceY + 0.01, -0.05]}>
+            <mesh position={[0, 0.04, 0]} geometry={geo_cyl_46} material={mat_35} />
+            <mesh position={[0, 0.12, 0]} rotation={[Math.PI / 2, 0, 0]} geometry={geo_tor_47} material={mat_36} />
+            <group ref={fanGroupRef} position={[0, 0.12, 0.02]}>
+              {[0, 1, 2, 3].map((i) => (
+                <mesh key={i} rotation={[0, 0, (i * Math.PI) / 2]} geometry={geo_box_48} material={mat_37} />
+              ))}
+              <mesh geometry={geo_cyl_49} material={mat_38} />
+            </group>
+          </group>
+        ) : null}
+
         {useGltfFurniture ? (
           <Suspense fallback={null}>
             <AuthoredRoomProp
@@ -839,6 +856,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         {!useGltfFurniture ? (
           <>
             <mesh position={[0.6, deskSurfaceY + 0.02, 0.1]} rotation={[0, 0.1, 0]} geometry={getSharedBoxGeometry(0.18, 0.004, 0.2)} material={mat_18} />
+            {/* FIX v4.48.19: кассетный плеер теперь есть и на Low-ките —
+                зона room_cassette_player не должна вести в пустоту. */}
+            <mesh position={[0.55, deskSurfaceY + 0.025, 0.05]} rotation={[0, 0.2, 0]} castShadow={preset.shadows} geometry={getSharedBoxGeometry(0.19, 0.05, 0.12)} material={mat_39} />
+            <mesh position={[0.55, deskSurfaceY + 0.051, 0.05]} rotation={[0, 0.2, 0]} geometry={getSharedBoxGeometry(0.05, 0.004, 0.03)} material={mat_21} />
             <group position={[-0.55, deskSurfaceY + 0.02, 0.25]}>
               <mesh position={[0, 0.04, 0]} geometry={geo_cyl_27} material={mat_20} />
               <mesh position={[0.04, 0.04, 0]} rotation={[0, 0, Math.PI / 2]} geometry={geo_tor_28} material={mat_20} />
@@ -1046,11 +1067,56 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
       {!useGltfFurniture ? <VolodkaRoomClutter /> : null}
       {useGltfFurniture ? <AuthoredVolodkaRoomDressing castShadow={preset.shadows} /> : null}
 
+      {/* FIX v4.48.19 «комната обещала — комната показывает» (общая секция,
+          все пресеты): раньше зоны осмотра висели на пустых местах —
+          room_mirror_zone [2.5,1.5,0.5] без зеркала, room_poster_zone
+          [2.5,1.5,1.5] без постера. Теперь визуалы существуют ровно там,
+          куда ведут промпты. Зеркало — овальное в алюминевой раме (текст
+          examine_mirror), постер — палimpsest: советский плакат под
+          полупрозрачной голограммой «НейроСинтез» (текст examine_poster). */}
+      <group position={[2.44, 1.5, 0.5]} rotation={[0, -Math.PI / 2, 0]}>
+        {/* алюминиевая овальная рама */}
+        <mesh position={[0, 0, -0.012]} castShadow={preset.shadows}>
+          <cylinderGeometry args={[0.22, 0.22, 0.024, 24]} />
+          <meshStandardMaterial color="#9aa3a8" metalness={0.75} roughness={0.35} />
+        </mesh>
+        {/* стекло — тёмное, ловит блики ламп */}
+        <mesh position={[0, 0, 0.002]}>
+          <circleGeometry args={[0.2, 24]} />
+          <meshStandardMaterial color="#3d4a52" metalness={0.9} roughness={0.12} />
+        </mesh>
+        {/* трещина — тонкая светлая царапина через стекло */}
+        <mesh position={[0.04, 0.05, 0.004]} rotation={[0, 0, 0.6]}>
+          <planeGeometry args={[0.26, 0.006]} />
+          <meshBasicMaterial color="#b8c4c8" transparent opacity={0.5} />
+        </mesh>
+      </group>
+      <group position={[2.44, 1.5, -0.3]} rotation={[0, -Math.PI / 2, 0]}>
+        {/* нижний слой: выцветший советский плакат */}
+        <mesh position={[0, -0.02, -0.002]} castShadow={preset.shadows}>
+          <planeGeometry args={[0.52, 0.72]} />
+          <meshStandardMaterial color="#c9bfa8" roughness={0.9} />
+        </mesh>
+        {/* верхний слой: корпоративная голограмма «НейроСинтез» — батарейка садится */}
+        <mesh position={[0.02, 0.03, 0.002]}>
+          <planeGeometry args={[0.4, 0.54]} />
+          <meshStandardMaterial
+            color="#8fd8e0"
+            emissive="#4fa8b8"
+            emissiveIntensity={0.35}
+            transparent
+            opacity={0.55}
+            roughness={0.4}
+          />
+        </mesh>
+      </group>
+
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ANIMATED DESK ELEMENTS ── */}
       {/* ═══════════════════════════════════════════════ */}
 
-      {/* ── ANIMATED DESK ELEMENTS — Low kit only (Medium+ uses authored desk props) ── */}
+      {/* ── ANIMATED DESK ELEMENTS — Low kit fan (Medium+ fan живёт в desk-группе
+          выше, FIX v4.48.19: раньше на Medium+ рендерился пустой hidden-группой) ── */}
       {!useGltfFurniture ? (
       <group position={[-0.7, 0.78, -2.3]}>
         <mesh position={[0, 0.04, 0]} geometry={geo_cyl_46} material={mat_35} />
@@ -1062,9 +1128,7 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           <mesh geometry={geo_cyl_49} material={mat_38} />
         </group>
       </group>
-      ) : (
-        <group ref={fanGroupRef} visible={false} />
-      )}
+      ) : null}
 
       {/* ── PC case — Low only; box tower reads kit on Medium+ ── */}
       {!useGltfFurniture ? (

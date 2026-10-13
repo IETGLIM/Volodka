@@ -211,11 +211,28 @@ export function CinematicTimelineRunner() {
     // в момент завершения таймлайна).
     store.markCutsceneTriggered('act1_prologue');
     store.setCurrentNodeId('start');
-    openPrologueStory();
 
-    if (getActiveCinematicTimelineId() === 'intro_wakeup') {
-      completeCinematicTimeline('intro_wakeup');
-    }
+    // FIX v4.48.19 («стейджинг первой сцены»): раньше титр сцены
+    // («Комната Володьки · Монитор мерцает. Тишина и код.», scene:loaded выше)
+    // и диегетическая плашка 'start' открывались В ОДИН КАДР — два текстовых
+    // слоя на первой секунде комнаты. Теперь завершение катсцены и открытие
+    // стартового бита откладываются на WAKE_STAGING_MS: игрок сначала читает
+    // титр сцены (2.5с dwell), затем открывается плашка. Всё это время
+    // cinematic-hold держит управление (снимается в completeCinematicTimeline /
+    // openPrologueStory). Ориентируемся на «таймлайн ещё активен»: если катсцену
+    // скипнули Esc — таймлайн уже снят, открываем сразу, без титульной паузы.
+    // Orphan-watchdog оркестратора (total + 15с грейс) при такой задержке
+    // не срабатывает (22.6с + 2.6с << грейса).
+    const WAKE_STAGING_MS = 2600;
+    const wakeTimelineStillActive = getActiveCinematicTimelineId() === 'intro_wakeup';
+    if (prologueTimerRef.current) clearTimeout(prologueTimerRef.current);
+    prologueTimerRef.current = setTimeout(() => {
+      prologueTimerRef.current = null;
+      openPrologueStory();
+      if (getActiveCinematicTimelineId() === 'intro_wakeup') {
+        completeCinematicTimeline('intro_wakeup');
+      }
+    }, wakeTimelineStillActive ? WAKE_STAGING_MS : 0);
   };
 
   const finishGenericTimeline = (timelineId: string): void => {

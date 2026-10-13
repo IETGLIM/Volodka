@@ -168,8 +168,11 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
     },
     {
       // Phase: monitor — camera pushes in close to the screen.
-      // Poem lines appear on the monitor, and a notification pops up:
-      // "Скоро синк. Необходимо присутствие."
+      // Poem lines appear on the monitor and a notification pops up.
+      // FIX v4.48.19: уведомление существовало только в этом комментарии —
+      // теперь оно реально показывается оверлеем на время фазы (handoff-фаза
+      // заменит его титром «Володька.»). Нарративное обещание реализовано,
+      // audioCue 'notify' больше не звучит в пустоту.
       id: 'monitor',
       duration: WAKEUP_PHASE.monitor,
       actor: {
@@ -182,6 +185,12 @@ export const INTRO_WAKE_TIMELINE: CinematicTimelineDef = {
       },
       camera: { mode: 'waypoint', to: wpToData(WAKEUP_CAMERA_WAYPOINTS[7]) },
       audioCue: 'notify',
+      overlay: {
+        text: 'Скоро синк. Необходимо присутствие.',
+        type: 'story_moment',
+        letterboxStyle: 'thin',
+        fadeInMs: 420,
+      },
     },
     {
       id: 'handoff',

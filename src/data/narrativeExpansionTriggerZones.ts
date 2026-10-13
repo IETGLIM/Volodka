@@ -76,9 +76,12 @@ export const NARRATIVE_EXPANSION_TRIGGER_ZONES: TriggerZone[] = [
     interactionLabel: 'Посмотреть в зеркало',
   },
   {
+    // FIX v4.48.19: зона перенесена к реальному визуалу постера-палimpseста
+    // ([2.44,1.5,-0.3], VolodkaRoomVisual) — раньше висела на [2.5,1.5,1.5],
+    // где нет ничего, кроме фото-рамки соседа-триггера.
     id: 'room_poster_zone',
     sceneId: 'volodka_room',
-    position: [2.5, 1.5, 1.5],
+    position: [2.5, 1.5, -0.3],
     size: [0.6, 0.9, 0.3],
     enterToast: 'Постер на стене — цветной в серой комнате.',
     linkedStoryNodeId: 'examine_poster',

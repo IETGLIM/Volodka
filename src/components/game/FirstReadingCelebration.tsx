@@ -250,7 +250,7 @@ export function FirstReadingCelebrationView({
                 </p>
                 {isFragment && done ? (
                   <p className="mt-4 text-[10px] font-mono tracking-widest text-slate-500">
-                    Полный текст — в сборнике 📖
+                    Полный текст — в сборнике [P]
                   </p>
                 ) : null}
                 {quoteText ? (
@@ -324,7 +324,8 @@ export function FirstReadingCelebrationView({
                   </div>
                 ) : (
                   <p className="mb-4 text-xs font-mono text-amber-200/90">
-                    Новый стих сохранён в сборнике — откройте 📖 справа в HUD.
+                    {/* FIX v4.48.19: 📖 не кликабелен и не объясняет — явный ключ [P] */}
+                    Новый стих сохранён в сборнике — нажмите [P], чтобы открыть его.
                   </p>
                 )}
 

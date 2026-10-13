@@ -47,8 +47,12 @@ export function MorningSyncUrgency() {
         >
           <div className="flex items-center gap-3 px-4 py-2 rounded-full bg-black/55 backdrop-blur-[14px] border border-amber-500/20 shadow-[0_0_24px_rgba(226,168,75,0.15)]">
             <div className="w-2 h-2 rounded-full bg-amber-400/80 animate-pulse shadow-[0_0_8px_rgba(226,168,75,0.8)]" />
+            {/* FIX v4.48.19: счётчик раньше уходил в минус («Синк через -12м»)
+                — клампится на нуле и переходит в честную фазу ожидания. */}
             <span className="font-mono text-[11px] tracking-[0.18em] uppercase text-amber-200/80">
-              Синк через {5 - minutes}м • Терминал в углу комнаты
+              {minutes >= 5
+                ? 'Синк уже ждёт • Терминал в углу комнаты'
+                : `Синк через ${5 - minutes}м • Терминал в углу комнаты`}
             </span>
           </div>
         </motion.div>
