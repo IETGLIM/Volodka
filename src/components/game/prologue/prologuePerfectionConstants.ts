@@ -5,10 +5,12 @@
  */
 
 export const PROLOGUE_PERFECTION = {
-  bootLinesPerCharMs: 9,
-  bootLinePauseMs: 60,
   // FIX v4.46: пролог ужат (репорт игрока: «длинный и скучный»).
   // boot 4.2→2.4с, breath 2.2→1.5с, title 2.4→1.9с; + пропуск Esc всегда.
+  // FIX v4.48.16: bootTotalTargetMs стал РЕАЛЬНЫМ контрактом —
+  // PrologueBootConsole ведёт reveal пропорционально времени (раньше
+  // посимвольный typewriter игнорировал это значение и тянул ~34с,
+  // репорт: «экран очень долгий и бесполезный»).
   bootTotalTargetMs: 2400,
   breathDurationMs: 1500,
   eyeOpenDurationMs: 1400,

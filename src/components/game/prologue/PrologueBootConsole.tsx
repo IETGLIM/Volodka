@@ -1,7 +1,13 @@
 /**
- * Boot консоль — показывает BOOT_LINES с typewriter, пока в фоне грузится WASM.
+ * Boot консоль — показывает BOOT_LINES, пока в фоне грузится WASM.
  * Оптимизация: маскирует 1.5MB Rapier + story nodes.
  * Красота: film grain + scanlines + matrix rain призрак + дрожание строк.
+ *
+ * FIX v4.48.16 (репорт игрока: «экран очень долгий и бесполезный»):
+ * старый посимвольный typewriter (~12мс/символ × ~2700 символов ≈ 34с)
+ * игнорировал bootTotalTargetMs. Теперь reveal пропорционален времени:
+ * весь лог гарантированно дописывается за bootTotalTargetMs (2.4с)
+ * независимо от троттлинга таймеров и длины лога.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -15,51 +21,74 @@ interface Props {
   loadingProgress: number; // 0-1, из preload hook
 }
 
+/** Шаг тика reveal-цикла. 40мс ≈ 25fps — глазу читается как быстрый поток. */
+const REVEAL_TICK_MS = 40;
+
 export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
   const reducedMotion = useEffectiveReducedMotion();
-  const [visibleCount, setVisibleCount] = useState(() => (reducedMotion ? BOOT_LINES.length : 0));
-  const [charIndex, setCharIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Общий объём лога (+1 условный перевод строки на строку) — единая шкала reveal.
+  const totalChars = useMemo(
+    () => BOOT_LINES.reduce((n, line) => n + line.length + 1, 0),
+    [],
+  );
+  const [revealedChars, setRevealedChars] = useState(() => (reducedMotion ? totalChars : 0));
 
   const ghostPoem = useMemo(() => {
     const idx = Math.floor(Math.random() * PROLOGUE_PERFECTION.poemGhosts.length);
     return PROLOGUE_PERFECTION.poemGhosts[idx];
   }, []);
 
-  // Typewriter для boot линий
+  // Time-proportional reveal: elapsed/bootTotalTargetMs × totalChars.
+  // Гарантия хронометража: даже при троттлинге интервала раскрываем по
+  // фактическому времени, а не по числу тиков — экран никогда не висит дольше
+  // bootTotalTargetMs (+420мс хвост) без нажатия «Пропустить».
   useEffect(() => {
     if (reducedMotion) {
       onComplete();
       return;
     }
 
-    let timeout: ReturnType<typeof setTimeout>;
-    let raf: ReturnType<typeof setTimeout>;
+    let interval: ReturnType<typeof setInterval> | undefined;
+    let doneTimer: ReturnType<typeof setTimeout> | undefined;
+    const start = performance.now();
+    const targetMs = PROLOGUE_PERFECTION.bootTotalTargetMs;
 
-    const tick = () => {
-      if (visibleCount >= BOOT_LINES.length) {
-        timeout = setTimeout(onComplete, 420);
-        return;
+    interval = setInterval(() => {
+      const elapsed = performance.now() - start;
+      const next = Math.min(totalChars, Math.ceil((elapsed / targetMs) * totalChars));
+      setRevealedChars(next);
+      if (next >= totalChars) {
+        if (interval) clearInterval(interval);
+        interval = undefined;
+        doneTimer = setTimeout(onComplete, 420);
       }
+    }, REVEAL_TICK_MS);
 
-      const currentLine = BOOT_LINES[visibleCount] ?? '';
-      if (charIndex < currentLine.length) {
-        setCharIndex((c) => c + 1);
-        timeout = setTimeout(tick, PROLOGUE_PERFECTION.bootLinesPerCharMs + Math.random() * 6);
-      } else {
-        // линия дописана
-        setVisibleCount((v) => v + 1);
-        setCharIndex(0);
-        timeout = setTimeout(tick, PROLOGUE_PERFECTION.bootLinePauseMs);
-      }
-    };
-
-    raf = setTimeout(tick, 120);
     return () => {
-      clearTimeout(timeout);
-      clearTimeout(raf);
+      if (interval) clearInterval(interval);
+      if (doneTimer) clearTimeout(doneTimer);
     };
-  }, [visibleCount, charIndex, reducedMotion, onComplete]);
+  }, [reducedMotion, onComplete, totalChars]);
+
+  // Производные строки: полные + одна частичная (текущая).
+  const { fullLines, partialLine } = useMemo(() => {
+    const full: string[] = [];
+    let remaining = revealedChars;
+    let partial: string | null = null;
+    for (const line of BOOT_LINES) {
+      if (remaining <= 0) break;
+      if (remaining >= line.length + 1) {
+        full.push(line);
+        remaining -= line.length + 1;
+      } else {
+        partial = line.slice(0, Math.max(0, remaining));
+        remaining = 0;
+      }
+    }
+    return { fullLines: full, partialLine: partial };
+  }, [revealedChars]);
 
   // Device info для immersion — реальные данные браузера
   const deviceInfo = useMemo(() => {
@@ -74,7 +103,7 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
   // Автоскролл вниз
   useEffect(() => {
     containerRef.current?.scrollTo({ top: containerRef.current.scrollHeight, behavior: 'smooth' });
-  }, [visibleCount, charIndex]);
+  }, [revealedChars]);
 
   return (
     <div className="relative h-full w-full bg-black overflow-hidden font-mono">
@@ -121,14 +150,14 @@ export function PrologueBootConsole({ onComplete, loadingProgress }: Props) {
         aria-label="Загрузочная консоль"
       >
         <div className="max-w-4xl mx-auto space-y-[2px]">
-          {BOOT_LINES.slice(0, visibleCount).map((line, i) => (
+          {fullLines.map((line, i) => (
             <div key={i} className="text-emerald-300/85 tracking-[0.02em] [text-shadow:0_0_8px_rgba(70,185,110,0.35)]">
               {line}
             </div>
           ))}
-          {visibleCount < BOOT_LINES.length && (
+          {partialLine !== null && (
             <div className="text-emerald-200/90 tracking-[0.02em] [text-shadow:0_0_12px_rgba(70,185,110,0.5)]">
-              {BOOT_LINES[visibleCount]?.slice(0, charIndex)}
+              {partialLine}
               <span className="inline-block w-[0.6em] h-[1.1em] bg-emerald-300/70 ml-[1px] -mb-[2px] animate-pulse" aria-hidden>
                 _
               </span>
