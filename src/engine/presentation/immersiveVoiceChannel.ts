@@ -5,19 +5,29 @@
  * and the Голос voice-line subtitle (audio:voice_line_start) could appear
  * at the same time: two competing "inner voice" texts on screen.
  *
- * Contract:
- *  • The VOICE lane owns the channel while a voice line plays — voice is
- *    tied to real audio timing and cannot be delayed.
- *  • THOUGHTS are queued (FIFO, bounded) and presented when the channel
- *    frees. A thought that is on screen when a voice line starts is
- *    preempted: it is re-queued at the front and re-presented afterwards.
+ * QA report (v4.48.17, скриншот): «Мысли, меню и голос накладываются друг
+ * на друга, всё это надо выстроить поэтапно» — diegetic-плашка «голоса»
+ * (DiegeticDialogueHud) и кинематик-диалог (DialogueRenderer) НЕ держали
+ * канал, поэтому мысль «Комната. Три монитора…» ложилась ПОВЕРХ бокса с
+ * выборами. Теперь реплика «голоса» — тоже владелец полосы:
  *
- * Consumers: InnerMonologueOverlay (thoughts) and VoiceLineSubtitleHud
- * (Голос subtitles). Both stay eventBus-decoupled — this module is the
- * only shared state between them.
+ * Contract (поэтапная подача — один текстовый фокус за раз):
+ *  • DIALOGUE (плашка реплики/выборов) — первичная полоса: пока игрок
+ *    читает и выбирает, мысли и TTS-субтитры ждут. Открываясь, прерывает
+ *    активную мысль (она возвращается в голову очереди и покажется после
+ *    закрытия).
+ *  • The VOICE lane (TTS-субтитр) owns the channel while a voice line
+ *    plays — voice is tied to real audio timing and cannot be delayed.
+ *    Пока плашка открыта, субтитр подавлен (он дублирует текст плашки).
+ *  • THOUGHTS are queued (FIFO, bounded) and presented when the channel
+ *    frees — поэтапно, после закрытия реплики/субтитра.
+ *
+ * Consumers: InnerMonologueOverlay (thoughts), VoiceLineSubtitleHud
+ * (Голос TTS-субтитры), DiegeticDialogueHud + DialogueRenderer (реплика).
+ * All stay eventBus-decoupled — this module is the only shared state.
  */
 
-export type ImmersiveVoiceOwner = 'thought' | 'voice';
+export type ImmersiveVoiceOwner = 'thought' | 'voice' | 'dialogue';
 
 let activeOwner: ImmersiveVoiceOwner | null = null;
 
@@ -51,9 +61,13 @@ export function getImmersiveVoiceOwner(): ImmersiveVoiceOwner | null {
 }
 
 /**
- * Request exclusive presentation. VOICE preempts an active THOUGHT (the
- * thought owner receives onImmersiveVoiceThoughtPreempted and re-queues);
- * every other conflict waits and returns false.
+ * Request exclusive presentation. Preemption matrix (поэтапная подача):
+ *  • DIALOGUE preempts an active THOUGHT (реплика важнее висящей мысли —
+ *    мысль вернётся в голову очереди и покажется после закрытия).
+ *  • VOICE preempts an active THOUGHT (реплика привязана к реальному аудио).
+ *  • THOUGHT and VOICE wait while DIALOGUE holds (плашка уже показывает
+ *    этот текст — субтитр дублировал бы его; мысли ждут своей очереди).
+ *  • Every other conflict waits and returns false.
  */
 export function requestImmersiveVoiceChannel(next: ImmersiveVoiceOwner): boolean {
   if (activeOwner === next) return true;
@@ -63,6 +77,11 @@ export function requestImmersiveVoiceChannel(next: ImmersiveVoiceOwner): boolean
   }
   if (next === 'voice' && activeOwner === 'thought') {
     activeOwner = 'voice';
+    notifyThoughtPreempted();
+    return true;
+  }
+  if (next === 'dialogue' && activeOwner === 'thought') {
+    activeOwner = 'dialogue';
     notifyThoughtPreempted();
     return true;
   }

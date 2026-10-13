@@ -26,6 +26,11 @@ import { audioEngine } from '@/engine/AudioEngine';
 import { consumePoemSkillCheckFlag } from '@/engine/poemPower/poemSkillCheckModifiers';
 import { eventBus } from '@/engine/EventBus';
 import { closeNarrativeOverlay, openNarrativeOverlay } from '@/engine/scene/narrativeOverlay';
+import {
+  onImmersiveVoiceFreed,
+  releaseImmersiveVoiceChannel,
+  requestImmersiveVoiceChannel,
+} from '@/engine/presentation/immersiveVoiceChannel';
 import { consumeMilestoneDialogue } from '@/engine/npc/npcMilestoneDialogueDedup';
 import { requestSceneTransitionForStoryNode } from '@/engine/scene/sceneTransition';
 import { getGameStore as _getGameStore } from '@/store/gameStore';
@@ -384,6 +389,26 @@ export function DialogueRenderer() {
 
   const dialogueNodes = isNarrativeGameDataLoaded() ? getDialogueNodes() : null;
   const isOpen = showStoryOverlay && (!!dialogueNodes?.[currentNodeId] || isLoadingNode || !!errorRef.current);
+
+  /* v4.48.17 — поэтапная подача: кинематик-диалог — первичная полоса
+   * (симметрично DiegeticDialogueHud). Мысли Володьки и TTS-субтитры ждут,
+   * пока открыт бокс реплики/выборов; после закрытия очередь показывает
+   * их по одной. */
+  useEffect(() => {
+    if (!isOpen) {
+      releaseImmersiveVoiceChannel('dialogue');
+      return;
+    }
+    const acquire = () => requestImmersiveVoiceChannel('dialogue');
+    acquire();
+    const unsubFreed = onImmersiveVoiceFreed(() => acquire());
+    const retryId = setInterval(acquire, 400);
+    return () => {
+      unsubFreed();
+      clearInterval(retryId);
+      releaseImmersiveVoiceChannel('dialogue');
+    };
+  }, [isOpen]);
   const node = useMemo(
     () => (dialogueNodes ? dialogueNodes[currentNodeId] : undefined),
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional stable deps

@@ -21,6 +21,11 @@ import {
 } from '@/data/gameDataLoader';
 import { closeDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
 import {
+  onImmersiveVoiceFreed,
+  releaseImmersiveVoiceChannel,
+  requestImmersiveVoiceChannel,
+} from '@/engine/presentation/immersiveVoiceChannel';
+import {
   executeDialogueChoice,
   executeStoryChoice,
   applyDialogueNodeMountEffects,
@@ -81,6 +86,27 @@ export function DiegeticDialogueHud() {
   const isOpen = diegetic != null;
   const nodeId = diegetic?.nodeId ?? '';
   const kind = diegetic?.kind ?? 'story';
+
+  /* v4.48.17 — поэтапная подача: плашка «голоса» — первичная полоса.
+   * Пока игрок читает реплику и выбирает, мысли Володьки (InnerMonologueOverlay)
+   * и TTS-субтитры ждут в очереди; после закрытия плашки очередь показывает
+   * их по одной. Пока плашка открыта, держим канал непрерывно: retry-интервал
+   * подхватывает полосу, если её успел занять TTS-субтитр между узлами. */
+  useEffect(() => {
+    if (!isOpen) {
+      releaseImmersiveVoiceChannel('dialogue');
+      return;
+    }
+    const acquire = () => requestImmersiveVoiceChannel('dialogue');
+    acquire();
+    const unsubFreed = onImmersiveVoiceFreed(() => acquire());
+    const retryId = setInterval(acquire, 400);
+    return () => {
+      unsubFreed();
+      clearInterval(retryId);
+      releaseImmersiveVoiceChannel('dialogue');
+    };
+  }, [isOpen]);
 
   const [packVersion, setPackVersion] = useState(0);
   const appliedRef = useRef<string | null>(null);

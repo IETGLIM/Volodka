@@ -21,6 +21,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameSelector } from '@/store/gameStore';
 import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
+import { useOrchestratorNarrativeOverlay } from '@/store/selectors';
 import { triggerPoemCinematicVfx } from '@/engine/poemWorld/aaaPoemCinematicVfx';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
@@ -60,6 +61,11 @@ export function FirstMinutesDirector() {
   const { active, deskDone, hasPoem2 } = useFirstReadingState();
   const urgency = useMorningSyncUrgency();
   const hint = useMemo(() => getFirstReadingHint(), [active, deskDone, hasPoem2]);
+  /* v4.48.17 — поэтапная подача: пока открыта реплика «голоса»/кинематик-диалог
+   * (diegetic-плашка или story-оверлей), режиссёрский хинт молчит — один
+   * текстовый фокус за раз. Вернётся после закрытия. */
+  const { showStoryOverlay, diegeticNarrative } = useOrchestratorNarrativeOverlay();
+  const hintSuppressed = showStoryOverlay || Boolean(diegeticNarrative);
 
   // VFX при сборе poem_2 — инк + хор
   const prevPoemRef = useRef(hasPoem2);
@@ -82,7 +88,7 @@ export function FirstMinutesDirector() {
           [E]-промпт на низких вьюпортах. Теперь слот режиссуры (над
           поэзией, под [E]-промптом, с учётом safe-area). */}
       <AnimatePresence>
-        {hint && (
+        {hint && !hintSuppressed && (
           <motion.div
             key={hint}
             initial={{ opacity: 0, y: 8, filter: 'blur(4px)' }}
