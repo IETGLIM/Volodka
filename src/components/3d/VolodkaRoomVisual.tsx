@@ -14,7 +14,15 @@ import {
 } from '@/engine/three/moduleGeometryRegistry';
 import { Lamp, Rug, Radiator } from './lazyInteriorModels';
 import { useCachedCanvasTexture } from '@/hooks/useCachedCanvasTexture';
-import { createVolodkaRoomNightSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import { createVolodkaRoomCityViewTexture, createVolodkaRoomNightSkyTexture } from '@/engine/graphics/proceduralSkyTextures';
+import {
+  VOLKODA_ROOM_WINDOW_CITY_BACKDROP,
+  VOLKODA_ROOM_WINDOW_FRAME,
+  VOLKODA_ROOM_WINDOW_PANE,
+  VOLKODA_ROOM_WINDOW_SHELL_OPENING,
+  VOLKODA_ROOM_BACK_WALL_FALLBACK_INTERIOR_Z,
+  VOLKODA_ROOM_BACK_WALL_INTERIOR_Z,
+} from '@/config/volodkaRoomWindow';
 import { VolodkaRoomClutter } from './sceneChunks/volodkaRoom';
 import {
   createGrafanaTexture,
@@ -36,11 +44,8 @@ import { INTERIOR_SHELL_MODELS } from '../../config/interiorShellModels';
 import { AuthoredInteriorShell } from './AuthoredInteriorShell';
 import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
-import {
-  allowsSelectiveMeshPhysicalWet,
-  getWetGlassPhysicalParams,
-} from '@/engine/graphics/wetStreetScenes';
-import { useIsMobileVisual } from '@/hooks/use-mobile';
+// FIX v4.48.15: allowsSelectiveMeshPhysicalWet / getWetGlassPhysicalParams
+// удалены из импортов — обе ветки панелей окна слиты (transmission всё равно 0).
 import { weatherEnvironmentMaterials } from '@/engine/graphics/materials/weatherEnvironmentMaterials';
 import { POLYHAVEN_MODELS } from '@/config/polyhavenAssets';
 import { getPropModelDefinition } from '@/config/propModelRegistry';
@@ -102,10 +107,15 @@ const geo_box_38 = new BoxGeometry(1, 0.3, 2);
 const geo_box_39 = new BoxGeometry(1, 0.5, 0.08);
 const geo_box_40 = new BoxGeometry(0.5, 0.1, 0.3);
 const geo_box_41 = new BoxGeometry(0.9, 0.05, 1.2);
-const geo_pln_42 = new PlaneGeometry(1.2, 1);
-const geo_box_43 = new BoxGeometry(0.05, 1.05, 1.25);
-const geo_pln_44 = new PlaneGeometry(1, 1);
-const geo_box_45 = new BoxGeometry(1.05, 1.05, 0.05);
+// FIX v4.48.15: панель/стекло 1.34×1.20 — заполняет РЕАЛЬНЫЙ проём шелла
+// (z 1.334 × y 1.2, центр y=1.5) с утопленными в четверти краями.
+const geo_pln_42 = new PlaneGeometry(VOLKODA_ROOM_WINDOW_PANE.widthZ, VOLKODA_ROOM_WINDOW_PANE.heightY);
+// Корпусная рамка (Low-only, процедурная стена без проёма): кайма ~4 см вокруг панели.
+const geo_box_43 = new BoxGeometry(0.05, 1.26, 1.42);
+// FIX v4.48.15: city-бэкдроп ЗА стеной (виден сквозь проём) вместо 5×3
+// плоскости внутри комнаты. geo_pln_44 / geo_box_45 (второе окно) удалены —
+// окно за непрозрачной шторой вырезано по принципу «что-то можно вырезать».
+const geo_pln_79 = new PlaneGeometry(VOLKODA_ROOM_WINDOW_CITY_BACKDROP.widthZ, VOLKODA_ROOM_WINDOW_CITY_BACKDROP.heightY);
 const geo_cyl_46 = new CylinderGeometry(0.04, 0.05, 0.08, 8);
 const geo_tor_47 = new TorusGeometry(0.08, 0.003, 4, 16);
 const geo_box_48 = new BoxGeometry(0.06, 0.015, 0.01);
@@ -135,10 +145,6 @@ const geo_box_71 = new BoxGeometry(0.07, 0.008, 0.14);
 const geo_box_72 = new BoxGeometry(0.06, 0.003, 0.12);
 const geo_cyl_73 = new CylinderGeometry(0.025, 0.02, 0.08, 8);
 const geo_box_74 = new BoxGeometry(0.08, 0.03, 0.18);
-const geo_pln_75 = new PlaneGeometry(0.12, 0.25);
-const geo_pln_76 = new PlaneGeometry(0.08, 0.35);
-const geo_pln_77 = new PlaneGeometry(0.02, 0.02);
-const geo_pln_78 = new PlaneGeometry(0.015, 0.015);
 const geo_box_79 = new BoxGeometry(0.3, 0.4, 0.15);
 const geo_box_80 = new BoxGeometry(0.03, 0.3, 0.01);
 const geo_box_81 = new BoxGeometry(0.15, 0.005, 0.005);
@@ -165,7 +171,7 @@ function bookSpineGeo(w: number, h: number, d = 0.18): BoxGeometry {
   return geo;
 }
 
-registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_cyl_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_sph_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_pln_19, geo_cir_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_cyl_27, geo_tor_28, geo_cyl_29, geo_box_30, geo_box_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_box_39, geo_box_40, geo_box_41, geo_pln_42, geo_box_43, geo_pln_44, geo_box_45, geo_cyl_46, geo_tor_47, geo_box_48, geo_cyl_49, geo_box_50, geo_box_51, geo_sph_52, geo_sph_53, geo_box_54, geo_pln_55, geo_box_56, geo_box_57, geo_box_58, geo_box_59, geo_box_60, geo_box_61, geo_tor_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_cyl_67, geo_box_68, geo_box_69, geo_cyl_70, geo_box_71, geo_box_72, geo_cyl_73, geo_box_74, geo_pln_75, geo_pln_76, geo_pln_77, geo_pln_78, geo_box_79, geo_box_80, geo_box_81, geo_box_82, geo_box_83, geo_posterFrame, geo_posterBack, geo_posterLogo, geo_photoFrame, geo_photoBack]);
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_box_4, geo_box_5, geo_box_6, geo_box_7, geo_cyl_8, geo_box_9, geo_box_10, geo_box_11, geo_box_12, geo_box_13, geo_sph_14, geo_box_15, geo_box_16, geo_box_17, geo_box_18, geo_pln_19, geo_cir_20, geo_box_21, geo_box_22, geo_box_23, geo_box_24, geo_box_25, geo_box_26, geo_cyl_27, geo_tor_28, geo_cyl_29, geo_box_30, geo_box_31, geo_box_32, geo_box_33, geo_box_34, geo_box_35, geo_box_36, geo_box_37, geo_box_38, geo_box_39, geo_box_40, geo_box_41, geo_pln_42, geo_box_43, geo_pln_79, geo_cyl_46, geo_tor_47, geo_box_48, geo_cyl_49, geo_box_50, geo_box_51, geo_sph_52, geo_sph_53, geo_box_54, geo_pln_55, geo_box_56, geo_box_57, geo_box_58, geo_box_59, geo_box_60, geo_box_61, geo_tor_62, geo_cyl_63, geo_cyl_64, geo_box_65, geo_box_66, geo_cyl_67, geo_box_68, geo_box_69, geo_cyl_70, geo_box_71, geo_box_72, geo_cyl_73, geo_box_74, geo_box_79, geo_box_80, geo_box_81, geo_box_82, geo_box_83, geo_posterFrame, geo_posterBack, geo_posterLogo, geo_photoFrame, geo_photoBack]);
 
 const mat_1 = getSharedStandardMaterial({ color: '#3a2820', roughness: 0.85 });
 const mat_2 = getSharedStandardMaterial({ color: '#5a4838', roughness: 0.8 });
@@ -189,9 +195,8 @@ const mat_29 = getSharedStandardMaterial({ color: '#2a3040', roughness: 0.9 });
 const mat_30 = getSharedStandardMaterial({ color: '#3a2a20', roughness: 0.8 });
 const mat_31 = getSharedStandardMaterial({ color: '#aaaacc', roughness: 0.95 });
 const mat_32 = getSharedStandardMaterial({ color: '#303050', roughness: 0.95 });
-const mat_34 = getSharedStandardMaterial({ color: '#0a0a30', emissive: '#3366cc', emissiveIntensity: 1.5, toneMapped: false });
-// City view — emissive city lights behind window, не 8-битная схематика
-const mat_city_view = getSharedStandardMaterial({ color: '#0a0a18', emissive: '#1a2a5a', emissiveIntensity: 0.9, roughness: 0.95 });
+// FIX v4.48.15: mat_34 (второе окно) и mat_city_view (5×3 плоскость) удалены —
+// см. volodkaRoomWindow.ts. City-вид теперь текстурный бэкдроп за проёмом.
 const mat_35 = getSharedStandardMaterial({ color: '#333333', metalness: 0.5, roughness: 0.4 });
 const mat_36 = getSharedStandardMaterial({ color: '#555555', metalness: 0.6, roughness: 0.3 });
 const mat_37 = getSharedStandardMaterial({ color: '#666666', metalness: 0.3, roughness: 0.5, side: DoubleSide });
@@ -219,9 +224,8 @@ const mat_58 = getSharedStandardMaterial({ color: '#001122', emissive: '#3355aa'
 const mat_59 = getSharedStandardMaterial({ color: '#333', roughness: 0.9 });
 const mat_60 = getSharedStandardMaterial({ color: '#c0d0e0', transparent: true, opacity: 0.4, roughness: 0.2, depthWrite: false });
 const mat_61 = getSharedStandardMaterial({ color: '#5a4050', roughness: 0.95 });
-const mat_62 = getSharedStandardMaterial({ color: '#0a0a20', emissive: '#1a1a30', emissiveIntensity: 1.5 });
-const mat_63 = getSharedStandardMaterial({ color: '#ffcc44', emissive: '#ffcc44', emissiveIntensity: 1.0 });
-const mat_64 = getSharedStandardMaterial({ color: '#aaccff', emissive: '#aaccff', emissiveIntensity: 0.75 });
+// FIX v4.48.15: mat_62/63/64 (декали-силуэты города на стекле) удалены —
+// заменены полноценной city-текстурой бэкдропа за проёмом.
 const mat_65 = getSharedStandardMaterial({ color: '#2a3a2a', roughness: 0.9 });
 const mat_66 = getSharedStandardMaterial({ color: '#1a2a1a', roughness: 0.9 });
 const mat_67 = getSharedStandardMaterial({ color: '#888', metalness: 0.7, roughness: 0.3 });
@@ -338,8 +342,9 @@ function AuthoredHingedDoorLeaf({ castShadow }: { castShadow: boolean }) {
   );
 }
 
-const ROOM_DRESSING_D = 3.48;
-const ROOM_DRESSING_W = 5;
+// FIX v4.48.15: ROOM_DRESSING_D/W удалены — заднестенные координаты теперь
+// в volodkaRoomWindow.ts (грань стены шелла -3.218), рама окна — в
+// VOLKODA_ROOM_WINDOW_FRAME. Старые значения сажали декорацию ВНУТРЬ стены.
 
 /** Верх нижнего жёлтого кабинета: painted_wooden_cabinet GLB 1.18 м × scale 0.95
  *  = 1.121 м (замер accessor'ов GLB, v4.15). Верхний кабинет (scale 0.55) ставится
@@ -397,11 +402,15 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           Bedside lighting is now handled by the accent light at [1.98, 1.6, 2.16]
           (fixed in S12-C6) + the window spill. */}
       {/* Nightstand + desk lamp removed — was overlapping the bed geometry. */}
+      {/* FIX v4.48.15: картины с задней стены перевешены — раньше висели на
+          z=-3.48, что ПОГРЕБЕНО внутри authored-шелла (грань -3.218). Теперь:
+          одна на левой стене, другая на задней стене ПЕРЕД реальной гранью,
+          вне зоны шторы (штора занимает x∈[-1.3, 1.3]). */}
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.hangingPictureFrame}
-          position={[-1.0, 1.75, -ROOM_DRESSING_D]}
-          rotationY={0}
+          position={[-2.37, 1.6, 1.2]}
+          rotationY={Math.PI / 2}
           scale={0.55}
           castShadow={castShadow}
         />
@@ -409,7 +418,7 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.hangingPictureFrame}
-          position={[1.35, 1.55, -ROOM_DRESSING_D]}
+          position={[1.9, 1.55, -3.2]}
           rotationY={0}
           scale={0.48}
           castShadow={castShadow}
@@ -424,21 +433,16 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
           castShadow={castShadow}
         />
       </Suspense>
+      {/* FIX v4.48.15: рама окна — в РЕАЛЬНЫЙ проём шелла: y 1.15→1.5,
+          z -2.0→-1.9 (центр проёма после z-фита), scale 0.42→0.66
+          (1.386×1.221 накрывает панель 1.34×1.20 — раньше светящаяся кайма
+          торчала вокруг рамы 0.88×0.78 со всех сторон). */}
       <Suspense fallback={null}>
         <AuthoredRoomProp
           url={POLYHAVEN_MODELS.shutterWindow}
-          position={[ROOM_DRESSING_W / 2 - 0.02, 1.15, -2.0]}
+          position={VOLKODA_ROOM_WINDOW_FRAME.position as unknown as [number, number, number]}
           rotationY={-Math.PI / 2}
-          scale={0.42}
-          castShadow={castShadow}
-        />
-      </Suspense>
-      <Suspense fallback={null}>
-        <AuthoredRoomProp
-          url={POLYHAVEN_MODELS.shutterWindowAlt}
-          position={[0.15, 1.15, -ROOM_DRESSING_D + 0.02]}
-          rotationY={0}
-          scale={0.38}
+          scale={VOLKODA_ROOM_WINDOW_FRAME.scale}
           castShadow={castShadow}
         />
       </Suspense>
@@ -453,8 +457,7 @@ function AuthoredVolodkaRoomDressing({ castShadow }: { castShadow: boolean }) {
 // no internal useState and all its animation state lives in refs, so a
 // shallow props comparison is sufficient to prevent wasted renders.
 export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaRoomVisualProps) {
-  const { preset, selectedPreset } = useGraphicsQuality();
-  const coarsePointer = useIsMobileVisual();
+  const { preset } = useGraphicsQuality();
   const roomAssetsShipped = isAssetEffectiveShipped('interior_room_bedroom');
   const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode) && roomAssetsShipped;
   // FIX S13-6: desk surface height. Poly Haven paintedWoodenTable GLB has its
@@ -466,10 +469,17 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
   // Metre-scale apartment_envelope.glb — Medium+ (hybrid/glb), not Kenney exterior.
   const useAuthoredShell =
     useGltfFurniture && isWalkableInteriorShellAllowed('volodkaBedroom');
-  const usePhysicalGlass = allowsSelectiveMeshPhysicalWet('volodka_room', selectedPreset, {
-    coarsePointer,
-  });
-  const nightWindowGlass = useMemo(() => getWetGlassPhysicalParams('roomNightWindow'), []);
+  // FIX v4.48.15: usePhysicalGlass / nightWindowGlass удалены — transmission у
+  // roomNightWindow и так 0 (black-square фикс), обе ветки панелей слиты в одну.
+  // Заднестенная декорация (штора) привязывается к РЕАЛЬНОЙ грани задней стены:
+  // после z-фита шелла [1,1,0.952] интерьерная грань = -3.218, а не -3.49 —
+  // раньше штора/картины/второе окно стояли на -3.35..-3.48 и были ПОГРЕБЕНЫ
+  // в стене шелла (старый репорт «штора отсутствует»).
+  const backDressingZ = useAuthoredShell
+    ? VOLKODA_ROOM_BACK_WALL_INTERIOR_Z + 0.02
+    : VOLKODA_ROOM_BACK_WALL_FALLBACK_INTERIOR_Z + 0.02;
+  // FIX v4.48.15: текстурный ночной город ЗА правой стеной (виден сквозь проём).
+  const cityViewTexture = useMemo(() => createVolodkaRoomCityViewTexture(), []);
   // Canvas textures created synchronously via useMemo
   const floorTexture = useCachedCanvasTexture('volodka_room:floor:v2', createFloorTexture);
   const wallTexture = useCachedCanvasTexture('volodka_room:wall:v2', createWallTexture);
@@ -838,8 +848,10 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
         ) : null}
       </group>
 
-      {/* Curtain on the back wall behind the desk monitors */}
-      <DeskWallCurtain position={[0, 0.15, -3.35]} width={2.6} height={2.15} />
+      {/* Curtain on the back wall behind the desk monitors.
+          FIX v4.48.15: z привязан к реальной задней стене (см. backDressingZ) —
+          раньше -3.35 было внутри стены шелла. */}
+      <DeskWallCurtain position={[0, 0.15, backDressingZ]} width={2.6} height={2.15} />
 
       {/* Bookshelf — right of right monitor.
           FIX v4.15: в GLB-пресете стоял woodenBookshelfWorn (реально 1.21×1.81×0.51
@@ -959,132 +971,76 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
           Suspense-fallback = тот же box-комплект, кровать не исчезает) ── */}
       {!useGltfFurniture ? <BoxBed /> : null}
 
-      {/* ── Windows — always procedural (city glow + spill). Authored dressing has none;
-          deferred kenney_window props left blank walls until staggered mount.
-          Opaque emissive panes (no transmission) — wall is ~3 cm behind; MeshPhysical
-          transmission sampled plaster and flashed as black squares (esp. back pane
-          behind the left ThinMonitor). ── */}
-      <>
-        {/* ── Window (right wall, emissive blue — nighttime city glow) ──
-            FIX S13-18: y 1.5 → 1.15 to align with shutterWindow GLB center
-            (was sticking out ABOVE the shutter frame — “непонятно что это окно”). */}
-        <group position={[W / 2 - 0.05, 1.15, -2.0]}>
-          {usePhysicalGlass ? (
+      {/* ── Window (right wall) — FIX v4.48.15: выровнено по РЕАЛЬНОМУ проёму
+          authored-шелла (1.4×1.2 @ y=1.5, центр z=-1.904 после z-фита 0.952).
+          Было (репорт: «яркие квадраты, окно не пойми какое»): панель на y=1.15
+          светилась по стене ПОД проёмом; «city view» — 5×3 м плоскость ВНУТРИ
+          комнаты (x=2.10), камера прошивала её при орбите; рама GLB 0.88×0.78
+          тонула в стене, кайма панели торчала вокруг неё.
+          Стало: шелл → прозрачное мокрое стекло + рама GLB 1.39×1.22 +
+          текстурный ночной город СНАРУЖИ (виден сквозь настоящий проём —
+          глубина вида); процедурная стена (Low) → светящаяся панель + корпус. */}
+      <group
+        position={[
+          W / 2 - 0.05,
+          VOLKODA_ROOM_WINDOW_SHELL_OPENING.yCenter,
+          VOLKODA_ROOM_WINDOW_SHELL_OPENING.zCenter,
+        ]}
+      >
+        {useAuthoredShell ? (
+          <>
+            {/* Night city backdrop — СНАРУЖИ стены (x=2.85 > грани 2.50), виден
+                только сквозь проём; opaque → рендерится в opaque-проходе. */}
+            <mesh
+              rotation-y={-Math.PI / 2}
+              position={[VOLKODA_ROOM_WINDOW_CITY_BACKDROP.x - VOLKODA_ROOM_WINDOW_PANE.x, 0, 0]}
+              geometry={geo_pln_79}
+            >
+              <meshBasicMaterial map={cityViewTexture} toneMapped={false} />
+            </mesh>
+            {/* Wet sheen glass — прозрачная (16%), depthWrite off, чтобы город
+                читался сквозь стекло и стеклянная плоскость не ловила блики
+                чёрных квадратов (старый transmission-фикс сохранён). */}
+            <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
+              <meshPhysicalMaterial
+                color="#8fb4d8"
+                transparent
+                opacity={0.16}
+                roughness={0.14}
+                metalness={0.06}
+                clearcoat={0.55}
+                clearcoatRoughness={0.24}
+                depthWrite={false}
+              />
+            </mesh>
+          </>
+        ) : (
+          <>
+            {/* Процедурная стена без проёма (Low) — светящаяся ночная панность
+                + корпусная рамка (кайма ~4 см вокруг панели). */}
             <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
               <meshPhysicalMaterial
                 color="#0a0a30"
                 emissive="#4488ee"
-                emissiveIntensity={0.9}
+                emissiveIntensity={1.6}
                 toneMapped={false}
-                roughness={nightWindowGlass.roughness}
-                metalness={nightWindowGlass.metalness}
-                transmission={nightWindowGlass.transmission}
-                thickness={nightWindowGlass.thickness}
-                clearcoat={nightWindowGlass.clearcoat}
-                clearcoatRoughness={nightWindowGlass.clearcoatRoughness}
-                opacity={nightWindowGlass.opacity}
+                roughness={0.14}
+                metalness={0.06}
+                clearcoat={0.55}
+                clearcoatRoughness={0.24}
               />
             </mesh>
-          ) : (
-            /* WS18-C: MeshPhysicalMaterial with clearcoat for wet glass reflection.
-               The usePhysicalGlass=true path already has transmission+clearcoat;
-               this fallback (low/mobile) gets a cheaper clearcoat-only wet sheen
-               so the right-wall window reads as rain-streaked glass on all presets. */
-            <mesh renderOrder={1} rotation-y={-Math.PI / 2} geometry={geo_pln_42}>
-              <meshPhysicalMaterial
-                color="#0a0a30"
-                emissive="#4488ee"
-                emissiveIntensity={1.8}
-                toneMapped={false}
-                clearcoat={1.0}
-                clearcoatRoughness={0.05}
-              />
-            </mesh>
-          )}
-          {/* Window frame — Low only; Medium+ shutterWindow GLB owns the casing. */}
-          {!useGltfFurniture ? (
             <mesh renderOrder={2} rotation-y={-Math.PI / 2} position={[0.018, 0, 0]} geometry={geo_box_43} material={mat_26} />
-          ) : null}
-          {/* Restrained blue spill keeps the window readable without bleaching the bed. */}
-          <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.2} distance={7} decay={2} />
-          {/* City silhouettes — room-side decals on the glow pane (not transmission props) */}
-          <mesh
-            renderOrder={3}
-            rotation-y={-Math.PI / 2}
-            position={[-0.012, -0.15, -0.3]}
-            geometry={geo_pln_75}
-            material={mat_62}
-          />
-          <mesh
-            renderOrder={3}
-            rotation-y={-Math.PI / 2}
-            position={[-0.012, -0.1, 0.2]}
-            geometry={geo_pln_76}
-            material={mat_62}
-          />
-          {/* Tiny window lights on buildings */}
-          <mesh
-            renderOrder={4}
-            rotation-y={-Math.PI / 2}
-            position={[-0.016, -0.2, -0.3]}
-            geometry={geo_pln_77}
-            material={mat_63}
-          />
-          <mesh
-            renderOrder={4}
-            rotation-y={-Math.PI / 2}
-            position={[-0.016, -0.05, 0.2]}
-            geometry={geo_pln_77}
-            material={mat_63}
-          />
-          <mesh
-            renderOrder={4}
-            rotation-y={-Math.PI / 2}
-            position={[-0.016, -0.12, 0.22]}
-            geometry={geo_pln_78}
-            material={mat_64}
-          />
-          {/* City view outside — not 8-bit schematic, real city skyline with depth */}
-          <mesh
-            renderOrder={2}
-            rotation-y={-Math.PI / 2}
-            position={[-0.35, 0, 0]}
-            geometry={geo_pln_2}
-            material={mat_city_view}
-          />
-        </group>
+          </>
+        )}
+        {/* Restrained blue spill keeps the window readable without bleaching the bed. */}
+        <pointLight position={[-0.8, 0, 0.5]} color="#4488ee" intensity={3.2} distance={7} decay={2} />
+      </group>
 
-        {/* ── Second Window (back wall, behind left monitor — emissive blue city) ──
-            FIX S13-18: y 1.5 → 1.15 to align with shutterWindowAlt GLB. */}
-        <group position={[-1.0, 1.15, -D / 2 + 0.05]}>
-          {usePhysicalGlass ? (
-            <mesh renderOrder={1} geometry={geo_pln_44}>
-              <meshPhysicalMaterial
-                color="#0a0a30"
-                emissive="#3366cc"
-                emissiveIntensity={0.8}
-                toneMapped={false}
-                roughness={nightWindowGlass.roughness}
-                metalness={nightWindowGlass.metalness}
-                transmission={nightWindowGlass.transmission}
-                thickness={nightWindowGlass.thickness}
-                clearcoat={nightWindowGlass.clearcoat}
-                clearcoatRoughness={nightWindowGlass.clearcoatRoughness}
-                opacity={nightWindowGlass.opacity}
-              />
-            </mesh>
-          ) : (
-            <mesh renderOrder={1} geometry={geo_pln_44} material={mat_34} />
-          )}
-          {/* Window frame — Low only; Medium+ shutterWindowAlt owns the casing. */}
-          {!useGltfFurniture ? (
-            <mesh renderOrder={2} position={[0, 0, -0.018]} geometry={geo_box_45} material={mat_26} />
-          ) : null}
-          {/* ISSUE #7: Removed per-window pointLight — the right wall window light +
-              desk lamp + ambient pulse provide sufficient fill. The window material's
-              emissive (mat_34) already creates a visible glow. */}
-        </group>
-      </>
+      {/* FIX v4.48.15: «Second Window» задней стены УДАЛЁН (pane geo_pln_44 +
+          рама shutterWindowAlt). Он стоял за непрозрачной шторой (x∈[-1.3,1.3])
+          со смещением панели x=-1.0 vs рамы x=+0.15 на 1.15 м, а после z-фита
+          шелла и вовсе был погребён в стене. Принцип «что-то можно вырезать». */}
 
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING (lazy chunk) ── */}
       {!useGltfFurniture ? <VolodkaRoomClutter /> : null}

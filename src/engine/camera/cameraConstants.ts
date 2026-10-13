@@ -43,8 +43,11 @@ export const ZOOM_SMOOTH_SPEED = 6.0;
 export const CAMERA_LAG_FACTOR = 0.08;
 /** Camera rotation inertia decay (higher = faster stop). */
 export const CAMERA_INERTIA_DECAY = 5.5;
-/** Camera rotation inertia gain (how much velocity builds per mouse delta). */
-export const CAMERA_INERTIA_GAIN = 0.6;
+/** Camera rotation inertia gain (how much velocity builds per mouse delta).
+ *  FIX v4.48.15: 0.6 → 0.35 — репорт «камера работает странно в связке с
+ *  управлением»: после отпускания ЛКМ камера продолжала доворачивать заметно
+ *  дольше, чем ожидал игрок (инерция вместо остановки). */
+export const CAMERA_INERTIA_GAIN = 0.35;
 export const LOOK_HEIGHT = 1.32;
 export const WALL_MARGIN = 0.25;
 
@@ -58,7 +61,9 @@ export const DISTANCE_LERP_SPEED = 2.45;
 export const DIALOGUE_EXIT_LERP_SPEED = 4.85;
 export const BREATHING_BOB_AMPLITUDE = 0.005;
 export const BREATHING_BOB_SPEED = Math.PI;
-export const LOOK_AHEAD_STRENGTH = 0.38;
+/** FIX v4.48.15: 0.38 → 0.30 — взгляд всё меньше «уплывает» по ходу движения
+ *  (look-ahead в тесной комнате 5×7 читался как камера, живущая своей жизнью). */
+export const LOOK_AHEAD_STRENGTH = 0.30;
 export const LOOK_AHEAD_LERP_SPEED = 5.15;
 /** Crouch camera height offset (m) — camera lowers when crouching. */
 export const CROUCH_CAMERA_HEIGHT_OFFSET = -0.55;

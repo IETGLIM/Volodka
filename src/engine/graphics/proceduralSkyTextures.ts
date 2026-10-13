@@ -407,6 +407,111 @@ export function createVolodkaRoomNightSkyTexture(): CanvasTexture {
   return getOrCreateSkyTexture('volodka_room_night', buildVolodkaRoomNightSkyTexture);
 }
 
+/**
+ * FIX v4.48.15 — ночной город ЗА окном комнаты Володьки.
+ * Раньше «city view» был плоской однотонной quad'ой 5×3 м внутри комнаты
+ * (выглядел как «яркий квадрат»). Теперь это текстурный бэкдроп 512×384,
+ * который вешается СНАРУЖИ стены и виден сквозь настоящий проём шелла:
+ * 3 слоя силуэтов зданий (параллакс-глубина), сетки светящихся окон
+ * (тёплый янтарь + холодный циан), гирлянда крышных антенн, луна в дымке.
+ * Детерминированный seed — вид одинаков при каждой загрузке.
+ */
+export function createVolodkaRoomCityViewTexture(): CanvasTexture {
+  return getOrCreateSkyTexture('volodka_room_city_view', buildVolodkaRoomCityViewTexture);
+}
+
+function buildVolodkaRoomCityViewTexture(): CanvasTexture {
+  const w = 512;
+  const h = 384;
+  const canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext('2d')!;
+
+  // ── Night sky gradient (deep indigo-noir → horizon haze) ──
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0.0, '#05070f');
+  grad.addColorStop(0.45, '#0a1020');
+  grad.addColorStop(0.75, '#12203a');
+  grad.addColorStop(1.0, '#1a2a4a');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, w, h);
+
+  // ── Moon in haze (upper-right) ──
+  const moonX = w * 0.78;
+  const moonY = h * 0.2;
+  const moonGlow = ctx.createRadialGradient(moonX, moonY, 2, moonX, moonY, 60);
+  moonGlow.addColorStop(0, 'rgba(210, 220, 235, 0.5)');
+  moonGlow.addColorStop(0.35, 'rgba(160, 180, 210, 0.16)');
+  moonGlow.addColorStop(1, 'rgba(120, 150, 190, 0)');
+  ctx.fillStyle = moonGlow;
+  ctx.fillRect(moonX - 70, moonY - 70, 140, 140);
+  ctx.fillStyle = 'rgba(225, 232, 245, 0.85)';
+  ctx.beginPath();
+  ctx.arc(moonX, moonY, 13, 0, Math.PI * 2);
+  ctx.fill();
+
+  // ── Far skyline (dim, cold) ──
+  const drawSkyline = (
+    baseY: number,
+    maxH: number,
+    count: number,
+    seed: number,
+    bodyColor: string,
+    windowAlpha: number,
+  ) => {
+    for (let i = 0; i < count; i++) {
+      const bw = 26 + seededRand(seed + i * 7) * 52;
+      const bh = maxH * (0.35 + seededRand(seed + i * 13) * 0.65);
+      const bx = (i / count) * w + seededRand(seed + i * 29) * 24 - 12;
+      ctx.fillStyle = bodyColor;
+      ctx.fillRect(bx, baseY - bh, bw, bh);
+      // rooftop details — water tank / antenna
+      if (seededRand(seed + i * 31) > 0.6) {
+        ctx.fillRect(bx + bw * 0.3, baseY - bh - 8, 4, 8);
+      }
+      // window grid
+      const cols = Math.max(2, Math.floor(bw / 9));
+      const rows = Math.max(3, Math.floor(bh / 12));
+      for (let cx = 0; cx < cols; cx++) {
+        for (let cy = 0; cy < rows; cy++) {
+          if (seededRand(seed + i * 101 + cx * 17 + cy * 7) > 0.62) {
+            const warm = seededRand(seed + i * 131 + cx + cy) > 0.4;
+            ctx.fillStyle = warm
+              ? `rgba(255, 190, 110, ${windowAlpha})`
+              : `rgba(140, 200, 235, ${windowAlpha * 0.85})`;
+            ctx.fillRect(
+              bx + 4 + cx * ((bw - 8) / cols),
+              baseY - bh + 5 + cy * ((bh - 10) / rows),
+              3,
+              4,
+            );
+          }
+        }
+      }
+    }
+  };
+
+  // Layer 1 — far, dim silhouettes
+  drawSkyline(h * 0.78, h * 0.42, 14, 401, '#101a30', 0.22);
+  // Layer 2 — mid buildings, warmer windows
+  drawSkyline(h * 0.9, h * 0.5, 10, 733, '#0b1326', 0.42);
+  // Layer 3 — close edge buildings (dark, sparse bright windows)
+  drawSkyline(h, h * 0.62, 6, 947, '#060b18', 0.6);
+
+  // ── Street-level glow wash (city light pollution) ──
+  const glow = ctx.createLinearGradient(0, h * 0.7, 0, h);
+  glow.addColorStop(0, 'rgba(255, 170, 90, 0)');
+  glow.addColorStop(1, 'rgba(255, 170, 90, 0.12)');
+  ctx.fillStyle = glow;
+  ctx.fillRect(0, h * 0.7, w, h * 0.3);
+
+  const tex = new CanvasTexture(canvas);
+  tex.wrapS = ClampToEdgeWrapping;
+  tex.wrapT = ClampToEdgeWrapping;
+  return tex;
+}
+
 function buildVolodkaRoomNightSkyTexture(): CanvasTexture {
   const w = 64;
   const h = 256;
