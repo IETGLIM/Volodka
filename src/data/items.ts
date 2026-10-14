@@ -2,6 +2,7 @@
 
 import type { InventoryItem, TrainablePlayerSkill, LinkedContent } from '@/shared/types/game';
 import { asItemId } from '@/shared/types/brands';
+import { QUEST_ITEM_DEFINITIONS } from './questItems';
 
 export type ItemCategory = 'consumable' | 'quest_item' | 'key_item' | 'book' | 'equipment' | 'poem_fragment' | 'misc';
 export type ItemRarity = 'common' | 'uncommon' | 'rare' | 'legendary';
@@ -1907,6 +1908,23 @@ export function createInventoryItem(
       stackable: false,
       quantity: 1,
       category,
+    };
+  }
+
+  // Fallback 1: expansion quest-item definitions (QUEST_ITEM_DEFINITIONS —
+  // 21 authored items used by story/expansion collectPoem-style addItem
+  // effects). FIX (v4.50.1): раньше эти предметы падали в generic-стаб ниже и
+  // показывались в инвентаре сырым id («banned_corrected_book») вместо
+  // авторского имени/описания, хотя валидатор контента их считает валидными.
+  const questDef = QUEST_ITEM_DEFINITIONS[itemId];
+  if (questDef) {
+    return {
+      id,
+      name: questDef.name,
+      description: questDef.description,
+      stackable: false,
+      quantity: 1,
+      category: questDef.category,
     };
   }
 

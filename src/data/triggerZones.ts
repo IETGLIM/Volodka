@@ -9417,7 +9417,11 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     enterToast: 'Камень у проходной. Мелом на нём — одно слово: «слышу».',
     requiredAct: 4,
     requiredFlag: 'zf_contact_made',
-    hiddenWhenFlag: 'zf_poem_stone_done',
+    // FIX (v4.50.1): было 'zf_poem_stone_done' — флаг, который никто не ставит
+    // (узел zf_poem_stone_node ставит 'zf_poem_read_for_machine'). Мёртвая
+    // проверка: зона скрывалась только isOneTime. Теперь hiddenWhenFlag
+    // привязан к реальному флагу узла.
+    hiddenWhenFlag: 'zf_poem_read_for_machine',
     isOneTime: true,
     interactionType: 'examine',
     interactionLabel: 'Подойти к камню',

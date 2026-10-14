@@ -1,6 +1,6 @@
 {
   "name": "volodka-rpg",
-  "version": "4.50.0",
+  "version": "4.50.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -14,7 +14,7 @@
     "assets:optimize-textures": "node scripts/optimize-polyhaven-textures.mjs",
     "assets:polyhaven-ktx2": "node scripts/generate-polyhaven-ktx2.mjs",
     "build:analyze": "npm run validate && tsc --noEmit && vite build --mode analyze && npm run budgets",
-    "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts && npx tsx --tsconfig tsconfig.json scripts/analyze-model-placement.ts && npm run validate:protected",
+    "validate": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts && npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts && npx tsx --tsconfig tsconfig.json scripts/analyze-model-placement.ts && npm run validate:protected && npm run validate:node-logic",
     "validate:content": "npx tsx --tsconfig tsconfig.json scripts/validate-content.ts",
     "validate:act1-extended": "npx tsx --tsconfig tsconfig.json scripts/verify-act1-extended.ts",
     "assets:bootstrap": "node scripts/bootstrap-production-assets.mjs",
@@ -56,7 +56,8 @@
     "archive:itch": "node scripts/create-itch-archive.mjs",
     "verify:deploy": "npx tsx --tsconfig tsconfig.json scripts/verify-deploy-assets.ts",
     "validate:protected": "npx tsx --tsconfig tsconfig.json scripts/validate-protected-content.ts",
-    "validate:story": "vitest run src/data/story/storyRegistryContract.test.ts src/data/story/buildStoryNodes.test.ts --project unit"
+    "validate:story": "vitest run src/data/story/storyRegistryContract.test.ts src/data/story/buildStoryNodes.test.ts --project unit",
+    "validate:node-logic": "npx tsx --tsconfig tsconfig.json scripts/audit-node-logic.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",

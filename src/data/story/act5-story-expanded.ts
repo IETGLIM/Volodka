@@ -693,7 +693,10 @@ export const ACT5_STORY_EXPANDED_NODES: Record<string, StoryNode> = {
       {
         text: 'Маршрут 3: bunker → площадь — через библиотеку',
         next: 'act5_exp_street_empty',
-        condition: { flag: 'library_basement_unlocked' },
+        // FIX (v4.50.1): было 'library_basement_unlocked' — флаг, который никто
+        // не ставит. Реальный флаг входа в подвал библиотеки —
+        // 'library_basement_entered' (libraryStory + дверь-цепочка акта 3).
+        condition: { flag: 'library_basement_entered' },
         effects: [
           { type: 'setFlag', flag: 'route_square_selected', flagValue: true },
           { type: 'addSkill', skill: 'logic', value: 1 },
