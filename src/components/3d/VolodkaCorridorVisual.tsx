@@ -85,8 +85,18 @@ const geo_box_57 = new BoxGeometry(0.03, 2, 0.75);
 const geo_box_58 = new BoxGeometry(0.04, 1.95, 0.7);
 const geo_cyl_59 = new CylinderGeometry(0.012, 0.012, 0.08, 6);
 const geo_pln_60 = new PlaneGeometry(0.06, 0.04);
+// FIX P2-CORR-B2/B3/B4/B5: geoms for leak stain, hanging bulb, doorplate «14», fuse box, sandals
+const geo_pln_61 = new PlaneGeometry(0.9, 0.6);
+const geo_pln_62 = new PlaneGeometry(0.5, 2.0);
+const geo_cyl_63 = new CylinderGeometry(0.006, 0.006, 1.13, 6);
+const geo_sph_64 = new SphereGeometry(0.055, 8, 8);
+const geo_box_65 = new BoxGeometry(0.12, 0.08, 0.01);
+const geo_box_66 = new BoxGeometry(0.5, 0.7, 0.12);
+const geo_box_67 = new BoxGeometry(0.24, 0.66, 0.02);
+const geo_cyl_68 = new CylinderGeometry(0.02, 0.02, 0.03, 8);
+const geo_box_69 = new BoxGeometry(0.11, 0.015, 0.05);
 
-registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_pln_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_cyl_10, geo_pln_11, geo_box_12, geo_box_13, geo_box_14, geo_cyl_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_pln_21, geo_pln_22, geo_sph_23, geo_sph_24, geo_pln_25, geo_pln_26, geo_cyl_27, geo_pln_28, geo_pln_29, geo_pln_30, geo_box_31, geo_box_32, geo_box_33, geo_cyl_34, geo_box_35, geo_box_36, geo_box_37, geo_cyl_38, geo_cyl_39, geo_pln_40, geo_pln_41, geo_pln_42, geo_box_43, geo_pln_44, geo_cyl_45, geo_cyl_46, geo_box_47, geo_pln_48, geo_cyl_49, geo_box_50, geo_cyl_51, geo_box_52, geo_box_53, geo_box_54, geo_sph_55, geo_pln_56, geo_box_57, geo_box_58, geo_cyl_59, geo_pln_60]);
+registerModuleGeometries([geo_pln_1, geo_pln_2, geo_pln_3, geo_pln_4, geo_box_5, geo_box_6, geo_box_7, geo_box_8, geo_box_9, geo_cyl_10, geo_pln_11, geo_box_12, geo_box_13, geo_box_14, geo_cyl_15, geo_box_16, geo_box_17, geo_box_18, geo_box_19, geo_box_20, geo_pln_21, geo_pln_22, geo_sph_23, geo_sph_24, geo_pln_25, geo_pln_26, geo_cyl_27, geo_pln_28, geo_pln_29, geo_pln_30, geo_box_31, geo_box_32, geo_box_33, geo_cyl_34, geo_box_35, geo_box_36, geo_box_37, geo_cyl_38, geo_cyl_39, geo_pln_40, geo_pln_41, geo_pln_42, geo_box_43, geo_pln_44, geo_cyl_45, geo_cyl_46, geo_box_47, geo_pln_48, geo_cyl_49, geo_box_50, geo_cyl_51, geo_box_52, geo_box_53, geo_box_54, geo_sph_55, geo_pln_56, geo_box_57, geo_box_58, geo_cyl_59, geo_pln_60, geo_pln_61, geo_pln_62, geo_cyl_63, geo_sph_64, geo_box_65, geo_box_66, geo_box_67, geo_cyl_68, geo_box_69]);
 
 const mat_1 = getSharedStandardMaterial({ color: '#4a3828', roughness: 0.8 });
 const mat_2 = getSharedStandardMaterial({ color: '#3a2818' });
@@ -148,6 +158,13 @@ const mat_50 = getSharedStandardMaterial({ color: '#4a4035', roughness: 0.85 });
 const mat_51 = getSharedStandardMaterial({ color: '#6a5040', roughness: 0.75 });
 const mat_52 = getSharedStandardMaterial({ color: '#3a3030', roughness: 0.85 });
 const mat_53 = getSharedStandardMaterial({ color: '#888', roughness: 0.5 });
+// FIX P2-CORR-B2: rusty leak decal — polygonOffset above wall/ceiling so no z-fight
+const mat_54 = getSharedStandardMaterial({ color: '#6a4430', roughness: 0.95, transparent: true, opacity: 0.55, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+const mat_55 = getSharedStandardMaterial({ color: '#4a2c1e', roughness: 0.95, transparent: true, opacity: 0.7, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -1 });
+// FIX P2-CORR-B3: hanging bulb (warm glass)
+const mat_56 = getSharedStandardMaterial({ color: '#ffe8b0', emissive: '#ffcc66', emissiveIntensity: 0.9 });
+// FIX P2-CORR-B6: children sandals on the shoe rack top shelf
+const mat_57 = getSharedStandardMaterial({ color: '#7a5a38', roughness: 0.8 });
 
 export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositionRef }: VolodkaCorridorVisualProps) {
   const floorTexture = useCachedCanvasTexture('volodka_corridor:floor', createCorridorFloorTexture);
@@ -412,6 +429,12 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         {[0.2, 0.5].map((y, i) => (
           <mesh key={i} position={[0, y, 0.01]} geometry={geo_box_6} material={mat_2} />
         ))}
+        {/* FIX P2-CORR-B6: ws22b_corridor_shoe_rack promises "детские сандалии на верхней полке"
+            — they were never rendered. Pair of small sandals on the top shelf (y=0.5). */}
+        <group position={[0, 0.51, 0.02]}>
+          <mesh position={[-0.07, 0, 0]} geometry={geo_box_69} material={mat_57} />
+          <mesh position={[0.07, 0, 0]} geometry={geo_box_69} material={mat_57} />
+        </group>
       </group>
 
       {/* ── Radiator (right wall) ── */}
@@ -449,9 +472,15 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         <mesh geometry={geo_box_9} material={mat_5} />
         {/* FIX AUDIT-C12: missing lamp shade (first lamp at Z=-4 has one, this didn't). */}
         <mesh position={[0, -0.1, 0]} geometry={geo_cyl_10} material={mat_6} />
+        {/* FIX P2-CORR-B3: ws20b_flickering_bulb_fixture zone sat at [0,2.8,0] — 4m from this
+            lamp and unreachable (3D distance 2.8 > range). The examined object now hangs on
+            a wire at y=1.85 (communal-corridor trope, above player height 1.75), and the
+            zone moved to match. Light source moved down with the bulb. */}
+        <mesh position={[0, -0.565, 0]} geometry={geo_cyl_63} material={mat_21} />
+        <mesh position={[0, -1.13, 0]} geometry={geo_sph_64} material={mat_56} />
         <pointLight
           ref={flickerLightRef}
-          position={[0, -0.2, 0]}
+          position={[0, -1.2, 0]}
           color="#ffdd90"
           intensity={2.5}
           distance={10}
@@ -513,6 +542,17 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         </group>
       </group>
 
+      {/* ── Scratched apartment doorplate «14» (right of the room door) ── */}
+      {/* FIX P2-CORR-B4: ws20b_scratched_doorplate zone sat at [2.0,1.5,6.0] — floating 0.85m
+          off the mailbox bank, unreachable (d=1.5 > range 1.2), and no plate mesh existed.
+          The plate now hangs on the wall beside Volodka's room door (unit 34 scratched over
+          → 14); zone re-seated at [0.62,1.25,7.85] (reachable: d≈1.29 < range 1.35). */}
+      <group position={[0.62, 1.45, D / 2 - 0.06]}>
+        <mesh geometry={geo_box_65} material={mat_33} />
+        {/* scratch diagonal — the ghost of the «3» under the «1» */}
+        <mesh position={[0, 0, 0.007]} rotation={[0, 0, 0.6]} geometry={geo_box_69} material={mat_28} scale={[0.4, 1.6, 1]} />
+      </group>
+
       {/* ═══════════════════════════════════════════════ */}
       {/* ── ENVIRONMENTAL CLUTTER / STORYTELLING ── */}
       {/* ═══════════════════════════════════════════════ */}
@@ -564,6 +604,26 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         </group>
       ))}
 
+      {/* ── Rusty fuse box (left wall, between graffiti and Zarema's door) ── */}
+      {/* FIX P2-CORR-B5: ws22b_corridor_fuse_box promised «Ржавый щиток. Дверца не закрывается.
+          Пробки — фарфоровые, довоенные» but no mesh existed and the zone was unreachable
+          (d≈1.68 > range 1.3). Box on the wall + ajar door + porcelain plugs; zone lowered
+          to [-2.85,1.3,2.5] size [1.0,0.7,0.4] (reachable: d≈1.31 < range 1.5). */}
+      <group position={[-W / 2 + 0.07, 1.5, 2.5]} rotation-y={Math.PI / 2}>
+        <mesh castShadow geometry={geo_box_66} material={mat_42} />
+        {/* ajar door (rotated open to the right) */}
+        <mesh position={[0.22, 0, 0.09]} rotation-y={-0.9} geometry={geo_box_67} material={mat_29} />
+        {/* porcelain plugs (three whole, two melted look via scale) */}
+        {[-0.12, 0, 0.12].map((x, i) => (
+          <mesh key={`plug-${i}`} position={[x, 0.18, 0.07]} geometry={geo_cyl_68} material={mat_45} rotation-x={Math.PI / 2} />
+        ))}
+        {[0, 0.12].map((x, i) => (
+          <mesh key={`mplug-${i}`} position={[x, 0.02, 0.07]} geometry={geo_cyl_68} material={mat_28} rotation-x={Math.PI / 2} scale={[1, 0.7, 1]} />
+        ))}
+        {/* the nail instead of the sixth plug */}
+        <mesh position={[-0.12, 0.02, 0.07]} rotation-x={Math.PI / 2} geometry={geo_cyl_46} material={mat_38} />
+      </group>
+
       {/* ── Mailboxes ── */}
       {/* FIX AUDIT-C2: was at Z=4.5, overlapping solnysh door at Z=4.0 (mailbox Z-span
           4.1–4.9 after rotation, door indent Z-span 3.55–4.45 → 35cm overlap, mailbox
@@ -572,7 +632,11 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         {/* Mailbox panel */}
         <mesh position={[0, 1.0, 0]} castShadow geometry={geo_box_31} material={mat_25} />
         {/* Individual mailbox slots */}
-        {[0.35, 0.1, -0.15, -0.4].map((y, i) => (
+        {/* FIX P2-CORR-B1: slot Ys were [0.35,0.1,-0.15,-0.4] relative to the group at Y=0 →
+            three of four slots buried in the floor (panel spans Y 0.4..1.6). Re-seated onto
+            the panel: [1.4,1.14,0.88,0.62] (top→bottom), «третий сверху» = 0.88 — now visible,
+            matching corridor_letter_open and the corridor_mailboxes zone center (y=1.0). */}
+        {[1.4, 1.14, 0.88, 0.62].map((y, i) => (
           <group key={`mbox-${i}`}>
             {/* Slot opening */}
             <mesh position={[0, y, 0.08]} geometry={geo_box_32} material={mat_26} />
@@ -638,6 +702,16 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         <mesh rotation={[Math.PI / 2, 0, 0]} geometry={geo_cyl_51} material={mat_43} />
         <mesh position={[0, 0.04, 0]} rotation={[0, 0, Math.PI / 4]} geometry={geo_box_52} material={mat_44} />
       </group>
+
+      {/* ── Leak stain: ceiling patch + rust streak down the left wall ── */}
+      {/* FIX P2-CORR-B2: ws20b_leaky_pipe_stain promised «Ржавое пятно расползлось по потолку»
+          but nothing was rendered, and the zone at [-1.0,2.2,-2.0] was unreachable (3D distance
+          2.2 > range 1.4) and hung above the street door area. Now: rust patch on the ceiling
+          next to the pipe bracket (z=-1.0), streak running down the free wall segment between
+          the street door (span to z=-1.525) and the graffiti (from z=-0.1); zone re-seated on
+          the streak at [-2.85,1.15,-1.0] (reachable: d≈1.16 < range 1.4). */}
+      <mesh position={[-2.5, H - 0.01, -1.0]} rotation-x={Math.PI / 2} geometry={geo_pln_61} material={mat_54} />
+      <mesh position={[-W / 2 + 0.015, 1.55, -1.0]} rotation-y={Math.PI / 2} geometry={geo_pln_62} material={mat_55} />
 
       {/* ── Light switch plate on wall ── */}
       <group position={[-W / 2 + 0.02, 1.2, D / 2 - 0.5]} rotation-y={Math.PI / 2}>

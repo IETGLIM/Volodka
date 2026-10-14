@@ -7381,15 +7381,20 @@ export const TRIGGER_ZONES: TriggerZone[] = [
 
   // volodka_corridor — 3 zones
   {
+    // FIX P2-CORR-B2: zone was [-1.0,2.2,-2.0] — unreachable (3D distance 2.2 > range 1.4,
+    // see the fan case at the top of this file) and hung over the street-door area with no
+    // stain visual anywhere. Re-seated onto the rust streak on the LEFT wall (z=-1.0, free
+    // segment between street door and graffiti): ceiling patch + wall streak now exist in
+    // VolodkaCorridorVisual. Reachability: player at x≈-2.7 → d≈1.16 < range 1.4.
     id: 'ws20b_leaky_pipe_stain',
     sceneId: 'volodka_corridor',
-    position: [-1.0, 2.2, -2.0],
-    size: [0.8, 0.6, 0.4],
+    position: [-2.85, 1.15, -1.0],
+    size: [0.8, 0.8, 0.4],
     interactionType: 'examine',
     interactionLabel: 'Осмотреть пятно',
     examineData: {
       title: 'Пятно от протечки',
-      description: 'Ржавое пятно расползлось по потолку — карта неизвестного архипелага в бурой акварели.',
+      description: 'Ржавое пятно расползлось по потолку у трубы и сползло на стену — карта неизвестного архипелага в бурой акварели.',
       detailText: 'Труба за стеной гудит на ноте ре. Тринадцать лет. Дольше памяти дома. Труба не пишет — труба просто гудит.',
       icon: '💧',
     },
@@ -7400,10 +7405,15 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
   {
+    // FIX P2-CORR-B3: zone was [0,2.8,0] — no lamp there (the flickering one is at z=+4.0)
+    // and unreachable (d=2.8 > range 1.3). The bulb now hangs on a wire at y=1.85 from that
+    // lamp (VolodkaCorridorVisual), zone re-seated at [0,1.85,4.0]; standing under it:
+    // d=1.85 < range 1.9 (size [1.8,0.5,1.8]). Beam height depends only on size[1] — the
+    // widened X/Z span is invisible.
     id: 'ws20b_flickering_bulb_fixture',
     sceneId: 'volodka_corridor',
-    position: [0, 2.8, 0],
-    size: [0.6, 0.5, 0.6],
+    position: [0, 1.85, 4.0],
+    size: [1.8, 0.5, 1.8],
     interactionType: 'examine',
     interactionLabel: 'Осмотреть лампу',
     examineData: {
@@ -7419,10 +7429,14 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
   {
+    // FIX P2-CORR-B4: zone was [2.0,1.5,6.0] — floating mid-air 0.85m off the mailbox bank,
+    // no plate mesh, unreachable (d=1.5 > range 1.2). The scratched «14» plate now hangs on
+    // the wall beside Volodka's room door (VolodkaCorridorVisual, [0.62,1.45,7.94]); zone
+    // re-seated at [0.62,1.25,7.85]: player at the door → d≈1.29 < range 1.35.
     id: 'ws20b_scratched_doorplate',
     sceneId: 'volodka_corridor',
-    position: [2.0, 1.5, 6.0],
-    size: [0.4, 0.2, 0.1],
+    position: [0.62, 1.25, 7.85],
+    size: [0.7, 0.5, 0.5],
     interactionType: 'examine',
     interactionLabel: 'Осмотреть табличку',
     examineData: {
@@ -7827,10 +7841,14 @@ export const TRIGGER_ZONES: TriggerZone[] = [
 
   // volodka_corridor — +2 new
   {
+    // FIX P2-CORR-B5: fuse box mesh did not exist and the zone was unreachable
+    // ([-2.85,1.6,2.5]: d≈1.68 > range 1.3). Mesh added on the left wall
+    // ([-2.93,1.5,2.5], VolodkaCorridorVisual); zone lowered to y=1.3 and widened
+    // → range 1.5, player at x≈-2.7: d≈1.31 < 1.5.
     id: 'ws22b_corridor_fuse_box',
     sceneId: 'volodka_corridor',
-    position: [-2.85, 1.6, 2.5],
-    size: [0.6, 0.8, 0.2],
+    position: [-2.85, 1.3, 2.5],
+    size: [1.0, 0.7, 0.4],
     interactionType: 'examine',
     interactionLabel: 'Осмотреть щиток',
     examineData: {
@@ -7846,9 +7864,13 @@ export const TRIGGER_ZONES: TriggerZone[] = [
     ],
   },
   {
+    // FIX P2-CORR-B6: zone was [1.5,0.3,5.5] — empty floor by the rug; the actual shoe rack
+    // stands on the LEFT wall at [-2.65,0,5.5] (VolodkaCorridorVisual) — 4.15m away. Zone
+    // re-seated onto the rack ([-2.35,0.35,5.5], reachable: d≈0.6 < range 1.5); the promised
+    // «детские сандалии» are now rendered on the top shelf.
     id: 'ws22b_corridor_shoe_rack',
     sceneId: 'volodka_corridor',
-    position: [1.5, 0.3, 5.5],
+    position: [-2.35, 0.35, 5.5],
     size: [1.0, 0.6, 0.4],
     interactionType: 'examine',
     interactionLabel: 'Осмотреть обувницу',
