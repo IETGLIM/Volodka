@@ -13,11 +13,14 @@ import { buildStoryNodes } from '@/data/story/buildStoryNodes';
  *    wired through one of the delivery channels (hub entry, zone link,
  *    quest link, exploration dialogue, visitStoryNode).
  *
- * The 133 unreachable `*_exp_*` nodes are expansion wave side-chains
- * (act2:10, act3:43, act4:21, act5:20, act6:20, act7:19) authored as
- * flag-sequenced hub meshes whose entry choices were never wired into the
- * act hubs. They are authored, proofread content — the backlog is to wire
- * them wave-by-wave, NOT to delete. Tracked in worklog / narrative plan.
+ * The unreachable `*_exp_*` nodes are expansion wave side-chains (act2:10,
+ * act4:20, act5:20, act6:20, act7:19) authored as flag-sequenced hub meshes
+ * whose entry choices were never wired into the act hubs. They are authored,
+ * proofread content — the backlog is to wire them wave-by-wave, NOT to
+ * delete. Tracked in worklog / narrative plan.
+ *
+ * Wave history: act3 (43 nodes) was wired in v4.50.0 via 20 one-time zones
+ * in narrativeExpansionTriggerZones.ts — see the WAVE W1 block there.
  */
 const KNOWN_UNREACHABLE: ReadonlySet<string> = new Set([
   // act2 expansion (10)
@@ -25,30 +28,8 @@ const KNOWN_UNREACHABLE: ReadonlySet<string> = new Set([
   'act2_exp_colleague_warning', 'act2_exp_dmitry_guilt', 'act2_exp_office_old_terminal',
   'act2_exp_office_server_room', 'act2_exp_pier_dawn', 'act2_exp_pier_fishing_night',
   'act2_exp_pier_sunrise_poem',
-  // act3 expansion (43)
-  'act3_exp_albert_manifest_draft', 'act3_exp_albert_manifest_draft_contribute',
-  'act3_exp_alexander_confession', 'act3_exp_alexander_confession_reason',
-  'act3_exp_alexander_terminal_night', 'act3_exp_alexander_terminal_night_share',
-  'act3_exp_barista_secret_menu', 'act3_exp_barista_secret_menu_keep',
-  'act3_exp_barista_secret_menu_source', 'act3_exp_cafe_poetry_circle',
-  'act3_exp_cafe_poetry_circle_join', 'act3_exp_chk_zarema_refuge',
-  'act3_exp_chk_zarema_refuge_stay', 'act3_exp_library_basement_door',
-  'act3_exp_library_basement_door_hack', 'act3_exp_library_basement_door_kate',
-  'act3_exp_library_reading_night', 'act3_exp_library_reading_night_share',
-  'act3_exp_library_stacks', 'act3_exp_library_stacks_read',
-  'act3_exp_park_cyber_flowers', 'act3_exp_park_cyber_flowers_open',
-  'act3_exp_park_old_monument', 'act3_exp_park_old_monument_restore',
-  'act3_exp_park_rain_digital', 'act3_exp_park_rain_digital_collect',
-  'act3_exp_park_sculpture', 'act3_exp_park_sculpture_respond',
-  'act3_exp_street_cat_network', 'act3_exp_street_cat_network_data',
-  'act3_exp_street_protest_echo', 'act3_exp_street_protest_echo_analyze',
-  'act3_exp_victoria_network_map', 'act3_exp_victoria_network_map_alexander',
-  'act3_exp_victoria_network_map_understood', 'act3_exp_victoria_vault_key',
-  'act3_exp_victoria_vault_key_accept', 'act3_exp_zarema_camera',
-  'act3_exp_zarema_camera_archive', 'act3_exp_zarema_interrogation',
-  'act3_exp_zarema_interrogation_details', 'act3_exp_zarema_room_discovery',
-  'act3_exp_zarema_room_discovery_study',
-  // act4 expansion (21)
+  // act3 expansion — WIRED in v4.50.0 (W1 wave, 20 zones) — no longer in backlog
+  // act4 expansion (20)
   'act4_exp_albert_last_stand', 'act4_exp_alexander_choice', 'act4_exp_barista_coffee_code',
   'act4_exp_cafe_closed', 'act4_exp_chk_defense_plan', 'act4_exp_chk_night_meeting',
   'act4_exp_city_square_poster', 'act4_exp_colleague_betrayal_hint',
@@ -57,7 +38,7 @@ const KNOWN_UNREACHABLE: ReadonlySet<string> = new Set([
   'act4_exp_rooftop_antenna', 'act4_exp_rooftop_city_view', 'act4_exp_street_crowd',
   'act4_exp_street_neon_blackout', 'act4_exp_street_winter_walk',
   'act4_exp_victoria_last_words', 'act4_exp_victoria_sacrifice_prep',
-  'act4_exp_zarema_deleted_files', 'act4_exp_chk_defense_plan',
+  'act4_exp_zarema_deleted_files',
   // act5 expansion (20)
   'act5_exp_alexander_last_contact', 'act5_exp_bunker_anya_radio',
   'act5_exp_bunker_code_poem', 'act5_exp_bunker_escape_route',
@@ -130,8 +111,8 @@ describe('story reachability (P2-7)', () => {
         report.coreReachable.includes(id) || report.externalOnly.includes(id),
     );
     // Not a hard gate yet — logs progress of the wiring waves.
-    // eslint-disable-next-line no-console -- progress log is intentional here
     if (knownButReachable.length > 0) {
+      // eslint-disable-next-line no-console -- progress log is intentional here
       console.log(
         `[reachability] progress: ${knownButReachable.length} backlog node(s) ` +
           `became reachable — remove them from KNOWN_UNREACHABLE:\n` +
