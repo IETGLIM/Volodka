@@ -16,6 +16,7 @@ import { openDiegeticNarrative } from '@/engine/scene/narrativeOverlay';
 import { setCinematicHoldActive } from '@/engine/camera/cinematicPresentation';
 import { forceEmitInteractionEnd } from '@/engine/interaction/interactionEndDedup';
 import { dispatchGameAction } from '@/engine/GameActionDispatcher';
+import { devWarn } from '@/shared/utils/devLog';
 import { setCinematicPresentationMode } from '@/engine/camera/cinematicPresentation';
 import {
   acquireCameraOwnership,
@@ -318,6 +319,25 @@ export function CinematicTimelineRunner() {
     prologueTimerRef.current = setTimeout(() => {
       prologueTimerRef.current = null;
       openPrologueStory();
+      // FIX v4.48.23 (P2-1 хвост, DOM-trap QA): плашка 'start' наблюдалась
+      // удалённой через 38мс после монтажа (headless-прогон: insert 70606ms →
+      // remove 70644ms), а в другом прогоне хаб-промоушен обогнал стейджинг —
+      // гард shouldOpenAct1PrologueStory абортнул открытие (currentNodeId уже
+      // 'explore_mode'), плашка не открывалась ВООБЩЕ. Открывающая наррация
+      // («Ты просыпаешься от назойливого писка терминала…») обязана дожить
+      // до выбора игрока. Одноразовый ре-ассерт на +800мс — ВНЕ гарда, работает
+      // в обоих сценариях потери: за 800мс игрок физически не успевает сделать
+      // выбор (тайпрайтер ~500 символов), поэтому 'explore_mode' в этот момент —
+      // только автопромоушен из цепочки завершения wake. Живую плашку и
+      // осознанный выбор не трогаем.
+      window.setTimeout(() => {
+        const s = getGameStore();
+        if (s.currentNodeId !== 'start' && s.currentNodeId !== 'explore_mode') return;
+        if (s.diegeticNarrative?.nodeId === 'start') return; // плашка жива
+        if (getActiveCinematicTimelineId() === 'intro_wakeup') return;
+        devWarn('[WakeStaging] start-plate lost in handoff — re-asserting');
+        s.openDiegeticNarrative('start', 'story');
+      }, 800);
       if (getActiveCinematicTimelineId() === 'intro_wakeup') {
         completeCinematicTimeline('intro_wakeup');
       }

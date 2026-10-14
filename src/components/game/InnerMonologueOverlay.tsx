@@ -46,7 +46,8 @@ interface ThoughtState {
  * max 3) while a voice line plays, and a playing thought is preempted when
  * the Голос starts, then re-shown. No more simultaneous inner-voice texts.
  *
- * On mount, shows a sample thought after 2 s to demonstrate the system.
+ * Демо-мысль («Ещё один день…», +2с после маунта) удалена в v4.48.19:
+ * единственная первая мысль — входная мысль сцены из sceneEntryThoughts.
  */
 export function InnerMonologueOverlay() {
   const reducedMotion = useEffectiveReducedMotion();
