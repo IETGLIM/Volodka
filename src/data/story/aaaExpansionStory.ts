@@ -826,6 +826,10 @@ export const AAA_EXPANSION_STORY_NODES: Record<string, StoryNode> = {
     speaker: 'narrator',
     sceneId: 'abandoned_factory',
     contextNote: '«Заря-М» вспыхнула. Релейный блок читает спрятанный стих на 47 Гц.',
+    // FIX P1-6 (v4.48.20): контакт с машиной больше не немой — гул подвала
+    // (47 Гц из текста) + музыкальная нить тайны.
+    ambientSound: 'sounds/ambient/basement_hum.ogg',
+    musicCue: 'mystery',
     accessibilityAnnounce: '«Заря-М» заговорила. Стих, спрятанный на тридцать лет, — читается.',
     guidanceHint: 'Послушай — что «Заря-М» спрятала тридцать лет назад.',
     guidanceObjectiveType: 'make_choice',
@@ -860,6 +864,9 @@ export const AAA_EXPANSION_STORY_NODES: Record<string, StoryNode> = {
     speaker: 'Баба Зина',
     sceneId: 'abandoned_factory',
     contextNote: '«Заря-М» дочитала. Синий светодиод в углу продолжает гореть.',
+    // FIX P1-6 (v4.48.20): чтение стиха машины — эмоциональная нить вместо тишины.
+    ambientSound: 'sounds/ambient/basement_hum.ogg',
+    musicCue: 'emotional',
     accessibilityAnnounce: 'Баба Зина благодарит. Стих поэта-механика прочтён впервые за тридцать лет.',
     guidanceHint: 'Квест закрыт. Машина будит свой стих.',
     guidanceObjectiveType: 'complete_quest',
@@ -867,26 +874,23 @@ export const AAA_EXPANSION_STORY_NODES: Record<string, StoryNode> = {
       {
         text: 'Молча положить ладонь на корпус — попрощаться',
         next: 'factory_explore_mode',
+        // FIX P1-1 (v4.48.20): выбор больше НЕ дублирует награды квеста
+        // aaa_factory_broken_mechanism (addXp 220 / coding+2 / baba_zina+12 /
+        // rare_alloy / memory_crystal лежат в квесте — единственный источник
+        // выплат; раньше применялись оба пути = 440XP/+24/2×items). На узле
+        // остаётся флаг + отличающий жест ветки (тихое прощание — снятие стресса).
         effects: [
           { type: 'setFlag', flag: 'aaa_broken_mechanism_done', flagValue: true },
-          { type: 'addXp', value: 220 },
-          { type: 'addSkill', skill: 'coding', value: 2 },
-          { type: 'npcChange', npcId: 'baba_zina', npcChange: { relation: 12 } },
-          { type: 'addItem', itemId: 'rare_alloy' },
-          { type: 'addItem', itemId: 'memory_crystal' },
           { type: 'addStat', stat: 'stress', value: -5 },
         ],
       },
       {
         text: 'Спросить — кто был тот поэт-механик',
         next: 'factory_explore_mode',
+        // FIX P1-1 (v4.48.20): см. комментарий выше — только флаг + жест ветки
+        // (вопрос — интуиция + запретная лора; награды — в квесте).
         effects: [
           { type: 'setFlag', flag: 'aaa_broken_mechanism_done', flagValue: true },
-          { type: 'addXp', value: 220 },
-          { type: 'addSkill', skill: 'coding', value: 2 },
-          { type: 'npcChange', npcId: 'baba_zina', npcChange: { relation: 12 } },
-          { type: 'addItem', itemId: 'rare_alloy' },
-          { type: 'addItem', itemId: 'memory_crystal' },
           { type: 'addSkill', skill: 'intuition', value: 1 },
           { type: 'discoverLore', loreId: 'lore_banned_poetry_tapes' },
         ],
@@ -903,6 +907,9 @@ export const AAA_EXPANSION_STORY_NODES: Record<string, StoryNode> = {
     speaker: 'Трофим',
     sceneId: 'pier_evening',
     contextNote: 'Трофим на ночном пирсе. Удочка — повод для разговора.',
+    // FIX P1-6 (v4.48.20): ночная рыбалка получает ночной пирс (шум воды)
+    // вместо мёртвой тишины.
+    ambientSound: 'sounds/ambient/river_pier_night.ogg',
     accessibilityAnnounce: 'Трофим приглашает посидеть у воды и поговорить без цели.',
     guidanceHint: 'Сядь рядом с удочкой в тишине.',
     guidanceObjectiveType: 'make_choice',

@@ -705,6 +705,18 @@ export const STORY_NODES_PHASE5_QUESTS: Record<string, StoryNode> = {
     guidanceSceneLabel: 'Подвал завода',
     choices: [
       {
+        // FIX ZF-пак (v4.48.20): после контакта машина узнаёт слушавшего —
+        // исповедь начинается с тёплого, «четвёртосменного» входа вместо
+        // первого монолога. Верхний вариант — приоритет маршрутизатора.
+        text: '«Это я. Слушал.» — исповедь четвёртой смены',
+        next: 'machine_confession_scene',
+        condition: { flag: 'zf_contact_made', missingFlag: 'machine_fate_decided' },
+        effects: [
+          { type: 'triggerQuest', questId: 'machine_confession' },
+          { type: 'setFlag', flag: 'zarya_confession_requested', flagValue: true },
+        ],
+      },
+      {
         text: 'Слушать исповедь — нить из 18 строк',
         next: 'machine_confession_scene_thread',
         condition: { flag: 'thread_18_complete', missingFlag: 'machine_fate_decided' },

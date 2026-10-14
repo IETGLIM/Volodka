@@ -162,7 +162,12 @@ export const PIER_ECHO_STORY_NODES: Record<string, StoryNode> = {
       {
         text: 'Поблагодарить и отправиться к Ритке',
         next: null,
-        effects: [],
+        // FIX P1-4 (v4.48.20): раньше next:null оставлял игрока с «целью»
+        // без маркера в графе — продолжение жило только возвратной репликой
+        // хаба. visitStoryNode-мост (поддержан narrativeChoiceExecutor.ts
+        // для next:null) возвращает на хаб пирса — обещание выбора
+        // («отправиться к Ритке») реально маршрутизируется.
+        effects: [{ type: 'visitStoryNode', nodeId: 'pier_explore_mode' }],
       },
     ],
   },
@@ -188,7 +193,9 @@ export const PIER_ECHO_STORY_NODES: Record<string, StoryNode> = {
       {
         text: 'Спрятать открытку и отправиться к Ритке',
         next: null,
-        effects: [],
+        // FIX P1-4 (v4.48.20): см. комментарий ep_pier_echo_final_trofim —
+        // мост в граф вместо глухого next:null.
+        effects: [{ type: 'visitStoryNode', nodeId: 'pier_explore_mode' }],
       },
     ],
   },

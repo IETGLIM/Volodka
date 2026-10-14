@@ -277,13 +277,19 @@ export const NARRATIVE_EXPANSION_TRIGGER_ZONES: TriggerZone[] = [
     examineData: {
       title: 'Третья свая',
       description: 'Мокрая древесина. Под водой — металлическая выемка.',
+      // FIX P1-3 (v4.48.20): раньше зона обещала ключ и заставляла «оставить
+      // на месте» — а 3D-выход в подвал требовал basement_key_found. Обещание
+      // не исполнялось ни предметом, ни альтернативным входом. Теперь Трофим
+      // держит слово: ключ можно снять с цепочки.
       detailText:
-        'Ключ на цепочке, как обещал Трофим. Не трогай машину — сначала слушай. Ты оставляешь ключ на месте: знание важнее железа.',
+        'Ключ на цепочке — как обещал Трофим. «Не трогай машину — сначала слушай», — сказал он. Ты снимаешь ключ с цепочки. Металл тёплый, будто кто-то держал его в кулаке совсем недавно.',
       icon: '🔑',
     },
     effects: [
       { type: 'setFlag', flag: 'pier_third_pile_examined', flagValue: true },
       { type: 'setFlag', flag: 'trofim_basement_hint', flagValue: true },
+      { type: 'setFlag', flag: 'basement_key_found', flagValue: true },
+      { type: 'addItem', itemId: 'watchman_key' },
       { type: 'addSkill', skill: 'intuition', value: 1 },
     ],
   },

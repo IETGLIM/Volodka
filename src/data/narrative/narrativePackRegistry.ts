@@ -37,7 +37,8 @@ export type StorySatellitePackId =
   | 'pierEcho'
   | 'factionContracts'
   | 'act5DreamWorld'
-  | 'act34CaseExpansions';
+  | 'act34CaseExpansions'
+  | 'zaryaFourthVoice';
 export type DialoguePackId =
   | 'part1'
   | 'part1AlbertExpanded'
@@ -186,6 +187,11 @@ const storySatelliteLoaders: Record<
   // Same parity pattern: static merge + lazy loader, иначе ensureStoryNode
   // бросит «not found» в рантайме (урок v4.8.9).
   pierEcho: () => import('../story/pierEchoStory').then((m) => m.PIER_ECHO_STORY_NODES),
+  // ZF-пак «Заря-М — четвёртый голос» (v4.48.20) — 15 узлов вертикального
+  // среза эпизода (zaryaFourthVoiceStory.ts). Same parity pattern: static
+  // merge + lazy loader, иначе ensureStoryNode бросит «not found» в рантайме.
+  zaryaFourthVoice: () =>
+    import('../story/zaryaFourthVoiceStory').then((m) => m.ZARYA_FOURTH_VOICE_STORY_NODES),
   // «Фракционные поручения» (v4.18.0) — 28 узлов 5 фракционных квестов
   // (factionContracts.ts). Same parity pattern: static merge + lazy loader,
   // иначе ensureStoryNode бросит «not found» в рантайме (урок v4.8.9).
@@ -226,6 +232,7 @@ export const STANDALONE_STORY_SATELLITE_ORDER: readonly StorySatellitePackId[] =
   'streetLegends',
   'pierVoices',
   'pierEcho',
+  'zaryaFourthVoice',
   'factionContracts',
   'act5DreamWorld',
   'act34CaseExpansions',

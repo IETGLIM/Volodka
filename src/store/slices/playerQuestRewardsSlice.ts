@@ -246,6 +246,17 @@ export const createPlayerQuestRewardsSlice: StateCreator<
               appliedRewards.push(`Флаг: ${reward.flag}`);
             }
             break;
+          case 'collectPoem':
+            // FIX P1-2 (v4.48.21): раньше collectPoem падал в default: break —
+            // наградные карточки 3 квестов обещали стих и молча его отбрасывали
+            // (factory_zarya_memory→poem_16, pier ep→poem_17, act4→poem_32).
+            // worldSlice.collectPoem идемпотентен (worldSlice.ts:391-393),
+            // поэтому прямая маршрутизация безопасна и для повторных квестов.
+            if (reward.poemId) {
+              getWorldStore().collectPoem(reward.poemId);
+              appliedRewards.push(`Стих: ${reward.poemId}`);
+            }
+            break;
           case 'npcChange':
             if (reward.npcId && reward.npcChange?.relation) {
               pendingNpcChanges.push({

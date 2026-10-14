@@ -38,6 +38,7 @@ import { AAA_EXPANSION_STORY_NODES } from './aaaExpansionStory';
 import { STREET_LEGENDS_STORY_NODES } from './streetLegendsStory';
 import { PIER_VOICES_STORY_NODES } from './pierVoicesStory';
 import { PIER_ECHO_STORY_NODES } from './pierEchoStory';
+import { ZARYA_FOURTH_VOICE_STORY_NODES } from './zaryaFourthVoiceStory';
 import { FACTION_CONTRACTS_STORY_NODES } from './factionContractsStory';
 import { ACT5_DREAM_WORLD_STORY_NODES } from './act5DreamWorld';
 import { ACT34_CASE_EXPANSION_STORY_NODES } from './act34CaseExpansions';
@@ -143,6 +144,7 @@ export const STORY_NODE_SOURCES: readonly StoryNodeSource[] = [
   { name: 'streetLegends', nodes: STREET_LEGENDS_STORY_NODES },
   { name: 'pierVoices', nodes: PIER_VOICES_STORY_NODES },
   { name: 'pierEcho', nodes: PIER_ECHO_STORY_NODES },
+  { name: 'zaryaFourthVoice', nodes: ZARYA_FOURTH_VOICE_STORY_NODES },
   { name: 'factionContracts', nodes: FACTION_CONTRACTS_STORY_NODES },
   { name: 'act34CaseExpansions', nodes: ACT34_CASE_EXPANSION_STORY_NODES },
 ];

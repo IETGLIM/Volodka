@@ -46,6 +46,10 @@ import {
   type CinematicTimelineState,
 } from '@/engine/cinematic/cinematicTimelineController';
 import { INTRO_WAKE_TIMELINE } from '@/engine/cinematic/introWakeTimeline';
+import {
+  computeTimelineOverlaySchedule,
+  timelineRemainingMs,
+} from '@/engine/cinematic/cinematicOverlaySchedule';
 import { setCinematicLightCue } from '@/engine/cinematic/cinematicLightStaging';
 import type { CinematicTimelineDef } from '@/engine/cinematic/cinematicTimelineTypes';
 import { CinematicPlayerAvatar } from './CinematicPlayerAvatar';
@@ -69,6 +73,17 @@ export function CinematicTimelineRunner() {
   const audioCuePhaseRef = useRef<string | null>(null);
   const lightCuePhaseRef = useRef<string | null>(null);
   const lastReportedPhaseRef = useRef<string | null>(null);
+  // FIX v4.48.20 (P2 «титры wake-таймлайна не доходят до CutsceneOverlay»):
+  // оверлеи эмитятся из кадрового тика на первом тике фазы. Тик — кадровый
+  // клок (dt кламп 0.05с), фоллбек — настенный. Ниже ~20fps фоллбек срабатывает
+  // раньше хвостовых фаз — их первые тики не наступают, эмит теряется
+  // (в троттлящейся headless-среде — 0 оверлеев за прогон). Теперь каждый
+  // оверлей планируется ещё и настенным таймером на старте фазы; оба пути
+  // делят once-guard. Стенный клок гарантирует доставку при любом rAF.
+  const overlayTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const emittedOverlayPhasesRef = useRef<Set<string>>(new Set());
+  /** Wall-clock of the last successful tick — stall detector for the fallback. */
+  const lastTickWallRef = useRef(0);
   const playerGroupRef = useRef<Group>(null);
   const currentAnimRef = useRef('idle');
   const modelRotationRef = useRef(0);
@@ -81,6 +96,69 @@ export function CinematicTimelineRunner() {
     }
   };
 
+  /** Clear pending wall-clock overlay beats (skip/complete/stop/unmount). */
+  const clearOverlayTimers = (): void => {
+    if (overlayTimersRef.current.length > 0) {
+      overlayTimersRef.current.forEach((t) => clearTimeout(t));
+      overlayTimersRef.current = [];
+    }
+  };
+
+  /**
+   * Shared once-only overlay emit — used by BOTH the frame-tick path and the
+   * wall-clock schedule. Guards: the timeline must still be the live one, and
+   * this phase's overlay must not have been emitted yet (either path).
+   * FIX v4.48.20: также доставляет одноимённый audioCue 'notify' фазы —
+   * на троттлящемся rAF тик не доходит и до звука; пинг композитному оверлею
+   * нужен вместе с текстом, не отдельно.
+   */
+  const emitPhaseOverlay = (def: CinematicTimelineDef, phaseIndex: number): void => {
+    const phase = def.phases[phaseIndex];
+    const overlay = phase?.overlay;
+    if (!overlay || overlay.letterboxStyle === 'none') return;
+    if (timelineIdRef.current !== def.id || stateRef.current === null) return;
+    if (getActiveCinematicTimelineId() !== def.id) return;
+    const phaseKey = `${def.id}:${phase.id}`;
+    if (emittedOverlayPhasesRef.current.has(phaseKey)) return;
+    emittedOverlayPhasesRef.current.add(phaseKey);
+
+    const remainingMs = timelineRemainingMs(def, phaseIndex);
+    eventBus.emit('cutscene:overlay', {
+      text: overlay.text ?? '',
+      subtitle: overlay.subtitle,
+      accentColor: overlay.accentColor ?? '#44ffff',
+      durationMs: remainingMs,
+      type: overlay.type ?? (overlay.text ? 'character_intro' : 'story_moment'),
+      letterboxStyle: overlay.letterboxStyle ?? 'thin',
+      showEmbers: overlay.showEmbers ?? false,
+      glitchIntensity: overlay.glitchIntensity ?? 0,
+      fadeInMs: overlay.fadeInMs ?? 300,
+      fadeOutMs: overlay.fadeOutMs ?? 500,
+      managedByTimeline: true,
+    });
+
+    if (phase.audioCue === 'notify' && audioCuePhaseRef.current !== phase.id) {
+      audioCuePhaseRef.current = phase.id;
+      audioEngine.playSfx('notify');
+    }
+  };
+
+  /**
+   * FIX v4.48.20: wall-clock overlay beats — один setTimeout на фазу с
+   * оверлеем, на старте фазы. Не зависят от rAF: доставляют текст и в
+   * троттлящейся среде, и на слабых машинах, где кадровый клок отстаёт от
+   * настенного и фоллбек раньше времени завершает таймлайн.
+   */
+  const scheduleTimelineOverlays = (def: CinematicTimelineDef): void => {
+    clearOverlayTimers();
+    emittedOverlayPhasesRef.current = new Set();
+    for (const beat of computeTimelineOverlaySchedule(def)) {
+      overlayTimersRef.current.push(
+        setTimeout(() => emitPhaseOverlay(def, beat.phaseIndex), beat.atMs),
+      );
+    }
+  };
+
   const finishIntroWake = (): void => {
     releaseCameraOwnership(TIMELINE_OWNER);
     setActive(false);
@@ -89,6 +167,7 @@ export function CinematicTimelineRunner() {
     timelineIdRef.current = null;
     sequenceStartedRef.current = false;
     clearFallback();
+    clearOverlayTimers();
 
     const store = getGameStore();
     // Face the desk (monitors at Z=-2.35) instead of the door (Z=+3.5).
@@ -258,6 +337,7 @@ export function CinematicTimelineRunner() {
     stateRef.current = null;
     timelineIdRef.current = null;
     clearFallback();
+    clearOverlayTimers();
     completeCinematicTimeline(timelineId);
   };
 
@@ -281,6 +361,7 @@ export function CinematicTimelineRunner() {
     sequenceStartedRef.current = false;
     cameraAcquireRetryRef.current = null;
     clearFallback();
+    clearOverlayTimers();
   };
 
   const beginTimeline = (
@@ -352,11 +433,32 @@ export function CinematicTimelineRunner() {
 
     if (def.fallbackMs) {
       clearFallback();
-      fallbackTimerRef.current = setTimeout(() => {
-        if (def.id === 'intro_wakeup') finishIntroWake();
-        else finishGenericTimeline(def.id);
-      }, def.fallbackMs);
+      // FIX v4.48.20: STALL-AWARE fallback. Таймлайн — кадровый клок (dt кламп
+      // 0.05с), старый фиксированный настенный фоллбек (total+2с) убивал
+      // таймлайн на машинах ниже ~20fps до того, как хвостовые фазы получали
+      // свой первый тик — вместе с ними терялись и оверлеи, и анимация хвоста.
+      // Теперь фоллбек — детектор ЗАТИШЬЯ: если тик пробегал недавно (живой
+      // rAF, пусть и редкий) — перевооружаемся; если кадров реально нет
+      // (скрытая вкладка, мёртвый rAF) — завершаем как раньше.
+      const armFallback = (ms: number): void => {
+        fallbackTimerRef.current = setTimeout(() => {
+          const stalled =
+            Date.now() - lastTickWallRef.current > 2500;
+          if (!stalled && stateRef.current && timelineIdRef.current === def.id) {
+            armFallback(5000);
+            return;
+          }
+          if (def.id === 'intro_wakeup') finishIntroWake();
+          else finishGenericTimeline(def.id);
+        }, ms);
+      };
+      lastTickWallRef.current = Date.now();
+      armFallback(def.fallbackMs);
     }
+
+    // FIX v4.48.20: настенное расписание оверлеев — гарантированная доставка
+    // независимо от частоты кадров (см. комментарий у refs).
+    scheduleTimelineOverlays(def);
 
     handoffEmittedRef.current = false;
     lastFootstepRef.current = -1;
@@ -393,6 +495,7 @@ export function CinematicTimelineRunner() {
       timelineIdRef.current = null;
       sequenceStartedRef.current = false;
       clearFallback();
+      clearOverlayTimers();
       if (introWakeTimerRef.current) {
         clearTimeout(introWakeTimerRef.current);
         introWakeTimerRef.current = null;
@@ -516,6 +619,7 @@ export function CinematicTimelineRunner() {
     return () => {
       unsubs.forEach((u) => u());
       clearFallback();
+      clearOverlayTimers();
       if (introWakeTimerRef.current) {
         clearTimeout(introWakeTimerRef.current);
         introWakeTimerRef.current = null;
@@ -551,36 +655,12 @@ export function CinematicTimelineRunner() {
 
     const result = updateCinematicTimelineState(state, delta, camera);
     if (!result) return;
+    lastTickWallRef.current = Date.now();
 
-    const overlay = result.overlay;
-    if (overlay && overlay.letterboxStyle !== 'none') {
-      // FIX (v4.17.1): длительность overlay = остаток таймлайна (от текущей
-      // фазы до конца), а не длительность одной фазы. Раньше текст кат-сцены,
-      // закреплённый на фазе, гас по её окончании — раньше конца полёта камеры.
-      const remainingMs = state.def.phases
-        .slice(state.phaseIndex)
-        .reduce((sum, p) => sum + Math.max(0, p.duration), 0) * 1000;
-      eventBus.emit('cutscene:overlay', {
-        text: overlay.text ?? '',
-        subtitle: overlay.subtitle,
-        accentColor: overlay.accentColor ?? '#44ffff',
-        durationMs: remainingMs > 0 ? remainingMs : 2000,
-        // FIX (v4.20): type берётся из overlay-конфига таймлайна (CutsceneDef.type
-        // через cutsceneDefToTimeline). Раньше хардкод 'character_intro' означал,
-        // что стили act_transition/revelation (FilmGrain, ярлык «volodka rpg»,
-        // крупная типографика актов) никогда не срабатывали.
-        type: overlay.type ?? (overlay.text ? 'character_intro' : 'story_moment'),
-        letterboxStyle: overlay.letterboxStyle ?? 'thin',
-        showEmbers: overlay.showEmbers ?? false,
-        glitchIntensity: overlay.glitchIntensity ?? 0,
-        fadeInMs: overlay.fadeInMs ?? 300,
-        fadeOutMs: overlay.fadeOutMs ?? 500,
-        // CRITICAL: mark this overlay as managed by the cinematic timeline.
-        // Without this, CutsceneOverlay's auto-dismiss timer would clear
-        // activeCutsceneId after the first phase's duration, killing the
-        // entire 29-second wake-up cinematic after ~4 seconds.
-        managedByTimeline: true,
-      });
+    // FIX v4.48.20: оверлей уходит через общий once-guard — кадровый путь и
+    // настенное расписание не дублируют друг друга, побеждает тот, что первый.
+    if (result.overlay) {
+      emitPhaseOverlay(state.def, result.phaseIndex);
     }
 
     const phase = state.def.phases[state.phaseIndex];

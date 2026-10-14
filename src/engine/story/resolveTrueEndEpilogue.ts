@@ -105,6 +105,25 @@ const EPILOGUE_REFLECTIONS: readonly EpilogueReflection[] = [
     when: ({ flags }) => flags.final_poem_read === true,
     line: 'Последняя тетрадь Владимира прочитана — ты пишешь продолжение.',
   },
+  // ── ZF-пак «Заря-М — четвёртый голос» (v4.48.20, проход 2) ──
+  {
+    priority: 45,
+    when: ({ flags }) => flags.zf_poem_read_for_machine === true,
+    line: 'У камня у проходной ты дочитал машинный стих вслух — слово «слышу» больше не стирают.',
+  },
+  {
+    priority: 46,
+    when: ({ flags }) => flags.zf_tape_kept === true,
+    line: 'Кассета четвёртой смены осталась при тебе — не всё, что ждало тридцать лет, должно стать громким.',
+  },
+  {
+    priority: 47,
+    when: ({ flags }) =>
+      flags.zf_tape_zina === true
+      || flags.zf_tape_resistance === true
+      || flags.zf_tape_published === true,
+    line: 'Кассета четвёртой смены ушла в мир — тишина теперь у всех общая.',
+  },
 ] as const;
 
 /** Append up to three personalized lines to the true ending (flags + poem collection). */
