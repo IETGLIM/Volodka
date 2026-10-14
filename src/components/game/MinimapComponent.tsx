@@ -65,6 +65,7 @@ import {
   sharedPlayerRotationRef,
 } from '@/engine/PlayerRotationState';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 
 /* ─── Constants ─── */
 
@@ -846,7 +847,9 @@ export function MinimapComponent() {
         ...quietStyle,
       }
     : {
-        top: explorationMinimapTopPx(),
+        /* v4.51.0 «Классический UI»: миникарта прижата к правому верхнему углу
+         * (как в WoW) — правый кластер топ-бара в классике пуст. */
+        top: CLASSIC_UI ? 10 : explorationMinimapTopPx(),
         right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET,
         zIndex: UI_LAYERS.HUD,
         ...quietStyle,
@@ -911,8 +914,8 @@ export function MinimapComponent() {
                   }}
                 />
 
-                {/* Scanline overlay (quality gate) */}
-                {!visualLite && (
+                {/* Scanline overlay (quality gate) — в классической теме не нужен */}
+                {!visualLite && !CLASSIC_UI && (
                   <div
                     className="absolute inset-0 rounded-full pointer-events-none"
                     style={{
@@ -922,7 +925,10 @@ export function MinimapComponent() {
                   />
                 )}
 
-                {/* Corner brackets — decorative cyberpunk accents */}
+                {/* Corner brackets — decorative cyberpunk accents
+                    (в классической теме миникарта в золотом кольце, без скобок) */}
+                {!CLASSIC_UI && (
+                  <>
                 <span
                   className="absolute pointer-events-none"
                   style={{
@@ -967,6 +973,8 @@ export function MinimapComponent() {
                     borderRight: '1px solid rgb(var(--cyber-cyan-rgb) / 0.25)',
                   }}
                 />
+                  </>
+                )}
 
                 {/* M key hint — hidden on touch devices */}
                 {!isMobile && (

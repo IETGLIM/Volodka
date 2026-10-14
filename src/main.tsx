@@ -11,6 +11,12 @@ import { initVoiceLineRegistry } from '@/engine/audio/VoiceLineRegistry';
 import { installChunkLoadRecovery } from '@/shared/chunk/chunkLoadRecovery';
 import { installSceneLoadDebugTap } from '@/engine/core/sceneLoadDebug';
 import { installRelativePublicAssetResolver } from '@/engine/assets/relativePublicAssets';
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
+
+// v4.51.0: классическая тема UI (WoW-style) — скоуп CSS-переопределений
+// styles/wow-classic.css. Вешается до монтирования, чтобы первый кадр
+// уже был в классике (без вспышки киберпанка).
+if (CLASSIC_UI) document.documentElement.classList.add('vk-classic-ui');
 
 // itch.io / вложенный хостинг: все корневые URL ассетов ('/models/...') резолвятся
 // относительно документа. На корневом хостинге (Vercel) — поведение идентично.

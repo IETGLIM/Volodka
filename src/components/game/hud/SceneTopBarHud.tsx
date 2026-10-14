@@ -26,6 +26,7 @@ import { LevelBadge } from '@/components/game/hud/parts/LevelBadge';
 import { CompassIndicator } from '@/components/game/hud/parts/CompassIndicator';
 import { StatPulse } from '@/components/game/hud/parts/StatPulse';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { usePlayerKarma } from '@/store/selectors/playerSelectors';
@@ -78,45 +79,49 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         <SceneContextChip />
       </motion.div>
 
-      {/* Top-center: scrolling data ticker (hidden on mobile — it has its own sm:block gate) */}
-      <motion.div
-        initial={reducedMotion ? false : { opacity: 0, y: -6 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute top-2.5 left-1/2 -translate-x-1/2"
-      >
-        <TopBarDataTicker />
-      </motion.div>
+      {/* Top-center: scrolling data ticker (hidden on mobile — it has its own sm:block gate).
+          v4.51.0 «Классический UI»: тиккер спрятан — как в WoW, верх центра пустует. */}
+      {!CLASSIC_UI && (
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute top-2.5 left-1/2 -translate-x-1/2"
+        >
+          <TopBarDataTicker />
+        </motion.div>
+      )}
 
-      {/* Top-right: karma tier badge + karma ring + level badge + compass indicator +
-          exploration progress ring + environment mood bar.
-          Compact widgets (KarmaRing / LevelBadge / CompassIndicator) are wrapped in
-          `hidden sm:flex` so they only appear on wider viewports — keeps mobile top-bar
-          uncluttered and avoids overlap with the CompassHUD strip (top: ~58px). */}
-      <motion.div
-        initial={reducedMotion ? false : { opacity: 0, y: -8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
-        className="absolute top-2 right-2 flex items-start gap-2"
-      >
-        <KarmaTierBadge karma={karma} />
-        <div className="hidden sm:flex items-center gap-2">
-          <KarmaRing karma={karma} />
-          <LevelBadge
-            level={level}
-            perkCount={perkCount}
-            xp={xp}
-            xpToNext={xpToNext}
-            justLeveled={false}
-          />
-          <CompassIndicator />
-        </div>
-        <div className="relative">
-          <EnvironmentMoodIndicator />
-          <StatPulse active={isLowEnergy || isHighStress} color={isHighStress ? 'rose' : 'amber'} />
-        </div>
-        <ExplorationProgressBadge />
-      </motion.div>
+      {/* Top-right: v4.51.0 «Классический UI» — правый верх отдаётся миникарте
+          (как в WoW): карма-кольцо, бейдж уровня, компас, настроение среды и
+          прогресс исследования спрятаны — их дублирует юнит-фрейм слева и
+          миникарта справа. XP переехал в классическую полосу над панелью. */}
+      {!CLASSIC_UI && (
+        <motion.div
+          initial={reducedMotion ? false : { opacity: 0, y: -8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+          className="absolute top-2 right-2 flex items-start gap-2"
+        >
+          <KarmaTierBadge karma={karma} />
+          <div className="hidden sm:flex items-center gap-2">
+            <KarmaRing karma={karma} />
+            <LevelBadge
+              level={level}
+              perkCount={perkCount}
+              xp={xp}
+              xpToNext={xpToNext}
+              justLeveled={false}
+            />
+            <CompassIndicator />
+          </div>
+          <div className="relative">
+            <EnvironmentMoodIndicator />
+            <StatPulse active={isLowEnergy || isHighStress} color={isHighStress ? 'rose' : 'amber'} />
+          </div>
+          <ExplorationProgressBadge />
+        </motion.div>
+      )}
 
       {/* v4.45.0: нижний левый кластер (шагомер + таймер сессии + координаты)
           ДЕМОНТИРОВАН. Три цифровые метрики выглядели отладкой и тянули

@@ -8,6 +8,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import {
   INTERACTION_IN_RANGE_FRACTION,
   NPC_INTERACTION_QUERY_RANGE,
@@ -73,6 +74,10 @@ export function InteractionDistanceRing() {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, []);
+
+  /* v4.51.0 «Классический UI»: кольцо дистанции у прицела — филмик-декор,
+   * в классике не рендерится (хуки выше обязаны выполниться безусловно). */
+  if (CLASSIC_UI) return null;
 
   if (!visible) return null;
 

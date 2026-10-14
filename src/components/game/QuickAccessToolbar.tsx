@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Map, Backpack, ScrollText, BookOpen, NotebookPen, Sparkles } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
+import { useProgressionSummary } from '@/store/selectors';
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
 import { t } from '@/i18n';
 
@@ -90,6 +92,10 @@ export function QuickAccessToolbar({
 }: QuickAccessToolbarProps) {
   const { mode, mainMenuOpen } = useOrchestratorShell();
   const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+  // v4.51.0: классическая XP-полоса под панелью (как в WoW — над панелью
+  // действий). Узкая подписка на прогрессию.
+  const { level, xp, xpToNextLevel: xpToNext } = useProgressionSummary();
+  const xpPct = Math.min(100, Math.max(0, (xp / Math.max(1, xpToNext)) * 100));
   const [visible, setVisible] = useState(false);
   const [hoveredSlot, setHoveredSlot] = useState<string | null>(null);
   const touchStartRef = useRef<{ x: number; y: number } | null>(null);
@@ -161,6 +167,29 @@ export function QuickAccessToolbar({
         role="toolbar"
         aria-label={t('hud.toolbar.aria', 'Быстрый доступ')}
       >
+
+          {CLASSIC_UI && (
+            <div
+              className="vk-xp-bar"
+              role="progressbar"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(xpPct)}
+              aria-label={t('hud.xpBar.aria', `Опыт до уровня ${level + 1}: ${Math.round(xpPct)}%`, {
+                level: level + 1,
+                pct: Math.round(xpPct),
+              })}
+            >
+              <div className="vk-xp-bar-fill" style={{ width: `${xpPct}%` }} />
+              <span className="vk-xp-bar-text">
+                {t('hud.xpBar.label', `Опыт ${Math.round(xp)} / ${Math.round(xpToNext)} · Ур. ${level}`, {
+                  xp: Math.round(xp),
+                  toNext: Math.round(xpToNext),
+                  level,
+                })}
+              </span>
+            </div>
+          )}
           <div className="quick-access-toolbar-inner">
             {slots.map((slot) => (
               <button
@@ -175,14 +204,14 @@ export function QuickAccessToolbar({
               >
                 <span className="quick-access-slot-icon" aria-hidden="true">{slot.icon}</span>
                 <span className="quick-access-slot-label">{slot.label}</span>
-                {hoveredSlot === slot.id && (
-                  <span
-                    key={`kbd-${slot.id}`}
-                    className="quick-access-slot-kbd quick-access-slot-kbd--enter"
-                  >
-                    {slot.shortcut}
-                  </span>
-                )}
+                {/* v4.51.0: клавиша слота видима ВСЕГДА (классика WoW — цифра
+                 * в левом верхнем углу слота), а не только на ховере. */}
+                <span
+                  key={`kbd-${slot.id}`}
+                  className="quick-access-slot-kbd quick-access-slot-kbd--enter"
+                >
+                  {slot.shortcut}
+                </span>
               </button>
             ))}
           </div>

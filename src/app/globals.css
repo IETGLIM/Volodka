@@ -58,6 +58,9 @@
 @import "../styles/intro-notebook.css";
 @import "../styles/poetry-book.css";
 
+/* ─── v4.51.0 «Классический UI» (WoW-style): ПОСЛЕДНИМ, скоуп html.vk-classic-ui ─── */
+@import "../styles/wow-classic.css";
+
 /* ── User setting: scanlines off (SettingsPanel → engine/visualSettings) ── */
 html[data-scanlines="off"] .panel-scanlines::after,
 html[data-scanlines="off"] .scanline-overlay::after,

@@ -26,6 +26,11 @@ import {
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { t } from '@/i18n';
 
+/* v4.51.0 «Классический UI» (WoW-style): цвета баров и классы .vk-*
+ * стилизуются в styles/wow-classic.css (скоуп html.vk-classic-ui).
+ * Градиенты ниже — классические: зелёное «здоровье» (энергия),
+ * красный стресс, синяя карма-«мана». */
+
 /* i18n (этап 115, волна 2): динамические aria-ключи перенесены в каталог
  * RU_MESSAGES как шаблоны с плейсхолдерами ({n}, {karma}, {tier}); с волны 4
  * вызовы используют литеральные ключи hud.playerStatus.* в t(key, fallback, params).
@@ -64,10 +69,10 @@ const BarRow = memo(function BarRow({
       aria-valuenow={value}
       aria-label={ariaValue}
     >
-      <span className="w-[38px] shrink-0 text-right font-mono text-[9px] uppercase tracking-wider text-slate-400/80">
+      <span className="vk-bar-label w-[38px] shrink-0 text-right font-mono text-[9px] uppercase tracking-wider" style={{ color: '#e8d9a0' }}>
         {label}
       </span>
-      <div className="relative h-[7px] w-[104px] overflow-hidden rounded-full border border-white/10 bg-slate-950/70">
+      <div className="vk-bar-track relative h-[7px] w-[104px] overflow-hidden rounded-full border border-black/85" style={{ background: '#0a0804' }}>
         {/* Ghost-чип (AAA): бледный слой с ЗАДЕРЖАННОЙ анимацией к тому же
             значению. При уроне основная заливка падает быстро (0.3с), а
             ghost остаётся широким ещё ~0.28с и догоняет медленно (0.55с) —
@@ -111,7 +116,7 @@ const BarRow = memo(function BarRow({
           />
         )}
       </div>
-      <span className="w-[30px] shrink-0 font-mono text-[9px] tabular-nums text-slate-200/90">
+      <span className="vk-bar-value w-[30px] shrink-0 font-mono text-[9px] tabular-nums" style={{ color: '#fff8e0' }}>
         {Math.round(value)}
       </span>
     </div>
@@ -146,10 +151,10 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
   const karmaPct = karma;
   const tierLabel = getKarmaTierLabel(karma);
   const karmaColor = karma >= KARMA_HIGH_THRESHOLD
-    ? '#9db3c8'
+    ? '#3f7fd0'
     : karma <= KARMA_LOW_THRESHOLD
-      ? '#c65548'
-      : '#e2a84b';
+      ? '#d03a2b'
+      : '#c8a02e';
 
   return (
     <div
@@ -164,38 +169,46 @@ export const PlayerStatusFrame = memo(function PlayerStatusFrame() {
       role="group"
       aria-label={t('hud.playerStatus.aria', 'Состояние героя: энергия, стресс, карма')}
     >
-      {/* Портрет: монограмма героя в кольце уровня */}
+      {/* Портрет: монограмма героя в золотом кольце уровня */}
       <div className="relative shrink-0" aria-hidden="true">
         <div
-          className="flex h-10 w-10 items-center justify-center rounded-full border"
+          className="vk-portrait-ring flex h-10 w-10 items-center justify-center rounded-full border"
           style={{
-            borderColor: 'rgba(157, 179, 200, 0.4)',
-            background: 'radial-gradient(circle at 35% 30%, rgba(157, 179, 200,0.18), rgba(10,14,22,0.95) 72%)',
-            boxShadow: 'inset 0 1px 0 rgba(234,228,214,0.08)',
+            borderColor: 'rgba(122, 92, 22, 0.75)',
+            background: 'radial-gradient(circle at 35% 30%, rgba(200, 160, 46, 0.20), rgba(12, 9, 4, 0.96) 72%)',
+            boxShadow: 'inset 0 1px 0 rgba(255, 230, 150, 0.14)',
           }}
         >
           <span
-            className="font-serif text-lg font-semibold"
-            style={{ color: 'var(--vk-paper)', textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
+            className="vk-portrait-monogram font-serif text-lg font-semibold"
+            style={{ color: '#e8d9a0', textShadow: '0 1px 6px rgba(0,0,0,0.9)' }}
           >
             {t('hud.playerStatus.monogram', 'В')}
           </span>
         </div>
-        {/* Уровень — бейдж в углу портрета, как в WoW */}
+        {/* Уровень — медальон в углу портрета, как в WoW */}
         <div
-          className="absolute -bottom-1 -right-1 flex h-[17px] min-w-[17px] items-center justify-center rounded-md border border-amber-300/60 bg-slate-950/90 px-0.5 font-mono text-[9px] font-bold text-amber-300"
+          className="vk-portrait-level absolute -bottom-1 -right-1 flex h-[17px] min-w-[17px] items-center justify-center rounded-md border px-0.5 font-serif text-[9px] font-bold"
+          style={{ borderColor: '#c8a02e', background: 'rgba(8, 6, 3, 0.95)', color: '#ffd100' }}
         >
           {level}
         </div>
       </div>
 
-      {/* Бары: Энергия / Стресс / Карма */}
-      <div className="flex flex-col gap-[3px]">
+      {/* Имя героя — классическая строка юнит-фрейма */}
+      <div className="vk-unit-head flex flex-col gap-[3px]">
+        <div className="flex items-baseline justify-between">
+          <span className="vk-unit-name">{t('hud.playerStatus.heroName', 'Володька')}</span>
+          <span className="vk-unit-tier" style={{ color: `${karmaColor}cc` }} aria-hidden="true">
+            {tierLabel}
+          </span>
+        </div>
+        {/* Бары: Энергия (здоровье) / Стресс / Карма (мана) — классические цвета */}
         <BarRow
           label={t('hud.playerStatus.energyShort', 'ЭН')}
           value={energy}
           max={Math.max(100, energy)}
-          fill="linear-gradient(90deg, #3f7d54, #57a874)"
+          fill="linear-gradient(90deg, #2c7a33, #4fbf49)"
           glow="0 0 5px rgba(87, 168, 116, 0.3)"
           flash={energy <= 25}
           threshold={HUD_ENERGY_LOW_THRESHOLD}

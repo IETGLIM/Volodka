@@ -14,7 +14,8 @@ import { useExamineOverlayOpen } from '@/hooks/useExamineOverlayOpen';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
 import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
-import { explorationQuestCardTopPx, bottomCenterHintTertiaryPx } from '@/shared/constants/hudLayout';
+import { explorationQuestCardTopPx, bottomCenterHintTertiaryPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { HazardStatusIndicator } from '@/components/game/hud/parts/HazardStatusIndicator';
 import { CityWhisperOverlay } from '@/components/game/hud/parts/CityWhisperOverlay';
@@ -263,8 +264,13 @@ export function ExplorationHUD(props: HUDProps) {
           here to avoid duplicate rAF loops and visual overlap. */}
       {!isMobile && (
         <div
-          className="absolute top-12 right-4 flex flex-col items-end gap-2 pointer-events-auto hud-filmic-glow-breathe"
-          style={{ zIndex: UI_LAYERS.HUD + 1 }}
+          className="absolute right-4 flex flex-col items-end gap-2 pointer-events-auto hud-filmic-glow-breathe"
+          style={{
+            zIndex: UI_LAYERS.HUD + 1,
+            /* v4.51.0: в классике миникарта ушла к верхнему краю — индикатор
+             * сложности встаёт под ней; иначе — прежний слот top-12 (48px). */
+            top: CLASSIC_UI ? 10 + EXPLORATION_HUD_LAYOUT.MINIMAP_HEIGHT + 8 : 48,
+          }}
         >
           {/* FIX (overlap): top-4 → top-12 — индикатор налегал на правый кластер
               тайтл-бара (KarmaRing/LevelBadge/CompassIndicator, top-2 right-2,
@@ -290,8 +296,14 @@ export function ExplorationHUD(props: HUDProps) {
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 18 }}
             transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-4 pointer-events-auto hud-filmic-glow-breathe"
-            style={{ top: explorationQuestCardTopPx(), zIndex: UI_LAYERS.HUD + 1, maxWidth: 300 }}
+            className="absolute right-4 pointer-events-auto hud-filmic-glow-breathe vk-classic-tracker"
+            style={{
+              top: CLASSIC_UI
+                ? 10 + EXPLORATION_HUD_LAYOUT.MINIMAP_HEIGHT + 8 + 34
+                : explorationQuestCardTopPx(),
+              zIndex: UI_LAYERS.HUD + 1,
+              maxWidth: 300,
+            }}
           >
             <QuestObjectiveCard
               quest={activeQuestCardData}

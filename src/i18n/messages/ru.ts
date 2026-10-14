@@ -63,6 +63,12 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.playerStatus.stressAria': 'Стресс: {n} из 100',
   'hud.playerStatus.karmaAria': 'Карма: {karma}, {tier}',
 
+  /* QuickAccessToolbar.tsx — классическая XP-полоса (v4.51.0) */
+  'hud.xpBar.aria': 'Опыт до уровня {level}: {pct}%',
+  'hud.xpBar.label': 'Опыт {xp} / {toNext} · Ур. {level}',
+  /* PlayerStatusFrame.tsx — имя героя в юнит-фрейме (v4.51.0) */
+  'hud.playerStatus.heroName': 'Володька',
+
   /* karmaTier.ts */
   'hud.karmaTier.positive': 'Позитивная',
   'hud.karmaTier.negative': 'Негативная',

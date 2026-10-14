@@ -12,6 +12,7 @@ import { useGamepadConnected } from '@/hooks/useGamepadConnected';
 import { useTouchDevice } from '@/hooks/useTouchDevice';
 import { formatInteractionHintKey } from '@/engine/exploration/explorationUxPresentation';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 
 function truncateLabel(label: string, max = 22): string {
   const trimmed = label.trim();
@@ -99,21 +100,24 @@ export function EnhancedCrosshairPrompt() {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className={`relative ${isMobile ? 'eip-mobile-touch' : ''}`}
           >
-            {/* Glowing ring */}
-            {!reducedMotion && (
+            {/* Glowing ring — в классической теме глоу отключён (CSS тоже страхует) */}
+            {!reducedMotion && !CLASSIC_UI && (
               <div className="eip-glow-ring" aria-hidden="true" />
             )}
-            {!reducedMotion && (
+            {!reducedMotion && !CLASSIC_UI && (
               <div className="eip-glow-ring-sweep" aria-hidden="true" />
             )}
 
             {/* Content card */}
             <div
-              className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg backdrop-blur-md border ${isMobile ? 'min-w-[180px]' : 'min-w-[7rem]'}`}
+              className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg backdrop-blur-md border ${isMobile ? 'min-w-[180px]' : 'min-w-[7rem]'} ${CLASSIC_UI ? 'vk-classic-prompt' : ''}`}
               style={{
                 background: 'rgba(0, 0, 0, 0.75)',
-                borderColor: 'rgba(157, 179, 200, 0.12)',
-                boxShadow: '0 0 16px rgba(157, 179, 200, 0.06), 0 4px 12px rgba(0, 0, 0, 0.4)',
+                borderColor: CLASSIC_UI ? 'rgba(200, 160, 46, 0.65)' : 'rgba(157, 179, 200, 0.12)',
+                boxShadow: CLASSIC_UI
+                  ? '0 2px 8px rgba(0, 0, 0, 0.6)'
+                  : '0 0 16px rgba(157, 179, 200, 0.06), 0 4px 12px rgba(0, 0, 0, 0.4)',
+                borderRadius: CLASSIC_UI ? 3 : undefined,
               }}
             >
               {/* Context icon */}
@@ -121,8 +125,11 @@ export function EnhancedCrosshairPrompt() {
 
               {/* Key badge */}
               <span
-                className="font-mono text-xs font-bold text-cyan-400"
-                style={{ textShadow: '0 0 8px rgba(157, 179, 200, 0.5)' }}
+                className="font-mono text-xs font-bold"
+                style={{
+                  color: CLASSIC_UI ? '#ffd100' : undefined,
+                  textShadow: CLASSIC_UI ? '1px 1px 0 #000' : '0 0 8px rgba(157, 179, 200, 0.5)',
+                }}
               >
                 {showTouchHint ? '▲' : `[${promptKey}]`}
               </span>
@@ -138,14 +145,16 @@ export function EnhancedCrosshairPrompt() {
               ) : null}
             </div>
 
-            {/* Bottom glow line */}
-            <div
-              className="absolute bottom-0 left-[20%] right-[20%] h-[1px]"
-              style={{
-                background: 'linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.3), transparent)',
-              }}
-              aria-hidden="true"
-            />
+            {/* Bottom glow line — классике не нужен */}
+            {!CLASSIC_UI && (
+              <div
+                className="absolute bottom-0 left-[20%] right-[20%] h-[1px]"
+                style={{
+                  background: 'linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.3), transparent)',
+                }}
+                aria-hidden="true"
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

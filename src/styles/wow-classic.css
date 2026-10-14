@@ -1,0 +1,374 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Volodka RPG — КЛАССИЧЕСКАЯ ТЕМА UI (WoW-style) · v4.51.0
+   ═══════════════════════════════════════════════════════════════════
+   Скоуп: html.vk-classic-ui (класс вешается в main.tsx при CLASSIC_UI).
+
+   Философия: как в классическом WoW — читаемые панели с золотой
+   окантовкой, тёмный полупрозрачный фон, serif-заголовки, зелёное
+   «здоровье», красный стресс, синяя карма-«мана», фиолетовая XP-полоса.
+   Весь филмик-шум (скан-линии, частицы, хроматические края, радары)
+   скрывается: интерфейс проще, контрастнее и дешевле для GPU.
+
+   Всё через !important — это слой-переопределение поверх киберпанк-темы,
+   который можно откатить одним классом на <html>.
+   ═══════════════════════════════════════════════════════════════════ */
+
+html.vk-classic-ui {
+  --wow-gold: #c8a02e;
+  --wow-gold-bright: #ffd100;
+  --wow-gold-pale: #e8d9a0;
+  --wow-gold-dim: #7a5c16;
+  --wow-gold-border: #5a4a1c;
+  --wow-panel-hi: rgba(26, 21, 11, 0.94);
+  --wow-panel-lo: rgba(10, 8, 4, 0.94);
+  --wow-font-serif: Georgia, 'PT Serif', 'Times New Roman', serif;
+  --wow-health-a: #2c7a33;
+  --wow-health-b: #4fbf49;
+  --wow-stress-a: #8a1f16;
+  --wow-stress-b: #d03a2b;
+  --wow-mana-a: #1f4f8a;
+  --wow-mana-b: #3f7fd0;
+  --wow-xp-a: #b98ef7;
+  --wow-xp-b: #6b2fb3;
+}
+
+/* ── 1. ТИШИНА: прячем филмик-шум ─────────────────────────────── */
+
+html.vk-classic-ui .hud-atmosphere-scan,
+html.vk-classic-ui .hud-ambient-particles,
+html.vk-classic-ui .hud-corner-accent,
+html.vk-classic-ui .hud-filmic-chromatic-shift,
+html.vk-classic-ui .hud-filmic-vignette-breathe,
+html.vk-classic-ui .hud-filmic-mood-vignette,
+html.vk-classic-ui .proximity-glow-ring,
+html.vk-classic-ui .proximity-glow-aura,
+html.vk-classic-ui .proximity-glow-inner,
+html.vk-classic-ui .radar-proximity-container,
+html.vk-classic-ui .interactable-sparkle,
+html.vk-classic-ui .data-ticker-container {
+  display: none !important;
+}
+
+/* Корневой слой HUD: без пульсаций и дышащих глоу */
+html.vk-classic-ui .hud-ambient-pulse {
+  animation: none !important;
+}
+html.vk-classic-ui .hud-filmic-glow-breathe {
+  animation: none !important;
+  box-shadow: none !important;
+}
+
+/* ── 2. ЮНИТ-ФРЕЙМ героя (PlayerStatusFrame) ──────────────────── */
+
+html.vk-classic-ui [data-testid="player-status-frame"] {
+  border: 1px solid var(--wow-gold-border) !important;
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, var(--wow-panel-hi), var(--wow-panel-lo)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.10),
+    0 2px 10px rgba(0, 0, 0, 0.65) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 6px 8px !important;
+}
+
+/* Портрет: золотое кольцо вместо холодного циана */
+html.vk-classic-ui [data-testid="player-status-frame"] .vk-portrait-ring {
+  border-color: var(--wow-gold-dim) !important;
+  background: radial-gradient(circle at 35% 30%, rgba(200, 160, 46, 0.22), rgba(12, 9, 4, 0.96) 72%) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 230, 150, 0.14) !important;
+}
+
+html.vk-classic-ui .vk-portrait-monogram {
+  color: var(--wow-gold-pale) !important;
+  font-family: var(--wow-font-serif) !important;
+}
+
+/* Бейдж уровня — классический медальон */
+html.vk-classic-ui [data-testid="player-status-frame"] .vk-portrait-level {
+  border-color: var(--wow-gold) !important;
+  color: var(--wow-gold-bright) !important;
+  background: rgba(8, 6, 3, 0.95) !important;
+  font-family: var(--wow-font-serif) !important;
+}
+
+/* Имя героя над барами */
+html.vk-classic-ui .vk-unit-name {
+  color: var(--wow-gold-bright);
+  font-family: var(--wow-font-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+html.vk-classic-ui .vk-unit-tier {
+  font-family: var(--wow-font-serif);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.9);
+}
+
+/* Бары: тонкая классическая форма с тёмным ложем */
+html.vk-classic-ui [data-testid="player-status-frame"] .vk-bar-track {
+  border: 1px solid rgba(0, 0, 0, 0.85) !important;
+  border-radius: 2px !important;
+  background: #0a0804 !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8) !important;
+}
+
+/* Подписи и числа баров — тёплое золото вместо сланца */
+html.vk-classic-ui [data-testid="player-status-frame"] .vk-bar-label {
+  color: var(--wow-gold-pale) !important;
+  text-shadow: 1px 1px 0 #000;
+}
+
+html.vk-classic-ui [data-testid="player-status-frame"] .vk-bar-value {
+  color: #fff8e0 !important;
+}
+
+/* ── 3. ПАНЕЛЬ ДЕЙСТВИЙ (QuickAccessToolbar) ──────────────────── */
+
+html.vk-classic-ui .quick-access-toolbar-inner {
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, var(--wow-panel-hi), var(--wow-panel-lo)) !important;
+  border: 1px solid var(--wow-gold-border) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.12),
+    0 6px 18px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.vk-classic-ui .quick-access-slot {
+  border-radius: 3px !important;
+  border: 1px solid var(--wow-gold-border) !important;
+  background: linear-gradient(180deg, #2b2414, #15110a) !important;
+  color: var(--wow-gold-pale) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 230, 150, 0.16),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.65) !important;
+}
+
+html.vk-classic-ui .quick-access-slot:hover,
+html.vk-classic-ui .quick-access-slot--hover {
+  border-color: var(--wow-gold) !important;
+  background: linear-gradient(180deg, #3a3118, #1d1810) !important;
+  color: #fff !important;
+  box-shadow:
+    0 0 10px rgba(255, 209, 0, 0.35),
+    inset 0 1px 0 rgba(255, 230, 150, 0.25) !important;
+}
+
+html.vk-classic-ui .quick-access-slot:active {
+  transform: scale(0.94);
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.7) !important;
+}
+
+html.vk-classic-ui .quick-access-slot-icon {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.8)) !important;
+  color: var(--wow-gold-pale);
+}
+
+html.vk-classic-ui .quick-access-slot-label {
+  color: var(--wow-gold-pale) !important;
+  text-shadow: 1px 1px 0 #000 !important;
+  font-family: var(--wow-font-serif) !important;
+}
+
+/* Клавиша слота — ВИДИМА ВСЕГДА, в левом верхнем углу (как в WoW) */
+html.vk-classic-ui .quick-access-slot-kbd {
+  top: 2px !important;
+  left: 2px !important;
+  right: auto !important;
+  border-radius: 2px !important;
+  background: rgba(0, 0, 0, 0.85) !important;
+  border: 1px solid var(--wow-gold-dim) !important;
+  color: var(--wow-gold-bright) !important;
+  font-family: var(--wow-font-serif) !important;
+  opacity: 1 !important;
+}
+
+/* ── 4. XP-ПОЛОСА (классическая, фиолетовая) ──────────────────── */
+
+.vk-xp-bar {
+  position: relative;
+  width: 100%;
+  height: 15px;
+  margin-top: 5px;
+  border: 1px solid var(--wow-gold-border);
+  border-radius: 2px;
+  background: #0a0804;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.8);
+  overflow: hidden;
+  cursor: default;
+}
+
+.vk-xp-bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: linear-gradient(180deg, var(--wow-xp-a), var(--wow-xp-b));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.vk-xp-bar-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--wow-font-serif);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  color: #f5ecd0;
+  text-shadow: 1px 1px 0 #000;
+  pointer-events: none;
+}
+
+/* ── 5. МИНИКАРТА — золотое кольцо ────────────────────────────── */
+
+html.vk-classic-ui [data-testid="minimap-component"] > div:first-child {
+  background: rgba(12, 9, 4, 0.88) !important;
+  border: 2px solid var(--wow-gold-dim) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    0 0 0 3px rgba(200, 160, 46, 0.28),
+    0 4px 14px rgba(0, 0, 0, 0.55) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.vk-classic-ui [data-testid="minimap-component"] button {
+  border-radius: 3px !important;
+}
+
+/* Свёрнутая «таблетка» — тоже золото */
+html.vk-classic-ui [data-testid="minimap-component"] button[aria-label*="азвернуть"] {
+  border: 2px solid var(--wow-gold-dim) !important;
+  background: rgba(12, 9, 4, 0.88) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.85),
+    0 0 0 3px rgba(200, 160, 46, 0.28) !important;
+}
+
+/* ── 6. ЧИП СЦЕНЫ (верх-лево) ─────────────────────────────────── */
+
+html.vk-classic-ui .scene-context-chip {
+  border: 1px solid var(--wow-gold-border) !important;
+  border-radius: 3px !important;
+  background: linear-gradient(180deg, var(--wow-panel-hi), var(--wow-panel-lo)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.08) !important;
+}
+
+html.vk-classic-ui .hud-filmic-scene-title {
+  color: var(--wow-gold-bright) !important;
+  text-shadow: 1px 1px 0 #000 !important;
+  font-family: var(--wow-font-serif) !important;
+}
+
+/* ── 7. ТРЕКЕР ЗАДАНИЙ (QuestObjectiveCard) ───────────────────── */
+
+html.vk-classic-ui .vk-classic-tracker > div {
+  border: 1px solid var(--wow-gold-border) !important;
+  border-radius: 4px !important;
+  background: linear-gradient(180deg, var(--wow-panel-hi), var(--wow-panel-lo)) !important;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 215, 0, 0.10),
+    0 3px 12px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+html.vk-classic-ui .vk-classic-tracker .text-base {
+  color: var(--wow-gold-bright) !important;
+  font-family: var(--wow-font-serif) !important;
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ── 8. ЛЕНТА УВЕДОМЛЕНИЙ — «чат» в стиле WoW ─────────────────── */
+
+html.vk-classic-ui .notification-feed-slide > div {
+  background: rgba(0, 0, 0, 0.62) !important;
+  border-color: var(--wow-gold-border) !important;
+  border-radius: 3px !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+html.vk-classic-ui .notification-feed-slide::before {
+  display: none !important;
+}
+
+/* ── 9. ПРОМПТ ВЗАИМОДЕЙСТВИЯ («E — Осмотреть») ───────────────── */
+
+html.vk-classic-ui .vk-classic-prompt {
+  background: rgba(0, 0, 0, 0.75) !important;
+  border-color: var(--wow-gold) !important;
+  border-radius: 3px !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.vk-classic-ui .vk-classic-prompt .text-cyan-400 {
+  color: var(--wow-gold-bright) !important;
+}
+
+html.vk-classic-ui .eip-glow-ring,
+html.vk-classic-ui .eip-glow-ring-sweep {
+  display: none !important;
+}
+
+/* ── 10. ПРОЧЕЕ: стамина, автосейв, прицел ────────────────────── */
+
+html.vk-classic-ui .stamina-bar-root {
+  filter: saturate(0.9);
+}
+
+html.vk-classic-ui .stamina-bar-fill {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+html.vk-classic-ui .autosave-indicator {
+  background: rgba(0, 0, 0, 0.78) !important;
+  border: 1px solid var(--wow-gold-border) !important;
+  border-radius: 3px !important;
+  backdrop-filter: none !important;
+}
+
+/* Прицел: спокойный белый вместо кибер-циана */
+html.vk-classic-ui .dynamic-crosshair-line {
+  filter: saturate(0.4) brightness(1.25);
+}
+
+html.vk-classic-ui .hud-filmic-crosshair-ring {
+  animation: none !important;
+}
+
+/* Мобильные кнопки действий — тёплая рамка */
+html.vk-classic-ui .hud-filmic-caption {
+  text-shadow: 1px 1px 0 #000;
+}
+
+/* ── Мобильная адаптация классики ─────────────────────────────── */
+@media (pointer: coarse) {
+  .vk-xp-bar {
+    height: 12px;
+  }
+
+  html.vk-classic-ui .quick-access-slot-kbd {
+    display: none;
+  }
+}
+
+/* ── Reduced motion: XP-полоса без анимации ───────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .vk-xp-bar-fill {
+    transition: none;
+  }
+}
