@@ -575,6 +575,14 @@ export const STORY_NODES_ACT1_EXTENDED: Record<string, StoryNode> = {
           { type: 'triggerQuest', questId: 'night_city_call' },
         ],
       },
+      {
+        text: 'Ещё миг — слушать, как город зовёт',
+        next: 'night_city_call_start',
+        effects: [
+          { type: 'addKarma', value: 1 },
+          { type: 'setFlag', flag: 'morning_ritual_complete', flagValue: true },
+        ],
+      },
     ],
   },
 
