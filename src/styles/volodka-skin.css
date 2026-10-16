@@ -592,12 +592,18 @@ body {
 }
 
 /* ── 6. ХОТБАР: компактная тихая полоса (v4.45.0) ──
- * Иконки без подписей на десктопе (тултипы остаются), янтарный ховер. */
+ * Иконки без подписей на десктопе (тултипы остаются), янтарный ховер.
+ * v4.55.0 FIX: центрирование без transform (left:0+right:0+margin-inline:auto) —
+ * enter-анимация тулбара (fill:both) держала inline translateY(0) и перебивала
+ * translateX(-50%): панель уезжала вправо и резалась на узких вьюпортах.
+ * Файл идёт ПОЗЖЕ quick-access-toolbar.css, поэтому чинить нужно здесь. */
 .quick-access-toolbar {
   position: fixed;
   bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
 }
 .quick-access-toolbar-inner {
   display: flex;

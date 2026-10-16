@@ -215,8 +215,11 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
             <CinematicBars />
             <FilmGrain opacity={0.028} zIndex={1} />
 
-            {/* my-auto: центрирование, которое не режет панель при переполнении (низкие вьюпорты/мобайл-ландшафт) */}
-            <div className="my-auto">
+            {/* v4.55.0: max-h + внутренний скролл — с «Залом славы» панель стала
+                выше и на низких вьюпортах (мобайл-ландшафт) обрезалась намертво:
+                dangerous-зона и Зал славы были недостижимы. my-auto сохраняет
+                центрирование на высоких вьюпортах. */}
+            <div className="my-auto w-full max-h-full overflow-y-auto py-6">
             <FocusTrap initialFocusRef={pauseDialog.closeButtonRef}>
               <motion.div
                 initial={{ opacity: 0, y: 12 }}

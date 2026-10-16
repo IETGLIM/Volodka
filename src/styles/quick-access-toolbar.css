@@ -6,8 +6,14 @@
 .quick-access-toolbar {
   position: fixed;
   bottom: 60px;
-  left: 50%;
-  transform: translateX(-50%);
+  /* v4.55.0 FIX: центрирование без transform. Раньше left:50% +
+     translateX(-50%), но enter-анимация (fill: both) держала inline
+     transform: translateY(0) и навсегда перебивала сдвиг — тулбар
+     начинался от центра экрана и резался справа на узких вьюпортах. */
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: fit-content;
   padding: 0 12px;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
