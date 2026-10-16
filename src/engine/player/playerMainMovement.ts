@@ -46,6 +46,16 @@ import {
 import { lerpAngle, enforceFloor, clampHorizontalDisplacement } from '@/engine/player/playerMath';
 import { sharedPlayerCrouchRef, sharedPlayerBlockRef } from '@/engine/PlayerRotationState';
 import { isSprintAllowedByStamina, tickPlayerStamina } from '@/engine/player/playerStamina';
+import { eventBus } from '@/engine/EventBus';
+import {
+  consumeRollRequest,
+  getRollDirection,
+  getRollElapsed,
+  getRollSpeed,
+  isPlayerRolling,
+  tickPlayerRoll,
+  tryStartRoll,
+} from '@/engine/player/playerRoll';
 import { triggerCameraShake } from '@/engine/camera/cameraShake';
 import { triggerLandingFovDip } from '@/engine/camera/landingImpact';
 import { computeKccMovementSubstepped } from '@/engine/player/physicsSubstep';
@@ -257,6 +267,35 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   const sprinting = wantsSprint && isSprintAllowedByStamina();
   tickPlayerStamina({ dt, sprinting, moving: isMoving, crouching });
 
+  // ── Roll / кувырок (Q, v4.52.0) ──
+  // Тик таймеров кувырка + разбор запроса. Запрос consumится КАЖДЫЙ кадр
+  // (даже когда старт невозможен) — протухшая очередь не выстреливает позже.
+  tickPlayerRoll(dt);
+  const rollingNow = isPlayerRolling();
+  const rollRequested = consumeRollRequest();
+  let rollJustStarted = false;
+  if (rollRequested && !rollingNow && deps.isGroundedRef.current && !blocking && !crouching) {
+    // Направление: по движению, а в стойке — вперёд по камере (dodge-рывок).
+    const dirX = isMoving ? moveDir.x : camFwd.x;
+    const dirZ = isMoving ? moveDir.z : camFwd.z;
+    if (tryStartRoll(dirX, dirZ)) {
+      rollJustStarted = true;
+      // Мультиканальный отклик: микро-тряска + FOV-пинч + событие для аудио/HUD.
+      triggerCameraShake(0.012, 7);
+      triggerLandingFovDip(0.35);
+      try {
+        eventBus.emit('player:roll', {
+          dirX,
+          dirZ,
+          sceneId: deps.sceneId,
+        });
+      } catch {
+        /* event bus not ready */
+      }
+    }
+  }
+  const rolling = rollingNow || rollJustStarted;
+
   // Crouch overrides run; block slows movement to guard pace (block + crouch =
   // the slower of the two, audit 2-b P1: BLOCK_SPEED was unused). When stamina
   // denies sprint the target speed caps at walk — the velocity damp below
@@ -285,13 +324,13 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
   const moveAccel = keyboardDrivesMove ? VELOCITY_LERP_LAMBDA : deps.movementTuning.accel;
   const stopDamping = keyboardDrivesMove ? VELOCITY_LERP_LAMBDA : deps.movementTuning.damping;
 
-  scratch.isMoving = isMoving;
+  scratch.isMoving = isMoving || rolling;
   // Effective sprint flag (stamina-gated) — drives the run animation and the
   // sprint_start edge. Run-key intent alone must not read as sprinting.
-  scratch.running = sprinting;
+  scratch.running = sprinting && !rolling;
   scratch.keyboardDrivesMove = keyboardDrivesMove;
   scratch.isOutdoor = isOutdoor;
-  scratch.jumpHeld = jumping;
+  scratch.jumpHeld = jumping && !rolling;
   scratch.justLanded = false;
   scratch.landingImpactVel = 0;
 
@@ -306,26 +345,43 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
       vel.x = MathUtils.damp(vel.x, targetVx, moveAccel, dt);
       vel.z = MathUtils.damp(vel.z, targetVz, moveAccel, dt);
     }
-
-    // Max Payne OTS: while locomoting, body yaw follows camera look (aim),
-    // including strafe — backpedal / sidestep without spinning to face-move.
-    // Idle: leave facing alone so freelook doesn't fidget the model.
-    if (isMoving) {
-      const targetYaw = Math.atan2(camFwd.x, camFwd.z);
-      let yawDiff = targetYaw - deps.livePlayerRotationRef.current;
-      while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
-      while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
-      const effectiveRotSpeed = Math.abs(yawDiff) > ROTATION_REVERSAL_THRESHOLD
-        ? ROTATION_SPEED_REVERSAL
-        : ROTATION_SPEED;
-      const rotT = 1 - Math.exp(-effectiveRotSpeed * dt);
-      deps.livePlayerRotationRef.current = lerpAngle(
-        deps.livePlayerRotationRef.current, targetYaw, rotT,
-      );
-    }
   } else {
     vel.x = MathUtils.damp(vel.x, 0, stopDamping, dt);
     vel.z = MathUtils.damp(vel.z, 0, stopDamping, dt);
+  }
+
+  // Roll velocity override — the roll vector wins over locomotion damping.
+  if (rolling) {
+    const rd = getRollDirection();
+    const rs = getRollSpeed(getRollElapsed());
+    vel.x = rd.x * rs;
+    vel.z = rd.z * rs;
+  }
+
+  // Body facing: roll snaps the model to the roll vector (fast), locomotion
+  // keeps Max Payne OTS camera-follow (incl. strafe), idle leaves facing alone.
+  if (rolling) {
+    const rd = getRollDirection();
+    const targetYaw = Math.atan2(rd.x, rd.z);
+    const rollRotT = 1 - Math.exp(-16 * dt);
+    deps.livePlayerRotationRef.current = lerpAngle(
+      deps.livePlayerRotationRef.current, targetYaw, rollRotT,
+    );
+  } else if (isMoving) {
+    // Max Payne OTS: while locomoting, body yaw follows camera look (aim),
+    // including strafe — backpedal / sidestep without spinning to face-move.
+    // Idle: leave facing alone so freelook doesn't fidget the model.
+    const targetYaw = Math.atan2(camFwd.x, camFwd.z);
+    let yawDiff = targetYaw - deps.livePlayerRotationRef.current;
+    while (yawDiff > Math.PI) yawDiff -= Math.PI * 2;
+    while (yawDiff < -Math.PI) yawDiff += Math.PI * 2;
+    const effectiveRotSpeed = Math.abs(yawDiff) > ROTATION_REVERSAL_THRESHOLD
+      ? ROTATION_SPEED_REVERSAL
+      : ROTATION_SPEED;
+    const rotT = 1 - Math.exp(-effectiveRotSpeed * dt);
+    deps.livePlayerRotationRef.current = lerpAngle(
+      deps.livePlayerRotationRef.current, targetYaw, rotT,
+    );
   }
 
   // PHYS-1: Sanitize velocity to prevent NaN/Infinity from propagating
@@ -343,6 +399,7 @@ export function runMainPlayerMovement(deps: PlayerMovementDeps): boolean {
 
   const wantsJump =
     jumping &&
+    !rolling &&
     deps.jumpCooldownRef.current <= 0 &&
     (deps.isGroundedRef.current || deps.coyoteTimerRef.current > 0);
 

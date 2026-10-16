@@ -89,6 +89,21 @@ export const NPC_INTERACTION_QUERY_RANGE = 3.5;
 /** Fraction of maxRange under which the target is considered “in interact range” for scoring/UI. */
 export const INTERACTION_IN_RANGE_FRACTION = 0.6;
 
+// ── Roll / кувырок (Q, v4.52.0 «Классика WoW») ──
+/** Initial burst speed of the dodge roll (m/s) — faster than sprint. */
+export const ROLL_SPEED = 8.2;
+/** Total roll duration (seconds). */
+export const ROLL_DURATION = 0.42;
+/** Cooldown between rolls (seconds). */
+export const ROLL_COOLDOWN = 0.85;
+/** Stamina cost per roll (points). */
+export const ROLL_STAMINA_COST = 14;
+/** Fraction of ROLL_SPEED retained at the end of the roll (ease-out tail). */
+export const ROLL_END_SPEED_FRACTION = 0.35;
+/** How long a queued roll request stays valid (ms) — prevents «ghost» rolls
+ *  firing after a dialogue/cutscene lock releases. */
+export const ROLL_INPUT_WINDOW_MS = 200;
+
 // –– Stamina system ––
 /** Maximum stamina points. */
 export const STAMINA_MAX = 100;

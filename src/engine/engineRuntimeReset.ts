@@ -10,6 +10,7 @@ import { resetLoadingTimelineForSession } from '@/engine/performance/LoadingTime
 import { invalidateStoryGraphIndex } from '@/engine/story/storyGraphIndex';
 import { resetCameraShake } from '@/engine/camera/cameraShake';
 import { resetPlayerStaminaForNewSession } from '@/engine/player/playerStamina';
+import { resetPlayerRollForNewSession } from '@/engine/player/playerRoll';
 import { resetGlobalTimeScale } from '@/engine/camera/cinematicCamera';
 import { resetCinematicPresentation } from '@/engine/camera/cinematicPresentation';
 import { resetPoemRevealSession } from '@/engine/poemReveal/poemRevealOrchestrator';
@@ -51,6 +52,7 @@ export function resetEngineModuleRuntimeState(): void {
   resetKeyboardInputState();
   resetSharedVirtualControlsState();
   resetPlayerStaminaForNewSession();
+  resetPlayerRollForNewSession(); // v4.52.0: кувырок не переживает new game
   resetLoadingTimelineForSession();
   clearAllSessionQualityOverrides();
   /* FIX: активная VO-реплика (HTMLAudio + speechSynthesis) продолжала

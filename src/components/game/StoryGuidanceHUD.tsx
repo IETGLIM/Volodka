@@ -412,7 +412,7 @@ export function StoryGuidanceHUD() {
               e.preventDefault();
               toggleExpand();
             }
-            if (e.key === 'q' || e.key === 'Q') {
+            if (e.key === 'l' || e.key === 'L') {
               e.preventDefault();
               openQuestJournal(currentObjective?.questId);
             }

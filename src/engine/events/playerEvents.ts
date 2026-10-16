@@ -47,6 +47,12 @@ export interface PlayerEvents {
     speed?: number;
     runWeight?: number;
   };
+  /** Кувырок начался (Q / мобильная кнопка, v4.52.0). Направление — мировое. */
+  'player:roll': {
+    dirX: number;
+    dirZ: number;
+    sceneId?: string;
+  };
   'player:karma_change': {
     delta: number;
     source?: string;

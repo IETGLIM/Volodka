@@ -354,6 +354,8 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.mobileActions.runOff': 'Бег выкл',
   'hud.mobileActions.jump': 'Прыжок',
   'hud.mobileActions.jumpLabel': 'Прыжок',
+  'hud.mobileActions.roll': 'Кувырок',
+  'hud.mobileActions.rollLabel': 'Кувырок',
   'hud.mobileActions.inventory': 'Инвентарь',
   'hud.mobileActions.bagLabel': 'Сумка',
   'hud.mobileActions.journal': 'Журнал',

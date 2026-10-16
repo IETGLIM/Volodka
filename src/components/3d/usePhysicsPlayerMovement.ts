@@ -35,6 +35,7 @@ import type { PlayerFrameScratch, PlayerMovementDeps } from '@/engine/player/pla
 import { preparePlayerFrame } from '@/engine/player/playerFramePrepare';
 import { runLockedPlayerMovement } from '@/engine/player/playerLockedMovement';
 import { runMainPlayerMovement } from '@/engine/player/playerMainMovement';
+import { cancelActiveRoll } from '@/engine/player/playerRoll';
 import { finalizePlayerFrame } from '@/engine/player/playerFinalizeFrame';
 import { createGroundProbeCache } from '@/engine/physics/groundProbeCache';
 import {
@@ -246,6 +247,7 @@ export function usePhysicsPlayerMovement({
       kccHealthyFramesRef.current = 0;
       currentAnimRef.current = 'idle';
       currentHSpeedRef.current = 0;
+      cancelActiveRoll(); // v4.52.0: спавн никогда не наследует инерцию кувырка
       if (moveBlendRef) moveBlendRef.current = 0;
 
       // Reset idle monologue accumulator so a long load doesn't trigger an
@@ -278,6 +280,7 @@ export function usePhysicsPlayerMovement({
       jumpCooldownRef.current = 0;
       currentAnimRef.current = 'idle';
       currentHSpeedRef.current = 0;
+      cancelActiveRoll(); // v4.52.0: спавн никогда не наследует инерцию кувырка
       if (moveBlendRef) moveBlendRef.current = 0;
       noMovementFramesRef.current = 0;
       velocityRef.current.set(0, 0, 0);

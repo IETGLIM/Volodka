@@ -566,7 +566,7 @@ export function QuestsPanel({ open, onClose }: QuestsPanelProps) {
       accentColor="amber"
       layout="sidebar"
       icon={<Trophy className="size-5 text-stone-300" />}
-      shortcutLabel="Q"
+      shortcutLabel="L"
       headerExtra={(
         <div className="flex items-center gap-2">
           <Button

@@ -46,7 +46,9 @@ function runPanelSwitchboard(
       if (ps.activePanel !== 'journal') io.closeAllPanels();
       io.dispatchPanel('journal');
       return true;
-    case 'KeyQ':
+    /* v4.52.0: Q занята кувырком (движок персонажа). Задания переехали на L —
+     * как квест-лог в WoW; история диалогов — на U. */
+    case 'KeyL':
       io.dispatchPanel('quests');
       return true;
     case 'KeyI':
@@ -71,7 +73,7 @@ function runPanelSwitchboard(
     case 'KeyK':
       io.dispatchPanel('codex');
       return true;
-    case 'KeyL':
+    case 'KeyU':
       io.dispatchPanel('dialogueHistory');
       return true;
     case 'KeyH':

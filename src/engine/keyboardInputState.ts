@@ -1,3 +1,5 @@
+import { queueRollRequest } from '@/engine/player/playerRoll';
+
 /* ─── Singleton keyboard state — survives player remounts, one listener set ─── */
 
 export type KeyboardAxis = 'forward' | 'backward' | 'left' | 'right';
@@ -135,6 +137,14 @@ function onKeyDown(e: KeyboardEvent): void {
       // Hold X = block (audit 2-b P2: keys.block was a dead flag). RMB already
       // blocks via sharedPlayerBlockRef — X is the keyboard-only counterpart.
       keys.block = true;
+      break;
+    case 'KeyQ':
+      // v4.52.0: Q = кувырок (dodge roll). Раньше Q открывала панель заданий
+      // (перенесено на L — как квест-лог в WoW). Одноразовый запрос живёт
+      // в playerRoll — конвейер движения разбирает его с окном валидности,
+      // поэтому Q в диалоге/кат-сцене не стреляет «призрачным» кувырком.
+      if (!e.repeat) queueRollRequest();
+      e.preventDefault();
       break;
     default:
       if (e.key === 'Shift') keys.run = true;

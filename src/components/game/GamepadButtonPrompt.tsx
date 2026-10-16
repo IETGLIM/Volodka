@@ -38,7 +38,7 @@ const PROMPTS: Record<GamepadAction, PromptConfig> = {
   back: { gamepadButton: 'B', keyboardKey: 'Esc', label: 'Назад' },
   menu: { gamepadButton: '▶', keyboardKey: 'Esc', label: 'Меню' },
   inventory: { gamepadButton: 'Y', keyboardKey: 'I', label: 'Инвентарь' },
-  quests: { gamepadButton: 'X', keyboardKey: 'Q', label: 'Задания' },
+  quests: { gamepadButton: 'X', keyboardKey: 'L', label: 'Задания' },
   journal: { gamepadButton: '◁', keyboardKey: 'J', label: 'Журнал' },
   run: { gamepadButton: 'LB', keyboardKey: '⇧', label: 'Бег' },
   next: { gamepadButton: 'RB', keyboardKey: '→', label: 'Далее' },

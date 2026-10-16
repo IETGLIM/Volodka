@@ -13,7 +13,7 @@
  */
 
 import { useCallback, useState, useRef, useEffect } from 'react';
-import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen, Save, FolderOpen, Sword } from 'lucide-react';
+import { Hand, Zap, FlaskConical, ArrowUp, Package, BookOpen, Save, FolderOpen, Sword, Wind } from 'lucide-react';
 import { useConsumableActions, useQuickUseHotbarState } from '@/store/selectors';
 import { areSharedVirtualControlsWritable, useVirtualControlsRef, clearSharedVirtualControls, subscribeVirtualControlsGate } from '@/engine/VirtualControlsState';
 import { fireInteractPress } from '@/engine/input/fireInteractPress';
@@ -25,6 +25,7 @@ import { getItemDefinition } from '@/data/items';
 import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
 import { hapticLight, hapticMedium, hapticItemPickup, hapticError } from '@/shared/utils/hapticFeedback';
 import { attemptMeleeStrike } from '@/engine/combat/realtime/meleeStrike';
+import { queueRollRequest } from '@/engine/player/playerRoll';
 import { eventBus } from '@/engine/EventBus';
 import { t } from '@/i18n';
 
@@ -94,6 +95,12 @@ export function MobileActionButtons() {
     }
     // «none» — врагов в зоне нет: короткий отклик без спама тостами.
     hapticLight();
+  }, []);
+
+  /* ── Кувырок (v4.52.0) — мобильный аналог Q: одноразовый запрос в движок. ── */
+  const handleRoll = useCallback(() => {
+    hapticLight();
+    queueRollRequest();
   }, []);
 
   /* ── Use Item handler — uses first hotbar slot's consumable ── */
@@ -282,6 +289,23 @@ export function MobileActionButtons() {
             <ArrowUp size={18} aria-hidden="true" />
           </button>
           <span className="mobile-action-btn__label">{t('hud.mobileActions.jumpLabel', 'Прыжок')}</span>
+        </div>
+
+        {/* Кувырок (v4.52.0) — мобильный аналог Q */}
+        <div className="flex flex-col items-center">
+          <button
+            type="button"
+            className="mobile-action-btn mobile-action-btn--secondary"
+            aria-label={t('hud.mobileActions.roll', 'Кувырок')}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              makeTapHandler(handleRoll)();
+            }}
+          >
+            <Wind size={18} aria-hidden="true" />
+          </button>
+          <span className="mobile-action-btn__label">{t('hud.mobileActions.rollLabel', 'Кувырок')}</span>
         </div>
 
         {/* Inventory */}

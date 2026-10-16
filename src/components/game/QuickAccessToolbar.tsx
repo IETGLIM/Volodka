@@ -44,7 +44,10 @@ function resolveContext(
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Slot definitions — Russian labels, keyboard shortcuts 1-6
+   Slot definitions — Russian labels, letter shortcuts (WoW-style)
+   v4.52.0: цифры 1–9 отданы навыкам и хотбару (панель действий),
+   панели живут на буквах: M/I/L/K/J/P. Клавиатурный слушатель цифр
+   снят — единственным владельцем цифр остаётся геймплей.
    ══════════════════════════════════════════════════════════════ */
 
 function getExplorationSlots(
@@ -62,12 +65,13 @@ function getExplorationSlots(
      * тот же путь, что и клавиши M / K. */
     /* v4.45.0: цветные эмодзи (🗺🎒📋📖📝) ломали монохромную дисциплину
      * «Ночной тетради» — заменены на штриховые иконки Lucide. */
-    { id: 'map', icon: <Map className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.map', 'Карта'), shortcut: '1', action: () => { firePanelShortcut('KeyM'); } },
-    { id: 'inventory', icon: <Backpack className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.inventory', 'Инвентарь'), shortcut: '2', action: openers.onOpenInventory },
-    { id: 'quests', icon: <ScrollText className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.quests', 'Задания'), shortcut: '3', action: openers.onOpenQuests },
-    { id: 'codex', icon: <BookOpen className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.codex', 'Кодекс'), shortcut: '4', action: () => { firePanelShortcut('KeyK'); } },
-    { id: 'journal', icon: <NotebookPen className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.journal', 'Журнал'), shortcut: '5', action: openers.onOpenJournal },
-    { id: 'poems', icon: <Sparkles className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.poems', 'Стихи'), shortcut: '6', action: openers.onOpenPoetry },
+    /* v4.52.0: подписи слотов — их буквенные клавиши, цифры = навыки. */
+    { id: 'map', icon: <Map className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.map', 'Карта'), shortcut: 'M', action: () => { firePanelShortcut('KeyM'); } },
+    { id: 'inventory', icon: <Backpack className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.inventory', 'Инвентарь'), shortcut: 'I', action: openers.onOpenInventory },
+    { id: 'quests', icon: <ScrollText className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.quests', 'Задания'), shortcut: 'L', action: openers.onOpenQuests },
+    { id: 'codex', icon: <BookOpen className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.codex', 'Кодекс'), shortcut: 'K', action: () => { firePanelShortcut('KeyK'); } },
+    { id: 'journal', icon: <NotebookPen className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.journal', 'Журнал'), shortcut: 'J', action: openers.onOpenJournal },
+    { id: 'poems', icon: <Sparkles className="size-[18px]" strokeWidth={1.6} />, label: t('hud.toolbar.poems', 'Стихи'), shortcut: 'P', action: openers.onOpenPoetry },
   ];
 }
 
@@ -121,22 +125,9 @@ export function QuickAccessToolbar({
     return () => clearTimeout(t);
   }, []);
 
-  // Keyboard shortcuts 1-6
-  useEffect(() => {
-    if (!visible) return;
-    const handleKey = (e: KeyboardEvent) => {
-      const target = e.target as HTMLElement;
-      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
-      if (e.ctrlKey || e.altKey || e.metaKey) return;
-      const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= 6) {
-        const slot = slots[num - 1];
-        if (slot) { e.preventDefault(); slot.action(); }
-      }
-    };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
-  }, [visible, slots]);
+  /* v4.52.0: клавиатурный слушатель 1–6 СНЯТ — цифры принадлежат силам
+   * стихов (1–5) и хотбару предметов (6–9). Панели открываются буквами
+   * M/I/L/K/J/P (панельный свитчборд) и кликами по слотам. */
 
   // Swipe gesture for mobile
   const handleTouchStart = useCallback((e: React.TouchEvent) => {

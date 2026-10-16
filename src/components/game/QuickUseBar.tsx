@@ -2,7 +2,8 @@
 /* ─── Volodka RPG – Quick Use Bar (Assignabie Hotbar) ─── */
 /* Bottom-center bar with 4 assignable consumable slots.
  * Right-click or long-press to assign items from inventory.
- * Keyboard shortcuts 1-4 to use. Persists via save system. */
+ * v4.52.0: клавиши 6–9 — цифры 1–5 отданы силам стихов (панель навыков).
+ * Persists via save system. */
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,6 +32,8 @@ import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud'
 /* ─── Constants ─── */
 
 const SLOT_COUNT = 4;
+/** v4.52.0: первая цифра хотбара (1–5 = силы стихов, 6–9 = предметы). */
+const HOTBAR_FIRST_DIGIT = 6;
 const COOLDOWN_MS = 300;
 const LONG_PRESS_MS = 500;
 
@@ -363,7 +366,7 @@ function QuickUseBarWithDnd() {
     [resolvedSlots, cooldownSlots, addEnergy, addStress, addKarma, addSkill, removeItem],
   );
 
-  /* ── Keyboard shortcuts (1-4) ── */
+  /* ── Keyboard shortcuts (6-9, v4.52.0) ── */
   useEffect(() => {
     if (mode !== 'exploration') return;
 
@@ -376,9 +379,9 @@ function QuickUseBarWithDnd() {
       }
 
       const num = parseInt(e.key, 10);
-      if (num >= 1 && num <= SLOT_COUNT) {
+      if (num >= HOTBAR_FIRST_DIGIT && num < HOTBAR_FIRST_DIGIT + SLOT_COUNT) {
         e.preventDefault();
-        handleUseItemAtSlot(num - 1);
+        handleUseItemAtSlot(num - HOTBAR_FIRST_DIGIT);
       }
     };
 
@@ -486,14 +489,14 @@ function QuickUseBarWithDnd() {
                   disabled={isOnCooldown}
                   aria-label={
                     hasItem
-                      ? t(QUICK_USE_DYNAMIC_KEYS.useAria, `Использовать ${slot.item!.name} [${i + 1}] (ПКМ — назначить)`, { item: slot.item!.name, slot: i + 1 })
-                      : t(QUICK_USE_DYNAMIC_KEYS.emptyAria, `Пустой слот ${i + 1} (ПКМ — назначить)`, { slot: i + 1 })
+                      ? t(QUICK_USE_DYNAMIC_KEYS.useAria, `Использовать ${slot.item!.name} [${i + HOTBAR_FIRST_DIGIT}] (ПКМ — назначить)`, { item: slot.item!.name, slot: i + HOTBAR_FIRST_DIGIT })
+                      : t(QUICK_USE_DYNAMIC_KEYS.emptyAria, `Пустой слот ${i + HOTBAR_FIRST_DIGIT} (ПКМ — назначить)`, { slot: i + HOTBAR_FIRST_DIGIT })
                   }
                   className={`quick-use-slot tooltip-cyber ${isFlashing ? 'quick-use-flash' : ''} ${isDimmed ? 'opacity-40' : ''} ${hotbarDragOverThis ? 'quick-use-drop-ok' : ''} ${hotbarRejectOverThis ? 'quick-use-drop-reject' : ''}`}
                   data-tooltip={
                     hasItem
-                      ? t(QUICK_USE_DYNAMIC_KEYS.assignTooltip, `${slot.item!.name} [${i + 1}] — ПКМ для назначения`, { item: slot.item!.name, slot: i + 1 })
-                      : t(QUICK_USE_DYNAMIC_KEYS.emptyTooltip, `Слот ${i + 1} — ПКМ для назначения`, { slot: i + 1 })
+                      ? t(QUICK_USE_DYNAMIC_KEYS.assignTooltip, `${slot.item!.name} [${i + HOTBAR_FIRST_DIGIT}] — ПКМ для назначения`, { item: slot.item!.name, slot: i + HOTBAR_FIRST_DIGIT })
+                      : t(QUICK_USE_DYNAMIC_KEYS.emptyTooltip, `Слот ${i + HOTBAR_FIRST_DIGIT} — ПКМ для назначения`, { slot: i + HOTBAR_FIRST_DIGIT })
                   }
                   style={
                     isFlashing
@@ -512,7 +515,7 @@ function QuickUseBarWithDnd() {
                   }
                 >
                   {/* Slot number */}
-                  <span className="quick-use-slot-number">{i + 1}</span>
+                  <span className="quick-use-slot-number">{i + HOTBAR_FIRST_DIGIT}</span>
 
                   {hasItem ? (
                     <>
