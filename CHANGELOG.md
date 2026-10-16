@@ -1,3 +1,55 @@
+## v4.55.0 (2026-10-16) — feat(score): «Стихосложение» — очки забега, Зал славы (localStorage), кулдаун кувырка в HUD; 3 новые кат-сцены; чистка мёртвого CSS
+
+Запрос игрока (раунд 2): score system + local high-score table + обратная связь
+в духе «juicy feedback». Судья раунд 2, P1: индикатор кулдауна кувырка.
+
+### «Стихосложение» — счёт забега (engine/score/)
+- scoreEngine.ts (module-singleton, паттерн playerRoll): победы ×серию
+  (окно 8с, до ×5), стихи +200, сила стиха +10, квесты +150, достижения +100,
+  новые сцены +25, поражение −25 и сброс серии. Только события — zustand не дёргается.
+- Новое доменное событие 'score:changed' (scoreEvents.ts, EVENT_DOMAINS.score).
+- hallOfFame.ts: топ-10 в localStorage, live-upsert каждые 3с + pagehide,
+  финализация записи по 'game:playthrough_reset' (меню/новая игра).
+
+### HUD
+- ScoreHUD.tsx — золотой WoW-чип «Стихосложение» под верхней панелью сцены
+  (палитра wow-classic), всплывающие дельты «+200 · Строка возвращена миру»,
+  reduced-motion честно, tabular-nums, aria-live.
+- useRollSkillSlot.ts — слот «Кувырок» (Q) с живым recharge-оверлеем в
+  SkillRechargeHUD; rAF-тик только пока тикает кулдаун (0.85с), вне его —
+  ноль ре-рендеров. Engine-импорты в компонентном слое — правило
+  «Store не импортирует Engine» соблюдено.
+
+### Меню / пауза
+- «Зал славы» (топ-5) в меню паузы: ранг, счёт, стихи·квесты·серия, дата;
+  текущий забег подсвечен. Рекорд — золотой строкой в футере главного меню
+  («✒ рекорд N» рядом с версией билда) — show, don't tell.
+
+### Кат-сцены (P2 судьи: поздние акты без кинематики)
+- act6_core_vibration → act6_core_choice (завод: сближение с ядром, glitch 0.45)
+- act7_last_poem → act7_final_poem_creation (парк: блокнот, отъезд в небо)
+- act7_final_walk_free_city → act7_final_walk (ночная улица, Виктория, свобода)
+- Реестр 14 → 17, инварианты соблюдены (уникальные триггеры, type,
+  textDurationMs ≥ Σ waypoints).
+
+### Чистка мёртвого CSS (P2 судьи)
+- Удалены недостижимые (CLASSIC_UI) виджеты: InteractionRadarPulse,
+  InteractionProximityGlow, TopBarDataTicker, useCityNews + их CSS-блоки
+  (.radar-*, .proximity-glow-*, .data-ticker-*, .session-timer-*,
+  hud-filmic-radar-sweep). Живое сохранено: .npc-proximity-* (монтируется
+  безусловно), vk-pulse-soft/vk-blink-soft (живые потребители), .data-pulse и др.
+
+### Прочее
+- fix(music): generateMelodyMotif — жёсткое октавное окно (min–max ≤ 12):
+  тест «в пределах октавы» больше не флакует в полных прогонах.
+- vite.config: base из GAME_BASE_PATH (для вложенного хостинга превью;
+  прод-сборки не задают его → '/' как раньше).
+
+### верификация
+- tsc чист, eslint 0 ошибок, vitest: полный прогон 2909 passed
+  (MusicEngine — флейк-тест починен), validate:protected OK
+  (46 стихов, 21 имён целы), validate:content OK (0 issues).
+
 ## v4.54.1 (2026-10-14) — fix(judge-round1): P0 — кроссфейд ogg наслаивал лупы; кувырок озвучен; архив экспертизы раунда 1
 
 Запущен экспертный судья (сторонний критик) после первых 3 доработок — отчёт:
