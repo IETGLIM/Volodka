@@ -6,12 +6,14 @@ import {
   SCENE_AUDIO_PROFILES,
   CHARACTER_MOTIFS,
   STORY_NPCS_WITHOUT_DEDICATED_MOTIFS,
+  ACT_MOOD_OVERRIDES,
   deriveCharacterMotifFromNpcId,
   getCharacterMotif,
   getSceneAudioProfile,
   getSceneMusicMood,
   getSceneReverbPreset,
   hasDedicatedCharacterMotif,
+  resolveActMoodOverride,
 } from '@/config/proceduralAudioCatalog';
 
 const EXTENSION_SCENE_IDS = [
@@ -119,5 +121,65 @@ describe('proceduralAudioCatalog', () => {
       expect(getCharacterMotif(npcId).npcId).toBe(npcId);
     }
     expect(CHARACTER_MOTIFS.chk_ru).toBeTruthy();
+  });
+
+  /* v4.53.0 «Музыка не однообразная» — контракт расширения покрытия */
+
+  it('act 6-7 mood overrides exist for the five key scenes', () => {
+    const keyScenes = ['volodka_room', 'street_night', 'home_evening', 'factory_basement', 'library_day'];
+    for (const sceneId of keyScenes) {
+      for (const act of [6, 7]) {
+        const override = resolveActMoodOverride(sceneId, act);
+        expect(override, `${sceneId}:${act}`).toBeTruthy();
+        expect(override!.filterCutoff).toBeGreaterThan(0);
+        expect(override!.reverbMix).toBeGreaterThanOrEqual(0);
+        expect(override!.reverbMix).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+
+  it('seven previously uncolored scenes now have act overrides', () => {
+    const covered: Record<string, number[]> = {
+      cafe_evening: [2, 7],
+      park_day: [2, 7],
+      rooftop_edge: [5, 7],
+      city_square: [4, 6],
+      river_pier: [5, 7],
+      sleep_dream: [5, 7],
+      chk_forest_zorge: [5, 7],
+    };
+    for (const [sceneId, acts] of Object.entries(covered)) {
+      for (const act of acts) {
+        expect(resolveActMoodOverride(sceneId, act), `${sceneId}:${act}`).toBeTruthy();
+      }
+    }
+  });
+
+  it('act 7 opens the dream palette — «Тишина после» returns light', () => {
+    // Финальный акт тяготеет к dream-оттенкам в эмоциональных сценах
+    const dreamScenes = ['volodka_room:7', 'street_night:7', 'home_evening:7', 'rooftop_edge:7'];
+    for (const key of dreamScenes) {
+      expect(ACT_MOOD_OVERRIDES[key]?.mood, key).toBe('dream');
+    }
+  });
+
+  it('all seven former hash-stub NPCs now have hand-authored motifs', () => {
+    const authored = [
+      'chk_smert',
+      'chk_ritka',
+      'fisherman_trofim',
+      'baba_zina',
+      'guild_defector',
+      'marat_echo',
+      'street_poet',
+    ];
+    for (const npcId of authored) {
+      expect(hasDedicatedCharacterMotif(npcId), npcId).toBe(true);
+      const motif = getCharacterMotif(npcId);
+      expect(motif.intervals.length).toBeGreaterThan(0);
+      expect(motif.rootMidi).toBeGreaterThan(0);
+    }
+    // Смерть — тритон в лейтмотиве (тритон = дьявольский интервал, слышен сразу)
+    expect(CHARACTER_MOTIFS.chk_smert.intervals).toContain(6);
   });
 });

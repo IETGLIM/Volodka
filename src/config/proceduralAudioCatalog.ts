@@ -139,21 +139,27 @@ export const CHARACTER_MOTIFS: Record<string, CharacterMotif> = {
   zeka: MOTIF_STUB('zeka', [0, 3, 7], 41, 'mystery'),
   sergey: MOTIF_STUB('sergey', [0, 4, 7], 50, 'discovery'),
   kate: MOTIF_STUB('kate', [0, 2, 5, 9], 57, 'emotional'),
+  /* v4.53.0 «Музыка не однообразная»: 7 сюжетных NPC получили
+   * рукописные лейтмотивы вместо безличных hash-заглушек. Характер
+   * в интервалах: Смерть — тритон, уличный поэт — романтическая минорная
+   * секста, перебежчик — «сломанная» секунда, эхо Марата — октавные
+   * отражения. */
+  chk_smert: MOTIF_STUB('chk_smert', [0, 6, 13, 6], 38, 'tension'),
+  chk_ritka: MOTIF_STUB('chk_ritka', [0, 3, 7, 10], 52, 'discovery'),
+  fisherman_trofim: MOTIF_STUB('fisherman_trofim', [0, 7, 12, 7], 45, 'mystery'),
+  baba_zina: MOTIF_STUB('baba_zina', [0, 4, 9, 7], 53, 'emotional'),
+  guild_defector: MOTIF_STUB('guild_defector', [0, 1, 6, 5], 44, 'tension'),
+  marat_echo: MOTIF_STUB('marat_echo', [0, 12, 7, 19], 48, 'mystery'),
+  street_poet: MOTIF_STUB('street_poet', [0, 3, 8, 12], 50, 'emotional'),
 };
 
 /**
  * Story NPC registry ids without a dedicated entry in {@link CHARACTER_MOTIFS}.
- * These receive a deterministic hash-derived procedural stub via getCharacterMotif.
+ * v4.53.0: список опустел — все сюжетные NPC получили рукописные лейтмотивы.
+ * Механизм hash-заглушек (deriveCharacterMotifFromNpcId) остаётся страховкой
+ * для будущих NPC.
  */
-export const STORY_NPCS_WITHOUT_DEDICATED_MOTIFS = [
-  'chk_smert',
-  'chk_ritka',
-  'fisherman_trofim',
-  'baba_zina',
-  'guild_defector',
-  'marat_echo',
-  'street_poet',
-] as const satisfies readonly string[];
+export const STORY_NPCS_WITHOUT_DEDICATED_MOTIFS = [] as const satisfies readonly string[];
 
 export type StoryNpcWithoutDedicatedMotif = (typeof STORY_NPCS_WITHOUT_DEDICATED_MOTIFS)[number];
 
@@ -274,7 +280,15 @@ export function findEmotionalTransition(
   return EMOTIONAL_TRANSITIONS.find((t) => t.from === from && t.to === to);
 }
 
-/* ── Per-act mood overrides ── */
+/* ── Per-act mood overrides ──
+ *
+ * v4.53.0 «Музыка не однообразная»: покрытие расширено с 20 записей
+ * (5 сцен × акты 1–5) до ~55 — добавлены акты 6–7 («Взлом системы»,
+ * «Апокалипсис и поэзия») для пяти ключевых сцен плюс семь сцен,
+ * ранее получавших только глобальный act-tint: cafe_evening, park_day,
+ * rooftop_edge, city_square, river_pier, sleep_dream, chk_forest_zorge.
+ * Акт 7 — «Тишина после»: повсюду dream-оттенки и широкая реверберация,
+ * поэзия возвращает свет. */
 
 /** Per-act mood overrides — the same scene sounds subtly different as the story darkens.
  *  Key: `${sceneId}:${actNumber}` → overrides for that scene in that act.
@@ -282,7 +296,8 @@ export function findEmotionalTransition(
  *
  *  Act 1 typically falls back to the base profile, except volodka_room which
  *  has an explicit act-1 nudge (D6: slightly warmer/drier for the opening
- *  morning). Acts 2–5 progressively darken. */
+ *  morning). Acts 2–7 progressively darken; act 7 opens the 'dream' palette
+ *  (v4.53.0 — «Тишина после»: поэзия возвращает свет). */
 export const ACT_MOOD_OVERRIDES: Record<string, ActMoodOverride> = {
   // ── volodka_room ──
   // D6 (S12-D): Act 1 — the opening morning. Slightly brighter (filterCutoff
@@ -338,6 +353,79 @@ export const ACT_MOOD_OVERRIDES: Record<string, ActMoodOverride> = {
   'library_day:4': { mood: 'tension', filterCutoff: 1100, reverbMix: 0.3 },
   // Act 5: Final revelation
   'library_day:5': { mood: 'tension', filterCutoff: 900, reverbMix: 0.38 },
+  // v4.53.0: акты 6–7 — «Взлом системы» / «Тишина после»
+  // Act 6: Архивы под надзором
+  'library_day:6': { mood: 'tension', filterCutoff: 1000, reverbMix: 0.35 },
+  // Act 7: Поэзия возвращает свет — строки снова читаются вслух
+  'library_day:7': { mood: 'dream', filterCutoff: 1100, reverbMix: 0.45 },
+
+  /* ═══ v4.53.0: акты 6–7 для ключевых сцен ═══ */
+
+  // ── volodka_room 6–7 ──
+  // Act 6: Комната под наблюдением — та же комната, но чужая
+  'volodka_room:6': { mood: 'tension', filterCutoff: 800, reverbMix: 0.4 },
+  // Act 7: Комната-приют: тёплая мечта, широкий воздух
+  'volodka_room:7': { mood: 'dream', filterCutoff: 950, reverbMix: 0.5 },
+
+  // ── street_night 6–7 ──
+  // Act 6: Улица на боевых
+  'street_night:6': { mood: 'combat', filterCutoff: 750, reverbMix: 0.35 },
+  // Act 7: Тишина после — пустая улица, эхо стихов
+  'street_night:7': { mood: 'dream', filterCutoff: 1000, reverbMix: 0.55 },
+
+  // ── home_evening 6–7 ──
+  // Act 6: Дом под угрозой
+  'home_evening:6': { mood: 'tension', filterCutoff: 850, reverbMix: 0.35 },
+  // Act 7: Дом как память — свет сквозь тишину
+  'home_evening:7': { mood: 'dream', filterCutoff: 950, reverbMix: 0.45 },
+
+  // ── factory_basement 6–7 ──
+  // Act 6: Последний штурм подвала
+  'factory_basement:6': { mood: 'combat', filterCutoff: 650, reverbMix: 0.45 },
+  // Act 7: Подвал затоплен тишиной
+  'factory_basement:7': { mood: 'tension', filterCutoff: 600, reverbMix: 0.5 },
+
+  /* ═══ v4.53.0: семь сцен, ранее без act-раскраски ═══ */
+
+  // ── cafe_evening: тепло, которое гаснет и возвращается ──
+  'cafe_evening:2': { mood: 'cozy_indoor', filterCutoff: 1800, reverbMix: 0.15 },
+  'cafe_evening:3': { mood: 'cozy_indoor', filterCutoff: 1400, reverbMix: 0.2 },
+  'cafe_evening:4': { mood: 'tension', filterCutoff: 1100, reverbMix: 0.3 },
+  'cafe_evening:5': { mood: 'noir_street', filterCutoff: 900, reverbMix: 0.35 },
+  'cafe_evening:6': { mood: 'tension', filterCutoff: 850, reverbMix: 0.35 },
+  'cafe_evening:7': { mood: 'cozy_indoor', filterCutoff: 1300, reverbMix: 0.3 },
+
+  // ── park_day: природа держится дольше города ──
+  'park_day:2': { mood: 'nature', filterCutoff: 2000, reverbMix: 0.12 },
+  'park_day:4': { mood: 'tension', filterCutoff: 1300, reverbMix: 0.25 },
+  'park_day:6': { mood: 'tension', filterCutoff: 1000, reverbMix: 0.3 },
+  'park_day:7': { mood: 'nature', filterCutoff: 1600, reverbMix: 0.25 },
+
+  // ── rooftop_edge: высота — сцена сопротивления и финала ──
+  'rooftop_edge:3': { mood: 'tension', filterCutoff: 1200, reverbMix: 0.3 },
+  'rooftop_edge:4': { mood: 'tension', filterCutoff: 1100, reverbMix: 0.3 },
+  'rooftop_edge:5': { mood: 'combat', filterCutoff: 900, reverbMix: 0.4 },
+  'rooftop_edge:6': { mood: 'combat', filterCutoff: 850, reverbMix: 0.4 },
+  'rooftop_edge:7': { mood: 'dream', filterCutoff: 1200, reverbMix: 0.5 },
+
+  // ── city_square: городская площадь — надзор и митинги ──
+  'city_square:2': { mood: 'noir_street', filterCutoff: 1600, reverbMix: 0.2 },
+  'city_square:4': { mood: 'tension', filterCutoff: 1100, reverbMix: 0.3 },
+  'city_square:6': { mood: 'combat', filterCutoff: 900, reverbMix: 0.4 },
+  'city_square:7': { mood: 'dream', filterCutoff: 1100, reverbMix: 0.5 },
+
+  // ── river_pier: причал — отражения и прощания ──
+  'river_pier:3': { mood: 'noir_street', filterCutoff: 1500, reverbMix: 0.25 },
+  'river_pier:5': { mood: 'tension', filterCutoff: 1000, reverbMix: 0.35 },
+  'river_pier:7': { mood: 'dream', filterCutoff: 1300, reverbMix: 0.5 },
+
+  // ── sleep_dream: сны темнеют к финалу ──
+  'sleep_dream:5': { mood: 'dream', filterCutoff: 700, reverbMix: 0.55 },
+  'sleep_dream:7': { mood: 'dream', filterCutoff: 900, reverbMix: 0.6 },
+
+  // ── chk_forest_zorge: ЧК-лес — древний и молчаливый ──
+  'chk_forest_zorge:5': { mood: 'tension', filterCutoff: 900, reverbMix: 0.4 },
+  'chk_forest_zorge:7': { mood: 'nature', filterCutoff: 1300, reverbMix: 0.35 },
 };
 
 /** Resolve the per-act mood override for a given scene + act.

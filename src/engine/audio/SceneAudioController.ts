@@ -289,24 +289,102 @@ export class SceneAudioController {
   /** Зацикленный файловый ambient текущей story-ноды (v4.15).
    *  Безопасен в не-браузерной среде (тесты): Audio-гарды + молчаливые catch.
    *  Отказ автоплея (нет жеста) не критичен — процедурный бэд продолжает играть,
-   *  файл стартует при следующей смене ноды/контекста. */
+   *  файл стартует при следующей смене ноды/контекста.
+   *  v4.53.0: жёсткое переключение лупов заменено кроссфейдом — старый
+   *  элемент плавно гаснет, новый нарастает (раньше была слышна щель/скачок
+   *  на каждой смене story-ноды). */
   private setStoryAudioFile(file: string | null): void {
     if (file === this.storyAudioFile) return;
     this.storyAudioFile = file;
-    this.stopStoryAudioElement();
+    this.fadeOutStoryAudioElement();
     if (!file || typeof window === 'undefined' || typeof Audio !== 'function') return;
     try {
       const el = new Audio(resolvePublicAssetUrl(file));
       el.loop = true;
-      el.volume = this.computeStoryAudioVolume();
+      const target = this.computeStoryAudioVolume();
+      el.volume = 0;
       void el.play().catch(() => {});
+      this.fadeInStoryAudioElement(el, target);
       this.storyAudio = el;
     } catch {
       /* среда без аудио — файловый слой просто неактивен */
     }
   }
 
+  /** Таймер кроссфейда — один на контроллер: новый фейд отменяет старый. */
+  private storyAudioFadeTimer: ReturnType<typeof setInterval> | null = null;
+
+  private clearStoryAudioFadeTimer(): void {
+    if (this.storyAudioFadeTimer !== null) {
+      clearInterval(this.storyAudioFadeTimer);
+      this.storyAudioFadeTimer = null;
+    }
+  }
+
+  /** Плавное затухание уходящего лупа (~0.7с), затем освобождение элемента. */
+  private fadeOutStoryAudioElement(): void {
+    const el = this.storyAudio;
+    this.storyAudio = null;
+    if (!el) return;
+    try {
+      const start = el.volume;
+      if (!(start > 0.001)) {
+        el.pause();
+        el.src = '';
+        return;
+      }
+      this.clearStoryAudioFadeTimer();
+      const step = start / 8;
+      const timer = setInterval(() => {
+        try {
+          const v = el.volume - step;
+          if (!(v > 0.001)) {
+            clearInterval(timer);
+            if (this.storyAudioFadeTimer === timer) this.storyAudioFadeTimer = null;
+            el.pause();
+            el.src = '';
+            return;
+          }
+          el.volume = v;
+        } catch {
+          clearInterval(timer);
+        }
+      }, 90);
+      this.storyAudioFadeTimer = timer;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  /** Плавный подъём нового лупа до целевой громкости (~0.8с). */
+  private fadeInStoryAudioElement(el: HTMLAudioElement, target: number): void {
+    if (!(target > 0.001)) return;
+    try {
+      this.clearStoryAudioFadeTimer();
+      const step = target / 10;
+      let v = 0;
+      const timer = setInterval(() => {
+        try {
+          v += step;
+          if (v >= target) {
+            el.volume = target;
+            clearInterval(timer);
+            if (this.storyAudioFadeTimer === timer) this.storyAudioFadeTimer = null;
+            return;
+          }
+          el.volume = v;
+        } catch {
+          clearInterval(timer);
+        }
+      }, 80);
+      this.storyAudioFadeTimer = timer;
+    } catch {
+      /* ignore */
+    }
+  }
+
   private stopStoryAudioElement(): void {
+    this.clearStoryAudioFadeTimer();
     if (!this.storyAudio) return;
     try {
       this.storyAudio.pause();
