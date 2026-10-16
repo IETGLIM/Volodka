@@ -1,6 +1,6 @@
 /* ─── Юнит-тесты данных кат-сцен ───
  *
- * Инварианты реестра CUTSCENES (14 сюжетных кат-сцен):
+ * Инварианты реестра CUTSCENES (17 сюжетных кат-сцен):
  *  - уникальные id и triggerStoryNode (getCutsceneForNode ищет find'ом —
  *    дубликат триггера молча затенял бы кат-сцену);
  *  - у КАЖДОЙ кат-сцены явно указан type (v4.20: до этого 5 из 14 жили
@@ -24,9 +24,9 @@ function waypointSumMs(cutscene: (typeof CUTSCENE_LIST)[number]): number {
 }
 
 describe('CUTSCENES registry', () => {
-  it('содержит 14 кат-сцен с уникальными id', () => {
+  it('содержит 17 кат-сцен с уникальными id', () => {
     const ids = getAllCutsceneIds();
-    expect(ids).toHaveLength(14);
+    expect(ids).toHaveLength(17);
     expect(new Set(ids).size).toBe(ids.length);
   });
 

@@ -736,6 +736,162 @@ export const CUTSCENES: Record<string, CutsceneDef> = {
       },
     ],
   },
+
+  /* ── ACT VI — CORE CHOICE (v4.55.0, судья раунд 2: кат-сцены для поздних актов)
+     Завод, ядро Системы. Момент, когда стихи становятся оружием.
+     Камера падает к ядру, дрожит, отлетает — «система кричит тысячей голосов». */
+  act6_core_vibration: {
+    id: 'act6_core_vibration',
+    textOverlay: 'Ядро вибрирует',
+    subtitle: '«Поэзия становится оружием. Ключом. Тишина после — не пустота, а перемена.»',
+    triggerStoryNode: 'act6_core_choice',
+    anchorSceneId: 'abandoned_factory',
+    waypointSpace: 'spawn_offset',
+    textDurationMs: 7000,
+    textAccentColor: '#e2a84b', // amber — горячий металл ядра
+    type: 'revelation',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.45,
+    waypoints: [
+      // Старт: взгляд из темноты завода на ядро
+      {
+        position: [0, 1.6, 6],
+        lookAt: [0, 1.4, 0],
+        fov: 48,
+        duration: 0,
+      },
+      // Медленное сближение — напряжение растёт
+      {
+        position: [0.6, 1.5, 3.4],
+        lookAt: [0, 1.3, 0],
+        fov: 42,
+        duration: 2.4,
+        controlPoint: [0.3, 1.55, 4.6],
+      },
+      // Резкий «удар» к ядру — система кричит
+      {
+        position: [0.2, 1.35, 1.6],
+        lookAt: [0, 1.2, 0],
+        fov: 36,
+        duration: 1.6,
+        controlPoint: [0.5, 1.4, 2.6],
+      },
+      // Отшатывание — то, что изменилось, меняет и тебя
+      {
+        position: [-0.6, 2.1, 4.6],
+        lookAt: [0, 1.5, 0],
+        fov: 52,
+        duration: 2.2,
+        controlPoint: [-0.3, 1.8, 3.2],
+      },
+    ],
+  },
+
+  /* ── ACT VII — ФИНАЛЬНОЕ СТИХОТВОРЕНИЕ (v4.55.0)
+     Парк, весна. Всё, что собрано, просится наружу. Тёплый, живой пролёт
+     над скамейкой — свет возвращается в мир. */
+  act7_last_poem: {
+    id: 'act7_last_poem',
+    textOverlay: 'Последнее стихотворение',
+    subtitle: '«Все строки, что ты прожил, просятся наружу. Пора.»',
+    triggerStoryNode: 'act7_final_poem_creation',
+    anchorSceneId: 'park_day',
+    waypointSpace: 'spawn_offset',
+    textDurationMs: 7500,
+    textAccentColor: '#8fd18a', // весенняя зелень парка
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'thin',
+    showEmbers: false,
+    glitchIntensity: 0,
+    waypoints: [
+      // Старт: высокий взгляд на скамейку в парке
+      {
+        position: [0, 4.2, 8],
+        lookAt: [0, 1.1, 0],
+        fov: 50,
+        duration: 0,
+      },
+      // Плывём сквозь ветви — весна прожимает кадр
+      {
+        position: [1.4, 2.6, 4.4],
+        lookAt: [0.2, 1.2, 0],
+        fov: 44,
+        duration: 2.6,
+        controlPoint: [0.9, 3.2, 6.2],
+      },
+      // Близко: блокнот, рука, строка
+      {
+        position: [0.5, 1.5, 1.8],
+        lookAt: [0, 1.1, 0],
+        fov: 36,
+        duration: 2.2,
+        controlPoint: [0.8, 1.8, 3.0],
+      },
+      // Отъезд в небо — свет забирает кадр
+      {
+        position: [0, 5.4, -2.4],
+        lookAt: [0, 1.4, 0],
+        fov: 58,
+        duration: 2.4,
+        controlPoint: [0, 3.6, 0.2],
+      },
+    ],
+  },
+
+  /* ── ACT VII — ФИНАЛЬНАЯ ПРОГУЛКА (v4.55.0)
+     Ночная улица, Виктория из тени. Город свободен. Пролёт вдоль улицы —
+     неон, дыхание, прощание без прощания. */
+  act7_final_walk_free_city: {
+    id: 'act7_final_walk_free_city',
+    textOverlay: 'Город свободен',
+    subtitle: '«Ты доказал, что стихи сильнее кода. Спасибо, Володька.»',
+    triggerStoryNode: 'act7_final_walk',
+    anchorSceneId: 'street_night',
+    waypointSpace: 'spawn_offset',
+    textDurationMs: 7200,
+    textAccentColor: '#c65548', // розовый неон улицы
+    type: 'story_moment',
+    oneShot: true,
+    letterboxStyle: 'full',
+    showEmbers: true,
+    glitchIntensity: 0.08,
+    waypoints: [
+      // Старт: взгляд вдоль улицы, вглубь неона
+      {
+        position: [0, 1.8, 7],
+        lookAt: [0, 1.4, -6],
+        fov: 52,
+        duration: 0,
+      },
+      // Идём с героем — камера как спутник
+      {
+        position: [1.2, 1.7, 3],
+        lookAt: [0.4, 1.3, -5],
+        fov: 46,
+        duration: 2.6,
+        controlPoint: [0.7, 1.8, 5],
+      },
+      // Полуоборот на Викторию — она выходит из тени
+      {
+        position: [0.8, 1.6, 0.5],
+        lookAt: [-0.4, 1.3, -1.5],
+        fov: 40,
+        duration: 2.2,
+        controlPoint: [0.9, 1.7, 1.8],
+      },
+      // Уходим вверх, в небо города — свобода
+      {
+        position: [0, 6.5, -4],
+        lookAt: [0, 2, -8],
+        fov: 62,
+        duration: 2.4,
+        controlPoint: [0, 4, -1.5],
+      },
+    ],
+  },
 };
 
 /** Get a cutscene by its trigger story node ID */
