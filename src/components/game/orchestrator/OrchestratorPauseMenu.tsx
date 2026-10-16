@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
 import { quickSaveGame, quickLoadGame } from '../save/quickSaveLoad';
+import { getHallOfFame, type HallOfFameEntry } from '@/engine/score/hallOfFame';
+import { getCurrentRunRank } from '@/engine/score/scoreEngine';
 import { FocusTrap } from '@/components/a11y/FocusTrap';
 import type { usePanelDialog } from '@/components/a11y/usePanelDialog';
 import { FilmGrain, CinematicBars } from '@/components/game/cinematic';
@@ -113,6 +115,57 @@ const EXIT_TO_MAIN_MENU: PauseAction = {
     useGameStore.getState().setMainMenuOpen(true);
   },
 };
+
+/* v4.55.0: Зал славы — локальный топ-10 забегов. Читается при каждом
+ * открытии паузы (useEffect ниже), чтобы свежие очки были видны сразу. */
+function HallOfFameSection() {
+  const [entries, setEntries] = useState<HallOfFameEntry[]>(() => getHallOfFame());
+  const [currentRank, setCurrentRank] = useState(0);
+
+  useEffect(() => {
+    setEntries(getHallOfFame());
+    setCurrentRank(getCurrentRunRank());
+  }, []);
+
+  const top = entries.slice(0, 5);
+  if (top.length === 0) {
+    return (
+      <p className="font-serif text-[11px] tracking-[0.14em] text-stone-400/45">
+        Твоя первая строка ждёт.
+      </p>
+    );
+  }
+
+  return (
+    <ol className="w-full flex flex-col gap-1" aria-label="Зал славы — топ забегов">
+      {top.map((e, i) => {
+        const rank = i + 1;
+        const isCurrent = currentRank === rank;
+        const date = e.dateISO
+          ? new Date(e.dateISO).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })
+          : 'сейчас';
+        return (
+          <li
+            key={e.runId}
+            className={`flex items-baseline gap-2 px-3 py-1 rounded-sm ${
+              isCurrent ? 'bg-stone-400/10 ring-1 ring-stone-300/20' : ''
+            }`}
+          >
+            <span className={`font-serif text-[11px] w-4 ${rank === 1 ? 'text-amber-300/90' : 'text-stone-500/70'}`}>
+              {rank}
+            </span>
+            <span className="font-serif text-[13px] tabular-nums text-stone-200/90 flex-1">
+              {e.score.toLocaleString('ru-RU')}
+            </span>
+            <span className="font-sans text-[9px] tracking-[0.12em] text-stone-500/60">
+              стих {e.poemsCollected} · квесты {e.questsCompleted} · серия ×{e.maxStreak} · {date}
+            </span>
+          </li>
+        );
+      })}
+    </ol>
+  );
+}
 
 export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
   const { isPanelOpen } = usePanelStack();
@@ -232,6 +285,18 @@ export function OrchestratorPauseMenu({ pauseDialog, panels, onClose }: Props) {
                         ))}
                       </div>
                     ))}
+
+                    {/* v4.55.0: Зал славы — тихая секция над опасной зоной */}
+                    <div className="mt-3 flex flex-col items-center gap-2" data-testid="pause-hall-of-fame">
+                      <div className="w-full flex items-center gap-2.5 px-4" aria-hidden="true">
+                        <span className="h-px flex-1 bg-gradient-to-r from-transparent to-stone-400/20" />
+                        <span className="font-serif text-[9px] tracking-[0.34em] uppercase text-stone-400/45">
+                          Зал славы
+                        </span>
+                        <span className="h-px flex-1 bg-gradient-to-l from-transparent to-stone-400/20" />
+                      </div>
+                      <HallOfFameSection />
+                    </div>
 
                     {/* Опасная зона: визуально отделена, случайный клик исключён */}
                     <div className="mt-4 mb-1 flex items-center gap-2.5 px-4" aria-hidden="true">

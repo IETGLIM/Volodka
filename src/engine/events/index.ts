@@ -17,6 +17,7 @@ import type { WeatherEvents } from './weatherEvents';
 import type { LoreEvents } from './loreEvents';
 import type { CutsceneEvents } from './cutsceneEvents';
 import type { AchievementEvents } from './achievementEvents';
+import type { ScoreEvents } from './scoreEvents';
 import type { CraftingEvents } from './craftingEvents';
 import type { PhotoEvents } from './photoEvents';
 import type { WorldEvents } from './worldEvents';
@@ -84,7 +85,8 @@ export type EventMap =
   StoryEvents &
   AccessibilityEvents &
   CinematicTimelineEvents &
-  QteEvents;
+  QteEvents &
+  ScoreEvents;
 
 /** All registered event names on the singleton bus. */
 export type EventName = keyof EventMap;
@@ -125,4 +127,5 @@ export const EVENT_DOMAINS = {
   choice: 'choice',
   toast: 'toast',
   interact: 'interact',
+  score: 'score',
 } as const;

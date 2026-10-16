@@ -123,6 +123,8 @@ import { ScenePoiCompass } from '@/components/hud/ScenePoiCompass';
 import EnvironmentalEffectsOverlay from '@/components/game/hud/parts/EnvironmentalEffectsOverlay';
 import BuffDebuffTracker from '@/components/game/hud/parts/BuffDebuffTracker';
 import { SkillRechargeHUD } from '@/components/game/hud/parts/SkillRechargeHUD';
+import { useRollSkillSlot } from '@/components/game/hud/parts/useRollSkillSlot';
+import { ScoreHUD } from '@/components/game/hud/parts/ScoreHUD';
 import { useTrophyAchievementWatcher } from '@/engine/achievements/achievementWatcher';
 import { OrchestratorStatsPanel } from './OrchestratorPanelSlots';
 import { useGameStore } from '@/store/gameStore';
@@ -167,10 +169,18 @@ function MountedBuffDebuffTracker() {
   return <BuffDebuffTracker effects={effects} position="top-right" showTimers />;
 }
 
-/** Skill recharge HUD — wrapper that calls hooks at the top level. */
+/** Skill recharge HUD — wrapper that calls hooks at the top level.
+ *  v4.55.0: слот кувырка (Q) с живым recharge-оверлеем — P1 судьи, раунд 2. */
 function MountedSkillRechargeHUD() {
   const skills = useSkillSlots();
-  return <SkillRechargeHUD skills={skills} orientation="horizontal" compact />;
+  const rollSlot = useRollSkillSlot();
+  const merged = rollSlot ? [rollSlot, ...skills] : skills;
+  return <SkillRechargeHUD skills={merged} orientation="horizontal" compact />;
+}
+
+/** v4.55.0: чип очков «Стихосложение» — только в exploration/combat HUD. */
+function MountedScoreHUD() {
+  return <ScoreHUD />;
 }
 
 /** HUD boot sequence — once-per-session guard so the boot animation only plays
@@ -543,6 +553,7 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
               so E2E tests can find the scene name via getByTestId('game-hud').toContainText().
               Was a sibling in GameplayAmbientExplorationHud — game-hud had empty textContent. */}
           <MountedSkillRechargeHUD />
+          <MountedScoreHUD />
         </>
       ) : null}
     </>

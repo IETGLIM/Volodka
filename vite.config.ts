@@ -57,6 +57,9 @@ export default defineConfig(({ mode }) => {
       : [];
 
   return {
+  // v4.55.0: base из окружения — вложенный хостинг статики в Next-превью
+  // (/game/). Vercel/itch сборки не задают GAME_BASE_PATH → '/' как раньше.
+  base: process.env.GAME_BASE_PATH || "/",
   // v4.36.1: SHA текущего коммита как глобальная константа бандла.
   define: {
     __BUILD_SHA__: JSON.stringify(BUILD_SHA),

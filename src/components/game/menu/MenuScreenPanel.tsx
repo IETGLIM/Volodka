@@ -19,6 +19,7 @@ import {
   MENU_TITLE,
 } from '@/engine/menu/menuConstants';
 import { getMenuScreenFx } from '@/engine/menu/menuFxTier';
+import { getBestScore } from '@/engine/score/hallOfFame';
 import { safePlayMenuSfx } from '@/engine/menu/menuPresentation';
 import { audioEngine } from '@/engine/AudioEngine';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
@@ -289,15 +290,15 @@ function MenuScreenPanelInner() {
       </div>
 
       {/* Билд-метка — единственный чип меню (музыка переехала в настройки:
-          v4.48 убирает дубль управления) */}
+          v4.48 убирает дубль управления). v4.55.0: рядом — рекорд Зала славы. */}
       <motion.div
         initial={contentMotion ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
         transition={{ delay: d(1.2, visited) }}
-        className="absolute bottom-6 left-6 z-30 px-2.5 py-1"
-        aria-hidden="true"
+        className="absolute bottom-6 left-6 z-30 px-2.5 py-1 flex items-baseline gap-3"
       >
         <span className="text-[10px] tracking-[0.18em]" style={{ color: 'rgba(169,166,152,0.38)' }}>v{APP_BUILD}</span>
+        <MenuBestScoreBadge />
       </motion.div>
 
       <AnimatePresence>{menu.showAbout ? <MenuAboutPanel onClose={menu.closeAbout} /> : null}</AnimatePresence>
@@ -363,6 +364,22 @@ function MenuScreenPanelInner() {
         ) : null}
       </AnimatePresence>
     </div>
+  );
+}
+
+/* v4.55.0: рекорд Зала славы в футере главного меню — show, don't tell:
+ * без отдельных экранов, тихая золотая строка рядом с версией билда. */
+function MenuBestScoreBadge() {
+  const best = useMemo(() => getBestScore(), []);
+  if (best <= 0) return null;
+  return (
+    <span
+      className="font-serif text-[10px] tracking-[0.18em] tabular-nums"
+      style={{ color: 'rgba(226,168,75,0.55)' }}
+      aria-label={`Рекорд: ${best}`}
+    >
+      ✒ рекорд {best.toLocaleString('ru-RU')}
+    </span>
   );
 }
 
