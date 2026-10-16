@@ -39,7 +39,6 @@ html.vk-classic-ui .hud-ambient-particles,
 html.vk-classic-ui .hud-corner-accent,
 html.vk-classic-ui .hud-filmic-chromatic-shift,
 html.vk-classic-ui .hud-filmic-vignette-breathe,
-html.vk-classic-ui .hud-filmic-mood-vignette,
 html.vk-classic-ui .proximity-glow-ring,
 html.vk-classic-ui .proximity-glow-aura,
 html.vk-classic-ui .proximity-glow-inner,
@@ -48,6 +47,10 @@ html.vk-classic-ui .interactable-sparkle,
 html.vk-classic-ui .data-ticker-container {
   display: none !important;
 }
+/* v4.54.0: .hud-filmic-mood-vignette исключён из списка тишины — класс
+   висел на КОРНЕ HUD и display:none прятал весь интерфейс целиком
+   (критический баг v4.51.0). Класс снят с корня в ExplorationHUD,
+   декоративные слои отсечены в TSX — список оставлен как страховка. */
 
 /* Корневой слой HUD: без пульсаций и дышащих глоу */
 html.vk-classic-ui .hud-ambient-pulse {

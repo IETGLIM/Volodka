@@ -130,14 +130,9 @@
 .hud-warning-flash-right { right: 0; background: linear-gradient(270deg, rgba(198, 85, 72, 0.22), transparent); }
 @keyframes vk-warning-flash { 50% { opacity: 1; } }
 
-/* Атмосферное сканирование HUD */
-.hud-atmosphere-scan {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, transparent 48%, rgba(157, 179, 200, 0.03) 50%, transparent 52%);
-  animation: vk-scanline 9s linear infinite;
-}
+/* Атмосферное сканирование HUD — УДАЛЕНО (v4.54.0):
+   .hud-atmosphere-scan отсечён в TSX (CLASSIC_UI), блок стал мёртвым.
+   @keyframes vk-scanline остаётся — им пользуются другие слои файла. */
 
 /* ── 4. Урон / лечение / статус ── */
 .damage-indicator-overlay {

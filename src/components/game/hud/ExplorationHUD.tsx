@@ -144,28 +144,36 @@ export function ExplorationHUD(props: HUDProps) {
     <div
       data-exploration-ui
       data-testid="game-hud"
-      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted hud-ambient-pulse hud-filmic-mood-vignette ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
-      style={{ zIndex: UI_LAYERS.HUD, '--hud-filmic-mood-tint': 'var(--hud-filmic-glow-cool)' } as React.CSSProperties}
+      className={`fixed inset-0 pointer-events-none transition-opacity duration-700 ease-out hud-element-mounted ${hudMounted ? 'opacity-100' : 'opacity-0'}`}
+      style={{ zIndex: UI_LAYERS.HUD }}
     >
-      {/* Atmospheric scan line — subtle living feel */}
-      {!reducedMotion && (
+      {/* v4.54.0: филмик-шум отсечён в TSX (CLASSIC_UI) — раньше прятался
+          только CSS display:none в wow-classic.css, а DOM и анимации жили.
+          Класс hud-filmic-mood-vignette снят с КОРНЯ — wow-classic.css глушил
+          этот класс display:none !important и прятал ВЕСЬ HUD целиком
+          (критический баг v4.51.0). */}
+      {!CLASSIC_UI && !reducedMotion && (
         <div className="hud-atmosphere-scan" aria-hidden="true" />
       )}
       {/* CSS-only ambient dust motes — activates the .hud-ambient-particles
           pseudo-elements in hud-filmic-ambient.css. Reduced-motion-gated
           in CSS (no animation under prefers-reduced-motion: reduce). */}
-      <div className="hud-ambient-particles" aria-hidden="true" />
+      {!CLASSIC_UI && <div className="hud-ambient-particles" aria-hidden="true" />}
       {/* Corner accents for diegetic HUD frame */}
-      <div className="hud-corner-accent hud-corner-accent-tl" aria-hidden="true" />
-      <div className="hud-corner-accent hud-corner-accent-tr" aria-hidden="true" />
-      <div className="hud-corner-accent hud-corner-accent-bl" aria-hidden="true" />
-      <div className="hud-corner-accent hud-corner-accent-br" aria-hidden="true" />
+      {!CLASSIC_UI && (
+        <>
+          <div className="hud-corner-accent hud-corner-accent-tl" aria-hidden="true" />
+          <div className="hud-corner-accent hud-corner-accent-tr" aria-hidden="true" />
+          <div className="hud-corner-accent hud-corner-accent-bl" aria-hidden="true" />
+          <div className="hud-corner-accent hud-corner-accent-br" aria-hidden="true" />
+        </>
+      )}
 
-      <SceneAmbientVignette />
+      {!CLASSIC_UI && <SceneAmbientVignette />}
       {/* Scene entry nudge — brief directional vignette on first visit. */}
       <SceneEntryNudge />
       <SceneTopBarHud />
-      <AmbientParticles />
+      {!CLASSIC_UI && <AmbientParticles />}
       <RainScreenEffect />
       <SprintDrainOverlay />
       {/* Тонкая полоска выносливости над нижним HUD-стеком — видна только
@@ -182,12 +190,12 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Stress-reactive chromatic edge fringing — wraps the screen edges with
           subtle color separation when energy is low or stress is high. Pure
           selector-driven (energy/stress), reduced-motion-gated. */}
-      <HUDChromaticEdge />
+      {!CLASSIC_UI && <HUDChromaticEdge />}
 
       <DynamicCrosshair />
       {/* Breathing crosshair aura + interaction-activate edge glow. Show-don't-tell
           affordance: the player senses interactables before reading any prompt. */}
-      <InteractionProximityGlow />
+      {!CLASSIC_UI && <InteractionProximityGlow />}
       {/* Distance ring — sits visually inside the proximity glow but outside the
           cooldown sweep. Scales based on proximity to interactive objects; tick
           marks appear when within interaction range. EventBus-driven. */}
@@ -199,10 +207,10 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Radar pulse emanating from the crosshair while moving — sonar-like
           feedback that interactables are nearby. EventBus-driven
           (exploration:footstep). Decays between steps. */}
-      <InteractionRadarPulse />
+      {!CLASSIC_UI && <InteractionRadarPulse />}
       {/* Subtle sparkle on nearby interactables — show-don't-tell
           affordance that draws the eye without a text prompt. */}
-      <InteractableSparkle />
+      {!CLASSIC_UI && <InteractableSparkle />}
       {proximityFxActive && !examineOverlayOpen ? <EnhancedCrosshairPrompt /> : null}
 
       <AnimatePresence>
