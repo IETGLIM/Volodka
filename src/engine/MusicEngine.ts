@@ -241,6 +241,10 @@ export function generateMelodyMotif(
 
   const notes: number[] = [clampedStart];
   let current = clampedStart;
+  // v4.55.0: жёсткое октавное окно мотива (min–max ≤ 12) — раньше гарантировались
+  // только ±12 от старта (разброс до 24), и тест «в пределах октавы» флакал.
+  let minSoFar = clampedStart;
+  let maxSoFar = clampedStart;
   const numScaleSteps = scale.intervals.length;
 
   // Контур: арка / спуск / подъём / волна — мелодия «дышит» направлением
@@ -272,10 +276,15 @@ export function generateMelodyMotif(
       candidate = octaveBase + scale.intervals[newIdx];
     }
 
-    // Держимся в диапазоне октавы от старта; выход — повтор ноты
+    // Держимся в октавном окне мотива; выход — повтор ноты
     // (повтор — тоже музыкальный ход, «настойчивость»)
-    if (candidate > clampedStart + 12 || candidate < clampedStart - 12) {
+    const nextMin = Math.min(minSoFar, candidate);
+    const nextMax = Math.max(maxSoFar, candidate);
+    if (nextMax - nextMin > 12) {
       candidate = current;
+    } else {
+      minSoFar = nextMin;
+      maxSoFar = nextMax;
     }
     notes.push(candidate);
     current = candidate;
