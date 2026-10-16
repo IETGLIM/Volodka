@@ -25,8 +25,6 @@ import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
 import { HUDChromaticEdge } from '@/components/game/hud/parts/HUDChromaticEdge';
 import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
 import { InteractionDistanceRing } from '@/components/game/hud/parts/InteractionDistanceRing';
-import { InteractionProximityGlow } from '@/components/game/hud/parts/InteractionProximityGlow';
-import { InteractionRadarPulse } from '@/components/game/hud/parts/InteractionRadarPulse';
 import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityIndicator';
 import { LootProximityIndicator } from '@/components/game/hud/parts/LootProximityIndicator';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
@@ -193,9 +191,6 @@ export function ExplorationHUD(props: HUDProps) {
       {!CLASSIC_UI && <HUDChromaticEdge />}
 
       <DynamicCrosshair />
-      {/* Breathing crosshair aura + interaction-activate edge glow. Show-don't-tell
-          affordance: the player senses interactables before reading any prompt. */}
-      {!CLASSIC_UI && <InteractionProximityGlow />}
       {/* Distance ring — sits visually inside the proximity glow but outside the
           cooldown sweep. Scales based on proximity to interactive objects; tick
           marks appear when within interaction range. EventBus-driven. */}
@@ -204,10 +199,6 @@ export function ExplorationHUD(props: HUDProps) {
           feedback for the interaction cooldown so the player knows when they
           can interact again. EventBus-driven (interaction:start/end). */}
       <InteractionCooldownRing />
-      {/* Radar pulse emanating from the crosshair while moving — sonar-like
-          feedback that interactables are nearby. EventBus-driven
-          (exploration:footstep). Decays between steps. */}
-      {!CLASSIC_UI && <InteractionRadarPulse />}
       {/* Subtle sparkle on nearby interactables — show-don't-tell
           affordance that draws the eye without a text prompt. */}
       {!CLASSIC_UI && <InteractableSparkle />}

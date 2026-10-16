@@ -399,30 +399,8 @@ body {
   50% { opacity: 1; transform: scale(1.12); }
 }
 
-/* Радар-пульс: кольцо от центра, серебро */
-.radar-ping {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  border: 1px solid rgba(157, 179, 200, 0.4);
-  animation: vk-radar-ping 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-  pointer-events: none;
-}
-.radar-ping-delayed { animation-delay: 0.5s; }
-@keyframes vk-radar-ping {
-  from { transform: scale(0.4); opacity: 0.7; }
-  to { transform: scale(1.8); opacity: 0; }
-}
-.radar-proximity-container { position: relative; pointer-events: none; }
-.radar-sweep {
-  position: absolute;
-  inset: 0;
-  border-radius: 999px;
-  background: conic-gradient(from 0deg, rgba(157, 179, 200, 0.14), transparent 60deg);
-  animation: vk-radar-sweep 3.2s linear infinite;
-  pointer-events: none;
-}
-@keyframes vk-radar-sweep { to { transform: rotate(360deg); } }
+/* v4.55.0: радар-пульс удалён — InteractionRadarPulse не монтировался в
+   классическом UI (CLASSIC_UI) и удалён вместе с ним. */
 
 /* Спринт */
 .sprint-drain-vignette {
@@ -450,23 +428,15 @@ body {
 .daynight-time { font-variant-numeric: tabular-nums; color: var(--vk-paper); }
 .daynight-mobile-compact { transform: scale(0.85); transform-origin: top left; }
 
-/* Тикер данных */
-.data-ticker-container { overflow: hidden; display: flex; align-items: center; }
-.data-ticker-track { display: flex; gap: 1.5rem; will-change: transform; }
-.data-ticker-item { font-size: 11px; letter-spacing: 0.12em; color: var(--vk-paper-dim); white-space: nowrap; }
-.data-ticker-separator { color: rgba(157, 179, 200, 0.35); }
+/* Тикер данных (v4.55.0: .data-ticker-* удалены — TopBarDataTicker удалён;
+   .data-pulse/.data-stream/.text-data-stream живы — их используют
+   CombatPlayerCard, SceneTransitionOverlay и DayNightCycleIndicator) */
 .data-pulse { animation: vk-pulse-soft 2s ease-in-out infinite; }
 .data-stream { color: var(--vk-paper-dim); font-family: var(--font-mono); font-size: 11px; }
 .text-data-stream { color: var(--vk-paper-dim); letter-spacing: 0.06em; }
 
-/* Таймер сессии */
-.session-timer-widget {
-  font-variant-numeric: tabular-nums;
-  font-size: 11px;
-  color: var(--vk-paper-dim);
-  letter-spacing: 0.1em;
-}
-.session-timer-blink { animation: vk-blink-soft 1.6s steps(2, start) infinite; }
+/* Таймер сессии (v4.55.0: .session-timer-* удалены — потребителей нет;
+   @keyframes vk-blink-soft остаётся — его используют .blinking и др.) */
 @keyframes vk-blink-soft { 50% { opacity: 0.35; } }
 
 /* Координаты */
@@ -557,25 +527,8 @@ body {
   box-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
 }
 
-/* Сияние близости интерактива — янтарный тёплый ореол */
-.proximity-glow-aura {
-  position: absolute;
-  border-radius: 999px;
-  background: radial-gradient(circle, rgba(226, 168, 75, 0.14) 0%, transparent 68%);
-  pointer-events: none;
-}
-.proximity-glow-inner {
-  position: absolute;
-  border-radius: 999px;
-  border: 1px solid rgba(226, 168, 75, 0.35);
-  pointer-events: none;
-}
-.proximity-glow-ring {
-  position: absolute;
-  border-radius: 999px;
-  border: 1px dashed rgba(226, 168, 75, 0.28);
-  pointer-events: none;
-}
+/* Сияние близости интерактива удалено (v4.55.0) — InteractionProximityGlow
+   не монтировался в CLASSIC_UI и удалён вместе с ним. */
 
 /* Стрелка квеста */
 .quest-arrow-ring-pulse { animation: vk-pulse-soft 1.8s ease-in-out infinite; }

@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Scene Top Bar HUD ───
  * Cohesive top-bar cluster mounting orphaned-but-built widgets:
  *   - SceneContextChip     (top-left:  scene type · NPC count · exits)
- *   - TopBarDataTicker     (top-center: scrolling quest/poem/time ticker)
+ *   - (v4.55.0: TopBarDataTicker удалён — CLASSIC_UI никогда его не показывал)
  *   - ExplorationProgressBadge + EnvironmentMoodIndicator (top-right)
  *
  * All widgets are existing built components — this wrapper only positions
@@ -17,7 +17,6 @@ import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { SceneContextChip } from '@/components/game/hud/parts/SceneContextChip';
 import { PlayerStatusFrame } from '@/components/game/hud/parts/PlayerStatusFrame';
-import { TopBarDataTicker } from '@/components/game/hud/parts/TopBarDataTicker';
 import { ExplorationProgressBadge } from '@/components/game/hud/parts/ExplorationProgressBadge';
 import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
 import { KarmaTierBadge } from '@/components/game/hud/parts/KarmaTierBadge';
@@ -78,19 +77,6 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         </div>
         <SceneContextChip />
       </motion.div>
-
-      {/* Top-center: scrolling data ticker (hidden on mobile — it has its own sm:block gate).
-          v4.51.0 «Классический UI»: тиккер спрятан — как в WoW, верх центра пустует. */}
-      {!CLASSIC_UI && (
-        <motion.div
-          initial={reducedMotion ? false : { opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.05, ease: [0.16, 1, 0.3, 1] }}
-          className="absolute top-2.5 left-1/2 -translate-x-1/2"
-        >
-          <TopBarDataTicker />
-        </motion.div>
-      )}
 
       {/* Top-right: v4.51.0 «Классический UI» — правый верх отдаётся миникарте
           (как в WoW): карма-кольцо, бейдж уровня, компас, настроение среды и

@@ -3634,33 +3634,6 @@
   }
 }
 
-/* ── 40. Radar sweep ──
-   Slow rotating sweep for InteractionRadarPulse — a subtle
-   background rotation on the sweep line container.
-   rotate(0deg → 360deg), 3s linear infinite. Apply via
-   className="hud-filmic-radar-sweep" on the sweep line div. */
-@media (prefers-reduced-motion: no-preference) {
-  @keyframes hud-filmic-radar-sweep {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
-    }
-  }
-
-  .hud-filmic-radar-sweep {
-    animation: hud-filmic-radar-sweep 3s linear infinite;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hud-filmic-radar-sweep {
-    animation: none;
-    transform: none;
-  }
-}
-
 /* ── 41. Sparkle twinkle ──
    Scale + opacity twinkle on InteractableSparkle inner star.
    scale(0.8 → 1.1 → 1) + opacity(0 → 1 → 0.7),
