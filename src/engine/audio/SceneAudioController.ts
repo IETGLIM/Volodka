@@ -292,7 +292,11 @@ export class SceneAudioController {
    *  файл стартует при следующей смене ноды/контекста.
    *  v4.53.0: жёсткое переключение лупов заменено кроссфейдом — старый
    *  элемент плавно гаснет, новый нарастает (раньше была слышна щель/скачок
-   *  на каждой смене story-ноды). */
+   *  на каждой смене story-ноды).
+   *  v4.54.1 (судья раунд 1, P0): таймеры фейда — ПЕР-ЭЛЕМЕНТНЫЕ (WeakMap).
+   *  Раньше был один общий storyAudioFadeTimer: fade-in нового лупа убивал
+   *  fade-out уходящего ДО первого тика — уходящий луп застревал на полной
+   *  громкости и наслаивался на новый (какофония при каждой смене ноды). */
   private setStoryAudioFile(file: string | null): void {
     if (file === this.storyAudioFile) return;
     this.storyAudioFile = file;
@@ -311,13 +315,15 @@ export class SceneAudioController {
     }
   }
 
-  /** Таймер кроссфейда — один на контроллер: новый фейд отменяет старый. */
-  private storyAudioFadeTimer: ReturnType<typeof setInterval> | null = null;
+  /** Пер-элементные таймеры фейда: fade-out старого и fade-in нового
+   *  живут одновременно и не мешают друг другу (fix P0 раунд-1). */
+  private readonly fadeTimers = new WeakMap<HTMLAudioElement, ReturnType<typeof setInterval>>();
 
-  private clearStoryAudioFadeTimer(): void {
-    if (this.storyAudioFadeTimer !== null) {
-      clearInterval(this.storyAudioFadeTimer);
-      this.storyAudioFadeTimer = null;
+  private clearFadeTimerFor(el: HTMLAudioElement): void {
+    const timer = this.fadeTimers.get(el);
+    if (timer !== undefined) {
+      clearInterval(timer);
+      this.fadeTimers.delete(el);
     }
   }
 
@@ -329,18 +335,19 @@ export class SceneAudioController {
     try {
       const start = el.volume;
       if (!(start > 0.001)) {
+        this.clearFadeTimerFor(el);
         el.pause();
         el.src = '';
         return;
       }
-      this.clearStoryAudioFadeTimer();
+      this.clearFadeTimerFor(el);
       const step = start / 8;
       const timer = setInterval(() => {
         try {
           const v = el.volume - step;
           if (!(v > 0.001)) {
             clearInterval(timer);
-            if (this.storyAudioFadeTimer === timer) this.storyAudioFadeTimer = null;
+            this.fadeTimers.delete(el);
             el.pause();
             el.src = '';
             return;
@@ -348,9 +355,10 @@ export class SceneAudioController {
           el.volume = v;
         } catch {
           clearInterval(timer);
+          this.fadeTimers.delete(el);
         }
       }, 90);
-      this.storyAudioFadeTimer = timer;
+      this.fadeTimers.set(el, timer);
     } catch {
       /* ignore */
     }
@@ -360,7 +368,7 @@ export class SceneAudioController {
   private fadeInStoryAudioElement(el: HTMLAudioElement, target: number): void {
     if (!(target > 0.001)) return;
     try {
-      this.clearStoryAudioFadeTimer();
+      this.clearFadeTimerFor(el);
       const step = target / 10;
       let v = 0;
       const timer = setInterval(() => {
@@ -369,23 +377,24 @@ export class SceneAudioController {
           if (v >= target) {
             el.volume = target;
             clearInterval(timer);
-            if (this.storyAudioFadeTimer === timer) this.storyAudioFadeTimer = null;
+            this.fadeTimers.delete(el);
             return;
           }
           el.volume = v;
         } catch {
           clearInterval(timer);
+          this.fadeTimers.delete(el);
         }
       }, 80);
-      this.storyAudioFadeTimer = timer;
+      this.fadeTimers.set(el, timer);
     } catch {
       /* ignore */
     }
   }
 
   private stopStoryAudioElement(): void {
-    this.clearStoryAudioFadeTimer();
     if (!this.storyAudio) return;
+    this.clearFadeTimerFor(this.storyAudio);
     try {
       this.storyAudio.pause();
       this.storyAudio.src = '';

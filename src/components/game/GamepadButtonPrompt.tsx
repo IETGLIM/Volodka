@@ -31,7 +31,7 @@ interface PromptConfig {
 
 const PROMPTS: Record<GamepadAction, PromptConfig> = {
   attack: { gamepadButton: 'A', keyboardKey: 'E', label: 'Атака' },
-  defend: { gamepadButton: 'B', keyboardKey: 'Q', label: 'Защита' },
+  defend: { gamepadButton: 'B', keyboardKey: '2', label: 'Защита' },
   interact: { gamepadButton: 'A', keyboardKey: 'E', label: 'Взаимодействие' },
   confirm: { gamepadButton: 'A', keyboardKey: 'Enter', label: 'Подтвердить' },
   cancel: { gamepadButton: 'B', keyboardKey: 'Esc', label: 'Отмена' },

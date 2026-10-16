@@ -16,6 +16,8 @@
  *    roll vector on an ease-out curve; jump/block/crouch intents are ignored.
  */
 
+import { eventBus } from '@/engine/EventBus';
+import { sfxEngine } from '@/engine/audio/SfxEngine';
 import {
   ROLL_DURATION,
   ROLL_SPEED,
@@ -156,4 +158,13 @@ export function resetPlayerRollForNewSession(): void {
 export function cancelActiveRoll(): void {
   state.active = false;
   state.elapsed = 0;
+}
+
+/* v4.54.1: озвучка кувырка (судья раунд 1: player:roll никто не слушал).
+ * Модуль-скоуп, как 'player:rest' в playerStamina — playerRoll импортируется
+ * конвейером движения всегда, листенер живёт весь сеанс. */
+if (typeof window !== 'undefined') {
+  eventBus.on('player:roll', () => {
+    sfxEngine.playSfx('roll_whoosh');
+  });
 }

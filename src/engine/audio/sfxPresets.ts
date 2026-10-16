@@ -29,6 +29,8 @@ export const SFX_PRESETS: Record<string, SfxConfig> = {
   screenshot: { type: 'square', frequency: 1200, duration: 0.04, gain: 0.1 },
   // AAA Phase B cinematic sprint launch whoosh (procedural air rush) — GOD x∞ x∞ x∞ x∞ APOCALYPSE RAMP "Продолжим" — heavier cosmic whoosh + infinite black hole rush + multiversal wind
   sprint_whoosh: { type: 'sawtooth', frequency: 115, duration: 0.92, gain: 0.32 },
+  // v4.54.1: кувырок (Q) — короткий мягкий свист воздуха, ниже и тише спринтового
+  roll_whoosh: { type: 'sawtooth', frequency: 82, duration: 0.38, gain: 0.2 },
   // AAA Phase B: hard brake / stop — gritty slide + heavy thud (cinematic weight) — even heavier apocalypse + black hole thud + eternal void slam
   brake: { type: 'sawtooth', frequency: 55, duration: 0.62, gain: 0.52 },
   brake_thud: { type: 'sine', frequency: 22, duration: 0.72, gain: 0.68 },
