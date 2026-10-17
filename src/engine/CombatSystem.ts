@@ -1646,8 +1646,10 @@ function handleDefeat(): void {
 
   combat.notifyListeners();
 
-  // Return to story node or exploration after defeat (G12)
-  combat.scheduleExit(3000, () => {
+  // v4.56.2 «Мгновенный рестарт»: выход из поражения выделен в finishDefeatExit —
+  // экран поражения вызывает его КНОПКОЙ сразу, не ожидая 3-секундного таймера.
+  const finishDefeatExit = () => {
+    defeatExitFn = null;
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
       dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });
@@ -1659,7 +1661,40 @@ function handleDefeat(): void {
     combat.notifyListeners();
     combat.endSession();
     eventBus.emit('combat:end', {});
-  });
+  };
+  defeatExitFn = finishDefeatExit;
+
+  // Return to story node or exploration after defeat (G12)
+  combat.scheduleExit(3000, finishDefeatExit);
+}
+
+/** Ссылка на активный выход из поражения — для мгновенного рестарта с экрана. */
+let defeatExitFn: (() => void) | null = null;
+
+/**
+ * v4.56.2 «Мгновенный рестарт» (требование игрока: game-over → instant restart).
+ * Вызывается кнопкой на DefeatScreen:
+ *  1. Поднимает энергию до безопасного уровня (50% потолка, минимум 30) —
+ *     иначе игрок выйдет из поражения с 3 HP и умрёт снова без шанса.
+ *  2. Немедленно завершает бой (без 3-секундного авто-выхода).
+ * Повторные вызовы безопасны (defeatExitFn сбрасывается после первого).
+ */
+export function restartAfterDefeat(): void {
+  // 1) Восстановление — читаем потолок как addEnergy: 100 + перковые бонусы.
+  const snapNow = snap();
+  const currentEnergy = snapNow.playerState.energy;
+  // Подъём до ≥50: если у игрока перк-бонус, восстановим до половины потолка.
+  const safeTarget = Math.max(30, Math.min(50, currentEnergy + 35));
+  if (currentEnergy < safeTarget) {
+    dispatchGameAction({ type: 'player/addEnergy', amount: safeTarget - currentEnergy });
+  }
+
+  // 2) Немедленный выход из боя (идемпотентно).
+  if (defeatExitFn) {
+    const fn = defeatExitFn;
+    defeatExitFn = null;
+    fn();
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════════

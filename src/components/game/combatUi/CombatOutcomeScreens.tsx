@@ -1,7 +1,10 @@
-/* Victory / defeat outcome panels extracted from CombatUI facade. */
+/* Victory / defeat outcome panels extracted from CombatUI facade.
+ * v4.56.2: DefeatScreen получил кнопку «Продолжить путь» — мгновенный рестарт
+ * (energy поднята до безопасного уровня, бой закрывается сразу, без 3-сек ждания). */
 
 import { motion } from 'framer-motion';
 import type { CombatReward } from '@/shared/types/game';
+import { restartAfterDefeat } from '@/engine/CombatSystem';
 
 export function VictoryScreen({
   rewards,
@@ -76,6 +79,25 @@ export function DefeatScreen() {
       </div>
       <div className="text-xs text-slate-400 font-mono text-center">
         Тьма поглощает... но не навсегда.
+      </div>
+      {/* FIX (v4.56.2): мгновенный рестарт — требование игрока. Кнопка появляется
+          сразу, восстанавливает силы и возвращает в мир без ожидания. */}
+      <motion.button
+        type="button"
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+        whileHover={{ scale: 1.04 }}
+        whileTap={{ scale: 0.96 }}
+        onClick={restartAfterDefeat}
+        autoFocus
+        className="mt-1 px-6 py-2.5 rounded-md border border-amber-500/50 bg-amber-950/60 text-amber-300 font-mono text-sm font-bold tracking-wide cursor-pointer transition-colors hover:bg-amber-900/70 hover:border-amber-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 combat-defeat-restart"
+        style={{ textShadow: '0 0 8px rgba(251,191,36,0.4)' }}
+      >
+        ⚡ Продолжить путь
+      </motion.button>
+      <div className="text-[10px] text-slate-500 font-mono">
+        Силы частично восстановлены · без ожидания
       </div>
     </motion.div>
   );
