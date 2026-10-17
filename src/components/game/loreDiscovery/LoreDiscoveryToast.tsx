@@ -5,6 +5,7 @@ import { LoreToastCard } from '@/components/game/loreDiscovery/LoreToastCard';
 import { useLoreDiscoveryToasts } from '@/components/game/loreDiscovery/useLoreDiscoveryToasts';
 import { buildLoreToastAnnouncement } from '@/engine/lore/loreDiscoveryPresentation';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useHudFocusMode } from '@/hooks/useHudFocusMode';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
 import { useGamePhase } from '@/store/selectors';
 import { explorationLoreToastTopPx } from '@/shared/constants/hudLayout';
@@ -13,11 +14,14 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 function LoreDiscoveryToastPanel() {
   const reducedMotion = useEffectiveReducedMotion();
   const mode = useGamePhase();
+  /* v4.57.0 («Тихий HUD»): во время осмотра/наррации/катсцены лор-карточка
+   * молчит — очередь живёт, показ вернётся, когда экран освободится. */
+  const focusMode = useHudFocusMode();
   const { toasts, removeToast, openCodex } = useLoreDiscoveryToasts();
   const slotGranted = useNotificationSlot('lore', NOTIFY_PRIORITY.lore, toasts.length > 0);
 
   if (mode === 'menu' || mode === 'intro') return null;
-  if (!slotGranted) return null;
+  if (!slotGranted || focusMode) return null;
 
   const liveAnnouncement = toasts.length > 0
     ? buildLoreToastAnnouncement(toasts[toasts.length - 1]!)

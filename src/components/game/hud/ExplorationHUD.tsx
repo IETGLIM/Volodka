@@ -4,7 +4,6 @@
  */
 
 import { AnimatePresence, motion } from 'framer-motion';
-import { Save } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useContextualHints } from '@/hooks/useContextualHints';
 import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
@@ -115,9 +114,12 @@ export function ExplorationHUD(props: HUDProps) {
      QuestData shape needed by QuestObjectiveCard. Hidden on mobile,
      in combat, in cutscenes, or when there is no active quest. */
   const activeQuestCardData = useActiveQuestCardData();
+  /* v4.57.0 («Тихий HUD»): при открытом осмотре квест-карточка молчит —
+   * читая мир, игрок не должен параллельно читать чеклист. */
   const showQuestObjectiveCard =
     !isMobile
     && gamePhase === 'exploration'
+    && !examineOverlayOpen
     && activeQuestCardData !== null;
 
   /* ── Minimap data is no longer derived here.
@@ -129,7 +131,6 @@ export function ExplorationHUD(props: HUDProps) {
   const {
     photoModeOn,
     hudMounted,
-    showSaveIndicator,
     energy,
     stress,
     isLowEnergy,
@@ -214,23 +215,9 @@ export function ExplorationHUD(props: HUDProps) {
         />
       </AnimatePresence>
 
-      <AnimatePresence>
-        {showSaveIndicator && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-            className="absolute right-4 top-4 hud-filmic-toast autosave-indicator rounded-sm flex items-center gap-2 px-3 py-2"
-            style={{ zIndex: UI_LAYERS.HUD + 2 }}
-            role="status"
-            aria-live="polite"
-          >
-            <Save className="size-3 text-stone-500" aria-hidden />
-            <span className="hud-filmic-body text-[12px]">{t('hud.save.toast', 'Запись сохранена')}</span>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* v4.57.0: дублирующий сейв-тост снят — «Запись сохранена» рисовал и
+         * AutoSaveIndicator (тот же event game:saved, source manual).
+         * Два одинаковых блока в правом нижнем углу — из жалобы на шум. */}
 
       {/* FIX (v4.22): контекстная подсказка скрыта, пока открыт осмотр. */}
       {!examineOverlayOpen && (

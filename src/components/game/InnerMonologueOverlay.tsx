@@ -13,6 +13,7 @@ import {
   requestImmersiveVoiceChannel,
 } from '@/engine/presentation/immersiveVoiceChannel';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useHudFocusMode } from '@/hooks/useHudFocusMode';
 import { useTypewriter } from '@/hooks/useTypewriter';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -51,6 +52,9 @@ interface ThoughtState {
  */
 export function InnerMonologueOverlay() {
   const reducedMotion = useEffectiveReducedMotion();
+  /* v4.57.0 («Тихий HUD»): мысль не спорит с осмотром/наррацией/катсценой —
+   * не презентуется, пока экран занят; очередь FIFO продолжает жить. */
+  const focusMode = useHudFocusMode();
   const [thought, setThought] = useState<ThoughtState | null>(null);
   const keyCounter = useRef(0);
   const dismissTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -158,7 +162,7 @@ export function InnerMonologueOverlay() {
 
   return (
     <AnimatePresence mode="wait">
-      {thought && (
+      {thought && !focusMode && (
         <motion.div
           key={`thought-${thought.key}`}
           data-testid="inner-monologue-overlay"

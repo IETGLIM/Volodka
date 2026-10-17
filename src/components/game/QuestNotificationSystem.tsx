@@ -13,6 +13,7 @@ import { bottomQuestToastPx } from '@/shared/constants/hudLayout';
 import { useMobileDetection } from './orchestrator/useMobileDetection';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { eventBus } from '@/engine/EventBus'
+import { useHudFocusMode } from '@/hooks/useHudFocusMode';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion'
 import { QUEST_DEFINITIONS } from '@/data/quests'
 import { findNpcById } from '@/data/allNpcDefinitions'
@@ -624,8 +625,11 @@ export function QuestNotificationSystem() {
 
   /* ── Only show in gameplay modes ── */
   const mode = useGamePhase()
+  /* v4.57.0 («Тихий HUD»): квест-карточки молчат при осмотре/наррации/катсцене —
+   * цель квеста и так живёт в StoryGuidanceHUD; очередь не теряется. */
+  const focusMode = useHudFocusMode()
   if (mode === 'menu' || mode === 'intro') return null
-  if (!slotGranted) return null
+  if (!slotGranted || focusMode) return null
 
   const visibleNotifs = notifications.slice(-MAX_VISIBLE)
   const latestNotif = visibleNotifs[visibleNotifs.length - 1]

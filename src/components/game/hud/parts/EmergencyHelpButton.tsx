@@ -12,6 +12,7 @@ import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { getCurrentGuidance } from '@/engine/GuidedStoryManager';
 import { forceResetAllInteractionState } from '@/engine/interaction/emergencyInteractionReset';
 import { getFirstReadingHint } from '@/engine/guidedStory/firstReadingHint';
+import { HUD_QUIET_OPACITY, useHudQuiet } from '@/hooks/useHudQuiet';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { useCurrentSceneId } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -28,6 +29,8 @@ const IDLE_PULSE_THRESHOLD_MS = 15_000;
 export function EmergencyHelpButton() {
   const currentSceneId = useCurrentSceneId();
   const [open, setOpen] = useState(false);
+  /* v4.57.0: тихий HUD — призрак при простое. */
+  const hudQuiet = useHudQuiet();
   const [isIdle, setIsIdle] = useState(false);
   const lastInteractionRef = useRef(Date.now());
 
@@ -130,11 +133,14 @@ export function EmergencyHelpButton() {
 
   return (
     <div
-      className="absolute pointer-events-auto"
+      className="absolute pointer-events-auto transition-opacity duration-[900ms]"
       style={{
         bottom: bottomStatusEffectsPx() + 44,
         right: 16,
         zIndex: UI_LAYERS.HUD + 2,
+        /* v4.57.0: постоянная кнопка помощи тает в призрак при игре без ввода
+         * (открытый поповер не глушим — его только что открыли кликом). */
+        opacity: hudQuiet && !open ? HUD_QUIET_OPACITY : 1,
       }}
     >
       <Popover open={open} onOpenChange={setOpen}>

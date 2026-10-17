@@ -13,6 +13,7 @@ import { useAutoSaveTimestamps } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomAutoSavePx } from '@/shared/constants/hudLayout';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { HUD_QUIET_OPACITY, useHudQuiet } from '@/hooks/useHudQuiet';
 import { useMobileDetection } from './orchestrator/useMobileDetection';
 
 /* ─── Types ─── */
@@ -85,6 +86,9 @@ const ACCENT = {
 export function AutoSaveIndicator() {
   const isMobile = useMobileDetection();
   const reducedMotion = useEffectiveReducedMotion();
+  /* v4.57.0: свернувшаяся мини-иконка сейва тает в призрак при игре без ввода.
+   * Полное уведомление не глушим — это мгновенная обратная связь. */
+  const hudQuiet = useHudQuiet();
   const motionDuration = reducedMotion ? 0 : 0.35;
   const [phase, setPhase] = useState<Phase>('idle');
   const [source, setSource] = useState<SaveSource>('auto');
@@ -315,7 +319,7 @@ export function AutoSaveIndicator() {
               boxShadow: accent.shadow,
             }}
             initial={reducedMotion ? false : { opacity: 0, scale: 0.7 }}
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: hudQuiet ? HUD_QUIET_OPACITY : 1, scale: 1 }}
             exit={reducedMotion ? undefined : { opacity: 0, scale: 0.7 }}
             transition={{ duration: motionDuration, ease: [0.25, 0.46, 0.45, 0.94] }}
             title={

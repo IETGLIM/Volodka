@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useGameStore } from '@/store/gameStore';
+import { useHudFocusMode } from '@/hooks/useHudFocusMode';
 import type { TrophyNotification } from '@/store/slices/achievementSlice';
 import type { TrophyCategory } from '@/data/achievements';
 import { AriaLiveRegion } from '@/components/a11y/AriaLiveRegion';
@@ -170,6 +171,9 @@ function CelebrationCard({
 export function AchievementUnlockCelebration() {
   const trophyNotifications = useGameStore((s) => s.trophyNotifications);
   const dismissTrophyNotification = useGameStore((s) => s.dismissTrophyNotification);
+  /* v4.57.0 («Тихий HUD»): праздник ачивки не спорит с осмотром/наррацией —
+   * ждёт свободный экран (уведомление остаётся в сторе и покажется после). */
+  const focusMode = useHudFocusMode();
 
   const latest = trophyNotifications[trophyNotifications.length - 1] ?? null;
 
@@ -179,7 +183,7 @@ export function AchievementUnlockCelebration() {
 
   return (
     <AnimatePresence>
-      {latest && (
+      {latest && !focusMode && (
         <CelebrationCard key={latest.id} notification={latest} onDismiss={handleDismiss} />
       )}
     </AnimatePresence>

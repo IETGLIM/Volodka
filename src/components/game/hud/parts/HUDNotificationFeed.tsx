@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useHudQuietStyle } from '@/hooks/useHudQuiet';
+import { useHudFocusMode } from '@/hooks/useHudFocusMode';
 import { explorationLootTopPx } from '@/shared/constants/hudLayout';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { t } from '@/i18n';
@@ -32,6 +33,9 @@ const ITEM_LIFETIME_MS = 5000;
 export function HUDNotificationFeed() {
   const reducedMotion = useEffectiveReducedMotion();
   const quietStyle = useHudQuietStyle();
+  /* v4.57.0 («Тихий HUD»): в режиме фокуса (осмотр/наррация/катсцена) лента
+   * молчит — экран принадлежит одному тексту за раз. */
+  const focusMode = useHudFocusMode();
   const [items, setItems] = useState<NotificationFeedItem[]>([]);
   const cleanupRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -84,9 +88,10 @@ export function HUDNotificationFeed() {
       }
     });
 
-    const unsubLore = eventBus.on('lore:discovered', (payload) => {
-      addItem('📜', t('hud.feed.lore', `Лор: ${payload.title ?? 'Запись'}`, { title: payload.title ?? 'Запись' }), '#9db3c8');
-    });
+    /* v4.57.0: канал lore:discovered снят — единственный презентер лора —
+     * LoreDiscoveryToast. Раньше одно событие рисовалось ДВАЖДЫ (строка
+     * здесь + карточка лор-тоста ниже по той же колонке) — двойной текст
+     * из жалобы игрока «весь экран в разном тексте». */
 
     return () => {
       unsubXp();
@@ -97,7 +102,6 @@ export function HUDNotificationFeed() {
       unsubPoem();
       // no unsubThought — event removed
       unsubToast();
-      unsubLore();
     };
   }, [addItem]);
 
@@ -112,7 +116,7 @@ export function HUDNotificationFeed() {
     };
   }, []);
 
-  if (items.length === 0) return null;
+  if (items.length === 0 || focusMode) return null;
 
   return (
     <div

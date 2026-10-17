@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { MessageSquareOff } from 'lucide-react';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+import { useHudFocusMode } from '@/hooks/useHudFocusMode';
 
 /** How long the bark stays visible (ms) before auto-dismissing. */
 const BARK_DISPLAY_DURATION_MS = 2200;
@@ -24,6 +25,8 @@ interface BarkData {
 export function NpcNoDialogueBark() {
   const [bark, setBark] = useState<BarkData | null>(null);
   const reducedMotion = useEffectiveReducedMotion();
+  /* v4.57.0 («Тихий HUD»): реплика-отказ молчит при осмотре/наррации/катсцене. */
+  const focusMode = useHudFocusMode();
   const idCounterRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mountedRef = useRef(true);
@@ -93,7 +96,7 @@ export function NpcNoDialogueBark() {
       }}
     >
       <AnimatePresence mode="wait">
-        {bark && (
+        {bark && !focusMode && (
           <motion.div
             key={bark.id}
             role="status"

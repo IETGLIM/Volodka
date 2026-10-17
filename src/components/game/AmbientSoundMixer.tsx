@@ -14,6 +14,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomAmbientMixerPx, bottomRightInsetPx } from '@/shared/constants/hudLayout';
 import { audioEngine } from '@/engine/audio/AudioEngine';
 import { musicEngine } from '@/engine/MusicEngine';
+import { HUD_QUIET_OPACITY, useHudQuiet } from '@/hooks/useHudQuiet';
 import { ambientEngine } from '@/engine/audio/AmbientEngine';
 import { readAudioSettings, AUDIO_SETTINGS_CHANGED, type AudioSettingsSnapshot } from '@/engine/audio/AudioSettings';
 
@@ -113,6 +114,9 @@ function applyToEngine(engineKey: 'music' | 'sfx' | 'ambient' | null, percent: n
 
 export function AmbientSoundMixer() {
   const [isOpen, setIsOpen] = useState(false);
+  /* v4.57.0: кнопка микшера — постоянный хром, тает в призрак при игре
+   * без ввода (панель при открытии не глушим: клик будит HUD). */
+  const hudQuiet = useHudQuiet();
   const [channels, setChannels] = useState<SoundChannel[]>(readChannelDefaults);
   const channelsRef = useRef(channels);
   channelsRef.current = channels;
@@ -297,6 +301,8 @@ export function AmbientSoundMixer() {
             : `0 0 6px ${CYAN_GLOW}`,
         }}
         onClick={toggleOpen}
+        animate={{ opacity: hudQuiet && !isOpen ? HUD_QUIET_OPACITY : 1 }}
+        transition={{ duration: 0.9, ease: 'easeInOut' }}
         whileHover={{
           boxShadow: `0 0 16px ${CYAN_GLOW}, 0 0 6px rgb(var(--cyber-cyan-rgb) / 0.25)`,
           scale: 1.08,

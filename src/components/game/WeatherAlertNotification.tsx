@@ -22,7 +22,8 @@ import { eventBus } from '@/engine/EventBus';
 import { useWeatherAlertState } from '@/store/selectors';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useNotificationSlot, NOTIFY_PRIORITY } from '@/hooks/useNotificationSlot';
-import { explorationLootTopPx } from '@/shared/constants/hudLayout';
+import { useHudFocusMode } from '@/hooks/useHudFocusMode';
+import { explorationWeatherAlertTopPx } from '@/shared/constants/hudLayout';
 import { WEATHER_EFFECTS, determineWeatherType } from '@/data/weatherEffects';
 import type { EventWeatherType } from '@/shared/types/game';
 
@@ -271,6 +272,10 @@ function WeatherAlertCard({ alert, index }: { alert: WeatherAlertData; index: nu
 export function WeatherAlertNotification() {
   const [alerts, setAlerts] = useState<WeatherAlertData[]>([]);
   const slotGranted = useNotificationSlot('weather', NOTIFY_PRIORITY.weather, alerts.length > 0);
+  /* v4.57.0 («Тихий HUD»): погодный алерт молчит при осмотре/наррации/катсцене,
+   * а его якорь сдвинут ПОД бюджет ленты фида (раньше делил left-3/top:66
+   * с HUDNotificationFeed — два блока в одной точке). */
+  const focusMode = useHudFocusMode();
   const timersMap = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const timers = timersMap.current;
 
@@ -365,12 +370,12 @@ export function WeatherAlertNotification() {
       className="fixed left-3 sm:left-4 pointer-events-none flex flex-col gap-2"
       data-exploration-ui
       style={{
-        top: explorationLootTopPx(),
+        top: explorationWeatherAlertTopPx(),
         zIndex: UI_LAYERS.TOASTS,
       }}
     >
       <AnimatePresence mode="popLayout">
-        {slotGranted && alerts.map((alert, index) => (
+        {slotGranted && !focusMode && alerts.map((alert, index) => (
           <WeatherAlertCard
             key={alert.id}
             alert={alert}

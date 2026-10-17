@@ -120,7 +120,6 @@ export function useHUDController(props: HUDProps) {
   const questBadgePulse = questBadge.pulse;
   const activeQuestCount = questBadge.activeCount;
 
-  const [showSaveIndicator, setShowSaveIndicator] = useState(false);
   const timersRef = useRef(new Set<ReturnType<typeof setTimeout>>());
 
   const scheduleTimeout = useCallback((fn: () => void, ms: number) => {
@@ -143,9 +142,8 @@ export function useHUDController(props: HUDProps) {
 
   const handleSave = useCallback(() => {
     saveGame({ source: 'manual' });
-    setShowSaveIndicator(true);
-    scheduleTimeout(() => setShowSaveIndicator(false), 2000);
-  }, [saveGame, scheduleTimeout]);
+    /* v4.57.0: индикатор сейва рисует только AutoSaveIndicator — дубль снят. */
+  }, [saveGame]);
 
   const perkCount = unlockedPerks?.length ?? 0;
 
@@ -308,7 +306,6 @@ export function useHUDController(props: HUDProps) {
     questBadgePulse,
     poemBadgePulse,
     activeQuestCount,
-    showSaveIndicator,
     handleSave,
     karma,
     energy,

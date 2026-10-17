@@ -136,13 +136,19 @@ export function explorationToastStackBottomPx(isMobile = false): number {
   return explorationBottomStackHeightPx(isMobile) + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }
 
-/** Event popups (combat/scene) — top-CENTER, ниже топ-бара и бара здоровья
- *  босса. FIX (v4.17.1): раньше слот был right-3 @58px и наезжал на
+/** Event popups (combat/scene) — top-CENTER, ПОД полосой цели
+ *  (StoryGuidanceHUD, explorationObjectiveTopPx + OBJECTIVE_STRIP_HEIGHT).
+ *  FIX (v4.17.1): раньше слот был right-3 @58px и наезжал на
  *  DifficultyIndicator (top:48) и BuffDebuffTracker (top:84) правой
- *  колонки. Центр свободен: лево занято лут/лор-тостами и компасом,
- *  право — миникартой и квест-картой. */
+ *  колонки. FIX (v4.57.0): раньше top-center @96 — ТОЧНО на полосе цели
+ *  (тоже 96): событие рисовалось поверх текста задачи. Теперь цепочка
+ *  top-center строго вертикальна: компас (58) → цель (96) → события (146). */
 export function explorationEventToastTopPx(): number {
-  return EXPLORATION_HUD_LAYOUT.TOP_BAR_HEIGHT + EXPLORATION_HUD_LAYOUT.SLOT_GAP + 38;
+  return (
+    explorationObjectiveTopPx()
+    + EXPLORATION_HUD_LAYOUT.OBJECTIVE_STRIP_HEIGHT
+    + EXPLORATION_HUD_LAYOUT.SLOT_GAP
+  );
 }
 
 /** Lore/codex discovery toasts — top-left ПОД колонкой фида.
@@ -155,6 +161,14 @@ export function explorationLoreToastTopPx(): number {
     + EXPLORATION_HUD_LAYOUT.HUD_FEED_BAND_HEIGHT
     + EXPLORATION_HUD_LAYOUT.SLOT_GAP
   );
+}
+
+/** Weather alerts — под колонкой лор-тостов (v4.57.0).
+ *  FIX: раньше делил left-3/top:66 с HUDNotificationFeed — два блока в одной
+ *  точке. Теперь вся левая транзиентная колонка строго вертикальна:
+ *  фид (66..366) → лор (372..612) → погода (618+). */
+export function explorationWeatherAlertTopPx(): number {
+  return explorationLoreToastTopPx() + 240 + EXPLORATION_HUD_LAYOUT.SLOT_GAP;
 }
 
 export function bottomToolbarPx(): number {

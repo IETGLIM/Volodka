@@ -15,6 +15,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { getRunScore } from '@/engine/score/scoreEngine';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useHudQuietStyle } from '@/hooks/useHudQuiet';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 
 interface ScoreDelta {
@@ -51,6 +52,10 @@ export function ScoreHUD() {
     };
   }, []);
 
+  /* v4.57.0: чип счёта тает в призрак при игре без ввода — цифры важны
+   * в моменте начисления (дельта будит HUD через toast:add). */
+  const quietStyle = useHudQuietStyle();
+
   return (
     <div
       className="score-hud"
@@ -65,6 +70,7 @@ export function ScoreHUD() {
         flexDirection: 'column',
         alignItems: 'center',
         gap: 2,
+        ...quietStyle,
       }}
       aria-live="polite"
       aria-label={`Стихосложение: ${score}`}

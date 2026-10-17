@@ -32,6 +32,7 @@ import {
 } from '@/engine/presentation/immersiveVoiceChannel';
 import { triggerPoemCinematicVfx } from '@/engine/poemWorld/aaaPoemCinematicVfx';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useExamineOverlayOpen } from '@/hooks/useExamineOverlayOpen';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomCenterGuidancePx } from '@/shared/constants/hudLayout';
@@ -86,7 +87,14 @@ export function FirstMinutesDirector() {
       unsubFreed();
     };
   }, []);
-  const hintSuppressed = showStoryOverlay || Boolean(diegeticNarrative) || laneBusy;
+  /* v4.57.0 («Тихий HUD»): осмотр мира — тоже текстовый фокус; карточка
+   * режиссуры не висит над панелью осмотра. Хук — безусловным вызовом. */
+  const examineOverlayOpen = useExamineOverlayOpen();
+  const hintSuppressed =
+    showStoryOverlay
+    || Boolean(diegeticNarrative)
+    || laneBusy
+    || examineOverlayOpen;
 
   // VFX при сборе poem_2 — инк + хор
   const prevPoemRef = useRef(hasPoem2);
