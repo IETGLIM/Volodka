@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Texture } from 'three';
+import { SCENE_VISIBILITY } from '@/shared/constants/sceneVisibility';
 import {
   applyScenePostFx,
   computeBloomRuntime,
@@ -114,8 +115,11 @@ describe('computeVignetteRuntime', () => {
     const r = computeVignetteRuntime(profile, {
       noirMode: false, stress: 100, energy: 25, poemBoost: NO_BOOST,
     });
-    // effective = min(0.3 * 0.55, 0.75) = 0.165; stressThreshold = 1; energyFactor = 0.75
-    expect(r.darkness).toBeCloseTo(Math.min(0.165 + 0.18 + 0.06, 0.75), 10);
+    // effective = min(0.3 * vignetteDarknessScale, 0.75); stressThreshold = 1; energyFactor = 0.75
+    expect(r.darkness).toBeCloseTo(
+      Math.min(0.3 * SCENE_VISIBILITY.vignetteDarknessScale + 0.18 + 0.06, 0.75),
+      10,
+    );
     expect(r.offset).toBeCloseTo(Math.max(0.4 - 0.2 - 0.06, 0.1), 10);
   });
 
@@ -123,8 +127,11 @@ describe('computeVignetteRuntime', () => {
     const r = computeVignetteRuntime(profile, {
       noirMode: true, stress: 0, energy: 100, poemBoost: NO_BOOST,
     });
-    // effective = min(min(0.3+0.15, 0.95) * 0.55, 0.75) = 0.2475
-    expect(r.darkness).toBeCloseTo(0.2475, 10);
+    // effective = min(min(0.3+0.15, 0.95) * vignetteDarknessScale, 0.75)
+    expect(r.darkness).toBeCloseTo(
+      Math.min(0.45 * SCENE_VISIBILITY.vignetteDarknessScale, 0.75),
+      10,
+    );
     expect(r.offset).toBeCloseTo(0.4, 10);
   });
 
@@ -133,7 +140,10 @@ describe('computeVignetteRuntime', () => {
       lite: true, noirMode: true, stress: 100, energy: 0, poemBoost: { bloomIntensity: 0, vignetteDarkness: 0.04 },
     });
     expect(r.offset).toBe(0.38);
-    expect(r.darkness).toBeCloseTo(Math.min(0.28 * 0.55 + 0.04, 0.75), 10);
+    expect(r.darkness).toBeCloseTo(
+      Math.min(0.28 * SCENE_VISIBILITY.vignetteDarknessScale + 0.04, 0.75),
+      10,
+    );
   });
 });
 
@@ -167,8 +177,14 @@ describe('computeGradeRuntime', () => {
     const r = computeGradeRuntime(profile, { noirMode: true, userBrightnessOffset: -0.03 });
     expect(r.hue).toBe(0.04);
     expect(r.saturation).toBeCloseTo(Math.min(0.12 - 0.35, 0), 10);
-    expect(r.contrast).toBeCloseTo(Math.max(0, (0.28 + 0.15) - 0.03), 10);
-    expect(r.brightness).toBeCloseTo(0.02 + 0.06 - 0.03, 10);
+    expect(r.contrast).toBeCloseTo(
+      Math.max(0, (0.28 + 0.15) - SCENE_VISIBILITY.postFxContrastReduction),
+      10,
+    );
+    expect(r.brightness).toBeCloseTo(
+      0.02 + SCENE_VISIBILITY.postFxBrightnessLift - 0.03,
+      10,
+    );
   });
 });
 
@@ -186,12 +202,18 @@ describe('applyScenePostFx', () => {
 
     // hero×ultra → eskil
     expect(t.vignette.eskil).toBe(true);
-    expect(t.vignette.darkness).toBeCloseTo(Math.min(0.3 * 0.55, 0.75), 10);
+    expect(t.vignette.darkness).toBeCloseTo(
+      Math.min(0.3 * SCENE_VISIBILITY.vignetteDarknessScale, 0.75),
+      10,
+    );
     expect(t.vignette.offset).toBeCloseTo(0.4, 10);
 
     expect(t.hueSaturation.hue).toBe(0.04);
     expect(t.hueSaturation.saturation).toBeCloseTo(0.12, 10);
-    expect(t.brightnessContrast.contrast).toBeCloseTo(Math.max(0, 0.28 - 0.03), 10);
+    expect(t.brightnessContrast.contrast).toBeCloseTo(
+      Math.max(0, 0.28 - SCENE_VISIBILITY.postFxContrastReduction),
+      10,
+    );
 
     expect(t.toneMapping.mode).toBe(3);
 
@@ -241,7 +263,10 @@ describe('applyScenePostFx', () => {
       isUltraPreset: true,
       userBrightnessOffset: -0.03,
     }));
-    expect(t.brightnessContrast.brightness).toBeCloseTo(0.06 - 0.03, 10);
+    expect(t.brightnessContrast.brightness).toBeCloseTo(
+      SCENE_VISIBILITY.postFxBrightnessLift - 0.03,
+      10,
+    );
     expect(t.brightnessContrast.contrast).toBe(-0.02);
     expect(t.vignette.eskil).toBe(false);
     expect(t.vignette.offset).toBe(0.38);

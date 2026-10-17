@@ -9,12 +9,16 @@
  *  1. Unit: regex, извлечённый из ПОСТАВЛЯЕМОГО исходника (public/sw.js),
  *     обязан совпадать с реальными формами имён Vite и не трогать
  *     нехэшированные/медийные пути.
- *  2. Build-интеграция (пропускается, если dist/ отсутствует): каждый
+ *  2. Build-интеграция (регистрируется ТОЛЬКО при наличии dist/): каждый
  *     script/link-путь из СОБРАННОГО index.html обязан совпадать с правилами
  *     SW, а собранный sw.js обязан нести эти пути в PRECACHE_BUNDLE_URLS —
  *     то есть после первого успешного визита у браузера есть всё для
  *     офлайн-перезагрузки (HTML — по networkFirst-фолбэку, бандлы — из
  *     precache при install).
+ *
+ * ВАЖНО (v4.56.3): dist-зависимая часть регистрируется через if (hasBuiltArtifacts),
+ * а не describe.skipIf — Vitest исполняет колбэк describe при коллекции, поэтому
+ * readFileSync(dist/…) падал ENOENT в CI, где test:unit не предваряется сборкой.
  */
 import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -105,55 +109,60 @@ describe('sw.js STATIC_ASSET_RE против реального вывода Vit
 
 const hasBuiltArtifacts = existsSync(DIST_HTML_PATH) && existsSync(DIST_SW_PATH);
 
-describe.skipIf(!hasBuiltArtifacts)('собранный index.html ↔ правила кэша Service Worker', () => {
-  const html = readFileSync(DIST_HTML_PATH, 'utf8');
-  const builtSw = readFileSync(DIST_SW_PATH, 'utf8');
-  const bundlePaths = extractHtmlBundlePaths(html);
-  const precached = extractPrecacheBundleUrls(builtSw);
+/* Чтение собранных артефактов — только когда dist/ реально существует.
+ * describe.skipIf НЕ спасает: колбэк describe выполняется при коллекции,
+ * и readFileSync ронял весь файл в CI (без сборки dist/ отсутствует). */
+if (hasBuiltArtifacts) {
+  describe('собранный index.html ↔ правила кэша Service Worker', () => {
+    const html = readFileSync(DIST_HTML_PATH, 'utf8');
+    const builtSw = readFileSync(DIST_SW_PATH, 'utf8');
+    const bundlePaths = extractHtmlBundlePaths(html);
+    const precached = extractPrecacheBundleUrls(builtSw);
 
-  it('сборка ссылается хотя бы на один бандл (традиционный code-split)', () => {
-    expect(bundlePaths.length).toBeGreaterThan(0);
-  });
+    it('сборка ссылается хотя бы на один бандл (традиционный code-split)', () => {
+      expect(bundlePaths.length).toBeGreaterThan(0);
+    });
 
-  it('каждый script/link-путь из index.html попадает под STATIC_ASSET_RE', () => {
-    for (const url of bundlePaths) {
-      expect(staticAssetRe.test(url), `${url} обязан кэшироваться офлайн`).toBe(true);
-    }
-  });
+    it('каждый script/link-путь из index.html попадает под STATIC_ASSET_RE', () => {
+      for (const url of bundlePaths) {
+        expect(staticAssetRe.test(url), `${url} обязан кэшироваться офлайн`).toBe(true);
+      }
+    });
 
-  it('PRECACHE_BUNDLE_URLS в собранном sw.js покрывает все пути из index.html', () => {
-    expect(precached.length).toBeGreaterThan(0);
-    for (const url of bundlePaths) {
-      expect(precached, `${url} обязан быть в precache при install`).toContain(url);
-    }
-  });
+    it('PRECACHE_BUNDLE_URLS в собранном sw.js покрывает все пути из index.html', () => {
+      expect(precached.length).toBeGreaterThan(0);
+      for (const url of bundlePaths) {
+        expect(precached, `${url} обязан быть в precache при install`).toContain(url);
+      }
+    });
 
-  it('инъекция завершена: маркер не остался в собранном sw.js', () => {
-    expect(builtSw.includes('__PRECACHE_BUNDLES__')).toBe(false);
-  });
+    it('инъекция завершена: маркер не остался в собранном sw.js', () => {
+      expect(builtSw.includes('__PRECACHE_BUNDLES__')).toBe(false);
+    });
 
-  it('каждый прекэшированный путь сам совпадает со STATIC_ASSET_RE', () => {
-    for (const url of precached) {
-      expect(staticAssetRe.test(url), url).toBe(true);
-    }
-  });
+    it('каждый прекэшированный путь сам совпадает со STATIC_ASSET_RE', () => {
+      for (const url of precached) {
+        expect(staticAssetRe.test(url), url).toBe(true);
+      }
+    });
 
-  it('shell-список не потерялся при инъекции', () => {
-    expect(builtSw).toContain("const SHELL_PRECACHE_URLS = ['/', '/manifest.json', '/logo.svg', '/icon.svg'];");
-  });
+    it('shell-список не потерялся при инъекции', () => {
+      expect(builtSw).toContain("const SHELL_PRECACHE_URLS = ['/', '/manifest.json', '/logo.svg', '/icon.svg'];");
+    });
 
-  it('fetch-хендлер реально маршрутизирует статику через cache-first', () => {
-    expect(builtSw).toMatch(/STATIC_ASSET_RE\.test\(path\)/);
-    expect(builtSw).toMatch(/cacheFirst\(request, CACHE_NAME\)/);
-  });
+    it('fetch-хендлер реально маршрутизирует статику через cache-first', () => {
+      expect(builtSw).toMatch(/STATIC_ASSET_RE\.test\(path\)/);
+      expect(builtSw).toMatch(/cacheFirst\(request, CACHE_NAME\)/);
+    });
 
-  it('install защищён от зависания: каждый прекэш-fetch с жёстким таймаутом', () => {
-    // QA-кейс: fetch из контекста SW может висеть вечно в части окружений —
-    // без потолка install блокирует активацию SW целиком.
-    expect(builtSw).toMatch(/AbortSignal\.timeout\(PRECACHE_TIMEOUT_MS\)/);
-    expect(builtSw).toMatch(/urls\.map\(\(url\) => precacheOne\(cache, url\)\)/);
-    expect(builtSw).toMatch(/await self\.skipWaiting\(\)/);
-    // addAll-батчей больше нет: один сбой не роняет весь прекэш.
-    expect(builtSw).not.toMatch(/cache\.addAll\(/);
+    it('install защищён от зависания: каждый прекэш-fetch с жёстким таймаутом', () => {
+      // QA-кейс: fetch из контекста SW может висеть вечно в части окружений —
+      // без потолка install блокирует активацию SW целиком.
+      expect(builtSw).toMatch(/AbortSignal\.timeout\(PRECACHE_TIMEOUT_MS\)/);
+      expect(builtSw).toMatch(/urls\.map\(\(url\) => precacheOne\(cache, url\)\)/);
+      expect(builtSw).toMatch(/await self\.skipWaiting\(\)/);
+      // addAll-батчей больше нет: один сбой не роняет весь прекэш.
+      expect(builtSw).not.toMatch(/cache\.addAll\(/);
+    });
   });
-});
+}
