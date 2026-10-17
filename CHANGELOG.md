@@ -1,3 +1,26 @@
+## v4.56.3 (2026-10-17) — fix(ci): зелёный CI — тесты догнали константы видимости v4.56.1
+
+Жалоба: CI красный на каждом пуже со времён v4.52.0 (присланный игроком лог:
+«check failed», 6 failed | 2903 passed).
+
+### Root causes (оба — тестовая инфраструктура, не рантайм игры)
+- **applyScenePostFx.test** — в v4.56.1 «корневой ремонт видимости» изменил
+  SCENE_VISIBILITY (vignetteDarknessScale 0.55→0.42, postFxContrastReduction
+  0.03→0.04, postFxBrightnessLift 0.06→0.1), а тесты продолжали ждать старые
+  числа: 6 красных (0.366 vs 0.405 и т.д.). Теперь ожидания ВЫВОДЯТСЯ из
+  SCENE_VISIBILITY — будущая правка констант больше не роняет тесты молча.
+- **swCacheRules.test** — dist-зависимая часть читала dist/index.html внутри
+  колбэка describe.skipIf; Vitest исполняет колбэк describe при коллекции,
+  поэтому в CI (без vite build) файл падал ENOENT целиком. Теперь suite
+  регистрируется через if (hasBuiltArtifacts) — читается только реальный dist.
+- **package.json 4.55.0 → 4.56.3** — APP_VERSION в меню отставал от кода
+  на 3 версии (часть эффекта «не вижу разницу»: чип версии врал).
+
+### Верификация
+- vitest: 461 файлов / 2915 тестов — passed; tsc --noEmit — 0; eslint — 0;
+  validate:protected — 46 стихов и 21 имён целы.
+- GitHub Actions: **success** на 8c1ce96 (первый зелёный ран с октября).
+
 ## v4.55.0 (2026-10-16) — feat(score): «Стихосложение» — очки забега, Зал славы (localStorage), кулдаун кувырка в HUD; 3 новые кат-сцены; чистка мёртвого CSS
 
 Запрос игрока (раунд 2): score system + local high-score table + обратная связь
