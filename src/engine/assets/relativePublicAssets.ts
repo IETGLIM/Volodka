@@ -33,7 +33,22 @@ export function normalizeBaseForRelativeResolve(base: string): string {
   return /\/[^/.?#]+$/.test(base) ? `${base}/` : base;
 }
 
+/**
+ * v4.56.5 — пути, УЖЕ собранные publicAsset() с BASE_URL маунта («/game/…»),
+ * абсолютны и корректны: повторный document-relative резолв давал
+ * «/game/game/…» → 404 (v4.56.4 вскрыл: старый резолв был прав для них лишь
+ * случайно — съедание сегмента компенсировало префикс).
+ */
+export function isMountedPublicPath(url: string, baseMount: string): boolean {
+  return baseMount !== '' && (url === baseMount || url.startsWith(`${baseMount}/`));
+}
+
 let installed = false;
+
+/** '' для base '/', '/game' для base '/game/', '.' для base './' (itch). */
+const BASE_MOUNT = (
+  (import.meta as unknown as { env?: { BASE_URL?: string } }).env?.BASE_URL ?? '/'
+).replace(/\/+$/, '');
 
 export function installRelativePublicAssetResolver(): void {
   if (installed) return;
@@ -48,15 +63,17 @@ export function installRelativePublicAssetResolver(): void {
       // Idempotent — повторный вызов после HMR не ломает цепочку.
       (manager as { __relativeResolverInstalled?: boolean }).__relativeResolverInstalled = false;
       manager.resolveURL = (url: string): string => {
-        if (typeof url === 'string' && url.startsWith('/') && !url.startsWith('//')) {
-          try {
-            const normalizedBase = normalizeBaseForRelativeResolve(document.baseURI);
-            return new URL(url.slice(1), normalizedBase).toString();
-          } catch {
-            return url;
-          }
+        if (typeof url !== 'string' || !url.startsWith('/') || url.startsWith('//')) {
+          return url;
         }
-        return url;
+        // Уже с префиксом маунта (publicAsset + BASE_URL) — не трогаем (v4.56.5).
+        if (isMountedPublicPath(url, BASE_MOUNT)) return url;
+        try {
+          const normalizedBase = normalizeBaseForRelativeResolve(document.baseURI);
+          return new URL(url.slice(1), normalizedBase).toString();
+        } catch {
+          return url;
+        }
       };
     });
   } catch {

@@ -8,7 +8,10 @@
  * (KTX2-транскодер не грузился → текстуры стен/пола не транскодились).
  */
 import { describe, expect, it } from 'vitest';
-import { normalizeBaseForRelativeResolve } from './relativePublicAssets';
+import {
+  isMountedPublicPath,
+  normalizeBaseForRelativeResolve,
+} from './relativePublicAssets';
 
 /** Зеркало прод-поведения: three.js resolveURL для корневых путей. */
 function resolve(path: string, base: string): string {
@@ -54,5 +57,23 @@ describe('normalizeBaseForRelativeResolve', () => {
     expect(resolve('/hdri/lebombo_1k.hdr', 'https://volodka.vercel.app/')).toBe(
       'https://volodka.vercel.app/hdri/lebombo_1k.hdr',
     );
+  });
+});
+
+describe('isMountedPublicPath (v4.56.5 — publicAsset-пути не ре-резолвятся)', () => {
+  it('маунт /game: уже собранные BASE_URL-пути пропускаются как есть', () => {
+    expect(isMountedPublicPath('/game/textures/polyhaven/wood_floor/wood_floor_diff_1k.webp', '/game')).toBe(true);
+    expect(isMountedPublicPath('/game/models/animations/working.glb', '/game')).toBe(true);
+    expect(isMountedPublicPath('/game', '/game')).toBe(true);
+  });
+
+  it('корневые URL (сырые константы) — на резолв', () => {
+    expect(isMountedPublicPath('/basis/basis_transcoder.js', '/game')).toBe(false);
+    expect(isMountedPublicPath('/models/interiors/pier.glb', '/game')).toBe(false);
+    expect(isMountedPublicPath('/gameplay-sneak/x', '/game')).toBe(false); // префикс-сосед, не маунт
+  });
+
+  it('корневой билд (BASE \'\') — ре-резолв всего (поведение Vercel/itch)', () => {
+    expect(isMountedPublicPath('/models/interiors/pier.glb', '')).toBe(false);
   });
 });
