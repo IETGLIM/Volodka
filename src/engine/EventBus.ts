@@ -25,15 +25,18 @@ export type { EventMap, EventName, EmptyEventPayload } from '@/engine/events';
 export { EMPTY_EVENT_PAYLOAD } from '@/engine/events';
 
 export interface EventBusOptions {
-  /** Hard cap on typed handlers per event key (default 20). */
+  /** Hard cap on typed handlers per event key (default 64).
+   *  FIX (v4.56): поднят с 20 — у 'scene:enter' 25+ легитимных системных
+   *  подписчиков (player, camera, audio, HUD, markers, guide…), и в dev-режиме
+   *  21-я подписка роняла AaaImmersiveGuide / AaaWorldMarkerSystem /
+   *  EmergencyHelpButton через ErrorBoundary:gameplay — игрок получал
+   *  ЧЁРНЫЙ ЭКРАН вместо мира. */
   maxHandlersPerEvent?: number;
-  /** Hard cap on onAny catch-all handlers (default 20). */
+  /** Hard cap on onAny catch-all handlers (default 48). */
   maxAnyHandlers?: number;
-  /** Strict capacity mode: throw when the handler cap is reached (default true).
-   *  FIX (robustness): прод-синглтон переключён на нестрогий режим — раньше
-   *  21-я module-level подписка кидала исключение при БУТЕ игры (hard crash).
-   *  В проде превышение теперь деградирует в devWarn, в dev/тестах throw
-   *  сохранён как ранний детектор утечек подписок. */
+  /** Strict capacity mode: throw when the handler cap is reached (default: only in tests).
+   *  FIX (v4.56): прод/dev-браузер — мягкая деградация (devWarn); throw сохранён
+   *  в юнит-тестах как ранний детектор утечек подписок. */
   strictCapacity?: boolean;
 }
 
@@ -133,9 +136,12 @@ export class EventBusClass<TMap extends object = EventMap>
   private autoReviveCount = 0;
 
   constructor(options: EventBusOptions = {}) {
-    this.maxHandlersPerEvent = options.maxHandlersPerEvent ?? 20;
-    this.maxAnyHandlers = options.maxAnyHandlers ?? 20;
-    this.strictCapacity = options.strictCapacity ?? true;
+    this.maxHandlersPerEvent = options.maxHandlersPerEvent ?? 64;
+    this.maxAnyHandlers = options.maxAnyHandlers ?? 48;
+    // Strict throw остаётся только в юнит-тестах (ранний детектор утечек).
+    // В dev-браузере и проде — мягкая деградация: игра НЕ должна падать
+    // из-за подписки HUD-компонента при переходе между сценами.
+    this.strictCapacity = options.strictCapacity ?? process.env.NODE_ENV === 'test';
   }
 
   private assertHandlerCapacity(currentCount: number, limit: number, label: string): void {
@@ -440,9 +446,12 @@ export function createEventBus<TMap extends object = EventMap>(
 /** Singleton event bus instance — typed with the consolidated EventMap.
  *  FIX (robustness): в проде кап обработчиков деградирует мягко (devWarn),
  *  а не кидает исключение на 21-й подписке — module-level подписка, попавшая
- *  в кап при БУТЕ игры, раньше роняла весь экран загрузки. */
+ *  в кап при БУТЕ игры, раньше роняла весь экран загрузки.
+ *  FIX (v4.56): strict throw теперь ТОЛЬКО в тестах. В dev-браузере подписка
+ *  сверх капа больше не кидает — иначе ErrorBoundary:gameplay убивал рендер
+ *  3D-мира (чёрный экран) при переходе коридор→улица. */
 export const eventBus = createEventBus({
-  strictCapacity: process.env.NODE_ENV !== 'production',
+  strictCapacity: process.env.NODE_ENV === 'test',
 });
 
 export function disposeEventBus(): void {

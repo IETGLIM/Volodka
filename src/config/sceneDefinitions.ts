@@ -206,14 +206,18 @@ export const street_night_def: SceneDefinition = {
   ceilings: [],
   visualComponent: 'StreetVisual',
   lights: [
-    { position: [0, 8, 2], intensity: 1.8, color: '#8899cc', distance: 40 },
-    { position: [-5, 5, -6], intensity: 1.2, color: '#6688aa', distance: 28 },
-    { position: [6, 5, 8], intensity: 1.2, color: '#6688aa', distance: 28 },
-    { position: [0, 3, -10], intensity: 0.8, color: '#556688', distance: 22 },
-    { position: [0, 6, 0], intensity: 0.6, color: '#ccbbaa', distance: 30 },
+    // FIX (v4.56): 0.6–1.8 → 18–45 кд. В физических единицах three 0.172
+    // лампа 1.8 кд на высоте 8 м даёт ~0.03 люкс — улица была чёрной.
+    // Теперь это честные фонари: ночь читается, неон и витрины работают.
+    { position: [0, 8, 2], intensity: 45, color: '#8899cc', distance: 40 },
+    { position: [-5, 5, -6], intensity: 30, color: '#6688aa', distance: 28 },
+    { position: [6, 5, 8], intensity: 30, color: '#6688aa', distance: 28 },
+    { position: [0, 3, -10], intensity: 22, color: '#556688', distance: 22 },
+    { position: [0, 6, 0], intensity: 16, color: '#ccbbaa', distance: 30 },
   ],
   ambientColor: '#3a3a58',
-  ambientIntensity: 0.68,
+  // FIX (v4.56): 0.68 → 0.9 — ночное небо подсвечивает силуэты.
+  ambientIntensity: 0.9,
   groundColor: '#28283e',
   fogEnabled: true,
   fog: { near: 12, far: 52, fogColor: '#080c16' },
@@ -279,7 +283,7 @@ export const cafe_evening_def: SceneDefinition = {
   ambientIntensity: 0.55,
   groundColor: '#181828',
   fogEnabled: true,
-  fog: { near: 5, far: 14 },
+  fog: { near: 7, far: 17 },
   entryText: 'Кофе, синий свет и тихие разговоры.',
 };
 
@@ -394,15 +398,21 @@ export const volodka_corridor_def: SceneDefinition = {
   ],
   visualComponent: 'VolodkaCorridorVisual',
   lights: [
-    { position: [0, 2.5, 0], intensity: 0.7, color: '#ccaa55', distance: 10 },
-    { position: [0, 2.5, -5], intensity: 0.3, color: '#4466aa', distance: 8 },
-    { position: [0, 2.5, 5], intensity: 0.2, color: '#334488', distance: 7 },
+    { position: [0, 2.5, 0], intensity: 1.4, color: '#ccaa55', distance: 12 },
+    { position: [0, 2.5, -5], intensity: 0.7, color: '#5570b5', distance: 9 },
+    { position: [0, 2.5, 5], intensity: 0.55, color: '#4a5c95', distance: 8 },
   ],
-  ambientColor: '#1e1a28',
-  ambientIntensity: 0.48,
-  groundColor: '#15131e',
+  // FIX (v4.56): ambientIntensity 0.48 → 0.78 — «коридор-коммуналка» читается как
+  // вечерний, а не как чёрная яма; noir держат тёплые лампы и виньетка.
+  ambientColor: '#282038',
+  ambientIntensity: 0.78,
+  groundColor: '#1a1622',
   fogEnabled: true,
-  fog: { near: 4, far: 12 },
+  // FIX (v4.56): было { near: 4, far: 12 } — при длине коридора 16 м фог
+  // УДУШАЛ сцену: с точка спавна (z=5) ВСЁ дальше 4 м тонуло в черноте.
+  // Игрок видел чёрный экран с одинокой лампой. Теперь дымка
+  // только на дальнем конце (12–26 м) — глубина без черноты.
+  fog: { near: 12, far: 26 },
   entryText: 'Пустой коридор. Эхо чужих шагов.',
 };
 
@@ -465,7 +475,7 @@ export const home_evening_def: SceneDefinition = {
   ambientIntensity: 0.68,
   groundColor: '#3a2a1a',
   fogEnabled: true,
-  fog: { near: 5, far: 11 },
+  fog: { near: 7, far: 14 },
   entryText: 'Тёплый свет. Запах домашнего хлеба.',
 };
 
@@ -727,7 +737,7 @@ export const library_day_def: SceneDefinition = {
   ambientIntensity: 0.5,
   groundColor: '#8a7a50',
   fogEnabled: true,
-  fog: { near: 6, far: 16 },
+  fog: { near: 8, far: 19 },
   entryText: 'Пыль и мудрость. Стеллажи до потолка.',
 };
 
@@ -950,7 +960,7 @@ export const abandoned_factory_def: SceneDefinition = {
   ambientIntensity: 0.55,
   groundColor: '#25221e',
   fogEnabled: true,
-  fog: { near: 4, far: 16, fogColor: '#1a1408' },
+  fog: { near: 7, far: 18, fogColor: '#1a1408' },
   transitionStyle: 'darken',
   entryText: 'Ржавчина и гул. Призраки конвейера.',
 };
@@ -1008,7 +1018,7 @@ export const solnysh_room_def: SceneDefinition = {
   ambientIntensity: 0.65,
   groundColor: '#2e2820',
   fogEnabled: true,
-  fog: { near: 5, far: 12 },
+  fog: { near: 7, far: 15 },
   entryText: 'Ковры, кофе и акварели. Дом внутри дома.',
 };
 
@@ -1065,7 +1075,7 @@ export const zarema_albert_room_def: SceneDefinition = {
   ambientIntensity: 0.65,
   groundColor: '#2e2820',
   fogEnabled: true,
-  fog: { near: 5, far: 12 },
+  fog: { near: 7, far: 15 },
   entryText: 'Два мира под одной крышей. Шёлк и схемы.',
 };
 
@@ -1177,7 +1187,7 @@ export const factory_basement_def: SceneDefinition = {
   ambientIntensity: 0.45,
   groundColor: '#1c2220',
   fogEnabled: true,
-  fog: { near: 4, far: 14 },
+  fog: { near: 7, far: 18 },
   transitionStyle: 'dissolve',
   entryText: 'Под землёй. Шёпот машин и старых тайн.',
 };

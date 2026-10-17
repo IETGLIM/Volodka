@@ -271,7 +271,7 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
       const t = state.clock.elapsedTime;
       const dip = Math.sin(t * 8) > 0.92 ? 0.35 : 1.0;
       const flicker = (0.75 + 0.18 * Math.sin(t * 7.3) + 0.07 * Math.sin(t * 23.1)) * dip;
-      flickerLightRef.current.intensity = flicker * 2.5;
+      flickerLightRef.current.intensity = flicker * 18;
     }
 
     // Interactive object animations — smooth lerp toward target rotation
@@ -456,11 +456,14 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         <mesh geometry={geo_box_9} material={mat_5} />
         {/* Lamp shade */}
         <mesh position={[0, -0.1, 0]} geometry={geo_cyl_10} material={mat_6} />
+        {/* FIX (v4.56): 3.5 → 26 кд (three 0.172 физические света: освещённость = кд/м²).
+            При 3.5 кд лампа освещала лишь круг радиусом ~1 м — остальное чернота. */}
         <pointLight
           position={[0, -0.2, 0]}
           color="#ffdd90"
-          intensity={3.5}
-          distance={12}
+          intensity={26}
+          distance={16}
+          decay={2}
           castShadow
           shadow-mapSize-width={256}
           shadow-bias={CANONICAL_SHADOW_BIAS} shadow-normalBias={CANONICAL_SHADOW_NORMAL_BIAS}
@@ -482,8 +485,9 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
           ref={flickerLightRef}
           position={[0, -1.2, 0]}
           color="#ffdd90"
-          intensity={2.5}
-          distance={10}
+          intensity={18}
+          distance={14}
+          decay={2}
         />
       </group>
 
@@ -763,11 +767,15 @@ export function VolodkaCorridorVisual({ livePlayerPositionRef: _livePlayerPositi
         <mesh position={[0.02, 1.8, 0]} rotation-y={-Math.PI / 2} geometry={geo_pln_60} material={mat_53} />
       </group>
 
-      {/* ── Corridor ambient fill — warm overhead ── */}
-      <pointLight position={[0, 2.0, 1.5]} color="#ffcc88" intensity={2.0} distance={10} />
+      {/* ── Corridor ambient fill — warm overhead ──
+          FIX (v4.56): игрок видел кромешную тьму. Три точечных источника
+          вдоль коридора вместо одного, физические интенсивности (кд). */}
+      <pointLight position={[0, 2.0, 1.5]} color="#ffcc88" intensity={22} distance={14} decay={2} />
+      <pointLight position={[0, 2.1, -5.5]} color="#ffb877" intensity={16} distance={11} decay={2} />
+      <pointLight position={[0, 2.1, 7.5]} color="#ffbf82" intensity={14} distance={10} decay={2} />
 
-      {/* ── Dim ambient fill ── */}
-      <pointLight position={[0, 1.5, 0]} color="#4a4050" intensity={1.2} distance={10} />
+      {/* ── Ambient fill — холодный подсос, чтобы тени не проваливались в черноту ── */}
+      <pointLight position={[0, 1.5, 0]} color="#5a5162" intensity={7} distance={16} decay={2} />
 
       {/* ── Dust particles ── REMOVED: AtmosphericEffects.DustMotes already
           covers volodka_corridor (DUST_SCENES set), so this inline

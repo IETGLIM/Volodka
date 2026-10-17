@@ -80,21 +80,23 @@ function CelebrationCard({
         message={`Достижение разблокировано: ${trophy.name}. ${trophy.description}`}
         priority="assertive"
       />
+      {/* FIX (v4.56): было fullscreen-оверлеем на слое CINEMATIC_TRANSITION —
+          перекрывал паузу и перехватывал ВСЕ клики (игрок «застревал»).
+          Теперь — неблокирующий угловой тост (WoW-стиль): под меню паузы,
+          не мешает ни бою, ни диалогам, ни исследованию. */}
       <motion.div
-        className="fixed inset-0 flex items-center justify-center cursor-pointer"
-        style={{ zIndex: UI_LAYERS.CINEMATIC_TRANSITION }}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        className="fixed top-4 right-4 left-4 sm:left-auto sm:w-[380px] flex justify-end cursor-pointer"
+        style={{ zIndex: UI_LAYERS.TOASTS, pointerEvents: 'none' }}
+        initial={{ opacity: 0, x: 60 }}
+        animate={{ opacity: 1, x: 0 }}
+        exit={{ opacity: 0, x: 60 }}
         transition={{ duration: 0.3 }}
         onClick={handleClick}
         role="dialog"
         aria-label="Достижение разблокировано"
       >
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm achievement-celebration-overlay" />
-
         <motion.div
-          className="relative flex flex-col items-center gap-4 px-8 py-6 rounded-2xl border glass-celebration"
+          className="relative pointer-events-auto flex flex-col items-center gap-4 px-8 py-6 rounded-2xl border glass-celebration"
           style={{
             borderColor: `${meta.color}55`,
             background: 'linear-gradient(145deg, rgba(15,23,42,0.92) 0%, rgba(0,0,0,0.95) 100%)',

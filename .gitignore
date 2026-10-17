@@ -99,3 +99,4 @@ qa-screenshots/
 # bun.lock / bun.lockb should not be committed — they drift from package-lock.json.
 bun.lock
 bun.lockb
+qa/
