@@ -1,3 +1,25 @@
+## v4.56.6 (2026-10-17) — fix(hud): плашка «Голос» больше не перекрывается WoW-панелью
+
+Репорт игрока: «Текст Голоса: Ты просыпаешься и далее — пересекается с панелью интерфейса».
+
+### Root cause (воспроизведено в браузере, скриншот QA)
+- Плашка диегетической наррации (DiegeticDialogueHud, спикер «Голос», kind
+  'story') опускается к нижнему краю: diegeticDialogueBottomPadCss при
+  подавлённом нижнем стеке даёт 16px. Контракт «плашка владеет низом экрана»
+  честно исполняют QuickUseBar, PoetryPowerBar и MobileActionButtons — все
+  подписаны на useExplorationBottomHudVisible.
+- QuickAccessToolbar (WoW-хотбар M/I/L/K/J/P + XP-полоса) был ЕДИНСТВЕННЫМ
+  элементом нижнего стека без этой подписки: resolveContext прятал панель
+  только при narrativeKind==='dialogue'. При kind==='story' контекст
+  оставался 'exploration' → панель висела на fixed bottom:60px и рисовалась
+  поверх текста «Ты просыпаешься…» и вариантов выбора.
+
+### Fix
+- QuickAccessToolbar: active = context==='exploration' && bottomHudVisible —
+  тот же единый сигнал подавления, что у всего нижнего стека.
+- +5 регресс-тестов (components): story-плашка скрывает панель; dialogue —
+  тоже; закрытие возвращает панель; XP-полоса на месте.
+
 ## v4.56.5 (2026-10-17) — fix(assets): publicAsset-пути маунта не ре-резолвятся (завершение 4.56.4)
 
 QA после 4.56.4: /game/game/textures/... и /game/game/models/animations/working.glb 404 — задвоение префикса.

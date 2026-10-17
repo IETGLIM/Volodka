@@ -6,6 +6,7 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import { useOrchestratorNarrativeOverlay, useOrchestratorShell } from '@/store/selectors';
 import { useProgressionSummary } from '@/store/selectors';
+import { useExplorationBottomHudVisible } from '@/hooks/useExplorationBottomHud';
 import { firePanelShortcut } from '@/engine/input/panelShortcutDispatcher';
 import { t } from '@/i18n';
 
@@ -96,6 +97,15 @@ export function QuickAccessToolbar({
 }: QuickAccessToolbarProps) {
   const { mode, mainMenuOpen } = useOrchestratorShell();
   const { showStoryOverlay, narrativeKind } = useOrchestratorNarrativeOverlay();
+  /* v4.56.6 FIX (overlap «Голос × панель интерфейса»): диегетическая плашка
+   * наррации («Голос: Ты просыпаешься…») опускается к нижнему краю
+   * (diegeticDialogueBottomPadCss → 16px) и считает весь нижний стек скрытым.
+   * QuickUseBar/PoetryPowerBar/MobileActionButtons подчиняются сигналу
+   * useExplorationBottomHudVisible, а хотбар — нет: resolveContext прятал
+   * панель только при kind==='dialogue', поэтому при story-плашке WoW-хотбар
+   * с XP-полосой рисовался поверх текста и вариантов выбора. Теперь панель
+   * живёт тем же контрактом, что и весь нижний стек. */
+  const bottomHudVisible = useExplorationBottomHudVisible();
   // v4.51.0: классическая XP-полоса под панелью (как в WoW — над панелью
   // действий). Узкая подписка на прогрессию.
   const { level, xp, xpToNextLevel: xpToNext } = useProgressionSummary();
@@ -117,7 +127,7 @@ export function QuickAccessToolbar({
     onOpenJournal,
     onOpenMenu,
   });
-  const active = context === 'exploration';
+  const active = context === 'exploration' && bottomHudVisible;
 
   // Show toolbar after a short delay
   useEffect(() => {
