@@ -23,7 +23,12 @@ import {
 import { ContainerLootPanel } from '@/components/game/ContainerLootPanel';
 import { InteractionRippleEffect } from '@/components/game/InteractionRippleEffect';
 import { SkillCheckDisplay } from '@/components/game/SkillCheckDisplay';
-import { FirstMinutesDirector } from '@/components/game/firstMinutes/FirstMinutesDirector';
+/* v4.58.0 «Ровный экран»: FirstMinutesDirector снят с экрана — карточка
+ * режиссуры первых минут + пулля «[WASD] ОСМОТРЕТЬСЯ / [E] ВЗАИМОДЕЙСТВИЕ»
+ * дублировали InteractionHintPopup и застилали центр. Управление игрок
+ * осваивает за первые 10 секунд сам («показывай, не рассказывай»).
+ * Компонент остаётся в кодовой базе (его FirstWakeControlsHint использует
+ * ProloguePerfectionOverlay). */
 import { useNpcMilestoneDialogueOpener } from '@/hooks/useNpcMilestoneDialogueOpener';
 
 type Props = {
@@ -88,7 +93,7 @@ export function OrchestratorGameplayLayer({
     <>
       <GameplayExplorationNotifications />
       <GameplaySharedEffects />
-      <FirstMinutesDirector />
+      {/* v4.58.0: FirstMinutesDirector снят — см. комментарий у импортов. */}
       <GameplaySceneBanner sceneBanner={sceneBanner} />
       <GameplayAmbientExplorationHud />
       <GameplayExplorationHud

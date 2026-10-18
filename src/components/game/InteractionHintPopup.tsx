@@ -197,14 +197,12 @@ export function InteractionHintPopup() {
                   {hint.label}
                 </span>
 
-                {/* Optional description */}
+                {/* v4.58.0 «Ровный экран»: описание («Рабочий стол высится среди
+                    утреннего беспорядка…») больше не рисуется в постоянном
+                    промпте — до взаимодействия экран читается миром, полный
+                    текст живёт в панели осмотра (E) и в aria-строке выше. */}
                 {hint.description && (
-                  <span
-                    className="hint-description"
-                    style={{ color: `${accent.color}88` }}
-                  >
-                    {hint.description}
-                  </span>
+                  <span className="sr-only">{hint.description}</span>
                 )}
               </div>
             </div>

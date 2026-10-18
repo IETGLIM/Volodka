@@ -6,20 +6,17 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useContextualHints } from '@/hooks/useContextualHints';
-import { useHudProximityFxActive } from '@/hooks/useHudProximityFxActive';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
 import { useIsMobileVisual } from '@/hooks/use-mobile';
 import { useExamineOverlayOpen } from '@/hooks/useExamineOverlayOpen';
 import { useHUDController } from '@/components/game/hud/useHUDController';
 import type { HUDProps } from '@/components/game/hud/hudTypes';
-import { DifficultyIndicator } from '@/components/game/DifficultyIndicator';
 import { explorationQuestCardTopPx, bottomCenterHintTertiaryPx, EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import { CombatPreEngagementWarning } from '@/components/game/hud/parts/CombatPreEngagementWarning';
 import { HazardStatusIndicator } from '@/components/game/hud/parts/HazardStatusIndicator';
 import { CityWhisperOverlay } from '@/components/game/hud/parts/CityWhisperOverlay';
 import { ContextualHint } from '@/components/game/hud/parts/ContextualHint';
-import { EnhancedCrosshairPrompt } from '@/components/game/EnhancedCrosshairPrompt';
 import { DynamicCrosshair } from '@/components/game/hud/parts/DynamicCrosshair';
 import { HUDChromaticEdge } from '@/components/game/hud/parts/HUDChromaticEdge';
 import { InteractionCooldownRing } from '@/components/game/hud/parts/InteractionCooldownRing';
@@ -28,7 +25,7 @@ import { NPCProximityIndicator } from '@/components/game/hud/parts/NPCProximityI
 import { LootProximityIndicator } from '@/components/game/hud/parts/LootProximityIndicator';
 import { PhysicsDegradedDevBadge } from '@/components/game/hud/parts/PhysicsDegradedDevBadge';
 import { AssetDiagnosticsBadge } from '@/components/game/hud/parts/AssetDiagnosticsBadge';
-import { QuestDirectionArrow } from '@/components/game/hud/parts/QuestDirectionArrow';
+import { ZoneNameLabel } from '@/components/game/hud/parts/ZoneNameLabel';
 import { RainScreenEffect } from '@/components/game/hud/parts/RainScreenEffect';
 import { SceneAmbientVignette } from '@/components/game/hud/parts/SceneAmbientVignette';
 import { SceneTopBarHud } from '@/components/game/hud/SceneTopBarHud';
@@ -101,7 +98,6 @@ function CriticalStatusWhisper({
 
 export function ExplorationHUD(props: HUDProps) {
   const state = useHUDController(props);
-  const proximityFxActive = useHudProximityFxActive();
   const { currentHint, dismissHint } = useContextualHints();
   const reducedMotion = useEffectiveReducedMotion();
   const isMobile = useIsMobileVisual();
@@ -203,7 +199,10 @@ export function ExplorationHUD(props: HUDProps) {
       {/* Subtle sparkle on nearby interactables — show-don't-tell
           affordance that draws the eye without a text prompt. */}
       {!CLASSIC_UI && <InteractableSparkle />}
-      {proximityFxActive && !examineOverlayOpen ? <EnhancedCrosshairPrompt /> : null}
+      {/* v4.58.0 «Ровный экран»: EnhancedCrosshairPrompt снят — постоянный
+          промпт у прицела дублировал InteractionHintPopup (тот же хук
+          useHudProximityFxActive гейтил их попеременно). Один промпт снизу
+          по центру — [E] + действие, без стихов до взаимодействия. */}
 
       <AnimatePresence>
         <CriticalStatusWhisper
@@ -235,7 +234,9 @@ export function ExplorationHUD(props: HUDProps) {
           burst + soft gold flash on quest:complete_objective. ~1.5s lifetime. */}
       <ObjectiveCompleteVfx />
 
-      <QuestDirectionArrow />
+      {/* v4.58.0: QuestDirectionArrow снят — третий слой навигации поверх
+          миникарты и квест-трекера. Направление показывают мир (двери/маркеры
+          AaaWorldMarkerSystem) и ObjectiveBeacon (после 15с потери цели).
       {/* Subtle amber chevron at screen edge pointing toward objective —
           only shows after 15s of not finding the target. Show-don't-tell. */}
       <ObjectiveBeacon />
@@ -244,30 +245,10 @@ export function ExplorationHUD(props: HUDProps) {
       <PhysicsDegradedDevBadge />
       <AssetDiagnosticsBadge />
 
-      {/* Difficulty indicator — top-right. The main rotating canvas minimap is
-          mounted separately by OrchestratorGameplayLayer as <GameplayMinimap>
-          (MinimapComponent), so we do NOT render a second <CyberpunkMinimap>
-          here to avoid duplicate rAF loops and visual overlap. */}
-      {!isMobile && (
-        <div
-          className="absolute right-4 flex flex-col items-end gap-2 pointer-events-auto hud-filmic-glow-breathe"
-          style={{
-            zIndex: UI_LAYERS.HUD + 1,
-            /* v4.51.0: в классике миникарта ушла к верхнему краю — индикатор
-             * сложности встаёт под ней; иначе — прежний слот top-12 (48px). */
-            top: CLASSIC_UI ? 10 + EXPLORATION_HUD_LAYOUT.MINIMAP_HEIGHT + 8 : 48,
-          }}
-        >
-          {/* FIX (overlap): top-4 → top-12 — индикатор налегал на правый кластер
-              тайтл-бара (KarmaRing/LevelBadge/CompassIndicator, top-2 right-2,
-              высота ≈40px). Теперь вся правая колонка без наложений:
-              топ-бар (0–40) → сложность (48) → баффы (84) → миникарта (146). */}
-          {/* FIX: кнопка больше не мёртвая — открывает меню (вкладка настроек
-              содержит выбор сложности). Раньше onClick был пустой заглушкой,
-              хотя компонент обещает «Click to open the difficulty selector». */}
-          <DifficultyIndicator onClick={() => props.onOpenMenu?.()} />
-        </div>
-      )}
+      {/* v4.58.0 «Ровный экран»: индикатор сложности «ОБЫЧНЫЙ» снят — выбор
+          сложности живёт в меню паузы, постоянный чип в правом верхнем углу —
+          шум. Слот отдан ZoneNameLabel (имя зоны под миникартой, как в WoW). */}
+      <ZoneNameLabel />
 
       {/* QuestObjectiveCard — orphan HUD mount. Surfaces the active quest
           (lowest spineOrder wins) with a compact objective checklist and

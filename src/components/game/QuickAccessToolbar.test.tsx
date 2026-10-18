@@ -7,7 +7,11 @@
  * потому что resolveContext прятал панель только при kind==='dialogue'.
  * WoW-хотбар с XP-полосой рисовался поверх текста плашки и вариантов
  * выбора. Контракт: при открытой диегетической плашке хотбар скрыт при
- * ЛЮБОМ kind ('story' и 'dialogue'); при закрытой — виден в exploration. */
+ * ЛЮБОМ kind ('story' и 'dialogue'); при закрытой — виден в exploration.
+ *
+ * v4.58.0 («Ровный экран»): сигнал подавления расширен — story-оверлей
+ * (карточка «Голоса» с выборами 1/2, БЕЗ диегетической плашки) и катсцена
+ * тоже владеют низом экрана (QA: хотбар лежал поверх варианта «Сразу к…»). */
 
 import { act, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -37,6 +41,13 @@ vi.mock('@/store/selectors', () => ({
    * подавления нижнего стека, как в живой сборке. */
   useDiegeticNarrativeState: () => hudMocks.diegeticNarrative,
   useProgressionSummary: () => ({ level: 1, xp: 5, xpToNextLevel: 100 }),
+}));
+
+/* v4.58.0: хук подавления читает стор напрямую (showStoryOverlay /
+ * activeCutsceneId) — мокаем тем же hoisted-объектом. */
+vi.mock('@/store/gameStore', () => ({
+  useGameStore: (selector: (s: { showStoryOverlay: boolean; activeCutsceneId: string | null }) => unknown) =>
+    selector({ showStoryOverlay: hudMocks.showStoryOverlay, activeCutsceneId: null }),
 }));
 
 vi.mock('@/shared/constants/uiTheme', () => ({ CLASSIC_UI: true }));
@@ -97,6 +108,17 @@ describe('QuickAccessToolbar — diegetic narrative suppression (v4.56.6)', () =
     hudMocks.showStoryOverlay = true;
     hudMocks.narrativeKind = 'dialogue';
     hudMocks.diegeticNarrative = { nodeId: 'npc_a', kind: 'dialogue' };
+    renderToolbar();
+    await appear();
+    expect(screen.queryByRole('toolbar')).toBeNull();
+  });
+
+  it('REGRESSION v4.58.0: скрыт при story-оверлее с выборами (без диегетической плашки)', async () => {
+    /* Тот самый кадр QA 2026-10-17: карточка «Голоса» с вариантами 1/2,
+     * diegeticNarrative ещё null — хотбар не должен лежать на выборе. */
+    hudMocks.showStoryOverlay = true;
+    hudMocks.narrativeKind = null;
+    hudMocks.diegeticNarrative = null;
     renderToolbar();
     await appear();
     expect(screen.queryByRole('toolbar')).toBeNull();

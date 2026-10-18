@@ -34,14 +34,14 @@ import { NpcNoDialogueBark } from '../NpcNoDialogueBark';
 const LazyNpcScheduleDisplay = lazy(() =>
   import('../NpcScheduleDisplay').then((m) => ({ default: m.NpcScheduleDisplay })),
 );
-import { ExplorationHintsPanel } from '../ExplorationHintsPanel';
 import { MoralCompassHUD } from '../MoralCompassHUD';
 import { TutorialOverlay } from '../TutorialOverlay';
 import { FirstPlayTutorial } from '../FirstPlayTutorial';
 import { StressIndicator } from '../StressIndicator';
 import { AutoSaveIndicator } from '../AutoSaveIndicator';
 import { QuickSaveIndicator } from '../QuickSaveIndicator';
-import { AmbientSoundMixer } from '../AmbientSoundMixer';
+/* v4.58.0: AmbientSoundMixer-кнопка снята с HUD — микшер доступен из меню паузы
+ * (настройки звука). Постоянная круглая кнопка в углу — шум. */
 import { SceneTransitionProgress } from '../SceneTransitionProgress';
 import { SceneTransitionFailureBanner } from '../SceneTransitionFailureBanner';
 import { NarrativeWorldDim } from '../NarrativeWorldDim';
@@ -50,9 +50,8 @@ import { EventNotificationPopup } from '../EventNotificationPopup';
 import { LoreDiscoveryToast } from '../LoreDiscoveryToast';
 import { WeatherAlertNotification } from '../WeatherAlertNotification';
 import { TransientToastStack } from '@/components/game/toastQueue/TransientToastStack';
-const LazyCompassHUD = lazy(() =>
-  import('../CompassHUD').then((m) => ({ default: m.CompassHUD })),
-);
+/* v4.58.0: CompassHUD снят (outdoor-only третий навигационный слой —
+ * миникарта + ZoneNameLabel уже показывают всё). */
 import { VirtualJoystick } from '../VirtualJoystick';
 import { MobileActionButtons } from '../MobileActionButtons';
 import { MinimapComponent } from '../MinimapComponent';
@@ -86,7 +85,8 @@ import { PoemActiveEffectsHud } from '@/components/game/poemActiveEffects/PoemAc
 import { StatChangeLayer } from '@/components/game/microAnimations/StatChangeLayer';
 import { KarmaShiftLayer } from '@/components/game/microAnimations/KarmaShiftLayer';
 import { FloatingActionIndicator } from '@/components/game/hud/parts/FloatingActionIndicator';
-import { EmergencyHelpButton } from '@/components/game/hud/parts/EmergencyHelpButton';
+/* v4.58.0: EmergencyHelpButton («?») снят — помощь живёт в меню паузы (Esc);
+ * три слоя помощи (тост потерянности + панель подсказок + кнопка) — перебор. */
 import { ActiveQuestMiniTracker } from '@/components/game/hud/parts/ActiveQuestMiniTracker';
 import { PoemPowerEffect } from '@/components/game/PoemPowerEffect';
 import { PoemWorldEffect } from '@/components/game/poemWorldEffect/PoemWorldEffect';
@@ -103,11 +103,13 @@ import {
   LazyCombatUI,
   LazyHUD,
   LazyQuestNotificationSystem,
-  LazyStoryGuidanceHUD,
-  LazyPlayerLostHintToast,
   LazyLevelUpEffect,
   LazyPhotoMode,
 } from './lazyPanels';
+/* v4.58.0 «Ровный экран»: LazyStoryGuidanceHUD и LazyPlayerLostHintToast
+ * сняты с экрана. Цель квеста живёт в ОДНОМ месте — трекере справа
+ * (QuestObjectiveCard, vk-classic-tracker); «подсказка о потерянности» —
+ * мета-шум («показывай, не рассказывай»). Компоненты спят в lazyPanels. */
 import { OrchestratorMinigameOverlays } from './OrchestratorMinigameOverlays';
 import { DiegeticDialogueHud } from '@/components/game/diegetic/DiegeticDialogueHud';
 import { VoiceLineSubtitleHud } from '@/components/game/voiceOver/VoiceLineSubtitleHud';
@@ -119,7 +121,8 @@ const LazyTerminalCallCutscene = lazy(() =>
   import('@/components/game/terminal/TerminalCallCutscene').then((m) => ({ default: m.TerminalCallCutscene })),
 );
 import { EncounterBeatOverlay } from '../EncounterBeatOverlay';
-import { ScenePoiCompass } from '@/components/hud/ScenePoiCompass';
+/* v4.58.0: ScenePoiCompass (радар с обрезанными подписями «КОРидор…») снят —
+ * имя зоны теперь одно, под миникартой (ZoneNameLabel). */
 import EnvironmentalEffectsOverlay from '@/components/game/hud/parts/EnvironmentalEffectsOverlay';
 import BuffDebuffTracker from '@/components/game/hud/parts/BuffDebuffTracker';
 import { SkillRechargeHUD } from '@/components/game/hud/parts/SkillRechargeHUD';
@@ -143,7 +146,7 @@ import { LocationAtmosphereOverlay } from '../LocationAtmosphereOverlay';
 import { CyberpunkGlowEffects } from '../CyberpunkGlowEffects';
 import { QuickAccessToolbar } from '../QuickAccessToolbar';
 import { AchievementUnlockCelebration } from '../AchievementUnlockCelebration';
-import { AudioInfoDisplay } from '../AudioInfoDisplay';
+/* v4.58.0: AudioInfoDisplay остался без потребителей (см. хвост файла). */
 import type { PanelCloseHandlers } from './useStablePanelClosers';
 import type { HudSecondaryPanelOpeners } from './useStableHudPanelOpeners';
 
@@ -282,12 +285,8 @@ export const GameplayExplorationNotifications = memo(function GameplayExploratio
       <Suspense fallback={null}>
         <LazyQuestNotificationSystem />
       </Suspense>
-      <Suspense fallback={null}>
-        <LazyStoryGuidanceHUD />
-      </Suspense>
-      <Suspense fallback={null}>
-        <LazyPlayerLostHintToast />
-      </Suspense>
+      {/* v4.58.0: StoryGuidanceHUD (полоса «ПЕРЕЙДИТЕ: …» + цель сверху по центру)
+          и PlayerLostHintToast сняты — цель дублировала правый трекер. */}
       <WeatherAlertNotification />
       {/* MUST stay mounted during exploration: listens for ui:loot_notification on EventBus. */}
       {/* LootNotification перенесён в стек выше (FIX v4.48) — рендер там. */}
@@ -479,7 +478,8 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayLocationAtmosphere />
       <GameplayCyberpunkGlow />
       <GameplayAchievementCelebration />
-      <GameplayAudioInfoWidget />
+      {/* v4.58.0: GameplayAudioInfoWidget (чип «Комната» внизу справа) снят —
+          имя зоны показывает ZoneNameLabel, громкость — меню паузы. */}
     </>
   );
 });
@@ -546,9 +546,7 @@ export const GameplayAmbientExplorationHud = memo(function GameplayAmbientExplor
               [E]-промпт (низ 234 vs бар 190–258) и crafting-тосты (188–244).
               Быстрое использование предметов — в QuickUseBar (с DnD); полный
               инвентарь — по Tab. */}
-          <Suspense fallback={null}>
-            <LazyCompassHUD />
-          </Suspense>
+          {/* v4.58.0: CompassHUD снят — см. комментарий у импортов. */}
           {/* FIX S13-23: SceneTopBarHud moved INTO ExplorationHUD (inside game-hud div)
               so E2E tests can find the scene name via getByTestId('game-hud').toContainText().
               Was a sibling in GameplayAmbientExplorationHud — game-hud had empty textContent. */}
@@ -576,7 +574,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
 
   return (
     <>
-      <AmbientSoundMixer />
+      {/* v4.58.0: AmbientSoundMixer-кнопка снята — см. комментарий у импортов. */}
       {/* HUD boot sequence — once-per-session intro animation. Wrapper gates on
           sessionStorage so it only plays on the very first exploration-HUD
           mount of a session (refresh re-plays; combat-exit does NOT). */}
@@ -605,7 +603,9 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <Suspense fallback={null}>
         <LazyNpcScheduleDisplay />
       </Suspense>
-      <ExplorationHintsPanel />
+      {/* v4.58.0: ExplorationHintsPanel («ПОДСКАЗКИ / Неисследованные пути»)
+          снята — мир сам показывает выходы (двери, маркеры, луч света);
+          постоянный список «что ещё не сделано» — учебник, а не RPG. */}
       <AmbientAtmosphereCaption />
       {/* Filmic scene-discovery celebration — единственный попап открытия локации.
           Старый неоновый SceneDiscoveryToast удалён из монтирования: он дублировал
@@ -622,7 +622,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           nearby zones + reset-interaction. Idle-pulses after 15s of no input to
           draw attention. Show-don't-tell guidance: no tutorial popups, just a
           discrete '?' button bottom-right that the player can ignore or tap. */}
-      <EmergencyHelpButton />
+      {/* v4.58.0: EmergencyHelpButton снят — см. комментарий у импортов. */}
       {/* Active quest mini-tracker — self-gating: renders nothing on desktop
           (line 204: `if (!isTouchDevice) return null;`). Only activates on touch
           devices, giving mobile players a pinnable quest tracker with cycle /
@@ -633,7 +633,7 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           <MoralCompassHUD />
           <KarmaShiftLayer />
           <WeatherIndicator />
-          <ScenePoiCompass />
+          {/* v4.58.0: ScenePoiCompass снят — см. комментарий у импортов. */}
           <DayNightCycleIndicator />
           <PoetryPowerBar />
           <PoemActiveEffectsHud />
@@ -863,7 +863,6 @@ export const GameplayAchievementCelebration = memo(function GameplayAchievementC
   return <AchievementUnlockCelebration />;
 });
 
-/** Audio info widget — small corner HUD showing music state. */
-export const GameplayAudioInfoWidget = memo(function GameplayAudioInfoWidget() {
-  return <AudioInfoDisplay />;
-});
+/* v4.58.0: GameplayAudioInfoWidget удалён вместе с маунтом — единственный
+ * потребитель AudioInfoDisplay. Компонент AudioInfoDisplay остаётся в кодовой
+ * базе (dormant) на случай возврата в настройках. */

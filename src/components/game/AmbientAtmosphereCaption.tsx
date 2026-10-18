@@ -12,10 +12,10 @@ import { resolveAmbientPresentation } from '@/engine/audio/ambientPlayContext';
 import { useAtmosphereCaptionState } from '@/store/selectors';
 import type { SceneId } from '@/config/sceneDefinitions';
 
-/** v4.57.0 («Тихий HUD»): каптион атмосферы — транзиент, а не постоянная
- *  вывеска. Показывается 9с после смены сцены/варианта подачи, затем тает;
- *  тихий режим (6с без ввода) приглушает его до призрака. */
-const CAPTION_VISIBLE_MS = 9000;
+/** v4.58.0 «Ровный экран»: ещё короче — 5с вместо 9с. Каптион атмосферы —
+ *  завершающий аккорд смены сцены, а не вывеска; после него экран читается
+ *  только игрой. Тихий режим (6с без ввода) приглушает до призрака. */
+const CAPTION_VISIBLE_MS = 5000;
 
 /** Visual + screen-reader caption for the active procedural ambient bed (exploration only). */
 export function AmbientAtmosphereCaption() {

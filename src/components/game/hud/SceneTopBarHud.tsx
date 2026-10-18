@@ -1,6 +1,8 @@
 /* ─── Volodka RPG – Scene Top Bar HUD ───
  * Cohesive top-bar cluster mounting orphaned-but-built widgets:
- *   - SceneContextChip     (top-left:  scene type · NPC count · exits)
+ *   - PlayerStatusFrame    (top-left:  Володька · ЭН/СТР/КАР · тир кармы)
+ *   v4.58.0: SceneContextChip («ПОМЕЩЕНИЕ · NPC:0 · EX:1») снят — отладочный
+ *   чип дублировал ZoneNameLabel и не давал игроку ничего действенного.
  *   - (v4.55.0: TopBarDataTicker удалён — CLASSIC_UI никогда его не показывал)
  *   - ExplorationProgressBadge + EnvironmentMoodIndicator (top-right)
  *
@@ -15,7 +17,6 @@
 
 import { memo } from 'react';
 import { motion } from 'framer-motion';
-import { SceneContextChip } from '@/components/game/hud/parts/SceneContextChip';
 import { PlayerStatusFrame } from '@/components/game/hud/parts/PlayerStatusFrame';
 import { ExplorationProgressBadge } from '@/components/game/hud/parts/ExplorationProgressBadge';
 import { EnvironmentMoodIndicator } from '@/components/game/hud/parts/EnvironmentMoodIndicator';
@@ -75,7 +76,7 @@ export const SceneTopBarHud = memo(function SceneTopBarHud() {
         <div className="hidden sm:block">
           <PlayerStatusFrame />
         </div>
-        <SceneContextChip />
+        {/* v4.58.0: SceneContextChip снят — см. шапку файла. */}
       </motion.div>
 
       {/* Top-right: v4.51.0 «Классический UI» — правый верх отдаётся миникарте
