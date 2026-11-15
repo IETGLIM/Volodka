@@ -31,6 +31,7 @@ import {
   WAKEUP_CAMERA_START,
 } from '@/engine/wakeup/wakeUpCinematic';
 import { shouldOpenAct1PrologueStory } from '@/engine/wakeup/shouldOpenAct1PrologueStory';
+import { shouldReassertWakeStartPlate } from '@/engine/wakeup/shouldReassertWakeStartPlate';
 import {
   completeCinematicTimeline,
   getActiveCinematicTimelineId,
@@ -325,16 +326,25 @@ export function CinematicTimelineRunner() {
       // гард shouldOpenAct1PrologueStory абортнул открытие (currentNodeId уже
       // 'explore_mode'), плашка не открывалась ВООБЩЕ. Открывающая наррация
       // («Ты просыпаешься от назойливого писка терминала…») обязана дожить
-      // до выбора игрока. Одноразовый ре-ассерт на +800мс — ВНЕ гарда, работает
-      // в обоих сценариях потери: за 800мс игрок физически не успевает сделать
-      // выбор (тайпрайтер ~500 символов), поэтому 'explore_mode' в этот момент —
-      // только автопромоушен из цепочки завершения wake. Живую плашку и
-      // осознанный выбор не трогаем.
+      // до выбора игрока. Одноразовый ре-ассерт на +800мс покрывает оба
+      // сценария потери. Осознанный выбор за эти 800мс возможен (скип
+      // тайпрайтера / reduced-motion) и отличаем по choiceLog — см.
+      // shouldReassertWakeStartPlate. Живую плашку не трогаем.
       window.setTimeout(() => {
         const s = getGameStore();
-        if (s.currentNodeId !== 'start' && s.currentNodeId !== 'explore_mode') return;
-        if (s.diegeticNarrative?.nodeId === 'start') return; // плашка жива
-        if (getActiveCinematicTimelineId() === 'intro_wakeup') return;
+        // Плашка обязана дожить до выбора, но выбор внутри 800мс реален:
+        // тайпрайтер скипается кликом/клавишей и мгновенно при reduced-motion,
+        // а «Осмотреться по сторонам» уводит в explore_mode — тот же снимок,
+        // что у автопромоушена хаба. Отличает их запись в choiceLog
+        // (executeStoryChoice логирует узел 'start' до навигации). Без этой
+        // проверки ре-ассерт возвращал currentNodeId на 'start' и заново
+        // открывал пробуждение поверх уже сделанного выбора.
+        if (!shouldReassertWakeStartPlate({
+          currentNodeId: s.currentNodeId,
+          diegeticNodeId: s.diegeticNarrative?.nodeId ?? null,
+          timelineStillIntro: getActiveCinematicTimelineId() === 'intro_wakeup',
+          choiceLog: s.playerState.choiceLog,
+        })) return;
         devWarn('[WakeStaging] start-plate lost in handoff — re-asserting');
         s.openDiegeticNarrative('start', 'story');
       }, 800);
