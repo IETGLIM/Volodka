@@ -193,6 +193,7 @@ export type GameAction =
   | { type: 'notification/push'; notificationType: NotificationType; text: string }
   | { type: 'notification/dismiss'; id: string }
   | { type: 'exploration/toggleInteractiveObject'; objectId: string }
+  | { type: 'exploration/consumeInteractiveObject'; objectId: string }
   | {
       type: 'exploration/applySceneTransition';
       targetScene: SceneId;

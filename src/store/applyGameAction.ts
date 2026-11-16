@@ -107,6 +107,7 @@ export function applyGameAction(_state: GameStoreState, action: GameAction): voi
     case 'notification/push': player.pushNotification(action.notificationType, action.text); break;
     case 'notification/dismiss': player.dismissNotification(action.id); break;
     case 'exploration/toggleInteractiveObject': exploration.toggleInteractiveObject(action.objectId); break;
+    case 'exploration/consumeInteractiveObject': exploration.consumeInteractiveObject(action.objectId); break;
     case 'exploration/applySceneTransition': {
       // Player-side regen MUST run before mutating the exploration store.
       // autoRegenBetweenScenes calls readPlayerFromExploration() which reads

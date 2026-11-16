@@ -167,7 +167,7 @@ export class InteractionController {
       }
 
       if (zone.isOneTime) {
-        dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+        dispatchGameAction({ type: 'exploration/consumeInteractiveObject', objectId: triggerZoneId });
       }
 
       if (zone.linkedQuestId) {
@@ -344,7 +344,7 @@ export class InteractionController {
       if (zone.containerContents && zone.containerContents.length > 0 && this.deps.openContainerLoot) {
         this.deps.openContainerLoot(zone);
         if (zone.isOneTime) {
-          dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+          dispatchGameAction({ type: 'exploration/consumeInteractiveObject', objectId: triggerZoneId });
         }
         return;
       }
@@ -363,7 +363,7 @@ export class InteractionController {
         }
 
         if (zone.isOneTime) {
-          dispatchGameAction({ type: 'exploration/toggleInteractiveObject', objectId: triggerZoneId });
+          dispatchGameAction({ type: 'exploration/consumeInteractiveObject', objectId: triggerZoneId });
         }
 
         if (zone.linkedQuestId) {
@@ -498,7 +498,7 @@ export class InteractionController {
     }
     if (zoneSnapshot.isOneTime) {
       dispatchGameAction({
-        type: 'exploration/toggleInteractiveObject',
+        type: 'exploration/consumeInteractiveObject',
         objectId: zoneSnapshot.id,
       });
     }

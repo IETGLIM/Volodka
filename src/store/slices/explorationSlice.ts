@@ -63,6 +63,11 @@ export interface ExplorationSliceActions {
   toggleWeather: () => void;
   setRainIntensity: (intensity: number) => void;
   toggleInteractiveObject: (id: string) => void;
+  /**
+   * Permanently mark a one-time trigger as consumed.
+   * Unlike toggleInteractiveObject, this does not schedule the 5s door auto-close.
+   */
+  consumeInteractiveObject: (id: string) => void;
   /** Mark a scene as discovered (called when player enters a scene) */
   discoverScene: (sceneId: SceneId) => void;
   /** Fast travel to a discovered scene. Checks discovery + flag gates. Advances time. */
@@ -168,6 +173,23 @@ export const createExplorationSlice: StateCreator<
       }, 5000);
       trackAutoCloseTimer(id, timer, capturedGeneration);
     }
+  },
+
+  consumeInteractiveObject: (id) => {
+    // A prior toggle may already have armed the door auto-close. Cancel it
+    // so a one-time pickup cannot flip back to available after 5 seconds.
+    const existingTimer = clearAutoCloseTimer(id);
+    if (existingTimer !== undefined) {
+      clearTimeout(existingTimer);
+    }
+    if (get().interactiveObjectStates[id]) return;
+
+    set((state) => ({
+      interactiveObjectStates: {
+        ...state.interactiveObjectStates,
+        [id]: true,
+      },
+    }));
   },
 
   discoverScene: (sceneId) =>
