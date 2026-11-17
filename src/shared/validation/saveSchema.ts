@@ -7,6 +7,7 @@ import { z } from 'zod';
 import { SCENE_IDS } from '@/config/sceneDefinitions';
 import { sanitizeExplorationSceneId } from '@/config/scenes';
 import { MAX_STORY_ACT } from '@/data/constants';
+import { MAX_STORED_ENERGY } from '@/shared/perks/perkModifiers';
 import type { SceneId } from '@/shared/types/game';
 import { migrateSave } from './saveMigrations';
 
@@ -90,7 +91,9 @@ const PlayerStateSchema = z.object({
   name: z.string().min(1),
   skills: PlayerSkillsSchema,
   karma: boundedNumber(0, 100),
-  energy: boundedNumber(0, 100),
+  // Runtime ceiling is 100 + flat energy_max perks (night_watch, factory_rat).
+  // Clamping the save to 100 made pickSavePayload throw and dropped autosave.
+  energy: boundedNumber(0, MAX_STORED_ENERGY),
   stress: boundedNumber(0, 100),
   /** Credits (кредиты) — the underground digital currency */
   credits: z.number().min(0).optional().default(100),

@@ -10,6 +10,7 @@ import { pickPlayerCoreCrossActions, readPlayerFromExploration } from '../crossS
 import { scheduleChoiceMade, schedulePlayerRested } from '../storeEffects';
 import { getDifficultyStore } from '../storeBindings';
 import {
+  BASE_ENERGY_MAX,
   resolveEnergyMaxFlatBonus,
   resolveEnergyRegenMultiplier,
   resolveKarmaGainMultiplier,
@@ -181,7 +182,7 @@ export const createPlayerCoreSlice: StateCreator<
     const { timeOfDay } = readPlayerFromExploration();
     const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
     const maxBonus = resolveEnergyMaxFlatBonus(unlockedPerks, { timeOfDay });
-    const ceiling = 100 + maxBonus;
+    const ceiling = BASE_ENERGY_MAX + maxBonus;
 
     set((state) => ({
       playerState: {
@@ -228,7 +229,7 @@ export const createPlayerCoreSlice: StateCreator<
     // Rest fills energy to the perk-adjusted ceiling (night_watch/factory_rat).
     const unlockedPerks = get().playerState?.progression?.unlockedPerks ?? [];
     const maxBonus = resolveEnergyMaxFlatBonus(unlockedPerks, { timeOfDay });
-    const ceiling = 100 + maxBonus;
+    const ceiling = BASE_ENERGY_MAX + maxBonus;
 
     set((state) => ({
       playerState: {
@@ -246,7 +247,7 @@ export const createPlayerCoreSlice: StateCreator<
     // coffee_master / fast_metabolism each add +0.5 to regen.
     const regenMult = resolveEnergyRegenMultiplier(perks);
     const maxBonus = resolveEnergyMaxFlatBonus(perks, { timeOfDay });
-    const ceiling = 100 + maxBonus;
+    const ceiling = BASE_ENERGY_MAX + maxBonus;
     // Difficulty scaling: energy regen scaled by energyRegenRate
     const difficultySettings = getDifficultyStore().difficultySettings;
     const regenAmount = Math.round(5 * regenMult * difficultySettings.energyRegenRate);

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { MAX_STORED_ENERGY } from '@/shared/perks/perkModifiers';
 import { SAVE_VERSION } from '@/shared/validation/saveSchema';
 import {
   createDefaultPersistedState,
@@ -45,6 +46,31 @@ describe('pickSavePayload playTimeSeconds', () => {
     const payload = pickSavePayload(state);
     expect(payload.playTimeSeconds).toBe(estimatePlayTimeSeconds(state));
     expect(payload.playTimeSeconds).toBe(3 * 120 + 600);
+  });
+
+  it('round-trips energy above 100 up to the perk ceiling', () => {
+    // night_watch rest at night stores 110; factory_rat stacks to MAX_STORED_ENERGY.
+    // A schema cap of 100 made pickSavePayload throw and autosave drop the run.
+    const state = buildMinimalGameState({
+      playerState: {
+        ...createDefaultPersistedState().playerState,
+        energy: MAX_STORED_ENERGY,
+      },
+    });
+
+    const payload = pickSavePayload(state);
+    expect(payload.playerState.energy).toBe(MAX_STORED_ENERGY);
+  });
+
+  it('rejects energy above the absolute perk ceiling', () => {
+    const state = buildMinimalGameState({
+      playerState: {
+        ...createDefaultPersistedState().playerState,
+        energy: MAX_STORED_ENERGY + 1,
+      },
+    });
+
+    expect(() => pickSavePayload(state)).toThrow(/playerState\.energy/);
   });
 });
 

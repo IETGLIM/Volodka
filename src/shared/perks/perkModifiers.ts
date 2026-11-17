@@ -105,6 +105,30 @@ const POEM_COOLDOWN_PERKS = new Set<string>(['whisper_of_muses']);
 
 // energy_max with value >= 1 — flat max energy bonus (night_watch at night, factory_rat always).
 const ENERGY_MAX_FLAT_PERKS = new Set<string>(['night_watch', 'factory_rat']);
+
+/** Unmodified energy cap. Flat energy_max perks raise the runtime ceiling above this. */
+export const BASE_ENERGY_MAX = 100;
+
+/**
+ * Highest energy addEnergy / rest / scene-regen will store: base plus every
+ * flat energy_max perk at once (night_watch +10 at night, factory_rat +15
+ * always → 125). Save validation must accept this. A tighter cap makes
+ * pickSavePayload throw once a perk pushes energy past 100, so F5 and
+ * autosave drop the session and the run since the last good save is lost.
+ */
+export const MAX_STORED_ENERGY = BASE_ENERGY_MAX + sumFlatEnergyMaxBonus();
+
+function sumFlatEnergyMaxBonus(): number {
+  let bonus = 0;
+  for (const perkId of ENERGY_MAX_FLAT_PERKS) {
+    const def = PERKS_MAP[perkId];
+    if (!def) continue;
+    for (const eff of def.effects) {
+      if (eff.type === 'energy_max' && eff.value >= 1) bonus += eff.value;
+    }
+  }
+  return bonus;
+}
 // energy_max with 0 < value < 1 — regen / coffee effect multiplier.
 const ENERGY_REGEN_PERKS = new Set<string>(['coffee_master', 'fast_metabolism']);
 
