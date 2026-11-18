@@ -27,6 +27,11 @@ jobs:
 
       - run: npm run validate:content
 
+      # Гейт неприкосновенности авторского контента (v4.58.2): SHA-снапшот
+      # стихов и канонических имён. Любое изменение текста стихов роняет CI
+      # ДО сборки — облачная линия защиты вместе с hourly-guardian.
+      - run: npm run validate:protected
+
       - run: npm run typecheck
 
       - run: npm run build
