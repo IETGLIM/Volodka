@@ -1,3 +1,18 @@
+## v4.58.1 (2026-11-18) — perf(deploy)+chore(lint)+docs(system): −9.1 MB деплоя, lint чище, контракт почасовой доработки
+
+Первая сессия системы почасовой автономной доработки (HOURLY_IMPROVEMENT.md).
+**perf(deploy)**: follow-up этапа 138 — WebP-фолбэк цветных карт PolyHaven
+(diff/rough/ao) исключён из деплой keep-set: KTX2-путь подтверждён браузерной
+QA, фолбэк-дубликаты не нужны. Деплой 108→99 MB, dist/textures/polyhaven
+21→12 MB. Рантайм-фолбэк-ветка в ktx2Textures сохранена как кодовая страховка.
+**chore(lint)**: предупреждения 55→36 — DEV-логи переведены на штатный
+devLog/devWarn, прод-маркеры ([audio:music], rapierCompat, pwa) помечены
+обоснованными eslint-disable, автофиксы unused-disable/prefer-const.
+**docs(system)**: контракт почасового агента (неприкосновенная стиховая
+зона + гейты + STOP-условия + очередь P1/P2/P3) и журнал сессий HOURLY_LOG.md.
+Проверки: lint 0 errors, typecheck OK, vitest полный 2931/2931, затронутые
+245/245, validate:protected OK (46 стихов целы), budgets OK, verify:deploy OK.
+
 ## v4.58.0 (2026-10-17) — feat(hud): «Ровный экран» — с экрана сняты 13 текстовых блоков
 
 Репорт игрока (со скриншотами): «Мало, что изменилось… почему весь экран в
