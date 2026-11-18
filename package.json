@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:inspect": "vite --mode inspect",
+    "guardian": "node scripts/hourly-guardian.mjs",
     "build": "vite build && node scripts/inject-sw-precache.mjs",
     "build:vercel": "vite build && npx tsx --tsconfig tsconfig.json scripts/prune-deploy-assets.ts && node scripts/inject-sw-precache.mjs",
     "build:full": "npm run assets:prepare && npm run validate && npm run assets:validate && tsc --noEmit && vite build && npx tsx --tsconfig tsconfig.json scripts/prune-deploy-assets.ts && node scripts/inject-sw-precache.mjs && npm run budgets && npm run verify:deploy",

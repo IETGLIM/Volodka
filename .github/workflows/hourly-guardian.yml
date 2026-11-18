@@ -1,0 +1,55 @@
+name: Hourly Guardian
+
+# Ежечасная системная задача доработки Volodka (по просьбе автора).
+# Контракт: docs/HOURLY_IMPROVEMENT.md. Детерминированный скрипт:
+# scripts/hourly-guardian.mjs (health-чек + авто-ремонт + защита стихов).
+# GitHub Actions cron минимально-гарантированно срабатывает раз в час
+# для публичных репозиториев (бесплатный тариф).
+on:
+  schedule:
+    # Каждый час, минута 17 (разойдись с пиками :00/:30).
+    - cron: '17 * * * *'
+  workflow_dispatch: # ручной запуск из вкладки Actions
+
+# ОДНОВРЕМЕННОСТЬ: не плодим параллельные сессии — новая отменяет старую.
+concurrency:
+  group: hourly-guardian
+  cancel-in-progress: true
+
+permissions:
+  contents: write # для push health-коммитов и отчётов
+
+jobs:
+  guardian:
+    # Защита от fork: только основной репозиторий автора.
+    if: github.repository == 'IETGLIM/Volodka'
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          # GITHUB_TOKEN с правом push в main.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Hourly guardian run
+        run: node scripts/hourly-guardian.mjs
+        env:
+          # Скрипт пушит через origin; GITHUB_TOKEN уже в checkout-remote.
+          GIT_AUTHOR_NAME: volodka-guardian
+          GIT_AUTHOR_EMAIL: guardian@volodka.local
+          GIT_COMMITTER_NAME: volodka-guardian
+          GIT_COMMITTER_EMAIL: guardian@volodka.local
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Hourly Guardian report" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          tail -40 docs/HOURLY_LOG.md >> $GITHUB_STEP_SUMMARY || true
+          echo '```' >> $GITHUB_STEP_SUMMARY
