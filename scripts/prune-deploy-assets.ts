@@ -20,7 +20,6 @@ import { getAmbientSkinnedRigUrls } from '../src/config/quaterniusRigCatalog';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
 import {
-  getPolyHavenFallbackMapUrl,
   getPolyHavenMapUrl,
   POLYHAVEN_HDRI,
   POLYHAVEN_MAP_KINDS,
@@ -90,15 +89,18 @@ function collectRuntimePublicPaths(): Set<string> {
     if (mixamoOnDisk.has(clip.id)) addUrl(keep, clip.publicUrl);
   }
 
-  // Этап 133: KTX2-роутинг в самих URL-функциях; WebP-фолбэк цветовых карт
-  // остаётся в деплое до первой браузерной QA KTX2-пути (staged rollout,
-  // после QA — убрать вторую строку и выкинуть ~14 MB из деплоя). Для nor_gl
-  // основной путь уже WebP — дедуплицируется Set'ом.
+  // Этап 133: KTX2-роутинг в самих URL-функциях. Follow-up этапа 138
+  // (браузерная QA KTX2-пути пройдена: транскодер 200, текстуры грузятся,
+  // прод-консоль без ошибок): WebP-фолбэк ЦВЕТНЫХ карт (diff/rough/ao)
+  // больше не входит в деплой-keep-set — выкидываем ~9 MB. Рантайм-фолбэк
+  // остаётся в коде (ktx2Textures.loadPolyHavenPbrTextureSet): при сбое
+  // KTX2 загрузка честно уйдёт в ErrorBoundary, как и любой другой 404.
+  // Для nor_gl основной путь уже WebP — дедуплицируется Set'ом, поэтому
+  // fallback-URL нор-мап остаётся в keep-set автоматически (совпадает с основным).
   for (const material of POLYHAVEN_MATERIAL_IDS) {
     for (const map of POLYHAVEN_MAP_KINDS) {
       for (const scale of POLYHAVEN_TEXTURE_SCALES) {
         addUrl(keep, getPolyHavenMapUrl(material, map, scale));
-        addUrl(keep, getPolyHavenFallbackMapUrl(material, map, scale));
       }
     }
   }

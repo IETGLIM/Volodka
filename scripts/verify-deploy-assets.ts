@@ -11,7 +11,6 @@ import { getAmbientSkinnedRigUrls } from '../src/config/quaterniusRigCatalog';
 import { getPropModelUrls } from '../src/config/propModelRegistry';
 import { MODEL_URLS } from '../src/config/modelUrls';
 import {
-  getPolyHavenFallbackMapUrl,
   getPolyHavenMapUrl,
   POLYHAVEN_HDRI,
   POLYHAVEN_MAP_KINDS,
@@ -67,13 +66,13 @@ function loadRequiredPublicPaths(): string[] {
 
   // v4.34.0 (этап 133): внешние карты PolyHaven + HDRI теперь обязательны —
   // раньше вообще не проверялись (дыра: prune-дрейф не валил build).
-  // Проверяем и KTX2-путь, и WebP-фолбэк (staged rollout — фолбэк в деплое
-  // до первой браузерной QA KTX2).
+  // Follow-up этапа 138: браузерная QA KTX2-пути пройдена — WebP-фолбэк
+  // цветных карт исключён из деплоя (−9 MB); обязательным остаётся только
+  // основной путь (KTX2 для diff/rough/ao, WebP для nor_gl).
   for (const materialId of POLYHAVEN_MATERIAL_IDS) {
     for (const map of POLYHAVEN_MAP_KINDS) {
       for (const scale of POLYHAVEN_TEXTURE_SCALES) {
         paths.add(getPolyHavenMapUrl(materialId, map, scale).replace(/^\.?\//, ''));
-        paths.add(getPolyHavenFallbackMapUrl(materialId, map, scale).replace(/^\.?\//, ''));
       }
     }
   }
