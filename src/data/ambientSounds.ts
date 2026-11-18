@@ -8,6 +8,7 @@
  */
 
 import { SCENE_DEFINITIONS, type SceneId } from '@/config/sceneDefinitions';
+import { devWarn } from '@/shared/utils/devLog';
 import type {
   AmbientSoundType,
   SceneAmbienceConfig,
@@ -809,7 +810,7 @@ export function validateSceneAmbienceCoverage(): AmbientValidationIssue[] {
 if (import.meta.env?.DEV) {
   const devIssues = [...validateAmbientSoundDefs(), ...validateSceneAmbienceCoverage()];
   if (devIssues.length > 0) {
-    console.warn('[ambientSounds] validation issues:', devIssues);
+    devWarn('[ambientSounds] validation issues:', devIssues);
   }
 }
 

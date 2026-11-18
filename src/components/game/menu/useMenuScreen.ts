@@ -53,7 +53,7 @@ export function useMenuScreen({ loadGame, resetGame, musicEnabled, toggleMusic }
       // FIX S15-MUSIC: явно резюмим AudioContext на user gesture — Chrome требует
       // иначе ambientEngine и AudioEngine остаются suspended и музыка отсутствует
       try {
-        // eslint-disable-next-line @typescript-eslint/no-require-imports
+         
         const mod = (window as any).__VOLODKA_AUDIO_CTX__ as { resume?: () => void } | undefined;
         mod?.resume?.();
       } catch {}

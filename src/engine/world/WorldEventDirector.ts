@@ -3,6 +3,7 @@
 
 import { eventBus } from '@/engine/EventBus';
 import { registerHmrDispose } from '@/shared/dev/hmrDispose';
+import { devLog } from '@/shared/utils/devLog';
 import type { SceneId } from '@/shared/types/game';
 import type { WorldCellId, WorldRegionId } from './types';
 import {
@@ -39,7 +40,7 @@ export class WorldEventDirector {
     this.unsubs.push(
       eventBus.on('world:region_enter', ({ regionId, cellId }) => {
         if (import.meta.env.DEV) {
-          console.debug(`[WorldEventDirector] region=${regionId} cell=${cellId}`);
+          devLog(`[WorldEventDirector] region=${regionId} cell=${cellId}`);
         }
       }),
     );

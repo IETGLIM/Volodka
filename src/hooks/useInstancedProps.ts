@@ -87,7 +87,7 @@ export function useInstancedProps(
       composeMatrix(transforms[i], arr[i]);
     }
     return arr;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [transforms]);
 
   const count = transforms.length;

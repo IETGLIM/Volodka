@@ -55,6 +55,7 @@ function registerServiceWorker(): void {
     navigator.serviceWorker
       .register('/sw.js', { scope: '/' })
       .catch((err: unknown) => {
+        // eslint-disable-next-line no-console -- диагностический warn о неудаче PWA-регистрации в проде
         console.warn('[pwa] Не удалось зарегистрировать сервис-воркер:', err);
       });
   }, { once: true });

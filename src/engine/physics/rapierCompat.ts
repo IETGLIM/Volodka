@@ -70,6 +70,8 @@ export async function init(): Promise<void> {
     }
 
     // Strategy 2: inline base64 fallback (dev without public/rapier/)
+    /* eslint-disable no-console -- подмена console.warn легитимна: Rapier
+     * embind сыплет deprecation-варны при init({}) — глушим только их. */
     const originalWarn = console.warn;
     try {
       console.warn = (...args: unknown[]) => {
@@ -97,6 +99,7 @@ export async function init(): Promise<void> {
         } catch {}
       }
     }
+    /* eslint-enable no-console */
   })();
 
   return initPromise;

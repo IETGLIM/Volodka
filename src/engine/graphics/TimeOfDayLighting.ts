@@ -82,7 +82,7 @@ function findBracket(hour: number): [TimeKeyframe, TimeKeyframe, number] {
     let nextHour = next.hour;
     // Handle midnight wrap: if nextHour <= curr.hour, treat as nextHour + 24
     if (nextHour <= curr.hour) nextHour += 24;
-    let currHour = curr.hour;
+    const currHour = curr.hour;
     // If hour is before the first keyframe (e.g. hour=1, first keyframe=0),
     // check if we need to wrap
     if (h < currHour) h += 24;

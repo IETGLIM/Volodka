@@ -1517,6 +1517,7 @@ class MusicEngine {
     // Прод-маркер для диагностики «музыки нет»: подтверждает реальный старт
     // бэда и итоговый целевой гейн (виден в консоли прод-деплоя).
     try {
+      // eslint-disable-next-line no-console -- санкционированный прод-маркер диагностики аудио (этап 139)
       console.info(`[audio:music] bed '${sceneId}' → gain ${effectiveGain.toFixed(3)} (makeup ×${MUSIC_BUS_MAKEUP_GAIN}, pad on)`);
     } catch { /* консоль недоступна — не критично */ }
 

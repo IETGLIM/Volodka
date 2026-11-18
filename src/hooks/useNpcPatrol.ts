@@ -66,7 +66,7 @@ export function useNpcPatrol({
   // ── Select patrol route: prefer patrolRoutes (random pick), fallback to patrolWaypoints ──
   const activeWaypoints = useMemo(
     () => pickRandomRoute(patrolRoutes, patrolWaypoints),
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable references, random on mount
+     
     [patrolRoutes, patrolWaypoints],
   );
 

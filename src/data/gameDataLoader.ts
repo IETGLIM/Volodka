@@ -26,6 +26,7 @@ type PoemsModule = typeof import('@/data/poems');
 type AchievementsModule = typeof import('@/data/achievements');
 type DailyMissionsModule = typeof import('@/data/dailyMissions');
 type LoreModule = typeof import('@/data/loreEntries');
+import { devLog } from '@/shared/utils/devLog';
 import {
   loadBootstrapNarrativePacks,
   loadAllNarrativePacks,
@@ -198,7 +199,7 @@ export async function preloadBootGameData(): Promise<void> {
         bootLoaded = true;
         loadingPipeline.reportStage('boot_data');
         if (import.meta.env?.DEV) {
-          console.debug(
+          devLog(
             `[gameDataLoader] boot loaded in ${(performance.now() - bootStartedAt).toFixed(1)}ms`,
           );
         }
@@ -262,7 +263,7 @@ export async function preloadNarrativeGameData(): Promise<void> {
         prefetchRemainingDialoguePacksInIdle();
 
         if (import.meta.env?.DEV) {
-          console.debug(
+          devLog(
             `[gameDataLoader] narrative loaded in ${(performance.now() - narrativeStartedAt).toFixed(1)}ms`,
           );
         }

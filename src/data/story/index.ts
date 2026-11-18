@@ -1,4 +1,5 @@
 import type { StoryNode } from '@/shared/types/game';
+import { devWarn } from '@/shared/utils/devLog';
 import { buildStoryNodes, validateStoryNodes } from './buildStoryNodes';
 
 /** Master story node registry — acts 1–7 + faction & location storylines. */
@@ -20,7 +21,7 @@ if (import.meta.env?.DEV) {
             (e) => !e.includes('_exp_') && !e.startsWith('story:examine_'),
           );
           if (coreErrors.length > 0) {
-            console.warn(
+            devWarn(
               `[STORY_NODES] ${coreErrors.length} validation issue(s):\n${coreErrors.join('\n')}`,
             );
           }
