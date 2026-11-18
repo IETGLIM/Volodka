@@ -152,8 +152,7 @@ function commitIfNeeded() {
   }
   const stamp = now().toISOString().slice(0, 10);
   git(['add', '-A']);
-  const msg = `chore(guardian): ${stamp} — ежечасный health-чек${''}`;
-  git(['commit', '-m', msg]);
+  git(['commit', '-m', `chore(guardian): ${stamp} — ежечасный health-чек`]);
   const sha = git(['rev-parse', '--short', 'HEAD']).out.trim();
   log(`коммит ${sha}`);
   const push = git(['push', 'origin', 'main'], { timeout: 120_000 });
