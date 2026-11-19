@@ -14,11 +14,12 @@ import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 import { NeonSignFixture } from './SceneLightFixture';
 import { StreetLampFixture } from './SceneLightFixture';
 import { MonitorGlowFixture } from './SceneLightFixture';
+import { EntrywayLampFixture } from './SceneLightFixture';
 import type { SceneId } from '@/shared/types/game';
 
 /** Per-scene fixture configuration — positions align with accent lights in Lighting.tsx */
 interface FixtureConfig {
-  type: 'neon' | 'street_lamp' | 'monitor';
+  type: 'neon' | 'street_lamp' | 'monitor' | 'entryway';
   position: [number, number, number];
   color: string;
   intensity?: number;
@@ -41,6 +42,12 @@ const SCENE_FIXTURES: Partial<Record<SceneId, FixtureConfig[]>> = {
     // Street lamps
     { type: 'street_lamp', position: [2, 2.5, 1], color: '#ffaa66', intensity: 1.2, distance: 8, seed: 10 },
     { type: 'street_lamp', position: [7, 2.8, 0], color: '#ffcc88', intensity: 1.0, distance: 8, seed: 11 },
+    // Entryway lamps (v4.59.0, арт-план B1) — тёплые лампы над подъездами
+    // панелек с редким фликером умирающей люминесцентки. У входов уличных
+    // фасадов; на medium режутся срезом slice(0,3)? — нет: entryway стоят
+    // после ламп, на medium видна одна (лампы уходят первыми).
+    { type: 'entryway', position: [-3.5, 2.6, -6.5], color: '#ffd9a0', intensity: 1.4, distance: 7, seed: 21 },
+    { type: 'entryway', position: [6.5, 2.4, -7.5], color: '#ffe0b0', intensity: 1.2, distance: 6, seed: 22 },
   ],
   city_square: [
     { type: 'neon', position: [-8, 3.4, -6], color: '#55e8dd', intensity: 0.5, distance: 8, width: 0.7, height: 0.3, rotation: [0, 0.8, 0], animated: 'neon_flicker', seed: 4 },
@@ -118,6 +125,17 @@ function FixtureRenderer({ config }: { config: FixtureConfig }) {
           color={config.color}
           intensity={config.intensity ?? 1.0}
           distance={config.distance ?? 8}
+          castShadow={config.castShadow}
+          seed={config.seed ?? 0}
+        />
+      );
+    case 'entryway':
+      return (
+        <EntrywayLampFixture
+          position={config.position}
+          color={config.color}
+          intensity={config.intensity ?? 1.4}
+          distance={config.distance ?? 7}
           castShadow={config.castShadow}
           seed={config.seed ?? 0}
         />

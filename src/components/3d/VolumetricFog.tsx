@@ -79,15 +79,18 @@ export const FOG_PRESETS: Record<string, Partial<VolumetricFogConfig>> = {
     planeWidth: 4,
   },
   street_night: {
-    planeCount: 4,
-    color: '#3a4858',
-    opacity: 0.035,
-    spreadX: 11,
-    spreadZ: 11,
-    height: 2.2,
-    baseY: 0.25,
-    driftSpeed: 0.18,
-    planeWidth: 15,
+    // v4.59.0 (арт-план B3): приземный туман усилен под эталон — ниже
+    // (0.18), шире (spread 13), плотнее (0.05) и холоднее (#46586c):
+    // читается как влажная дымка над мокрым асфальтом, а не «дым в комнате».
+    planeCount: 5,
+    color: '#46586c',
+    opacity: 0.05,
+    spreadX: 13,
+    spreadZ: 13,
+    height: 1.9,
+    baseY: 0.18,
+    driftSpeed: 0.16,
+    planeWidth: 17,
   },
   street_winter: {
     planeCount: 7,

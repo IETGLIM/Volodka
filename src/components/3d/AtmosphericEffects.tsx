@@ -108,7 +108,10 @@ export function AtmosphericEffects() {
     const fogPreset = FOG_PRESETS[sceneId] ?? {};
     switch (sceneId) {
       case 'street_night':
-        return { ...fogPreset, opacity: heavyEffects ? 0.028 : 0.035, planeCount: heavyEffects ? 3 : 4 };
+        // v4.59.0 (арт-план B3): приземная дымка усилена под эталон — на
+        // тяжёлых пресетах чуть плотнее и ниже, чтобы поймать конусы
+        // света фонарей и ламп подъездов.
+        return { ...fogPreset, opacity: heavyEffects ? 0.038 : 0.05, planeCount: heavyEffects ? 3 : 5 };
       case 'abandoned_factory':
         return {
           ...fogPreset,

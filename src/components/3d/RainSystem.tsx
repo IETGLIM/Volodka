@@ -19,7 +19,10 @@ import {
   type RainConfig,
 } from './rainSystemUtils';
 
-const MAX_SPLASHES_BASE = 300;
+// v4.59.0 (арт-план A3): 300 → 420 — плотнее кольца-брызги на мокром
+// асфальте под ливнем; mobile/visualLite автоматически режутся через
+// getParticleCount, desktop high/ultra получает полный бюджет.
+const MAX_SPLASHES_BASE = 420;
 const SPLASH_LIFETIME = 0.4;
 
 function seedRainBuffers(config: RainConfig, count: number) {

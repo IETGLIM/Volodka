@@ -298,9 +298,12 @@ export function applyCameraFrame(
     const fwd = _camFwd.set(0, 0, 0).subVectors(targetLook, targetPos).normalize();
     targetPos.addScaledVector(fwd, thrust * 0.03);
     targetLook.addScaledVector(fwd, thrust * 0.02);
-    // Subtle "air rush" FOV breathing — wind-in-face feel, synced with body bob.
+    // v4.59.0 (AAA sprint feel): спринт-FOV стал ощутимым — раньше ±0.012°
+    // был на пороге восприятия. Теперь: плавная постоянная добавка до +4°
+    // на полном спринте (speed rush) + синусоидальное «дыхание ветра» ±0.45°
+    // в такт бобу. Пружина FOV (lerp ~3/с) сглаживает вход/выход.
     const rushPhase = (ctx.time * 5.8) % (Math.PI * 2);
-    const rush = Math.sin(rushPhase) * 0.012 * thrust;
+    const rush = Math.sin(rushPhase) * 0.45 * thrust + 4.0 * thrust;
     // Mutate the target's FOV directly — destructured `targetFov` above is a
     // const copy, so we write back to the source object.
     targets.targetFov = (targets.targetFov || targetFov) + rush;

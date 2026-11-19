@@ -73,6 +73,7 @@ import {
   SettingsSelectRow,
   SettingsHint,
 } from '@/components/game/settings/NotebookSettings';
+import { FpsMeterBadge } from '@/components/game/settings/FpsMeterBadge';
 
 // ─── Types ───
 
@@ -201,6 +202,9 @@ function VisualSettingsTab({
           onChange={setPreset}
         />
         <SettingsHint>{formatQualityPresetDetailRu(selectedPreset, preset)}</SettingsHint>
+        {/* v4.59.0: живой FPS рядом с пресетами — цена качества видна
+            сразу, без консоли разработчика (арт-план E2). */}
+        <FpsMeterBadge />
       </SettingsSection>
 
       <SettingsSection title="Эффекты">

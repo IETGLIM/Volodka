@@ -181,6 +181,81 @@ export function StreetLampFixture({
   );
 }
 
+/** Entryway lamp fixture (v4.59.0, арт-план B1) — тёплая лампа над подъездом
+ *  панельки. Фликер «умирающей люминесцентки»: длинные спокойные периоды
+ *  (0.88–1.0), редкие быстрые стробы-провалы до ~0.25 с двойным пиком.
+ *  Хеш-функция вместо Math.random() — детерминированный фликер, безопасен
+ *  для SSR/гидратации и повторных монтирований.
+ *  Typical use: street_night подъезды, river_pier, factory doorways. */
+export function EntrywayLampFixture({
+  position,
+  color = '#ffd9a0',
+  intensity = 1.4,
+  distance = 7,
+  castShadow = false,
+  seed = 0,
+}: Omit<LightFixtureBaseProps, 'emissiveMesh'>) {
+  const { preset } = useGraphicsQuality();
+  const lightRef = useRef<PointLight>(null);
+  const meshRef = useRef<Mesh>(null);
+  const timeRef = useRef(0);
+  const shadowRes = getShadowMapResolution(preset.id);
+
+  const geometry = useMemo(() => new SphereGeometry(0.09, 8, 6), []);
+
+  useFrameTick('misc', ({ delta }) => {
+    if (!lightRef.current || !meshRef.current) return;
+    timeRef.current += delta;
+    const t = timeRef.current;
+
+    // Фазовая решётка: цикл ~7с, внутри него два коротких «строб»-окна.
+    // Вне окон — мягкое дыхание 0.88..1.0; внутри — провал с двойным пиком.
+    const cycle = 7.3 + seed * 1.7;
+    const phase = t % cycle;
+    const strobeWindow1 = phase > 2.0 && phase < 2.35;
+    const strobeWindow2 = phase > 5.1 && phase < 5.5;
+    let flicker: number;
+    if (strobeWindow1 || strobeWindow2) {
+      const local = strobeWindow1 ? phase - 2.0 : phase - 5.1;
+      // Двойной провал: 0.25 → 0.85 → 0.3 → восстановление
+      flicker = local < 0.12 ? 0.25 + local * 2.5
+        : local < 0.2 ? 0.85 - (local - 0.12) * 6.8
+        : 0.3 + (local - 0.2) * 3.5;
+    } else {
+      flicker = 0.94 + 0.06 * Math.sin(t * 2.1 + seed * 4.7);
+    }
+    flicker = Math.min(1, Math.max(0.22, flicker));
+    lightRef.current.intensity = intensity * flicker;
+    const mat = meshRef.current.material as MeshBasicMaterial;
+    mat.opacity = 0.55 + 0.45 * flicker;
+  });
+
+  return (
+    <group position={position}>
+      <pointLight
+        ref={lightRef}
+        color={color}
+        intensity={intensity}
+        distance={distance}
+        decay={2}
+        castShadow={castShadow && shadowRes > 0}
+        shadow-mapSize-width={shadowRes}
+        shadow-mapSize-height={shadowRes}
+        shadow-bias={-0.002}
+        shadow-normalBias={0.04}
+      />
+      <mesh ref={meshRef} geometry={geometry}>
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.9}
+          toneMapped={false}
+        />
+      </mesh>
+    </group>
+  );
+}
+
 /** Monitor glow fixture — dim colored point light + emissive plane.
  *  Simulates CRT/LCD screen glow on nearby surfaces.
  *  Cyberpunk: cyan #9db3c8 for terminals, green for Заря-М. */
