@@ -19,6 +19,8 @@ import { SCENE_CONFIG } from '@/config/scenes';
 import { getCombinedGameState } from '@/store/storeBindings';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
+/* v4.62.0: CLASSIC_UI — панель не монтируется в WoW-классике. */
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import type { SceneId, ScheduleEntry } from '@/shared/types/game';
 
 type AvailabilityStatus = 'here' | 'arriving_soon' | 'leaving_soon' | 'will_arrive' | 'gone';
@@ -240,6 +242,13 @@ export function NpcScheduleDisplay() {
   const handleToggle = useCallback((npcId: string) => {
     setExpandedNpc((prev) => (prev === npcId ? null : npcId));
   }, []);
+
+  /* v4.62.0 «Один WoW-экран»: при CLASSIC_UI панель расписания NPC
+   * («ПЕРСОНАЖИ · volodka://npcs · 08:00») не монтируется — кто где
+   * находится, игрок видит в мире (NPC стоят на местах) и на миникарте
+   * (точки с цветом отношения). Постоянный список «расписание всех» —
+   * филмик-виджет левой колонки, дублирующий мир. */
+  if (CLASSIC_UI) return null;
 
   return (
     <div

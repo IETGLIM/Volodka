@@ -477,9 +477,18 @@ export const GameplaySharedEffects = memo(function GameplaySharedEffects() {
       <GameplayPoemWorldFx />
       <GameplayPoemPowerFx />
       <GameplayPhotoMode />
-      <GameplayAudioVisualizer />
-      <GameplayLocationAtmosphere />
-      <GameplayCyberpunkGlow />
+      {/* v4.62.0 «Один WoW-экран», волна 2: неон-декор снят при
+          CLASSIC_UI. AudioVisualizer (canvas «АУДИО/СПЕКТР» внизу справа)
+          и LocationAtmosphere (glass-плашка «сцена · время» top-center,
+          дублирующая SceneBanner + color wash на весь экран) — филмик-слой
+          поверх классического HUD; в WoW-классике звук не визуализируют,
+          имя локации показывает кинематографичный баннер, время — мир. */}
+      {!CLASSIC_UI && <GameplayAudioVisualizer />}
+      {!CLASSIC_UI && <GameplayLocationAtmosphere />}
+      {/* v4.62.0: неоновая кайма экрана (cpglow-neon-edge) — филмик-декор,
+          в классике WoW рамку экрана не подсвечивают; стресс и так виден
+          в юнит-фрейме (красный бар + пипсы). */}
+      {!CLASSIC_UI && <GameplayCyberpunkGlow />}
       <GameplayAchievementCelebration />
       {/* v4.58.0: GameplayAudioInfoWidget (чип «Комната» внизу справа) снят —
           имя зоны показывает ZoneNameLabel, громкость — меню паузы. */}

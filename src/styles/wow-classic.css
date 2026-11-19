@@ -322,6 +322,31 @@ html.vk-classic-ui .vk-classic-prompt .text-cyan-400 {
   color: var(--wow-gold-bright) !important;
 }
 
+/* v4.62.0: карточка промпта взаимодействия (InteractionHintPopup) —
+   классический вид: плотный чёрный фон, золотая рамка, без
+   glass-морфизма/неона. Класс вешается в TSX при CLASSIC_UI. */
+html.vk-classic-ui .interaction-hint-card.vk-classic-prompt {
+  background: rgba(0, 0, 0, 0.78) !important;
+  border: 1px solid var(--wow-gold-border) !important;
+  border-radius: 3px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  min-width: 0 !important;
+}
+
+html.vk-classic-ui .interaction-hint-card.vk-classic-prompt .hint-key-badge {
+  background: rgba(255, 215, 0, 0.12) !important;
+  border: 1px solid var(--wow-gold-border) !important;
+  border-radius: 3px !important;
+}
+
+html.vk-classic-ui .interaction-hint-card.vk-classic-prompt .hint-label {
+  color: #f4e4bc !important;
+  font-family: var(--font-serif, 'Georgia', serif) !important;
+  letter-spacing: 0.02em;
+}
+
 html.vk-classic-ui .eip-glow-ring,
 html.vk-classic-ui .eip-glow-ring-sweep {
   display: none !important;

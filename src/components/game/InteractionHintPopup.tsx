@@ -22,6 +22,8 @@ import { eventBus } from '@/engine/EventBus';
 import { playSfx } from '@/engine/audio/interactionSfx';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { bottomInteractPromptPx } from '@/shared/constants/hudLayout';
+/* v4.62.0: CLASSIC_UI — промпт в стиле WoW (золотая рамка, без неона). */
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import {
   formatInteractionHintAria,
   formatInteractionHintKey,
@@ -136,17 +138,17 @@ export function InteractionHintPopup() {
           }}
         >
           <div
-            className="interaction-hint-card interaction-hint-glow"
+            className={`interaction-hint-card ${CLASSIC_UI ? 'vk-classic-prompt' : 'interaction-hint-glow'}`}
             style={{
-              borderColor: accent.border,
-              animation: reducedMotion ? 'none' : 'hint-border-pulse 2.5s ease-in-out infinite',
+              borderColor: CLASSIC_UI ? undefined : accent.border,
+              animation: reducedMotion || CLASSIC_UI ? 'none' : 'hint-border-pulse 2.5s ease-in-out infinite',
             }}
           >
-            {/* Scan-line overlay */}
-            <div className="hint-scanlines" />
+            {/* Scan-line overlay — филмик; в классике WoW не рисуем */}
+            {!CLASSIC_UI && <div className="hint-scanlines" />}
 
             {/* Scan-sweep overlay */}
-            {!reducedMotion ? (
+            {!reducedMotion && !CLASSIC_UI ? (
               <div className="hint-sweep">
                 <div
                   className="hint-sweep-inner"
@@ -157,16 +159,20 @@ export function InteractionHintPopup() {
               </div>
             ) : null}
 
-            {/* Corner bracket decorations */}
-            <div className="hint-bracket hint-bracket-tl" style={{ borderColor: `${accent.color}33` }} />
-            <div className="hint-bracket hint-bracket-tr" style={{ borderColor: `${accent.color}33` }} />
-            <div className="hint-bracket hint-bracket-bl" style={{ borderColor: `${accent.color}33` }} />
-            <div className="hint-bracket hint-bracket-br" style={{ borderColor: `${accent.color}33` }} />
+            {/* Corner bracket decorations — филмик; в классике не рисуем */}
+            {!CLASSIC_UI && (
+              <>
+                <div className="hint-bracket hint-bracket-tl" style={{ borderColor: `${accent.color}33` }} />
+                <div className="hint-bracket hint-bracket-tr" style={{ borderColor: `${accent.color}33` }} />
+                <div className="hint-bracket hint-bracket-bl" style={{ borderColor: `${accent.color}33` }} />
+                <div className="hint-bracket hint-bracket-br" style={{ borderColor: `${accent.color}33` }} />
+              </>
+            )}
 
             {/* Content */}
             <div className="hint-content">
               {/* Type icon */}
-              <div className="hint-icon-wrap" style={{ filter: `drop-shadow(0 0 4px ${accent.color}40)` }}>
+              <div className="hint-icon-wrap" style={{ filter: CLASSIC_UI ? undefined : `drop-shadow(0 0 4px ${accent.color}40)` }}>
                 <HintIcon type={hint.type} color={accent.color} />
               </div>
 
@@ -177,8 +183,8 @@ export function InteractionHintPopup() {
                   background: accent.bg,
                   borderColor: accent.border,
                   color: accent.color,
-                  boxShadow: accent.glow,
-                  animation: reducedMotion ? 'none' : 'hint-key-pulse 2.8s ease-in-out infinite',
+                  boxShadow: CLASSIC_UI ? undefined : accent.glow,
+                  animation: reducedMotion || CLASSIC_UI ? 'none' : 'hint-key-pulse 2.8s ease-in-out infinite',
                 }}
               >
                 {showTouchHint ? <Hand size={16} /> : `[${hintKey}]`}
@@ -191,7 +197,7 @@ export function InteractionHintPopup() {
                   className="hint-label"
                   style={{
                     color: accent.color,
-                    textShadow: `0 0 8px ${accent.color}44`,
+                    textShadow: CLASSIC_UI ? '1px 1px 0 #000' : `0 0 8px ${accent.color}44`,
                   }}
                 >
                   {hint.label}
@@ -207,11 +213,13 @@ export function InteractionHintPopup() {
               </div>
             </div>
 
-            {/* Bottom accent line */}
-            <div
-              className="hint-bottom-line"
-              style={{ background: `linear-gradient(90deg, transparent, ${accent.color}44, transparent)` }}
-            />
+            {/* Bottom accent line — филмик; в классике не рисуем */}
+            {!CLASSIC_UI && (
+              <div
+                className="hint-bottom-line"
+                style={{ background: `linear-gradient(90deg, transparent, ${accent.color}44, transparent)` }}
+              />
+            )}
           </div>
         </motion.div>
       )}
