@@ -1,3 +1,64 @@
+## v4.63.0 (2026-11-19) — chore: инвентаризация src/ и чистка мёртвого кода — 51 файл, −5199 строк
+
+Репорт игрока: «Посмотри что висит в src — мы действительно всё используем
+и всё подключено? Надо провести полноценную инвентаризацию и почистить
+от мёртвого кода».
+
+Метод: построен граф импортов всех 2243 исходников от прод-точек входа
+(main.tsx, api/*, worker, sw) и тестовых точек; каждый кандидат
+верифицирован по реальным резолвам (не строкам!), с учётом ?worker/?url
+суффиксов, barrel-реэкспортов и упоминаний в комментариях.
+
+**Удалено (−5199 строк, +7)**:
+
+- 17 UI-компонентов-сирот: AmbientSoundMixer, AudioInfoDisplay,
+  CompassHUD, DifficultyIndicator, EnhancedCrosshairPrompt,
+  ExplorationHintsPanel, GamepadButtonPrompt, FirstMinutesDirector,
+  MorningSyncUrgency, CompassPOIMarkers, CyberStatBar,
+  EmergencyHelpButton, QuestDirectionArrow, SceneContextChip,
+  SettingsToggle, useLevelUpBanner, ScenePoiCompass — сняты с HUD в
+  v4.58.0, но файлы висели мёртвым грузом.
+- design-system/ целиком (TypewriterText, tokens, useTypewriter, barrel)
+  — никем не импортировался с волны филмик-редизайна.
+- 11 barrel/re-export-дублей: engine/chunkLoadRecovery (@deprecated →
+  shared/chunk/), store/explorationAutoCloseTimers,
+  engine/skills/applySkillUnlockEffects, data/storyNodes.ts, data/index,
+  engine/audio|cinematic|core/index, cinematic/cutsceneDefinitions,
+  shared/gameBridge/index, poemReveal/index.
+- 20 test-only утилит (код не нужен продакшену, тесты тестировали
+  неиспользуемое): gamepadMenuNavigation (useMenuNavigation дублирует
+  сам), threeLodGroup (LodSwitcher свой), animatedTerrainMaterial,
+  highPresetBudget, physicsSceneMountOrder, hudIa,
+  explorationHubTemplate, claimMinigameRewards, loreDiscoveryPresentation
+  + их тесты.
+- engine/combat/environmentalHazards — старая версия системы хазардов
+  (Task 4b-C3); прод живёт на data/environmentalHazards с другой
+  типизацией (HazardKind vs HazardDamageType).
+- proceduralAaa/workers/textureGen.worker.ts — воркер никогда не
+  инстанцировался (DynamicTextureGenerator генерит синхронно).
+- 16 мёртвых i18n-ключей (hud.sceneContext.*, hud.emergency.*).
+
+**Тесты починены по ходу**: chunkLoadRecovery.test и
+applySkillUnlockEffects.test перенесены к каноническим модулям
+(shared/chunk/, shared/skills/); STORY_NODES-импорты переведены с
+удалённого barrel на @/data/story; threeLodGroup-секция вырезана из
+gpuLifecycle.test; порог hudCoverage-контракта 220→200 (реально 208).
+
+**Осознанно оставлены**: sceneIdInvariants (guard целостности реестров),
+quaterniusNpcSlots + proceduralNpcAvatarCatalog (prod-smoke GLB-пайплайна),
+questReachability/storyReachability (validate:node-logic),
+ai3dgenAssetCatalog/modelUrls (assets:*-скрипты), *.d.ts ambient-типы,
+ui/popover+slider (shadcn-примитивы, CSS-токены).
+
+Итог скана: было 56 мёртвых модулей в проде → 15, все 15 — осознанные
+держатели (валидаторы, ассет-инфраструктура, ambient-типы).
+
+Верификация: tsc 0, eslint 0 (warnings 36→35), vitest 455/455 файлов
+2909/2909 тестов, validate:protected OK (46 стихов), validate:content OK,
+build OK, визуальный smoke в headless-браузере: меню → пролог →
+exploration-HUD (юнит-фрейм, промпт, тулбар 469px живы, 0 ошибок
+консоли).
+
 ## v4.62.0 (2026-11-19) — fix(ui): «Один WoW-экран», волна 2 — срезаны филмик-панели, живущие мимо CLASSIC_UI
 
 Репорт игрока: «Мало что-то изменений. Почему-то старые панельки тянутся,

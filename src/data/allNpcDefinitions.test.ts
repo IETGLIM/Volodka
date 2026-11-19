@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StoryEffect } from '@/shared/types/game';
-import { STORY_NODES } from '@/data/storyNodes';
+import { STORY_NODES } from '@/data/story';
 import { DIALOGUE_NODES } from '@/data/dialogueNodes';
 import { STORY_NODE_TO_NPC_ID } from '@/data/goldenPath';
 import {

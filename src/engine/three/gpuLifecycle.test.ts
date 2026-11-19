@@ -8,10 +8,6 @@ import {
 } from '@/engine/three/textureReuseMap';
 import { ObjectPool } from '@/engine/three/objectPool';
 import {
-  createThreeLodGroup,
-  disposeThreeLodGroup,
-} from '@/engine/three/threeLodGroup';
-import {
   handleSceneGpuTransition,
   getSceneGltfAssetIds,
   getScheduleBackedNpcIdsForScene,
@@ -126,31 +122,6 @@ describe('ObjectPool', () => {
   });
 });
 
-describe('threeLodGroup', () => {
-  it('creates LOD levels and disposes on teardown', () => {
-    const high = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial(),
-    );
-    const low = new THREE.Mesh(
-      new THREE.BoxGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial(),
-    );
-
-    vi.spyOn(high.geometry, 'dispose');
-    vi.spyOn(low.geometry, 'dispose');
-
-    const lod = createThreeLodGroup([
-      { object: high, distance: 0 },
-      { object: low, distance: 50 },
-    ]);
-
-    expect(lod.levels).toHaveLength(2);
-    disposeThreeLodGroup(lod);
-    expect(high.geometry.dispose).toHaveBeenCalled();
-    expect(low.geometry.dispose).toHaveBeenCalled();
-  });
-});
 
 describe('sceneGpuLifecycle', () => {
   it('maps known scenes to GLTF asset ids', () => {

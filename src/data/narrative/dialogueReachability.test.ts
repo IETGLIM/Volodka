@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { DIALOGUE_NODES } from '@/data/dialogue';
-import { STORY_NODES } from '@/data/storyNodes';
+import { STORY_NODES } from '@/data/story';
 import { TRIGGER_ZONES } from '@/data/triggerZones';
 import { ALL_NPC_DEFINITIONS } from '@/data/allNpcDefinitions';
 

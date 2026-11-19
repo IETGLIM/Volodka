@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { resolveSkillUnlockEffects } from '@/engine/skills/applySkillUnlockEffects';
+import { resolveSkillUnlockEffects } from './applySkillUnlockEffects';
 import { PASSIVE_SKILL_EFFECT_MAP } from '@/data/passiveSkillEffects';
 
 describe('resolveSkillUnlockEffects', () => {

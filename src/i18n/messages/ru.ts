@@ -85,16 +85,6 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.ticker.time': 'ВРЕМЯ: {time}',
   'hud.ticker.system': 'СИСТЕМА: v{version}',
 
-  /* SceneContextChip.tsx */
-  'hud.sceneContext.street': 'Улица',
-  'hud.sceneContext.indoor': 'Помещение',
-  'hud.sceneContext.underground': 'Подземелье',
-  'hud.sceneContext.dream': 'Сон',
-  'hud.sceneContext.npcPrefix': 'NPC:',
-  'hud.sceneContext.exitsPrefix': 'EX:',
-  /* Шаблон aria-строки (этап 115, волна 4) */
-  'hud.sceneContext.aria': '{scene} — NPC: {npc}, Выходов: {exits}',
-
   /* EnvironmentMoodIndicator.tsx */
   'hud.mood.storm': 'ШТОРМ',
   'hud.mood.rain': 'ДОЖДЬ',
@@ -185,18 +175,6 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   /* Шаблоны aria-строк DOM-лейбла (этап 115, волна 4) */
   'hud.stamina.aria': 'Выносливость: {n}%',
   'hud.stamina.exhaustedAria': 'Выносливость: {n}% — дыхание сбито, бег временно недоступен',
-
-  /* EmergencyHelpButton.tsx */
-  'hud.emergency.aria': 'Что делать?',
-  'hud.emergency.title': 'Что делать?',
-  'hud.emergency.activeQuestFallback': 'Активное задание — открой журнал [Q]',
-  'hud.emergency.currentObjective': 'Текущая цель',
-  'hud.emergency.hint': 'Подсказка',
-  'hud.emergency.more': '…и другие',
-  'hud.emergency.reset': 'Сбросить взаимодействие',
-  'hud.emergency.lastResort': 'Если ничего не помогает — сохраните и загрузите игру',
-  /* Шаблон заголовка списка зон (этап 115, волна 4) */
-  'hud.emergency.nearby': 'Что рядом ({n})',
 
   /* ExplorationHUD.tsx (индикатор сохранения) */
   'hud.save.toast': 'Запись сохранена',

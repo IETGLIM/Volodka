@@ -51,8 +51,8 @@ function collectHudKeys(): string[] {
 describe('i18n: покрытие HUD-строк (этап 115)', () => {
   const hudKeys = collectHudKeys();
 
-  it('находит не менее 220 hud.* ключей в t()-вызовах по src/', () => {
-    expect(hudKeys.length).toBeGreaterThanOrEqual(220);
+  it('находит не менее 200 hud.* ключей в t()-вызовах по src/', () => {
+    expect(hudKeys.length).toBeGreaterThanOrEqual(200);
   });
 
   it('каждый найденный hud.* ключ есть в RU_MESSAGES с непустым значением', () => {
@@ -74,7 +74,8 @@ describe('i18n: покрытие HUD-строк (этап 115)', () => {
     expect(RU_MESSAGES['hud.toolbar.journal']).toBe('Журнал');
     expect(RU_MESSAGES['hud.save.toast']).toBe('Запись сохранена');
     expect(RU_MESSAGES['hud.stamina.initialAria']).toBe('Выносливость: 100%');
-    expect(RU_MESSAGES['hud.emergency.more']).toBe('…и другие');
+    /* v4.63.0: hud.emergency.* и hud.sceneContext.* удалены вместе с
+     * компонентами EmergencyHelpButton и SceneContextChip (мёртвый код). */
     /* Волна 3 (v4.28.0): WeatherIndicator / DayNight / Compass / Minimap /
      * QuickUse / MobileActions / AaaImmersiveGuide */
     expect(RU_MESSAGES['hud.weather.title']).toBe('Погода');
@@ -96,8 +97,6 @@ describe('i18n: покрытие HUD-строк (этап 115)', () => {
     expect(RU_MESSAGES['hud.critical.energyAndStress']).toBe('Силы на исходе · стресс {n}%');
     expect(RU_MESSAGES['hud.stamina.exhaustedAria']).toBe('Выносливость: {n}% — дыхание сбито, бег временно недоступен');
     expect(RU_MESSAGES['hud.toolbar.slotAria']).toBe('{label} ({shortcut})');
-    expect(RU_MESSAGES['hud.sceneContext.aria']).toBe('{scene} — NPC: {npc}, Выходов: {exits}');
     expect(RU_MESSAGES['hud.mood.aria']).toBe('Настроение: {label}');
-    expect(RU_MESSAGES['hud.emergency.nearby']).toBe('Что рядом ({n})');
   });
 });
