@@ -178,9 +178,10 @@ export function ExplorationHUD(props: HUDProps) {
       <MeleeStrikeHint />
       <CombatPreEngagementWarning />
       <HazardStatusIndicator />
-      {/* «Шёпот города»: тревожная строка при стрессе ≥70 (FreeRouter,
-          mode=whisper; кулдаун 8 мин, один шёпот на эпизод стресса). */}
-      <CityWhisperOverlay />
+      {/* v4.61.0: CityWhisperOverlay снят при CLASSIC_UI — тревожная строка
+          по центру-низу дублировала CriticalStatusWhisper тем же языком
+          («стресс высокий» и так пульсирует в юнит-фрейме и по краям). */}
+      {!CLASSIC_UI && <CityWhisperOverlay />}
 
       {/* Stress-reactive chromatic edge fringing — wraps the screen edges with
           subtle color separation when energy is low or stress is high. Pure

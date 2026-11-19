@@ -42,6 +42,9 @@ import {
   LucideIcon,
 } from 'lucide-react';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
+/* v4.61.0: CLASSIC_UI и слоты правой колонки — WoW-порядок раскладки. */
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
+import { EXPLORATION_HUD_LAYOUT } from '@/shared/constants/hudLayout';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 /* ─── Type Definitions ─── */
@@ -151,10 +154,17 @@ const DEBUFF_COLORS = {
  *  FIX (overlap): 'top-right' опущен с 16 до 84px — раньше трекер совпадал
  *  пиксель-в-пиксель с DifficultyIndicator (top-4 right-4) и налегал на
  *  правый кластер тайтл-бара. Правая колонка теперь: топ-бар (0–40) →
- *  сложность (48–78) → баффы (84) → миникарта (146). */
+ *  сложность (48–78) → баффы (84) → миникарта (146).
+ *  v4.61.0 (WoW-порядок правой колонки): при CLASSIC_UI баффы идут ПОСЛЕ
+ *  миникарты и квест-трекера — классическая раскладка: миникарта (top:10,
+ *  блок 222) → квест-карта (top:274, высота 216) → баффы (top:500). До
+ *  этого fixed 84px клал иконки баффов прямо на миникарту (репорт
+ *  «слои накладываются»). */
 const POSITION_STYLES: Record<TrackerPosition, React.CSSProperties> = {
   'top-left': { top: 16, left: 16 },
-  'top-right': { top: 84, right: 16 },
+  'top-right': CLASSIC_UI
+    ? { top: 500, right: EXPLORATION_HUD_LAYOUT.RIGHT_INSET }
+    : { top: 84, right: 16 },
   'bottom-left': { bottom: 16, left: 16 },
   'bottom-right': { bottom: 16, right: 16 },
 };

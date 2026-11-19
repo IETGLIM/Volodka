@@ -11,6 +11,7 @@ import { eventBus } from '@/engine/EventBus';
 import { PHOTO_EVENTS } from '@/engine/events';
 import { floatKarma, floatEnergy, floatStress, floatLevelUp } from '@/components/game/FloatingText';
 import { showStatChange } from '@/components/game/microAnimations/statChangePool';
+import { getGameSnapshot } from '@/engine/GameActionDispatcher';
 import { determineWeatherType, type WeatherType } from '@/data/weatherEffects';
 import {
   resolveHudQuestBadgeCount,
@@ -178,9 +179,13 @@ export function useHUDController(props: HUDProps) {
     if (karma !== prevKarma.current) {
       const delta = karma - prevKarma.current;
       prevKarma.current = karma;
-      if (delta !== 0) floatKarma(delta);
+      // v4.61.0 (dedup): в бою флоат-числа и пипсы статов глохнут —
+      // состояние игрока в бою показывает юнит-фрейм боя (CombatPlayerCard);
+      // exploration-HUD не рисует вторые числа поверх боевых панелей.
+      const inCombat = getGameSnapshot().mode === 'combat';
+      if (delta !== 0 && !inCombat) floatKarma(delta);
       // Localized stat-change pip — color encodes direction (cyan = gain, rose = loss).
-      if (delta !== 0) showStatChange('Карма', delta, delta > 0 ? 'var(--cyber-cyan)' : '#c65548');
+      if (delta !== 0 && !inCombat) showStatChange('Карма', delta, delta > 0 ? 'var(--cyber-cyan)' : '#c65548');
       scheduleTimeout(() => {
         if (delta > 0) setKarmaDirection('up');
         else if (delta < 0) setKarmaDirection('down');
@@ -195,8 +200,9 @@ export function useHUDController(props: HUDProps) {
     if (energy !== prevEnergy.current) {
       const delta = energy - prevEnergy.current;
       prevEnergy.current = energy;
-      if (delta !== 0) floatEnergy(delta);
-      if (delta !== 0) showStatChange('Энергия', delta, delta > 0 ? '#57a874' : '#c65548');
+      const inCombat = getGameSnapshot().mode === 'combat';
+      if (delta !== 0 && !inCombat) floatEnergy(delta);
+      if (delta !== 0 && !inCombat) showStatChange('Энергия', delta, delta > 0 ? '#57a874' : '#c65548');
       scheduleTimeout(() => setEnergyPulse(true), 0);
       scheduleTimeout(() => setEnergyPulse(false), 600);
     }
@@ -206,9 +212,11 @@ export function useHUDController(props: HUDProps) {
     if (stress !== prevStress.current) {
       const delta = stress - prevStress.current;
       prevStress.current = stress;
-      if (delta !== 0) floatStress(delta);
+      // v4.61.0 (dedup): см. karma/energy — в бою числа глохнут.
+      const inCombat = getGameSnapshot().mode === 'combat';
+      if (delta !== 0 && !inCombat) floatStress(delta);
       // Stress: increase is bad (rose), decrease is good (green).
-      if (delta !== 0) showStatChange('Стресс', delta, delta > 0 ? '#c65548' : '#57a874');
+      if (delta !== 0 && !inCombat) showStatChange('Стресс', delta, delta > 0 ? '#c65548' : '#57a874');
       scheduleTimeout(() => setStressPulse(true), 0);
       scheduleTimeout(() => setStressPulse(false), 600);
     }

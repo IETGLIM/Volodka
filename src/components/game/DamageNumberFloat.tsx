@@ -286,22 +286,11 @@ export function DamageNumberFloat() {
     return unsub;
   }, [addNumber]);
 
-  /* ── Listen for fx:stat_change (energy/stress changes) ── */
-  useEffect(() => {
-    const unsub = eventBus.on('fx:stat_change', (payload) => {
-      const absVal = Math.abs(payload.delta);
-      if (absVal === 0) return;
-
-      if (payload.stat === 'energy') {
-        addNumber(payload.type === 'negative' ? 'damage' : 'heal', absVal);
-      } else if (payload.stat === 'stress') {
-        if (payload.type === 'positive' || payload.delta > 0) {
-          addNumber('stress', absVal);
-        }
-      }
-    });
-    return unsub;
-  }, [addNumber]);
+  /* ── v4.61.0 (dedup): листенер fx:stat_change удалён — третьи копии чисел
+     энергии/стресса. Числа статов в exploration рисует FloatingTextLayer
+     (floatEnergy/floatStress из useHUDController) + пипсы StatChangeLayer;
+     этот слой оставлен ТОЛЬКО для боевых каналов (combat:damage/heal) и XP
+     в exploration. ── */
 
   /* ── Cleanup all timers on unmount ── */
   useEffect(() => {

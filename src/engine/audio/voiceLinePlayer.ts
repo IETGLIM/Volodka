@@ -205,6 +205,13 @@ export function stopVoiceLinePlayback(): void {
 
 /** Play VO when registered; silent skip when the file is missing on disk. */
 export async function playVoiceLineForNode(nodeId: string, options?: VoiceLinePlayOptions): Promise<void> {
+  /* v4.61.0 (анти-спам): узел уже звучит — повторный вызов (ре-ран
+   * DialogueRenderer-эффекта при смене resolvedText/спикера, StrictMode
+   * двойной маунт) не должен перезапускать ту же реплику. Раньше каждый
+   * ре-ран эмитил audio:voice_line_start → субтитр-попап и вытеснение
+   * мысли Володьки появлялись заново «до бесконечности» (репорт игрока). */
+  if (activeNodeId === nodeId && (activeAudio !== null || activeUtterance !== null)) return;
+
   const url = resolveVoiceLineAudioUrl(nodeId);
   if (!url) return;
 

@@ -67,6 +67,9 @@ import '@/engine/feedback/hapticEventFeedback';
 import { WeatherIndicator } from '../WeatherIndicator';
 import { AmbientAtmosphereCaption } from '../AmbientAtmosphereCaption';
 import { SceneDiscoveryCelebration } from '@/components/game/hud/parts/SceneDiscoveryCelebration';
+/* v4.61.0 «Один WoW-экран»: флаг классического UI — гейтит филмик-виджеты
+ * (вторая инфо-система поверх классического HUD — источник наложений). */
+import { CLASSIC_UI } from '@/shared/constants/uiTheme';
 import { HUDBootSequence } from '@/components/game/hud/parts/HUDBootSequence';
 import { HUDNotificationFeed } from '@/components/game/hud/parts/HUDNotificationFeed';
 import { DayNightCycleIndicator } from '../DayNightCycleIndicator';
@@ -606,7 +609,10 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       {/* v4.58.0: ExplorationHintsPanel («ПОДСКАЗКИ / Неисследованные пути»)
           снята — мир сам показывает выходы (двери, маркеры, луч света);
           постоянный список «что ещё не сделано» — учебник, а не RPG. */}
-      <AmbientAtmosphereCaption />
+      {/* v4.61.0: при CLASSIC_UI каптион атмосферы снят — постоянный текстовый
+          блок под центром экрана конкурировал с подсказками взаимодействия
+          и квест-трекером; атмосферу в классике передают мир и музыка. */}
+      {!CLASSIC_UI && <AmbientAtmosphereCaption />}
       {/* Filmic scene-discovery celebration — единственный попап открытия локации.
           Старый неоновый SceneDiscoveryToast удалён из монтирования: он дублировал
           то же событие exploration:scene_discovered, и игрок видел две плашки на
@@ -614,7 +620,12 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
           a {count}/{total} kicker with hud-filmic-caption styling.
           DayNightCycleIndicator was moved inside <LazyHUD> by the progressive-reveal
           refactor (commit 3c92c50). */}
-      <SceneDiscoveryCelebration />
+      {/* v4.61.0 «Один WoW-экран»: при CLASSIC_UI филмик-виджеты сняты —
+          карму показывает юнит-фрейм (бар кармы + тир), время суток и
+          погоду — минимапта/мир, настроение среды — сам мир. Вторая
+          параллельная инфо-система поверх классического UI — источник
+          «всё смешалось» (репорт игрока). */}
+      {!CLASSIC_UI && <SceneDiscoveryCelebration />}
       <TutorialOverlay />
       <FirstPlayTutorial />
       <TrophyAchievementLayer />
@@ -630,11 +641,14 @@ export const GameplayExplorationHud = memo(function GameplayExplorationHud({
       <ActiveQuestMiniTracker />
       {!initialHudFocus ? (
         <>
-          <MoralCompassHUD />
-          <KarmaShiftLayer />
-          <WeatherIndicator />
-          {/* v4.58.0: ScenePoiCompass снят — см. комментарий у импортов. */}
-          <DayNightCycleIndicator />
+          {/* v4.61.0: MoralCompassHUD/KarmaShiftLayer/WeatherIndicator/
+              DayNightCycleIndicator сняты при CLASSIC_UI — карма уже в
+              юнит-фрейме слева, погода/время — в мире и миникарте;
+              KarmaShiftLayer дублировал флоат-числа кармы. */}
+          {!CLASSIC_UI && <MoralCompassHUD />}
+          {!CLASSIC_UI && <KarmaShiftLayer />}
+          {!CLASSIC_UI && <WeatherIndicator />}
+          {!CLASSIC_UI && <DayNightCycleIndicator />}
           <PoetryPowerBar />
           <PoemActiveEffectsHud />
           <MountedEnvironmentalEffectsOverlay />

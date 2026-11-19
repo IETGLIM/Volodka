@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import { useEffectiveReducedMotion } from '@/hooks/useEffectiveReducedMotion';
+import { useGameStore } from '@/store/gameStore';
 import {
   releaseImmersiveVoiceChannel,
   requestImmersiveVoiceChannel,
@@ -54,6 +55,12 @@ export function VoiceLineSubtitleHud() {
   useEffect(() => {
     const unsubStart = eventBus.on('audio:voice_line_start', (payload) => {
       if (!payload.text) return;
+      // v4.61.0 (dedup): если текст реплики уже виден на экране —
+      // в диалоговом окне (DialogueRenderer) или диегетической плашке —
+      // субтитр его не дублирует. Один текст — один носитель.
+      // Субтитр остаётся для VO/синтеза вне диалога (осмотр, катсцены).
+      const ui = useGameStore.getState();
+      if (ui.showStoryOverlay || ui.diegeticNarrative != null) return;
       // v4.48.13: голос владеет единым каналом «внутреннего голоса» —
       // активная мысль Володьки прячется и вернётся после реплики.
       requestImmersiveVoiceChannel('voice');
