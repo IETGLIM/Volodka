@@ -32,5 +32,10 @@ export function useHudFocusMode(): boolean {
   const diegeticOpen = useGameStore((s) => s.diegeticNarrative != null);
   const storyOverlayOpen = useGameStore((s) => s.showStoryOverlay);
   const cutsceneActive = useGameStore((s) => s.activeCutsceneId != null);
-  return examineOpen || diegeticOpen || storyOverlayOpen || cutsceneActive;
+  // v4.60.0 («Тихий бой»): фаза боя — тоже режим фокуса. Боевой экран
+  // принадлежит бою (панели врага/игрока/лог), а не транзиентному HUD:
+  // мысли Володьки, event-попапы и фид глохнут на время боя и больше не
+  // наслаиваются поверх боевых панелей (репорт «всё смешалось»).
+  const combatActive = useGameStore((s) => s.combatActive);
+  return examineOpen || diegeticOpen || storyOverlayOpen || cutsceneActive || combatActive;
 }

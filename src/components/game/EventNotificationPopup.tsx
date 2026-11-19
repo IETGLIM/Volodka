@@ -246,6 +246,10 @@ export function EventNotificationPopup() {
   const mode = useGamePhase();
   const suppressToasts = useSuppressGameplayToasts();
   if (mode === 'menu' || mode === 'intro') return null;
+  // v4.60.0 («Тихий бой»): в бою event-попапы глохнут — экран принадлежит
+  // боевым панелям (мысли врага, лут-тосты и прочий шум наслаивались
+  // поверх панелей боя и лога — репорт «всё смешалось»).
+  if (mode === 'combat') return null;
   if (suppressToasts) return null;
   if (!slotGranted) return null;
 

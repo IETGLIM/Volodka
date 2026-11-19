@@ -140,15 +140,11 @@ export function CombatUI() {
           />
         </motion.div>
 
-        <div
-          className="fixed inset-0 pointer-events-none opacity-[0.02]"
-          style={{
-            zIndex: UI_LAYERS.COMBAT,
-            backgroundImage:
-              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(70,185,110,0.1) 2px, rgba(70,185,110,0.1) 4px)',
-          }}
-        />
-        <div className="combat-grid-overlay" />
+        {/* v4.60.0 («Чистый бой»): полноэкранные сканлайны и сетка сняты —
+         * при полупрозрачных панелях они муарили поверх 3D-сцены и лога
+         * (репорт «всё смешалось, наложения»). Атмосферу боя несут:
+         * виньетка combat-vignette-active, тряска, вспышки урона и
+         * аффинити-рамка — их достаточно. */}
         {/* Element affinity indicator border — color from last damage channel */}
         {isActive && <div className="combat-affinity-border-glow" />}
       </div>

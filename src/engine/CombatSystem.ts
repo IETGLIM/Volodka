@@ -174,6 +174,10 @@ class CombatManager {
     this.clearExitTimer();
     this.generation += 1;
     this._state = null;
+    // v4.60.0: сессия закрыта — отложенные выходы из победы/поражения
+    // недействительны (кнопка не должна дёргать чужой выход).
+    victoryExitFn = null;
+    defeatExitFn = null;
   }
 
   /** Cancel turn timers only — keeps generation (victory/defeat exit must not be dropped). */
@@ -1589,8 +1593,13 @@ function handleVictory(): CombatState | null {
 
   combat.notifyListeners();
 
-  // Return to story node or exploration after delay (G12)
-  combat.scheduleExit(3000, () => {
+  // v4.60.0 («Мгновенный выход из победы»): выход выделен в finishVictoryExit
+  // — кнопка «Продолжить» на панели победы дёргает его сразу, не ожидая
+  // 3-секундного автотаймера (по паттерну мгновенного рестарта v4.56.2).
+  // Повторные вызовы безопасны (victoryExitFn сбрасывается + scheduleExit
+  // перезаписывается endSession'ом).
+  const finishVictoryExit = () => {
+    victoryExitFn = null;
     if (returnNodeId) {
       dispatchGameAction({ type: 'story/setCombatActive', active: false });
       dispatchGameAction({ type: 'story/openNarrativeOverlay', nodeId: returnNodeId, kind: 'story' });
@@ -1604,7 +1613,11 @@ function handleVictory(): CombatState | null {
     combat.notifyListeners();
     combat.endSession();
     eventBus.emit('combat:end', {});
-  });
+  };
+  victoryExitFn = finishVictoryExit;
+
+  // Return to story node or exploration after delay (G12)
+  combat.scheduleExit(3000, finishVictoryExit);
 
   return combat.getState();
 }
@@ -1670,6 +1683,22 @@ function handleDefeat(): void {
 
 /** Ссылка на активный выход из поражения — для мгновенного рестарта с экрана. */
 let defeatExitFn: (() => void) | null = null;
+
+/** Ссылка на активный выход из победы — для кнопки «Продолжить» (v4.60.0). */
+let victoryExitFn: (() => void) | null = null;
+
+/**
+ * v4.60.0 «Мгновенный выход из победы»: кнопка «Продолжить» на панели
+ * победы не ждёт 3-секундного автотаймера. Повторные вызовы безопасны
+ * (victoryExitFn сбрасывается после первого).
+ */
+export function continueAfterVictory(): void {
+  if (victoryExitFn) {
+    const fn = victoryExitFn;
+    victoryExitFn = null;
+    fn();
+  }
+}
 
 /**
  * v4.56.2 «Мгновенный рестарт» (требование игрока: game-over → instant restart).

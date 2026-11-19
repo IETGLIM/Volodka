@@ -93,11 +93,8 @@ export function useCombatUiController() {
     return unsub;
   }, []);
 
-  useEffect(() => {
-    if (logEndRef.current) {
-      logEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [combatState?.log.length]);
+  // v4.60.0: авто-скролл лога переехал в CombatLogPanel (scrollTop самого
+  // контейнера). scrollIntoView здесь скроллил всю страницу, а не панель.
 
   const prevLogLen = useRef(0);
   useEffect(() => {

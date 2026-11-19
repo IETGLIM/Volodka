@@ -196,12 +196,19 @@ export function DamageNumberFloat() {
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const mode = useGamePhase();
+  // v4.60.0: зеркалирование фазы в ref — event-листенеры (fx:xp_gain)
+  // читают актуальную фазу без пересоздания подписки на каждый рендер.
+  const modeRef = useRef(mode);
+  modeRef.current = mode;
 
   /** Add a damage number to the queue */
   const addNumber = useCallback((type: DamageNumberType, value: number) => {
     const id = `dmg-num-${++nextId}`;
-    const offsetX = (Math.random() - 0.5) * 160; // -80 to +80px offset
-    const startY = 30 + (Math.random() - 0.5) * 20; // 20-40% from top
+    // v4.60.0: горизонтальный разброс сужен ±160 → ±70px и поднят старт
+    // (20–40% → 24–36% высоты): числа живут над ареной, а не поверх
+    // панели врага сверху и лога снизу (репорт «наложение текста»).
+    const offsetX = (Math.random() - 0.5) * 140; // -70 to +70px offset
+    const startY = 30 + (Math.random() - 0.5) * 12; // 24-36% from top
 
     const entry: DamageNumberEntry = {
       id,
@@ -267,6 +274,11 @@ export function DamageNumberFloat() {
   /* ── Listen for fx:xp_gain ── */
   useEffect(() => {
     const unsub = eventBus.on('fx:xp_gain', (payload) => {
+      // v4.60.0 (dedup): в фазе боя XP-флоат не рисуется — награды боя
+      // показывает панель победы («ОПЫТ: +N»), второй источник того же
+      // числа поверх боевых панелей — дубль (репорт «всё смешалось»).
+      // В exploration флоат остаётся (квесты/исследования).
+      if (modeRef.current === 'combat') return;
       if (payload.amount > 0) {
         addNumber('xp', payload.amount);
       }

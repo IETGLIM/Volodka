@@ -325,6 +325,9 @@ export function TransientToastStack() {
   }, []);
 
   if (mode === 'menu' || mode === 'intro') return null;
+  // v4.60.0 («Тихий бой»): лут/крафт/сейв-тосты глохнут в бою — панель
+  // победы сама показывает добычу; тосты наслаивались поверх боевых панелей.
+  if (mode === 'combat') return null;
   if (suppressToasts) return null;
 
   const liveLootAnnouncement = lootEntries.length > 0

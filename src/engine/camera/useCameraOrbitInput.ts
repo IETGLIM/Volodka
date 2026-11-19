@@ -72,10 +72,14 @@ function shouldBlockOrbit(): boolean {
   // also keep the explicit `mode === 'intro'` check for the brief window where
   // the timeline hasn't started yet but the intro phase is already set (e.g.
   // the 200ms settle delay before startCinematicTimeline).
+  // v4.60.0 («Свободная камера в бою»): 'combat' убран из блокировки —
+  // боевой strategy строит позу от тех же yaw/pitch-рефов, и игрок теперь
+  // может осматривать арену во время боя (репорт: «боёвка должна быть
+  // свободной 3D, а не четыре надписи»). Блокируют только нарративные
+  // режимы, где камерой владеет таймлайн.
   if (
     isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '')
     || mode === 'cutscene'
-    || mode === 'combat'
     || mode === 'intro'
     || isCinematicTimelineActive()
   ) {
@@ -91,8 +95,9 @@ function shouldBlockZoom(): boolean {
   // intro is a distinct phase from exploration), so we only add the
   // isCinematicTimelineActive() gate here for the timeline-active-but-mode-
   // not-yet-cutscene race window.
+  // v4.60.0: зум разрешён и в бою (камера боя читает interactionDistance).
   if (
-    mode !== 'exploration'
+    (mode !== 'exploration' && mode !== 'combat')
     || isNarrativeMovementLocked(showStoryOverlay, currentNodeId ?? '')
     || isCinematicTimelineActive()
   ) return true;
