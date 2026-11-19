@@ -1,3 +1,45 @@
+## v4.64.0 (2026-11-19) — chore: инвентаризация остального репо (api/scripts/public/configs) — 11 файлов, −1143 строки
+
+Продолжение вчерашней чистки src/ (v4.63.0): та же методика применена
+ко всем остальным зонам репозитория — api/, scripts/, public/,
+vite/, e2e/, docs/, корневые конфиги.
+
+**Удалено**:
+
+- **api/city-news.ts + api/lib/cityNewsLogic.ts + тест** — мёртвая ветка:
+  единственный потребитель (useCityNews + TopBarDataTicker) снят ещё в
+  v4.55.0-3 как неиспользуемый HUD-виджет, эндпоинт остался сиротой.
+  Никаких вызовов /api/city-news в клиенте с тех пор. matrix-quote
+  (Шёпот города) жив и остаётся.
+- **8 мёртвых i18n-ключей hud.ticker.\*** — каталог пережил своего
+  потребителя; заодно ассерты в hudCoverage-тесте и комментарии в
+  .env.example / readme / useUiTick приведены в порядок.
+- **public/models/environments/cafe/props_lod1.glb + props_lod2.glb**
+  (1.3 МБ) — манифест использует только props_lod0 + props.draco.glb
+  (см. комментарий env_cafe_props: LOD1/LOD2 тяжелее LOD0, отключено).
+- **6 одноразовых QA-скриптов** (795 строк): diag-boot (хардкод
+  прошлого деплоя), probe-journal (разовый DOM-debug), 
+  measure-wake-cinematic, smoke-itch-nested (v4.44-эпизод),
+  validate-scene-colliders, inspect-glb-bounds.
+
+**Проверено и оставлено**:
+
+- public/: 150/152 моделей живы (сверка с assetManifest +
+  propModelRegistry + npcModelRegistry с резолвом publicAsset-префиксов);
+  все 42 ambient-звука ссылаются из story-данных; polyhaven-текстуры
+  генерятся шаблоном каталога; hdri/menu/draco/basis/rapier — живые
+  (декодеры тянутся three/физикой).
+- scripts/: analyze-quest-reachability (README-инструмент, проверен
+  прогоном: 155/155 квестов достижимы), generate-ambient-audio и
+  generate-volodka-apartment-envelope (воспроизводят живые ассеты),
+  measure-frame-profiler + ui-review-capture (в живом арт-плане
+  docs/art-target/PLAN.md от 2026-11-18).
+- vite/-плагины подключены (chunks, rapierInitFix, uiTextScalePostcss),
+  e2e без ошибок tsc, docs — история + живые планы.
+
+Верификация: tsc 0, eslint 0, vitest 454/454 (2876/2876),
+validate:protected OK (46 стихов), validate:content OK, build OK.
+
 ## v4.63.0 (2026-11-19) — chore: инвентаризация src/ и чистка мёртвого кода — 51 файл, −5199 строк
 
 Репорт игрока: «Посмотри что висит в src — мы действительно всё используем

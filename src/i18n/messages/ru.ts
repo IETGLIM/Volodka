@@ -74,17 +74,6 @@ export const RU_MESSAGES: Readonly<Record<string, string>> = {
   'hud.karmaTier.negative': 'Негативная',
   'hud.karmaTier.neutral': 'Нейтральная',
 
-  /* TopBarDataTicker.tsx */
-  'hud.ticker.datastream': 'ВОЛОДКА://DATASTREAM',
-  'hud.ticker.badge.onAir': 'ЭФИР',
-  /* Шаблоны строки тикера (этап 115, волна 4) */
-  'hud.ticker.quests': 'ЗАДАНИЯ: {n}',
-  'hud.ticker.locations': 'ЛОКАЦИИ: {n}',
-  'hud.ticker.poems': 'СТИХИ: {done}/{total}',
-  'hud.ticker.scene': 'СЦЕНА: {name}',
-  'hud.ticker.time': 'ВРЕМЯ: {time}',
-  'hud.ticker.system': 'СИСТЕМА: v{version}',
-
   /* EnvironmentMoodIndicator.tsx */
   'hud.mood.storm': 'ШТОРМ',
   'hud.mood.rain': 'ДОЖДЬ',

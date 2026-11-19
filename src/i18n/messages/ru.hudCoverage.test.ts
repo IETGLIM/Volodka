@@ -92,8 +92,7 @@ describe('i18n: покрытие HUD-строк (этап 115)', () => {
     expect(RU_MESSAGES['hud.questTracker.poemsCollected']).toBe('Собрано {word}: {done} из {total}');
     expect(RU_MESSAGES['hud.feed.questAccepted']).toBe('Задание: {title}');
     expect(RU_MESSAGES['hud.feed.karmaGain']).toBe('Карма +{n}');
-    expect(RU_MESSAGES['hud.ticker.poems']).toBe('СТИХИ: {done}/{total}');
-    expect(RU_MESSAGES['hud.ticker.system']).toBe('СИСТЕМА: v{version}');
+    /* v4.64.0: hud.ticker.* удалены — TopBarDataTicker снят ещё в v4.55.0-3. */
     expect(RU_MESSAGES['hud.critical.energyAndStress']).toBe('Силы на исходе · стресс {n}%');
     expect(RU_MESSAGES['hud.stamina.exhaustedAria']).toBe('Выносливость: {n}% — дыхание сбито, бег временно недоступен');
     expect(RU_MESSAGES['hud.toolbar.slotAria']).toBe('{label} ({shortcut})');
