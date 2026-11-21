@@ -44,6 +44,7 @@ import { QuickSaveIndicator } from '../QuickSaveIndicator';
  * (настройки звука). Постоянная круглая кнопка в углу — шум. */
 import { SceneTransitionProgress } from '../SceneTransitionProgress';
 import { SceneTransitionFailureBanner } from '../SceneTransitionFailureBanner';
+import { WebglContextLostOverlay } from '../WebglContextLostOverlay';
 import { NarrativeWorldDim } from '../NarrativeWorldDim';
 import { QuickUseBar } from '../QuickUseBar';
 import { EventNotificationPopup } from '../EventNotificationPopup';
@@ -407,6 +408,8 @@ export const GameplaySceneTransitionFx = memo(function GameplaySceneTransitionFx
       <SceneTransitionFailureBanner />
       <SceneTransitionOverlay />
       <SceneEntryTextOverlay />
+      {/* v4.65.0: OOM на iGPU убивал WebGL-контекст → белый экран без UI */}
+      <WebglContextLostOverlay />
     </>
   );
 });

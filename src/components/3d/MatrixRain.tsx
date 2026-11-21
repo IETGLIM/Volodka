@@ -10,6 +10,7 @@
 
 import { useMemo, useEffect, useState, useRef, useSyncExternalStore } from 'react';
 import { useGamePhase, useMatrixRainOverlayState } from '@/store/selectors';
+import type { GamePhase } from '@/shared/gamePhase';
 import { useMobileVisualPerf } from '@/hooks/use-mobile';
 import { eventBus } from '@/engine/EventBus';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
@@ -174,6 +175,26 @@ function getPresetForScene(sceneId: string): MatrixRainPreset | null {
   return SCENE_PRESETS[sceneId] ?? null;
 }
 
+/**
+ * FIX (v4.65.0, «куча непонятных слоёв»): в бою матрица-дождь гаснет.
+ * Раньше до 48 CSS-анимированных колонок (~450 DOM-узлов) висели ПОД
+ * боевым UI всю битву — вместе с EnvironmentalEffects, PoemWorldEffect
+ * и хроматикой это складывалось в «слоёный пирог», на котором игрок
+ * терял читаемость боя. Бой — самый читаемый момент игры; атмосферу
+ * возвращаем сразу после выхода в exploration.
+ */
+export function isMatrixRainEnabled(input: {
+  mode: GamePhase;
+  showStoryOverlay: boolean;
+  hasScenePreset: boolean;
+}): boolean {
+  if (input.mode === 'combat') return false;
+  // Story/cutscene show rain only when the scene has a preset — prevents
+  // MatrixRain over story overlays in indoor scenes (volodka_room etc.).
+  if (input.mode === 'cutscene' || input.showStoryOverlay) return input.hasScenePreset;
+  return input.hasScenePreset;
+}
+
 function randomChar() {
   return CHARS[Math.floor(Math.random() * CHARS.length)];
 }
@@ -219,12 +240,11 @@ export function MatrixRain({ sceneId: sceneIdProp }: MatrixRainProps) {
   // where it blocks player control and is visually jarring.
   const isCutsceneOrStory = mode === 'cutscene' || showStoryOverlay;
   const explorationPreset = getPresetForScene(sceneId);
-  // During story overlay WITHOUT a scene preset, don't show rain at all
-  const enabled = mode === 'cutscene'
-    ? explorationPreset !== null  // Cutscene only shows rain if scene has preset
-    : showStoryOverlay
-      ? explorationPreset !== null  // Story overlay only if scene has preset
-      : explorationPreset !== null;  // Exploration: scene preset required
+  const enabled = isMatrixRainEnabled({
+    mode,
+    showStoryOverlay,
+    hasScenePreset: explorationPreset !== null,
+  });
 
   // Active preset: always use scene preset when available
   const activePreset = useMemo(() => {

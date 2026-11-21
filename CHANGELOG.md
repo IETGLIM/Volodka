@@ -1,3 +1,46 @@
+## v4.65.0 (2026-11-21) — fix(gpu): OOM на iGPU → белый экран + «куча слоёв» в бою
+
+Репорт игрока: «GL вообще теперь по ООМ падает. А экран вообще белый».
+Лог: GL_OUT_OF_MEMORY (D3D11 Texture2D) → CONTEXT_LOST → белый экран.
+
+**Диагноз** (stress-прогон 20+ смен сцен: JS-heap стабилен 110–186 МБ,
+утечки нет; корень — пиковое потребление VRAM):
+- Windows-ноутбук с iGPU (Intel UHD/Vega, shared memory) получает
+  auto-tier 'high' (экран ≥1440px), а navigator.deviceMemory на Windows
+  отсутствует — капа по памяти не срабатывала.
+- Windows-масштаб 125–150% → devicePixelRatio 1.25–1.5 → канвас
+  2880×1620 × ~18 постэффект-таргетов RGBA16F ≈ 280 МБ только
+  рендер-таргетов + float-HDRI 2k (33 МБ) + PMREM (40 МБ) + ассеты
+  (~170 МБ) = пик ~450 МБ → D3D11 OOM.
+- После CONTEXT_LOST игра не показывала никакого UI — просто белый
+  экран (alpha:false + мёртвый backbuffer).
+
+**Фиксы**:
+1. `isIntegratedGpuRenderer()` (gpuQualityProbe) — детект Intel
+   UHD/Iris/Xe, Ryzen Vega/Radeon Graphics, Apple M по строке
+   UNMASKED_RENDERER_WEBGL.
+2. `capQualityTierForGpuMemory`: iGPU без deviceMemory → кэп
+   high/ultra → medium (dpr [0.85, 1.1], облегчённый постэффект).
+3. RPGGameCanvas: на iGPU dpr жёстко кэпится [≤1.0, ≤1.25] даже при
+   ручном high/ultra — превентивный VRAM-guard.
+4. `WebglContextLostOverlay` — при canvas:context-lost честный
+   оверлей «СБРОЙ ГРАФИКИ» с кнопкой перезагрузки и подсказкой
+   снизить качество (раньше — молчаливый белый экран).
+5. «Куча непонятных слоёв»: MatrixRain (до 48 CSS-колонок, ~450
+   DOM-узлов) больше не рендерится в combat-фазе — бой читаемый;
+   гейтинг вынесен в чистую `isMatrixRainEnabled()` с тестами.
+   Аудит слоёв: остальные (EnvironmentalEffects, PoemWorldEffect,
+   FloatingText) корректно гейтятся по состоянию/сцене.
+
+**404 /api/city-news и 503 звука из лога** — артефакты закэшированной
+старой сборки: на актуальном проде эндпоинт в бандле отсутствует,
+звук отдаётся 200.
+
+Верификация: tsc 0, eslint 0 (35 warnings — как было), vitest 455/455
+файлов 2898/2898 тестов (+5 новых на гейтинг MatrixRain, +9 на
+iGPU-детект), build OK, живой smoke: улица — матрица-атмосфера на
+месте, комната — чисто, HUD жив.
+
 ## v4.64.0 (2026-11-19) — chore: инвентаризация остального репо (api/scripts/public/configs) — 11 файлов, −1143 строки
 
 Продолжение вчерашней чистки src/ (v4.63.0): та же методика применена

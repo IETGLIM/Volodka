@@ -6,6 +6,7 @@ import { Canvas, useThree } from '@react-three/fiber';
 import { usePostFrameTick } from '@/engine/frame/useFrameTick';
 import { ACESFilmicToneMapping, Box3, Euler, NoToneMapping, PCFSoftShadowMap, Quaternion, SRGBColorSpace, SkinnedMesh, Vector3, WebGLRenderer } from 'three';
 import { devLog, devWarn } from '@/shared/utils/devLog';
+import { getCachedWebGlGpuProbe, isIntegratedGpuRenderer } from '@/engine/graphics/gpuQualityProbe';
 import { SimplePlayer } from './SimplePlayer';
 import { FollowCamera } from './FollowCamera';
 const LazyExplorationPostFX = lazy(() =>
@@ -472,11 +473,23 @@ export function RPGGameCanvas({ focusable = true }: { focusable?: boolean } = {}
   // Dynamic DPR scaling based on measured FPS + quality preset
   // FIX (perf v4.22): замер FPS suspend'ится в demand-режиме — в меню и за
   // статичными оверлеями кадры не рисуются, и замер был чистым расходом rAF.
+  // FIX (v4.65.0): на интегрированных GPU (Intel UHD/Xe, Ryzen Vega) кэпим
+  // dpr сверху 1.25 даже на high/ultra — их shared VRAM выедали
+  // постэффект-таргеты (2880×1620 RGBA16F ≈ 280 МБ) → D3D11 OOM →
+  // CONTEXT_LOST → белый экран (репорт игрока). calculateDpr у fiber
+  // берёт window.devicePixelRatio (Windows-масштаб 150% = 1.5) — без
+  // кэпа это попадало ровно в дыру бюджета iGPU.
+  const integratedGpuCap = isIntegratedGpuRenderer(
+    getCachedWebGlGpuProbe().renderer,
+  );
+  const presetDpr: [number, number] = integratedGpuCap
+    ? [Math.min(preset.dpr[0], 1.0), Math.min(preset.dpr[1], 1.25)]
+    : [preset.dpr[0], preset.dpr[1]];
   const dpr = useDynamicDPR({
-    targetDpr: preset.dpr,
+    targetDpr: presetDpr,
     lowFpsThreshold: 25,
     highFpsThreshold: 45,
-    minDpr: preset.dpr[0],
+    minDpr: presetDpr[0],
     step: 0.1,
     windowMs: 2000,
     enabled: canvasFrameloop === 'always',

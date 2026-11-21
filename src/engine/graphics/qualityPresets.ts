@@ -4,6 +4,7 @@ import { getSessionAutoResolvedTier } from './autoQualitySession';
 import {
   computePhysicalPixelCount,
   getCachedWebGlGpuProbe,
+  isIntegratedGpuRenderer,
   isWeakMobileGpuRenderer,
   type WebGlGpuProbe,
 } from './gpuQualityProbe';
@@ -207,6 +208,15 @@ export function capQualityTierForGpuMemory(
   if (isWeakMobileGpuRenderer(gpuProbe.renderer)) {
     if (capped === 'ultra') capped = 'high';
     if (capped === 'high' && devicePixelRatio >= 2) capped = 'medium';
+  }
+
+  // FIX (v4.65.0): интегрированные GPU (Intel UHD/Xe, Ryzen Vega) делят
+  // системную память; navigator.deviceMemory на Windows отсутствует, и
+  // high-пресет с dpr до 1.5 (Windows-масштаб 150%) выедал shared VRAM
+  // → GL_OUT_OF_MEMORY → CONTEXT_LOST → белый экран (репорт игрока).
+  // Кэпим high → medium: dpr [0.85, 1.1] + облегчённый постэффект-набор.
+  if (isIntegratedGpuRenderer(gpuProbe.renderer) && deviceMemoryGb === undefined) {
+    if (capped === 'ultra' || capped === 'high') capped = 'medium';
   }
 
   // Touch / tablet form-factors: auto rarely benefits from ultra or high@3x.

@@ -78,3 +78,25 @@ export function isWeakMobileGpuRenderer(renderer: string | undefined): boolean {
   if (!renderer) return false;
   return /adreno \(tm\) [1-5]\d{2}|mali-[gt][1-5]\d|powervr sgx|videocore/i.test(renderer);
 }
+
+/**
+ * True when renderer string looks like an integrated desktop/laptop GPU
+ * (Intel UHD/Iris/Xe, AMD Radeon Vega/Ryzen iGPU, Apple M-series).
+ *
+ * FIX (v4.65.0) — репорт игрока: GL_OUT_OF_MEMORY (D3D11 Texture2D) на
+ * Windows-ноутбуке с iGPU. Интегрированные GPU делят системную память и
+ * сообщают завышенный MAX_TEXTURE_SIZE, а navigator.deviceMemory на
+ * Windows отсутствует — capQualityTierForGpuMemory их не замечал и выдавал
+ * high-пресет с dpr до 1.5. На масштабе Windows 150% это 2880×1620 ×
+ * ~18 постэффект-таргетов RGBA16F ≈ 280 МБ только рендер-таргетов,
+ * плюс float-HDRI 2k (33 МБ) и PMREM-цепочка — пик ~450 МБ на iGPU со
+ * shared memory → D3D11 OOM → CONTEXT_LOST → белый экран.
+ */
+export function isIntegratedGpuRenderer(renderer: string | undefined): boolean {
+  if (!renderer) return false;
+  // Intel UHD/Iris Plus/Xe (8th-12th gen laptops); Apple M1/M2 (iGPU, но
+  // с unified memory — попадает под тот же консервативный бюджет);
+  // AMD Radeon Vega/Radeon Graphics (Ryzen iGPU). Дискретные карты
+  // (GTX/RTX/RX) в паттерн не входят.
+  return /intel\(r\)? (uhd|iris|hd graphics)|intel\(r\).*graphics|apple m\d|radeon(?:\(tm\))? (vega|graphics)/i.test(renderer);
+}
