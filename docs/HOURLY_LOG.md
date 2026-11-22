@@ -3,6 +3,12 @@
 > Журнал ведёт каждый почасовой агент. Новые записи — СВЕРХУ.
 > Не дублируй уже сделанное: это источник истины о прогрессе.
 
+## Сессия 2026-11-22 15:22 UTC (guardian, 7126dc02) — зелёный прогон
+- Проверки: poems sha256=OK, validate:protected=OK, typecheck=OK, validate:content=OK, vitest=OK
+- eslint --fix применён
+- poems.ts sha256: 6d95924da1651f6c18db8a05f3e5431486763fd8d2c29a24e4b84730c41c4c88
+- Дальше: см. docs/HOURLY_IMPROVEMENT.md §3
+
 ## Сессия 2026-11-22 06:54 UTC (guardian, af256705) — зелёный прогон
 - Проверки: poems sha256=OK, validate:protected=OK, typecheck=OK, validate:content=OK, vitest=OK
 - eslint --fix применён
