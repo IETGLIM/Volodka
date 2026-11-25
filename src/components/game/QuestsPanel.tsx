@@ -95,7 +95,7 @@ function DifficultyBadge({ difficulty }: { difficulty?: QuestDifficulty }) {
  * красный — Сопротивление, лаймовый — ТОЛПА, каменный — нейтральные. */
 const FACTION_CHIP_VISUALS: Record<string, { color: string; border: string; bg: string }> = {
   network: { color: 'rgb(70, 185, 110)', border: 'rgba(16, 185, 129, 0.4)', bg: 'rgba(6, 78, 59, 0.3)' },
-  guild: { color: 'rgb(226, 168, 75)', border: 'rgba(226, 168, 75, 0.4)', bg: 'rgba(69, 47, 6, 0.3)' },
+  guild: { color: 'rgb(143, 182, 217)', border: 'rgba(143, 182, 217, 0.4)', bg: 'rgba(69, 47, 6, 0.3)' },
   resistance: { color: 'rgb(252, 165, 165)', border: 'rgba(198, 85, 72, 0.45)', bg: 'rgba(76, 5, 25, 0.35)' },
   tolpa: { color: 'rgb(70, 185, 110)', border: 'rgba(70, 185, 110, 0.4)', bg: 'rgba(58, 69, 10, 0.3)' },
   neutral: { color: 'rgb(203, 213, 225)', border: 'rgba(148, 163, 184, 0.35)', bg: 'rgba(30, 41, 59, 0.4)' },
