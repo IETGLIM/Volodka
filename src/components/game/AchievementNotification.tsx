@@ -151,8 +151,8 @@ function AchievementCard({
       `}
       style={{
         width: 300,
-        borderColor: `${catMeta?.color ?? 'var(--cyber-amber)'}40`,
-        boxShadow: `0 0 20px ${catMeta?.color ?? 'var(--cyber-amber)'}15, 0 0 40px ${catMeta?.color ?? 'var(--cyber-amber)'}08`,
+        borderColor: `${catMeta?.color ?? #8fb6d9}40`,
+        boxShadow: `0 0 20px ${catMeta?.color ?? #8fb6d9}15, 0 0 40px ${catMeta?.color ?? #8fb6d9}08`,
       }}
       onClick={() => onDismiss(notification.id)}
     >
@@ -168,7 +168,7 @@ function AchievementCard({
             style={{
               width: 2,
               height: 3,
-              backgroundColor: `${catMeta?.color ?? 'var(--cyber-amber)'}99`,
+              backgroundColor: `${catMeta?.color ?? #8fb6d9}99`,
               animationDelay: `${i * 0.1}s`,
             }}
           />
@@ -183,9 +183,9 @@ function AchievementCard({
           style={{
             width: 40,
             height: 40,
-            background: `${catMeta?.color ?? 'var(--cyber-amber)'}15`,
+            background: `${catMeta?.color ?? #8fb6d9}15`,
             fontSize: uiTextScaledPx(20),
-            boxShadow: `0 0 12px ${catMeta?.color ?? 'var(--cyber-amber)'}25`,
+            boxShadow: `0 0 12px ${catMeta?.color ?? #8fb6d9}25`,
           }}
         >
           {icon}
@@ -196,7 +196,7 @@ function AchievementCard({
           <div className="flex items-center gap-1.5">
             <span
               className="text-sm font-semibold leading-tight truncate"
-              style={{ color: catMeta?.color ?? 'var(--cyber-amber)' }}
+              style={{ color: catMeta?.color ?? #8fb6d9 }}
             >
               {title}
             </span>
@@ -206,7 +206,7 @@ function AchievementCard({
           </span>
           <span
             className="text-[9px] font-mono mt-0.5 opacity-50"
-            style={{ color: rarityMeta?.color ?? catMeta?.color ?? 'var(--cyber-amber)' }}
+            style={{ color: rarityMeta?.color ?? catMeta?.color ?? #8fb6d9 }}
           >
             {rarityMeta?.label ?? 'Обычное'} · {catMeta?.label}
           </span>
@@ -215,7 +215,7 @@ function AchievementCard({
         {/* Trophy badge */}
         <div
           className="shrink-0 ml-auto text-lg"
-          style={{ filter: `drop-shadow(0 0 4px ${catMeta?.color ?? 'var(--cyber-amber)'}80)` }}
+          style={{ filter: `drop-shadow(0 0 4px ${catMeta?.color ?? #8fb6d9}80)` }}
         >
           🏆
         </div>
@@ -225,7 +225,7 @@ function AchievementCard({
       <motion.div
         className="h-0.5"
         style={{
-          background: `linear-gradient(90deg, ${catMeta?.color ?? 'var(--cyber-amber)'}, transparent)`,
+          background: `linear-gradient(90deg, ${catMeta?.color ?? #8fb6d9}, transparent)`,
         }}
         initial={{ width: '100%' }}
         animate={{ width: '0%' }}
