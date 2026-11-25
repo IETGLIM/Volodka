@@ -86,10 +86,10 @@
 /* Skill point badge pulse */
 @keyframes skill-point-badge-pulse {
   0%, 100% {
-    box-shadow: 0 0 6px rgba(226, 168, 75, 0.2), 0 0 12px rgba(226, 168, 75, 0.1);
+    box-shadow: 0 0 6px rgba(143, 182, 217, 0.2), 0 0 12px rgba(143, 182, 217, 0.1);
   }
   50% {
-    box-shadow: 0 0 10px rgba(226, 168, 75, 0.4), 0 0 20px rgba(226, 168, 75, 0.2), 0 0 30px rgba(226, 168, 75, 0.08);
+    box-shadow: 0 0 10px rgba(143, 182, 217, 0.4), 0 0 20px rgba(143, 182, 217, 0.2), 0 0 30px rgba(143, 182, 217, 0.08);
   }
 }
 

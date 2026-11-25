@@ -1,11 +1,10 @@
 /* ─── Volodka RPG – per-NPC animated GLB paths ─── */
-/* Visual policy (v2 — GLB-first for medium/high/ultra):
-   - low preset: procedural archetypes (fast, no GLB streaming)
-   - medium/high/ultra: Quaternius CC0 GLBs are rendered as visible character meshes.
+/* Visual policy (v3 — stable character identity across quality tiers):
+   - Every preset may render the same shipped story-NPC GLB.
+   - Quality tiers control LOD distance, crowd budgets and crossfades — not NPC identity.
    - RPM or AI3DGen Pro overrides CC0 when those GLBs are on disk.
-   - Procedural archetypes remain the Suspense fallback during GLB loading.
-   This replaces the old policy that blocked CC0 GLBs from in-world rendering.
-   Quaternius models look like real 3D characters vs primitive boxes/spheres. */
+   - Procedural archetypes are a fallback only when no shipped GLB is available
+     or while a GLB is loading; they are not a Low-preset art direction. */
 
 import type { AssetRenderMode } from '@/engine/graphics/qualityPresets';
 import { publicAsset } from '@/config/publicAssetPath';
@@ -357,8 +356,8 @@ export function isUniqueNpcMeshOnDisk(npcId: string): boolean {
 
 /**
  * Whether the renderer should draw a rigged GLB for this NPC.
- * v2: CC0 Quaternius GLBs are rendered at medium/high/ultra quality.
- * Procedural archetypes only on 'procedural' mode (low preset).
+ * All shipped named NPCs remain GLB-capable on every quality tier.
+ * Procedural mode is reserved for explicit fallback/debug use, not Low quality.
  */
 export function shouldRenderGltfNpc(npcId: string, renderMode: AssetRenderMode): boolean {
   if (renderMode === 'procedural') return false;

@@ -444,18 +444,18 @@ function SkillNode({
                 className="flex items-center gap-1.5 px-2 py-1 rounded"
                 style={{
                   background: canAfford
-                    ? 'rgba(226,168,75,0.08)'
+                    ? 'rgba(143,182,217,0.08)'
                     : 'rgba(100,116,139,0.08)',
-                  border: `1px solid ${canAfford ? 'rgba(226,168,75,0.2)' : 'rgba(100,116,139,0.15)'}`,
+                  border: `1px solid ${canAfford ? 'rgba(143,182,217,0.2)' : 'rgba(100,116,139,0.15)'}`,
                 }}
               >
                 <Zap
                   className="size-2.5"
-                  style={{ color: canAfford ? '#e2a84b' : '#64748b' }}
+                  style={{ color: canAfford ? 'var(--cyber-amber)' : '#64748b' }}
                 />
                 <span
                   className="text-[9px] font-mono"
-                  style={{ color: canAfford ? '#e2a84b' : '#64748b' }}
+                  style={{ color: canAfford ? 'var(--cyber-amber)' : '#64748b' }}
                 >
                   {canAfford
                     ? 'Нажмите для разблокировки (1 очко)'
@@ -737,8 +737,8 @@ export function SkillTreePanel({
           <motion.div
             className="skill-point-badge flex items-center gap-2 px-3.5 py-1.5 rounded-lg border backdrop-blur-md"
             style={{
-              borderColor: 'rgba(226,168,75,0.35)',
-              background: 'rgba(226,168,75,0.1)',
+              borderColor: 'rgba(143,182,217,0.35)',
+              background: 'rgba(143,182,217,0.1)',
             }}
             animate={
               skillPoints > 0
@@ -757,7 +757,7 @@ export function SkillTreePanel({
             <span
               className="text-sm font-bold font-mono text-amber-300"
               style={{
-                textShadow: '0 0 8px rgba(226,168,75,0.5)',
+                textShadow: '0 0 8px rgba(143,182,217,0.5)',
               }}
             >
               {skillPoints}
@@ -877,7 +877,7 @@ export function SkillTreePanel({
           <div
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full pointer-events-none"
             style={{
-              background: `radial-gradient(circle, rgba(226,168,75,0.04) 0%, transparent 70%)`,
+              background: `radial-gradient(circle, rgba(143,182,217,0.04) 0%, transparent 70%)`,
             }}
           />
 

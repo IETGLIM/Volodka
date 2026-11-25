@@ -57,9 +57,9 @@
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(226, 168, 75, 0.08) 25%,
-    rgba(226, 168, 75, 0.18) 50%,
-    rgba(226, 168, 75, 0.08) 75%,
+    rgba(143, 182, 217, 0.08) 25%,
+    rgba(143, 182, 217, 0.18) 50%,
+    rgba(143, 182, 217, 0.08) 75%,
     transparent 100%
   );
   background-size: 200% 100%;
@@ -85,10 +85,10 @@
 
 @keyframes inv-legendary-border-pulse {
   0%, 100% {
-    box-shadow: 0 0 10px rgba(226, 168, 75, 0.2), 0 0 24px rgba(226, 168, 75, 0.08), inset 0 0 8px rgba(226, 168, 75, 0.06);
+    box-shadow: 0 0 10px rgba(143, 182, 217, 0.2), 0 0 24px rgba(143, 182, 217, 0.08), inset 0 0 8px rgba(143, 182, 217, 0.06);
   }
   50% {
-    box-shadow: 0 0 16px rgba(226, 168, 75, 0.35), 0 0 36px rgba(226, 168, 75, 0.12), inset 0 0 12px rgba(226, 168, 75, 0.1);
+    box-shadow: 0 0 16px rgba(143, 182, 217, 0.35), 0 0 36px rgba(143, 182, 217, 0.12), inset 0 0 12px rgba(143, 182, 217, 0.1);
   }
 }
 
@@ -150,13 +150,13 @@
   text-shadow: 0 0 8px rgb(var(--cyber-cyan-rgb) / 0.3), 0 0 16px rgb(var(--cyber-cyan-rgb) / 0.1);
 }
 .inv-glow-legendary {
-  text-shadow: 0 0 8px rgba(226, 168, 75, 0.4), 0 0 20px rgba(226, 168, 75, 0.15), 0 0 40px rgba(226, 168, 75, 0.05);
+  text-shadow: 0 0 8px rgba(143, 182, 217, 0.4), 0 0 20px rgba(143, 182, 217, 0.15), 0 0 40px rgba(143, 182, 217, 0.05);
   animation: inv-legendary-text-pulse 3s ease-in-out infinite;
 }
 
 @keyframes inv-legendary-text-pulse {
-  0%, 100% { text-shadow: 0 0 8px rgba(226, 168, 75, 0.4), 0 0 20px rgba(226, 168, 75, 0.15); }
-  50% { text-shadow: 0 0 12px rgba(226, 168, 75, 0.6), 0 0 28px rgba(226, 168, 75, 0.25), 0 0 48px rgba(226, 168, 75, 0.08); }
+  0%, 100% { text-shadow: 0 0 8px rgba(143, 182, 217, 0.4), 0 0 20px rgba(143, 182, 217, 0.15); }
+  50% { text-shadow: 0 0 12px rgba(143, 182, 217, 0.6), 0 0 28px rgba(143, 182, 217, 0.25), 0 0 48px rgba(143, 182, 217, 0.08); }
 }
 
 /* Card border glow by rarity */

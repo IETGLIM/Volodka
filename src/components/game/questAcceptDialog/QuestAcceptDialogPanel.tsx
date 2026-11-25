@@ -181,8 +181,8 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                           key={level}
                           className="text-xs"
                           style={{
-                            color: level <= difficultyStars ? '#e2a84b' : '#444',
-                            textShadow: level <= difficultyStars ? '0 0 4px rgba(226,168,75,0.5)' : 'none',
+                            color: level <= difficultyStars ? 'var(--cyber-amber)' : '#444',
+                            textShadow: level <= difficultyStars ? '0 0 4px rgba(143,182,217,0.5)' : 'none',
                           }}
                         >
                           {level <= difficultyStars ? '★' : '☆'}
@@ -194,7 +194,7 @@ function QuestAcceptDialogInner(props: QuestAcceptDialogProps) {
                   {questDef.timeLimitHours && (
                     <div className="flex items-center gap-1">
                       <Clock className="size-3 text-amber-400/70" aria-hidden="true" />
-                      <span className="text-[10px] font-mono" style={{ color: '#e2a84b' }}>
+                      <span className="text-[10px] font-mono" style={{ color: 'var(--cyber-amber)' }}>
                         {questDef.timeLimitHours}ч
                       </span>
                     </div>

@@ -68,9 +68,9 @@ function OpenStackTerminalGameInner({ onClose }: OpenStackTerminalGameProps) {
                   <span
                     className="text-[10px] font-mono px-2 py-0.5 rounded"
                     style={{
-                      color: '#e2a84b',
-                      background: 'rgba(226, 168, 75, 0.1)',
-                      border: '1px solid rgba(226, 168, 75, 0.25)',
+                      color: 'var(--cyber-amber)',
+                      background: 'rgba(143, 182, 217, 0.1)',
+                      border: '1px solid rgba(143, 182, 217, 0.25)',
                     }}
                     aria-label={`Фаза ${game.phaseIndex + 1} из 3`}
                   >

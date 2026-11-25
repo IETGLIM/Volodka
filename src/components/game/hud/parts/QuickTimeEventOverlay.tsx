@@ -130,8 +130,8 @@ const DIFFICULTY_CONFIG: Record<QTEDifficulty, {
   hard: {
     speedMult: 1.3,
     windowSize: 0.22,
-    color: '#e2a84b',
-    glowColor: 'rgba(226,168,75,0.5)',
+    color: 'var(--cyber-amber)',
+    glowColor: 'rgba(143,182,217,0.5)',
     label: 'СЛОЖНО',
   },
   extreme: {
@@ -925,7 +925,7 @@ export function QuickTimeEventOverlay({
                 <motion.div
                   className="fixed inset-0 pointer-events-none"
                   style={{
-                    background: `radial-gradient(circle at center, transparent 40%, rgba(226,168,75,0.3) 100%)`,
+                    background: `radial-gradient(circle at center, transparent 40%, rgba(143,182,217,0.3) 100%)`,
                   }}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -1055,9 +1055,9 @@ export function QuickTimeEventOverlay({
                         <motion.span
                           className="text-xs font-mono px-1.5 py-0.5 rounded ml-2"
                           style={{
-                            color: '#e2a84b',
-                            backgroundColor: 'rgba(226,168,75,0.2)',
-                            border: '1px solid rgba(226,168,75,0.4)',
+                            color: 'var(--cyber-amber)',
+                            backgroundColor: 'rgba(143,182,217,0.2)',
+                            border: '1px solid rgba(143,182,217,0.4)',
                           }}
                           initial={false}
                           animate={{ scale: [1, 1.2, 1] }}
@@ -1165,7 +1165,7 @@ export function QuickTimeEventOverlay({
                     {eventType !== 'press' && state.comboMultiplier > 1 && (
                       <p
                         className="text-sm font-mono"
-                        style={{ color: '#e2a84b' }}
+                        style={{ color: 'var(--cyber-amber)' }}
                       >
                         Комбо ×{state.comboMultiplier.toFixed(1)}
                       </p>

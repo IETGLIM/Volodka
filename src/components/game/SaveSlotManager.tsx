@@ -77,7 +77,7 @@ function formatPlayTime(seconds: number | undefined): string {
 /** Get karma color based on value */
 function getKarmaColor(karma: number): string {
   if (karma >= 70) return 'rgba(70, 185, 110, 0.9)';   // emerald — high karma
-  if (karma >= 40) return 'rgba(226, 168, 75, 0.9)';   // amber — mid karma
+  if (karma >= 40) return 'rgba(143, 182, 217, 0.9)';   // amber — mid karma
   return 'rgba(198, 85, 72, 0.9)';                      // rose — low karma
 }
 
@@ -164,9 +164,9 @@ function SaveSlotCard({
               <span
                 className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] font-mono uppercase tracking-wider"
                 style={{
-                  background: 'rgba(226, 168, 75, 0.12)',
-                  color: 'rgba(226, 168, 75, 0.8)',
-                  border: '1px solid rgba(226, 168, 75, 0.2)',
+                  background: 'rgba(143, 182, 217, 0.12)',
+                  color: 'rgba(143, 182, 217, 0.8)',
+                  border: '1px solid rgba(143, 182, 217, 0.2)',
                 }}
               >
                 <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -724,17 +724,17 @@ function SaveSlotManagerContent({ onClose }: { onClose: () => void }) {
       <div
         className="absolute -bottom-px -left-px w-8 h-8 pointer-events-none"
         style={{
-          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
-          borderLeft: '2px solid rgba(226, 168, 75, 0.2)',
-          boxShadow: '-2px 2px 10px rgba(226, 168, 75, 0.05)',
+          borderBottom: '2px solid rgba(143, 182, 217, 0.2)',
+          borderLeft: '2px solid rgba(143, 182, 217, 0.2)',
+          boxShadow: '-2px 2px 10px rgba(143, 182, 217, 0.05)',
         }}
       />
       <div
         className="absolute -bottom-px -right-px w-8 h-8 pointer-events-none"
         style={{
-          borderBottom: '2px solid rgba(226, 168, 75, 0.2)',
-          borderRight: '2px solid rgba(226, 168, 75, 0.2)',
-          boxShadow: '2px 2px 10px rgba(226, 168, 75, 0.05)',
+          borderBottom: '2px solid rgba(143, 182, 217, 0.2)',
+          borderRight: '2px solid rgba(143, 182, 217, 0.2)',
+          boxShadow: '2px 2px 10px rgba(143, 182, 217, 0.05)',
         }}
       />
     </motion.div>

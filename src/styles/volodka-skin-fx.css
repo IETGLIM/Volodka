@@ -46,7 +46,7 @@
 }
 .hud-boot-line { overflow: hidden; white-space: nowrap; }
 .stat-bar-shimmer-effect {
-  background: linear-gradient(90deg, rgba(226, 168, 75, 0.55), var(--vk-amber));
+  background: linear-gradient(90deg, rgba(143, 182, 217, 0.55), var(--vk-amber));
   background-size: 200% 100%;
   animation: vk-shimmer-slide 2.4s ease-in-out infinite;
 }
@@ -62,7 +62,7 @@
 .neon-amber, .neon-text-amber, .text-neon-amber { color: var(--vk-amber); }
 .neon-cyan, .neon-text-cyan, .text-neon-cyan { color: var(--vk-silver); }
 .neon-text-rose { color: var(--vk-brick); }
-.neon-edge { box-shadow: 0 0 0 1px rgba(226, 168, 75, 0.35); }
+.neon-edge { box-shadow: 0 0 0 1px rgba(143, 182, 217, 0.35); }
 .neon-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(157, 179, 200, 0.35), transparent);
@@ -70,10 +70,10 @@
 .text-glow-pulse { animation: vk-text-glow 2.6s ease-in-out infinite; }
 @keyframes vk-text-glow {
   0%, 100% { text-shadow: 0 0 0 transparent; }
-  50% { text-shadow: 0 0 14px rgba(226, 168, 75, 0.35); }
+  50% { text-shadow: 0 0 14px rgba(143, 182, 217, 0.35); }
 }
 .gradient-text, .cyber-text-gradient {
-  background: linear-gradient(180deg, var(--vk-paper) 20%, rgba(226, 168, 75, 0.85));
+  background: linear-gradient(180deg, var(--vk-paper) 20%, rgba(143, 182, 217, 0.85));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -93,7 +93,7 @@
   pointer-events: none;
 }
 .ambient-vignette-day    { background: radial-gradient(ellipse at center, transparent 58%, rgba(190, 200, 210, 0.10) 100%); }
-.ambient-vignette-sunrise{ background: radial-gradient(ellipse at center, transparent 58%, rgba(226, 168, 75, 0.12) 100%); }
+.ambient-vignette-sunrise{ background: radial-gradient(ellipse at center, transparent 58%, rgba(143, 182, 217, 0.12) 100%); }
 .ambient-vignette-evening{ background: radial-gradient(ellipse at center, transparent 55%, rgba(120, 90, 60, 0.14) 100%); }
 .ambient-vignette-night  { background: radial-gradient(ellipse at center, transparent 52%, rgba(6, 9, 16, 0.32) 100%); }
 .ambient-vignette-rain   { background: radial-gradient(ellipse at center, transparent 55%, rgba(70, 90, 110, 0.16) 100%); }
@@ -102,7 +102,7 @@
 .border-breathe { animation: vk-border-breathe 3.2s ease-in-out infinite; }
 @keyframes vk-border-breathe {
   0%, 100% { border-color: var(--vk-hairline); }
-  50% { border-color: rgba(226, 168, 75, 0.4); }
+  50% { border-color: rgba(143, 182, 217, 0.4); }
 }
 .heat-shimmer { filter: blur(0.4px) saturate(1.05); animation: vk-heat 2.2s ease-in-out infinite; }
 @keyframes vk-heat { 50% { filter: blur(0.7px) saturate(1.12); } }
@@ -174,12 +174,12 @@
 }
 .combat-action-button:hover:not(:disabled), .combat-btn-enhanced:hover:not(:disabled) {
   background: rgba(28, 33, 44, 0.85);
-  border-color: rgba(226, 168, 75, 0.5);
-  box-shadow: 0 0 0 1px rgba(226, 168, 75, 0.22), 0 10px 26px rgba(0, 0, 0, 0.45);
+  border-color: rgba(143, 182, 217, 0.5);
+  box-shadow: 0 0 0 1px rgba(143, 182, 217, 0.22), 0 10px 26px rgba(0, 0, 0, 0.45);
   transform: translateY(-1px);
 }
 .combat-action-button:active:not(:disabled) { transform: translateY(0); }
-.combat-affinity-border-glow { box-shadow: 0 0 0 1px rgba(226, 168, 75, 0.4), 0 0 18px rgba(226, 168, 75, 0.15); }
+.combat-affinity-border-glow { box-shadow: 0 0 0 1px rgba(143, 182, 217, 0.4), 0 0 18px rgba(143, 182, 217, 0.15); }
 .combat-edge-damage-glow { box-shadow: 0 0 0 1px rgba(198, 85, 72, 0.5), 0 0 22px rgba(198, 85, 72, 0.2); }
 .combat-grid-overlay {
   position: absolute;
@@ -213,7 +213,7 @@
   letter-spacing: 0.28em;
   text-transform: uppercase;
   color: var(--vk-amber);
-  text-shadow: 0 2px 24px rgba(226, 168, 75, 0.3);
+  text-shadow: 0 2px 24px rgba(143, 182, 217, 0.3);
 }
 .combat-defeat-title {
   font-family: 'Cormorant', Georgia, serif;
@@ -231,7 +231,7 @@
   border-radius: 10px;
   padding: 0.5rem 0.75rem;
 }
-.enemy-weakness-hint-bar { height: 2px; background: rgba(226, 168, 75, 0.5); border-radius: 2px; }
+.enemy-weakness-hint-bar { height: 2px; background: rgba(143, 182, 217, 0.5); border-radius: 2px; }
 
 /* ── 6. Достижения и gp-хуки ── */
 .achievement-celebration-overlay {
@@ -246,7 +246,7 @@
 .achievement-glow-burst {
   position: absolute;
   border-radius: 999px;
-  background: radial-gradient(circle, rgba(226, 168, 75, 0.3) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(143, 182, 217, 0.3) 0%, transparent 70%);
   animation: vk-burst 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: none;
 }
@@ -268,7 +268,7 @@
   letter-spacing: 0.12em;
   color: var(--vk-paper-dim);
 }
-.gp-badge--amber { color: var(--vk-amber); border-color: rgba(226, 168, 75, 0.4); }
+.gp-badge--amber { color: var(--vk-amber); border-color: rgba(143, 182, 217, 0.4); }
 .gp-badge--emerald { color: var(--cyber-green); border-color: rgba(87, 168, 116, 0.4); }
 .gp-badge--glow-cyan { color: var(--vk-silver); border-color: rgba(157, 179, 200, 0.4); }
 .gp-badge--slate { color: var(--vk-paper-dim); }
@@ -284,7 +284,7 @@
 .gp-notify-type-dot--quest { background: var(--vk-amber); }
 .gp-notify-type-dot--system { background: var(--vk-silver-dim); }
 .gp-progress { height: 2px; border-radius: 2px; background: rgba(157, 179, 200, 0.15); overflow: hidden; }
-.gp-progress--amber > .progress-fill, .gp-progress--amber { background: rgba(226, 168, 75, 0.6); }
+.gp-progress--amber > .progress-fill, .gp-progress--amber { background: rgba(143, 182, 217, 0.6); }
 .gp-quest-completable { color: var(--vk-amber); }
 .gp-shimmer-hidden { opacity: 0; }
 .gp-time-pulse { animation: vk-pulse-soft 2s ease-in-out infinite; }
@@ -293,12 +293,12 @@
 .gp-tier-epic { color: var(--vk-amber); }
 .gp-tier-legendary {
   color: var(--vk-amber);
-  text-shadow: 0 0 16px rgba(226, 168, 75, 0.4);
+  text-shadow: 0 0 16px rgba(143, 182, 217, 0.4);
 }
 .gp-unlock-burst { animation: vk-burst 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 .gp-unlock-burst--common { background: radial-gradient(circle, rgba(169, 166, 152, 0.25) 0%, transparent 70%); }
 .gp-unlock-burst--rare { background: radial-gradient(circle, rgba(157, 179, 200, 0.25) 0%, transparent 70%); }
-.gp-unlock-burst--epic { background: radial-gradient(circle, rgba(226, 168, 75, 0.3) 0%, transparent 70%); }
+.gp-unlock-burst--epic { background: radial-gradient(circle, rgba(143, 182, 217, 0.3) 0%, transparent 70%); }
 .gp-unlock-particles { color: var(--vk-amber); }
 
 /* ── 7. Инвентарь ── */

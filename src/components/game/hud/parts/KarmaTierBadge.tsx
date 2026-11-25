@@ -23,10 +23,10 @@ const TIER_STYLES: Record<KarmaTier, {
     icon: '✦',
   },
   neutral: {
-    color: '#e2a84b',
-    brightColor: '#e2a84b',
-    alpha: 'rgba(226, 168, 75, 0.25)',
-    alphaDim: 'rgba(226, 168, 75, 0.1)',
+    color: 'var(--cyber-amber)',
+    brightColor: 'var(--cyber-amber)',
+    alpha: 'rgba(143, 182, 217, 0.25)',
+    alphaDim: 'rgba(143, 182, 217, 0.1)',
     icon: '◆',
   },
   negative: {

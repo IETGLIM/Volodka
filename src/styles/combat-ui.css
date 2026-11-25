@@ -45,12 +45,12 @@
   0%, 100% {
     opacity: 0.8;
     transform: scale(1);
-    text-shadow: 0 0 8px rgba(226, 168, 75, 0.6), 0 0 16px rgba(226, 168, 75, 0.3);
+    text-shadow: 0 0 8px rgba(143, 182, 217, 0.6), 0 0 16px rgba(143, 182, 217, 0.3);
   }
   50% {
     opacity: 1;
     transform: scale(1.15);
-    text-shadow: 0 0 12px rgba(226, 168, 75, 0.8), 0 0 24px rgba(226, 168, 75, 0.4), 0 0 40px rgba(226, 168, 75, 0.15);
+    text-shadow: 0 0 12px rgba(143, 182, 217, 0.8), 0 0 24px rgba(143, 182, 217, 0.4), 0 0 40px rgba(143, 182, 217, 0.15);
   }
 }
 
@@ -213,7 +213,7 @@
 
 /* ─── NPC dialogue indicator above NPC heads ─── */
 .npc-dialogue-indicator {
-  color: #e2a84b;
+  color: var(--cyber-amber);
   font-size: 14px;
   font-family: 'Geist Mono', monospace;
   font-weight: 700;

@@ -70,7 +70,7 @@
 .notification-toast-card[data-toast-type='karma'] {
   --toast-border-color: var(--cyber-amber);
   --toast-text-accent: var(--cyber-amber);
-  --toast-icon-bg: rgba(226, 168, 75, 0.15);
+  --toast-icon-bg: rgba(143, 182, 217, 0.15);
   --toast-shadow: 0 0 16px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
   --toast-shadow-hover: 0 0 24px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 12px rgba(0, 0, 0, 0.5);
 }
@@ -110,7 +110,7 @@
 .notification-toast-card[data-toast-type='quest'] {
   --toast-border-color: var(--cyber-amber);
   --toast-text-accent: var(--cyber-amber);
-  --toast-icon-bg: rgba(226, 168, 75, 0.15);
+  --toast-icon-bg: rgba(143, 182, 217, 0.15);
   --toast-shadow: 0 0 16px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 8px rgba(0, 0, 0, 0.4);
   --toast-shadow-hover: 0 0 24px rgba(var(--cyber-amber-rgb), 0.4), 0 2px 12px rgba(0, 0, 0, 0.5);
 }
@@ -368,30 +368,30 @@
   --toast-border-color: #46b96e;
 }
 .notification-toast-card[data-toast-type='achievement'] {
-  --toast-border-color: #e2a84b;
+  --toast-border-color: var(--cyber-amber);
 }
 
 /* Golden achievement toast variant */
 .notification-toast-card--golden {
   background:
     linear-gradient(135deg,
-      rgba(226, 168, 75, 0.08) 0%,
+      rgba(143, 182, 217, 0.08) 0%,
       rgba(10, 14, 28, 0.92) 40%,
       rgba(6, 10, 22, 0.95) 100%) !important;
-  border-left-color: #e2a84b !important;
+  border-left-color: var(--cyber-amber) !important;
   box-shadow:
-    0 0 20px rgba(226, 168, 75, 0.12),
+    0 0 20px rgba(143, 182, 217, 0.12),
     0 4px 16px rgba(0, 0, 0, 0.4),
-    inset 0 1px 0 rgba(226, 168, 75, 0.06),
+    inset 0 1px 0 rgba(143, 182, 217, 0.06),
     inset 0 0 20px rgba(0, 0, 0, 0.1) !important;
 }
 .notification-toast-card--golden .notification-toast-icon {
-  background: rgba(226, 168, 75, 0.15);
-  color: #e2a84b;
+  background: rgba(143, 182, 217, 0.15);
+  color: var(--cyber-amber);
 }
 .notification-toast-card--golden .notification-toast-message {
-  color: #e2a84b;
-  text-shadow: 0 0 8px rgba(226, 168, 75, 0.15);
+  color: var(--cyber-amber);
+  text-shadow: 0 0 8px rgba(143, 182, 217, 0.15);
 }
 
 /* Progress bar track — sits at the bottom of the toast card */

@@ -46,12 +46,12 @@ const ACCENT_MAP = {
     pulseBorder: '0 0 15px rgba(70,185,110,0.08)',
   },
   amber: {
-    border: 'rgba(226,168,75,0.25)',
-    glow: 'rgba(226,168,75,0.06)',
-    headerBg: 'rgba(226,168,75,0.04)',
-    dotColor: 'rgba(226,168,75,0.30)',
-    textGlow: '0 0 8px rgba(226,168,75,0.3)',
-    pulseBorder: '0 0 15px rgba(226,168,75,0.08)',
+    border: 'rgba(143,182,217,0.25)',
+    glow: 'rgba(143,182,217,0.06)',
+    headerBg: 'rgba(143,182,217,0.04)',
+    dotColor: 'rgba(143,182,217,0.30)',
+    textGlow: '0 0 8px rgba(143,182,217,0.3)',
+    pulseBorder: '0 0 15px rgba(143,182,217,0.08)',
   },
   fuchsia: {
     border: 'rgba(141,127,181,0.25)',

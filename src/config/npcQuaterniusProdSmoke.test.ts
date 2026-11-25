@@ -2,13 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { SCENE_IDS } from '@/config/sceneDefinitions';
 import {
   resolveNpcModelUrl,
+  resolveNpcVisualModelUrl,
   shouldRenderGltfNpc,
 } from '@/config/npcModelRegistry';
 import {
   QUATERNIUS_STORY_NPC_SLOT_IDS,
 } from '@/config/quaterniusNpcSlots';
 import { getScheduleBackedNpcIdsForScene } from '@/engine/scene/sceneGpuLifecycle';
-import { QUALITY_PRESETS } from '@/engine/graphics/qualityPresets';
+import { QUALITY_PRESETS, allowsGlbAssetRendering } from '@/engine/graphics/qualityPresets';
 
 describe('Quaternius NPC prod smoke', () => {
   it('keeps Quaternius rig GLBs on disk for pipeline / retargeting', () => {
@@ -38,9 +39,35 @@ describe('Quaternius NPC prod smoke', () => {
     expect(missing, `Add schedule entries for: ${missing.join(', ')}`).toEqual([]);
   });
 
-  it('keeps medium+ presets GLB-capable for unique avatars when they land', () => {
-    expect(QUALITY_PRESETS.medium.npcRenderMode).not.toBe('procedural');
-    expect(QUALITY_PRESETS.high.npcRenderMode).not.toBe('procedural');
-    expect(QUALITY_PRESETS.ultra.npcRenderMode).toBe('glb');
+  it('keeps shipped story-NPC GLBs available on every quality preset', () => {
+    for (const preset of Object.values(QUALITY_PRESETS)) {
+      expect(preset.npcRenderMode, `${preset.id} NPC mode`).not.toBe('procedural');
+      for (const npcId of QUATERNIUS_STORY_NPC_SLOT_IDS) {
+        expect(shouldRenderGltfNpc(npcId, preset.npcRenderMode), `${preset.id}: ${npcId}`).toBe(true);
+      }
+    }
+  });
+
+  it('resolves each shipped story NPC to the same GLB URL on every preset', () => {
+    for (const npcId of QUATERNIUS_STORY_NPC_SLOT_IDS) {
+      const modelPath = resolveNpcModelUrl(npcId);
+      const expectedUrl = resolveNpcVisualModelUrl(npcId, modelPath, QUALITY_PRESETS.low.npcRenderMode);
+      expect(expectedUrl, npcId).toBeTruthy();
+      for (const preset of Object.values(QUALITY_PRESETS)) {
+        expect(
+          resolveNpcVisualModelUrl(npcId, modelPath, preset.npcRenderMode),
+          `${preset.id}: ${npcId}`,
+        ).toBe(expectedUrl);
+      }
+    }
+  });
+
+  it('keeps authored environment assets available on every quality preset', () => {
+    for (const preset of Object.values(QUALITY_PRESETS)) {
+      expect(
+        allowsGlbAssetRendering(preset.environmentRenderMode),
+        `${preset.id} environment mode`,
+      ).toBe(true);
+    }
   });
 });

@@ -69,7 +69,7 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
   if (!questDef) return null
 
   const questTypeBadgeColor = questDef.questType === 'main'
-    ? '#e2a84b'
+    ? 'var(--cyber-amber)'
     : questDef.questType === 'side'
       ? '#46b96e'
       : questDef.questType === 'hidden'
@@ -114,15 +114,15 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
               background: 'linear-gradient(135deg, rgba(0,16,8,0.97), rgba(0,24,12,0.95))',
               border: '1px solid rgba(70,185,110,0.3)',
               borderRadius: '8px',
-              boxShadow: '0 0 30px rgba(70,185,110,0.1), 0 0 8px rgba(226,168,75,0.05), inset 0 0 15px rgba(70,185,110,0.03)',
+              boxShadow: '0 0 30px rgba(70,185,110,0.1), 0 0 8px rgba(143,182,217,0.05), inset 0 0 15px rgba(70,185,110,0.03)',
             }}
           >
             {/* Corner brackets - gold */}
             <>
-              <div className="absolute pointer-events-none" style={{ top: 0, left: 0, width: 6, height: 6, borderTop: '2px solid rgba(226,168,75,0.5)', borderLeft: '2px solid rgba(226,168,75,0.5)' }} />
-              <div className="absolute pointer-events-none" style={{ top: 0, right: 0, width: 6, height: 6, borderTop: '2px solid rgba(226,168,75,0.5)', borderRight: '2px solid rgba(226,168,75,0.5)' }} />
-              <div className="absolute pointer-events-none" style={{ bottom: 0, left: 0, width: 6, height: 6, borderBottom: '2px solid rgba(226,168,75,0.5)', borderLeft: '2px solid rgba(226,168,75,0.5)' }} />
-              <div className="absolute pointer-events-none" style={{ bottom: 0, right: 0, width: 6, height: 6, borderBottom: '2px solid rgba(226,168,75,0.5)', borderRight: '2px solid rgba(226,168,75,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ top: 0, left: 0, width: 6, height: 6, borderTop: '2px solid rgba(143,182,217,0.5)', borderLeft: '2px solid rgba(143,182,217,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ top: 0, right: 0, width: 6, height: 6, borderTop: '2px solid rgba(143,182,217,0.5)', borderRight: '2px solid rgba(143,182,217,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ bottom: 0, left: 0, width: 6, height: 6, borderBottom: '2px solid rgba(143,182,217,0.5)', borderLeft: '2px solid rgba(143,182,217,0.5)' }} />
+              <div className="absolute pointer-events-none" style={{ bottom: 0, right: 0, width: 6, height: 6, borderBottom: '2px solid rgba(143,182,217,0.5)', borderRight: '2px solid rgba(143,182,217,0.5)' }} />
             </>
 
             {/* Left side: NPC portrait + completion header */}
@@ -265,18 +265,18 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                       className="flex items-center gap-2 px-3 py-1.5 rounded"
                       style={{
                         background: i < revealedRewards
-                          ? 'rgba(226,168,75,0.08)'
-                          : 'rgba(226,168,75,0.03)',
+                          ? 'rgba(143,182,217,0.08)'
+                          : 'rgba(143,182,217,0.03)',
                         border: i < revealedRewards
-                          ? '1px solid rgba(226,168,75,0.2)'
-                          : '1px solid rgba(226,168,75,0.08)',
+                          ? '1px solid rgba(143,182,217,0.2)'
+                          : '1px solid rgba(143,182,217,0.08)',
                         boxShadow: i < revealedRewards
-                          ? '0 0 8px rgba(226,168,75,0.08)'
+                          ? '0 0 8px rgba(143,182,217,0.08)'
                           : 'none',
                       }}
                     >
                       <span className="text-sm">{getRewardIcon(reward.type)}</span>
-                      <span className="text-[12px] font-mono" style={{ color: '#e2a84b' }}>
+                      <span className="text-[12px] font-mono" style={{ color: 'var(--cyber-amber)' }}>
                         {getRewardLabel(reward)}
                       </span>
                     </motion.div>
@@ -299,18 +299,18 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                         className="flex items-center gap-2 px-3 py-1.5 rounded"
                         style={{
                           background: index < revealedRewards
-                            ? 'rgba(226,168,75,0.08)'
-                            : 'rgba(226,168,75,0.03)',
+                            ? 'rgba(143,182,217,0.08)'
+                            : 'rgba(143,182,217,0.03)',
                           border: index < revealedRewards
-                            ? '1px solid rgba(226,168,75,0.2)'
-                            : '1px solid rgba(226,168,75,0.08)',
+                            ? '1px solid rgba(143,182,217,0.2)'
+                            : '1px solid rgba(143,182,217,0.08)',
                           boxShadow: index < revealedRewards
-                            ? '0 0 8px rgba(226,168,75,0.08)'
+                            ? '0 0 8px rgba(143,182,217,0.08)'
                             : 'none',
                         }}
                       >
                         <span className="text-sm">{getRewardIcon(bonus.type)}</span>
-                        <span className="text-[12px] font-mono" style={{ color: '#e2a84b' }}>
+                        <span className="text-[12px] font-mono" style={{ color: 'var(--cyber-amber)' }}>
                           {bonus.label}
                         </span>
                       </motion.div>
@@ -329,13 +329,13 @@ export function QuestCompleteDialog({ questId, npcId, onClose }: QuestCompleteDi
                 onClick={handleComplete}
                 className="w-full py-2.5 rounded font-mono text-sm tracking-wider font-bold"
                 style={{
-                  background: 'linear-gradient(135deg, rgba(70,185,110,0.15), rgba(226,168,75,0.1))',
+                  background: 'linear-gradient(135deg, rgba(70,185,110,0.15), rgba(143,182,217,0.1))',
                   color: '#57a874',
                   border: '1px solid rgba(70,185,110,0.4)',
                   textShadow: '0 0 8px rgba(70,185,110,0.3)',
                 }}
                 whileHover={{
-                  background: 'linear-gradient(135deg, rgba(70,185,110,0.25), rgba(226,168,75,0.15))',
+                  background: 'linear-gradient(135deg, rgba(70,185,110,0.25), rgba(143,182,217,0.15))',
                   boxShadow: '0 0 15px rgba(70,185,110,0.2)',
                 }}
                 whileTap={{ scale: 0.97 }}

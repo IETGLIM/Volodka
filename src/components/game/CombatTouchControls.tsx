@@ -122,7 +122,7 @@ export function CombatTouchControls({
       <TouchActionButton
         label={poemOpen ? 'Стих ▲' : 'Стих'}
         icon={<Sparkles className="size-5" aria-hidden />}
-        accent="#e2a84b"
+        accent="var(--cyber-amber)"
         disabled={disabled || poemDisabled}
         onPress={onPoemToggle}
         haptic="medium"

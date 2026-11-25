@@ -227,7 +227,7 @@
 }
 
 .cp-terminal-dot--red { background: #c65548; }
-.cp-terminal-dot--yellow { background: #e2a84b; }
+.cp-terminal-dot--yellow { background: #8fb6d9; }
 .cp-terminal-dot--green { background: #46b96e; }
 
 /* ─── Poem Title ─── */
@@ -235,8 +235,8 @@
   font-size: 28px;
   font-weight: bold;
   margin-bottom: 8px;
-  color: #e2a84b;
-  text-shadow: 0 0 10px rgba(226, 168, 75, 0.4);
+  color: #8fb6d9;
+  text-shadow: 0 0 10px rgba(143, 182, 217, 0.4);
   letter-spacing: 2px;
 }
 
@@ -321,12 +321,12 @@
 
 .cp-theme-desperation,
 .cp-theme-despair {
-  color: #e2a84b;
+  color: #8d7fb5;
 }
 .cp-theme-desperation .cp-poem-title,
 .cp-theme-despair .cp-poem-title {
-  color: #e2a84b;
-  text-shadow: 0 0 10px rgba(226, 168, 75, 0.4);
+  color: #8d7fb5;
+  text-shadow: 0 0 10px rgba(141, 127, 181, 0.4);
 }
 
 .cp-theme-tech,

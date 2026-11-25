@@ -11,7 +11,7 @@ import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 /* ─── Constants ─── */
 const CODE_LENGTH = 4;
 const MAX_ATTEMPTS = 6;
-const DIGIT_COLORS = ['#9db3c8', '#c65548', '#e2a84b', '#46b96e', '#8d7fb5', '#8d7fb5', '#9db3c8', '#e2a84b', '#46b96e', '#8d7fb5'];
+const DIGIT_COLORS = ['#9db3c8', '#c65548', '#7399bd', '#46b96e', '#8d7fb5', '#8d7fb5', '#9db3c8', '#7399bd', '#46b96e', '#8d7fb5'];
 
 type Feedback = {
   exact: number; // correct digit + correct position
@@ -274,7 +274,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                       <span
                         key={`partial-${i}`}
                         className="inline-block w-2.5 h-2.5 rounded-full"
-                        style={{ background: '#e2a84b', boxShadow: '0 0 4px rgba(226, 168, 75, 0.4)' }}
+                        style={{ background: '#7399bd', boxShadow: '0 0 4px rgba(115, 153, 189, 0.4)' }}
                       />
                     ))}
                     {/* Misses */}
@@ -291,7 +291,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
                   <span className="text-[10px] font-mono ml-1" style={{ color: '#6a8a9a' }}>
                     {row.feedback.exact > 0 && <span style={{ color: '#9db3c8' }}>{row.feedback.exact}✓</span>}
                     {row.feedback.exact > 0 && row.feedback.partial > 0 && ' '}
-                    {row.feedback.partial > 0 && <span style={{ color: '#e2a84b' }}>{row.feedback.partial}≅</span>}
+                    {row.feedback.partial > 0 && <span style={{ color: '#7399bd' }}>{row.feedback.partial}≅</span>}
                   </span>
                 </motion.div>
               ))}
@@ -410,7 +410,7 @@ export function CodeBreakerGame({ onClose }: CodeBreakerGameProps) {
               <span className="text-[9px] font-mono" style={{ color: '#6a8a9a' }}>цифра+место</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#e2a84b' }} />
+              <span className="inline-block w-2 h-2 rounded-full" style={{ background: '#7399bd' }} />
               <span className="text-[9px] font-mono" style={{ color: '#6a8a9a' }}>цифра верно</span>
             </div>
             <div className="flex items-center gap-1">

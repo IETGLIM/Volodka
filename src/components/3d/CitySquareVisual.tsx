@@ -290,8 +290,8 @@ export function CitySquareVisual(_props: CitySquareVisualProps) {
   const { preset, selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
   const useAuthoredDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
-  // Medium+ gets authored plaza massing; Low keeps procedural boxes.
-  const useHighUltraAuthored = preset.id !== 'low';
+  // Keep the authored plaza composition on every tier; quality only changes render cost.
+  const useHighUltraAuthored = useAuthoredDressing;
   const usePhysicalWet = allowsSelectiveMeshPhysicalWet('city_square', selectedPreset, {
     coarsePointer,
   });

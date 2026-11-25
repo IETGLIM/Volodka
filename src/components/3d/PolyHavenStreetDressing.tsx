@@ -324,11 +324,10 @@ function AuthoredStreetArchitecture() {
   );
 }
 
-/** Procedural facades on low only; authored GLTF architecture on medium+. */
+/** Authored GLTF architecture on every tier; LOD and distance budgets control cost. */
 export function HeroStreetFacadesWithAssets() {
   const { preset } = useGraphicsQuality();
-  const glbProps =
-    preset.id !== 'low' && allowsGlbAssetRendering(preset.environmentRenderMode);
+  const glbProps = allowsGlbAssetRendering(preset.environmentRenderMode);
 
   return (
     <group>

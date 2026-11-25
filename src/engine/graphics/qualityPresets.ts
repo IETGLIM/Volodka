@@ -1,4 +1,4 @@
-/** Visual quality tiers — drives DPR, LOD, compression variant, and procedural/GLB mix. */
+/** Visual quality tiers — drive render budgets, LOD and texture resolution. Core asset identity is shared across tiers. */
 
 import { getSessionAutoResolvedTier } from './autoQualitySession';
 import {
@@ -47,7 +47,7 @@ export interface QualityPreset {
   textureScale: 0.25 | 0.5 | 1;
   maxDrawDistance: number;
   compression: CompressionPreference;
-  /** NPC: procedural silhouettes until unique RPM/AI3DGen mesh on disk. */
+  /** Named NPCs stay GLB-capable on every tier; performance is managed by LOD and render budgets. */
   npcRenderMode: AssetRenderMode;
   environmentRenderMode: AssetRenderMode;
   /** Alias for legacy visualLite checks */
@@ -67,8 +67,8 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
     textureScale: 0.25,
     maxDrawDistance: 40,
     compression: 'draco',
-    npcRenderMode: 'procedural',
-    environmentRenderMode: 'procedural',
+    npcRenderMode: 'hybrid',
+    environmentRenderMode: 'hybrid',
     visualLite: true,
   },
   medium: {
@@ -120,8 +120,8 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
      * NPC/героя/пропсов кафе), meshopt-варианты исключены из манифеста и
      * prune-keep-set. */
     compression: 'draco',
-    npcRenderMode: 'glb',
-    environmentRenderMode: 'glb',
+    npcRenderMode: 'hybrid',
+    environmentRenderMode: 'hybrid',
     visualLite: false,
   },
 };

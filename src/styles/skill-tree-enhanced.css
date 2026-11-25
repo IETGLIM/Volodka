@@ -55,13 +55,13 @@
 /* Node active state (amber pulse) */
 @keyframes skill-node-active-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(226, 168, 75, 0.2),
-                0 0 16px rgba(226, 168, 75, 0.08);
+    box-shadow: 0 0 8px rgba(143, 182, 217, 0.2),
+                0 0 16px rgba(143, 182, 217, 0.08);
   }
   50% {
-    box-shadow: 0 0 14px rgba(226, 168, 75, 0.4),
-                0 0 28px rgba(226, 168, 75, 0.15),
-                0 0 42px rgba(226, 168, 75, 0.06);
+    box-shadow: 0 0 14px rgba(143, 182, 217, 0.4),
+                0 0 28px rgba(143, 182, 217, 0.15),
+                0 0 42px rgba(143, 182, 217, 0.06);
   }
 }
 

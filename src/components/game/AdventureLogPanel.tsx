@@ -53,7 +53,7 @@ const CATEGORY_FILTERS: { key: EventCategory; label: string; icon: typeof BookOp
 
 const CATEGORY_COLORS: Record<string, { color: string; bg: string; border: string }> = {
   combat:      { color: '#c65548', bg: 'rgba(198,85,72,0.08)',   border: 'rgba(198,85,72,0.25)' },
-  social:      { color: '#e2a84b', bg: 'rgba(226,168,75,0.08)',  border: 'rgba(226,168,75,0.25)' },
+  social:      { color: 'var(--cyber-amber)', bg: 'rgba(143,182,217,0.08)',  border: 'rgba(143,182,217,0.25)' },
   exploration: { color: '#9db3c8', bg: 'rgba(157, 179, 200,0.08)',   border: 'rgba(157, 179, 200,0.25)' },
   lore:        { color: '#8d7fb5', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.25)' },
 };
@@ -223,7 +223,7 @@ function StatsSummary({ stats }: {
 }) {
   const items = [
     { icon: Swords,  label: 'Боев',           value: stats.totalCombats,          color: '#c65548' },
-    { icon: Users,  label: 'NPC знакомств',  value: stats.npcsMet,              color: '#e2a84b' },
+    { icon: Users,  label: 'NPC знакомств',  value: stats.npcsMet,              color: 'var(--cyber-amber)' },
     { icon: MapPin, label: 'Локаций',        value: stats.locationsDiscovered,  color: '#9db3c8' },
     { icon: Feather, label: 'Стихов',         value: stats.poemsCollected,       color: '#8d7fb5' },
   ];

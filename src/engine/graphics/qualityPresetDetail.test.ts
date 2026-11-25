@@ -5,14 +5,15 @@ import {
 } from './qualityPresets';
 
 describe('formatQualityPresetDetailRu', () => {
-  it('omits GLB hint on low tier', () => {
+  it('keeps the authored-avatar hint on low while preserving its lightweight render budget', () => {
     const detail = formatQualityPresetDetailRu('low', QUALITY_PRESETS.low);
-    expect(detail).not.toContain('Уникальные аватары');
+    expect(detail).toContain('Уникальные аватары (RPM)');
     expect(detail).toContain('Низкое');
     expect(detail).toContain('Только contact-blob');
+    expect(detail).not.toContain('Полные карты теней');
   });
 
-  it('shows GLB hint from medium upward', () => {
+  it('shows the GLB identity hint from medium upward without advertising heavy effects', () => {
     const detail = formatQualityPresetDetailRu('medium', QUALITY_PRESETS.medium);
     expect(detail).toContain('Уникальные аватары (RPM)');
     expect(detail).not.toContain('от «Среднее»');

@@ -172,21 +172,21 @@ select:focus-visible {
   /* Red-weak: Adjust red-based colors */
   --cb-red: #6b8fce;
   --cb-green: #46b96e;
-  --cb-amber: #e2a84b;
+  --cb-amber: #8fb6d9;
 }
 
 [data-color-blind-mode="deuteranopia"] {
   /* Green-weak: Adjust green-based colors */
   --cb-red: #c65548;
   --cb-green: #a78bfa;
-  --cb-amber: #e2a84b;
+  --cb-amber: #8fb6d9;
 }
 
 [data-color-blind-mode="tritanopia"] {
   /* Blue-weak: Adjust blue-based colors */
   --cb-red: #c65548;
   --cb-green: #46b96e;
-  --cb-amber: #e2a84b;
+  --cb-amber: #8fb6d9;
 }
 
 [data-reduced-motion="true"] *,
@@ -222,12 +222,12 @@ select:focus-visible {
 
   .text-amber-400,
   .text-yellow-400 {
-    color: var(--cb-amber, #e2a84b) !important;
+    color: var(--cb-amber, #8fb6d9) !important;
   }
 
   .bg-amber-400,
   .bg-yellow-400 {
-    background-color: var(--cb-amber, #e2a84b) !important;
+    background-color: var(--cb-amber, #8fb6d9) !important;
   }
 
   /* Health bars with patterns for additional distinction */

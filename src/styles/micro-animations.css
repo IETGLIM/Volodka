@@ -136,7 +136,7 @@
     rgba(167, 139, 250, 0.4),
     rgba(198, 85, 72, 0.4),
     rgba(70, 185, 110, 0.4),
-    rgba(226, 168, 75, 0.4),
+    rgba(143, 182, 217, 0.4),
     rgb(var(--cyber-cyan-rgb) / 0.6)
   );
   animation: border-flow 3s linear infinite;
@@ -195,7 +195,7 @@
     rgba(167, 139, 250, 0.15) 20%,
     rgba(198, 85, 72, 0.15) 40%,
     rgba(70, 185, 110, 0.15) 60%,
-    rgba(226, 168, 75, 0.15) 80%,
+    rgba(143, 182, 217, 0.15) 80%,
     rgb(var(--cyber-cyan-rgb) / 0.15) 100%
   );
   background-size: 300% 100%;
