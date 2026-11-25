@@ -3,8 +3,8 @@ html { background: #000 !important; }
 
 /*
  * ВОЛОДЬКА v4.45.0 — дизайн-система «Ночная тетрадь».
- * Единый язык: чернильная ночь · тёплая бумага · фонарь-янтарь · лунное серебро.
- * Один герой-акцент (янтарь) + один структурный металл (серебро).
+ * Единый язык: чернильная ночь · холодный светлый текст · холодная сталь · лунное серебро.
+ * Один интерактивный акцент (янтарь) + один структурный металл (серебро).
  * Неоновая радуга (cyan/magenta/violet) переведена в приглушённые тона —
  * переменные сохранены, значения перекрашены: весь старый UI перекрашивается сам.
  */
@@ -55,6 +55,18 @@ html { background: #000 !important; }
   /* Tailwind cyan scale → «лунная сталь» (единый холодный металл UI) */
   --color-cyan-400: var(--cyber-cyan);
   --color-cyan-500: var(--cyber-cyan-dim);
+  /* Legacy amber utilities now resolve to cool ice-steel instead of warm gold. */
+  --color-amber-50: #f3f7fb;
+  --color-amber-100: #e5eef6;
+  --color-amber-200: #d0e0ed;
+  --color-amber-300: #b5cde0;
+  --color-amber-400: #8fb6d9;
+  --color-amber-500: #7399bd;
+  --color-amber-600: #5b7f9f;
+  --color-amber-700: #46627d;
+  --color-amber-800: #33495f;
+  --color-amber-900: #223447;
+  --color-amber-950: #142332;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -63,7 +75,7 @@ html { background: #000 !important; }
 
 :root {
   /* ── Палитра «Ночная тетрадь» (single source of truth) ──
-   * Акценты игры: фонарь-янтарь (герой) и лунное серебро (структура).
+   * Акценты игры: холодная сталь (герой) и лунное серебро (структура).
    * Прежние cyber-* имена сохранены как алиасы — старый код перекрашивается сам. */
   /* «циан» → лунная сталь: холодный, приглушённый серебристо-синий */
   --cyber-cyan: #9db3c8;
@@ -74,9 +86,9 @@ html { background: #000 !important; }
   --cyber-matrix-rgb: 70 185 110;
   --cyber-green: #57a874;
   --cyber-green-rgb: 87 168 116;
-  /* янтарь → фонарь: главный акцент (интеракция, выбор, награда) */
-  --cyber-amber: #e2a84b;
-  --cyber-amber-rgb: 226 168 75;
+  /* legacy amber alias → steel: главный акцент (интеракция, выбор, награда) */
+  --cyber-amber: #8fb6d9;
+  --cyber-amber-rgb: 143 182 217;
   /* роза → приглушённый кирпич (опасность) */
   --cyber-rose: #c65548;
   --cyber-violet: #8d7fb5;
@@ -84,27 +96,27 @@ html { background: #000 !important; }
   /* CyberpunkTheme context aliases */
   --cyber-matrix-green: var(--cyber-matrix);
   --cyber-neon-cyan: var(--cyber-cyan);
-  --cyber-amber-gold: #d9992e;
+  --cyber-amber-gold: var(--cyber-amber);
   --cyber-deep-crimson: #b23c31;
   --cyber-muted-olive: #6f8a5c;
 
   /* ── Семантика «Ночной тетради» ── */
   --vk-ink: #0c1017;            /* чернильная ночь — фон */
   --vk-ink-raised: #12161f;     /* приподнятая поверхность */
-  --vk-paper: #eae4d6;          /* тёплая бумага — основной текст */
-  --vk-paper-dim: #a9a698;      /* приглушённая бумага — вторичный текст */
+  --vk-paper: #e8eef5;          /* холодный светлый текст — основной текст */
+  --vk-paper-dim: #a5b4c5;      /* холодный серо-синий — вторичный текст */
   --vk-silver: #9db3c8;         /* лунное серебро — хайрлайны, структура */
   --vk-silver-dim: #6e7f90;     /* тусклое серебро */
-  --vk-amber: #e2a84b;          /* фонарь — герой-акцент */
-  --vk-amber-soft: rgba(226, 168, 75, 0.14);
-  --vk-amber-glow: rgba(226, 168, 75, 0.28);
+  --vk-amber: #8fb6d9;          /* фонарь — интерактивный акцент */
+  --vk-amber-soft: rgba(143, 182, 217, 0.14);
+  --vk-amber-glow: rgba(143, 182, 217, 0.18);
   --vk-brick: #c65548;          /* кирпич — опасность */
   --vk-hairline: rgba(157, 179, 200, 0.16);   /* волосяная рамка */
   --vk-hairline-strong: rgba(157, 179, 200, 0.30);
   --vk-plate: rgba(11, 14, 21, 0.72);         /* тарелка панели */
   --vk-plate-strong: rgba(8, 10, 16, 0.88);
   --vk-shadow: 0 18px 48px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.35);
-  --vk-shadow-inset: inset 0 1px 0 rgba(234, 228, 214, 0.06);
+  --vk-shadow-inset: inset 0 1px 0 rgba(232, 238, 245, 0.06);
 
   /*
    * Z-index stack — sync with shared/constants/uiLayers.ts
@@ -158,34 +170,34 @@ html { background: #000 !important; }
 .dark {
   --radius: 0.625rem;
   --background: oklch(0.145 0.012 250);
-  --foreground: oklch(0.925 0.012 85);
+  --foreground: oklch(0.925 0.012 250);
   --card: oklch(0.185 0.014 250);
-  --card-foreground: oklch(0.925 0.012 85);
+  --card-foreground: oklch(0.925 0.012 250);
   --popover: oklch(0.185 0.014 250);
-  --popover-foreground: oklch(0.925 0.012 85);
-  --primary: oklch(0.76 0.11 75);
+  --popover-foreground: oklch(0.925 0.012 250);
+  --primary: oklch(0.76 0.075 245);
   --primary-foreground: oklch(0.17 0.02 250);
   --secondary: oklch(0.235 0.016 250);
-  --secondary-foreground: oklch(0.88 0.012 85);
+  --secondary-foreground: oklch(0.88 0.012 250);
   --muted: oklch(0.235 0.014 250);
-  --muted-foreground: oklch(0.66 0.012 85);
-  --accent: oklch(0.28 0.03 75);
-  --accent-foreground: oklch(0.94 0.012 85);
+  --muted-foreground: oklch(0.68 0.012 250);
+  --accent: oklch(0.28 0.025 245);
+  --accent-foreground: oklch(0.94 0.012 250);
   --destructive: oklch(0.58 0.16 30);
   --border: oklch(0.92 0.01 250 / 12%);
   --input: oklch(0.92 0.01 250 / 16%);
-  --ring: oklch(0.76 0.11 75);
-  --chart-1: oklch(0.76 0.11 75);
+  --ring: oklch(0.76 0.075 245);
+  --chart-1: oklch(0.76 0.075 245);
   --chart-2: oklch(0.62 0.06 160);
   --chart-3: oklch(0.68 0.08 250);
   --chart-4: oklch(0.6 0.14 30);
   --chart-5: oklch(0.6 0.1 300);
   --sidebar: oklch(0.165 0.012 250);
-  --sidebar-foreground: oklch(0.925 0.012 85);
-  --sidebar-primary: oklch(0.76 0.11 75);
+  --sidebar-foreground: oklch(0.925 0.012 250);
+  --sidebar-primary: oklch(0.76 0.075 245);
   --sidebar-primary-foreground: oklch(0.17 0.02 250);
   --sidebar-accent: oklch(0.235 0.016 250);
-  --sidebar-accent-foreground: oklch(0.925 0.012 85);
+  --sidebar-accent-foreground: oklch(0.925 0.012 250);
   --sidebar-border: oklch(0.92 0.01 250 / 12%);
-  --sidebar-ring: oklch(0.76 0.11 75);
+  --sidebar-ring: oklch(0.76 0.075 245);
 }
