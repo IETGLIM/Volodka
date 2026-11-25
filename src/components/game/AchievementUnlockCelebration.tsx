@@ -15,7 +15,7 @@ const CATEGORY_META: Record<TrophyCategory, { label: string; color: string }> = 
   story:       { label: 'Сюжет',       color: '#8d7fb5' },
   combat:      { label: 'Бой',         color: '#c65548' },
   exploration: { label: 'Исследование', color: '#57a874' },
-  poetry:      { label: 'Поэзия',      color: '#e2a84b' },
+  poetry:      { label: 'Поэзия',      color: 'var(--cyber-amber)' },
   social:      { label: 'Социальные',  color: '#9db3c8' },
 };
 
