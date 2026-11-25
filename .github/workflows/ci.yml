@@ -10,7 +10,7 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v5
 
@@ -44,3 +44,10 @@ jobs:
 
       - name: Verify deploy assets
         run: npm run verify:deploy
+
+      # Browser-level guard: the game must boot in Chromium and mount the WebGL canvas.
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser smoke tests
+        run: npm run test:e2e:smoke
