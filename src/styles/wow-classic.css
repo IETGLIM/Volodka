@@ -378,7 +378,7 @@ html.vk-classic-ui .hud-filmic-crosshair-ring {
   animation: none !important;
 }
 
-/* Мобильные кнопки действий — тёплая рамка */
+/* Мобильные кнопки действий — холодная стальная рамка */
 html.vk-classic-ui .hud-filmic-caption {
   text-shadow: 1px 1px 0 #000;
 }
