@@ -51,8 +51,8 @@
 }
 
 [data-rarity="legendary"] {
-  border-color: rgba(226, 168, 75, 0.45) !important;
-  box-shadow: 0 0 10px rgba(226, 168, 75, 0.2), 0 0 24px rgba(226, 168, 75, 0.08), inset 0 0 8px rgba(226, 168, 75, 0.06);
+  border-color: rgba(143, 182, 217, 0.45) !important;
+  box-shadow: 0 0 10px rgba(143, 182, 217, 0.2), 0 0 24px rgba(143, 182, 217, 0.08), inset 0 0 8px rgba(143, 182, 217, 0.06);
   animation: inv-legendary-border-pulse 2.5s ease-in-out infinite;
 }
 
