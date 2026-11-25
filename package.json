@@ -60,7 +60,7 @@
     "validate:story": "vitest run src/data/story/storyRegistryContract.test.ts src/data/story/buildStoryNodes.test.ts --project unit",
     "validate:node-logic": "npx tsx --tsconfig tsconfig.json scripts/audit-node-logic.ts",
     "test:e2e:smoke": "playwright test e2e/smoke.spec.ts",
-    "test:e2e:vertical-slice": "playwright test e2e/act1-smoke.spec.ts --grep \"movement\""
+    "test:e2e:vertical-slice": "playwright test e2e/act1-smoke.spec.ts --grep \"movement\" && playwright test e2e/act1-natural-interaction.spec.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",
