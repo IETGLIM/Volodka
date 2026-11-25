@@ -38,7 +38,7 @@
   --color-stone-700: rgb(0 14 24);
   --color-stone-500: rgb(85 136 102);
   --color-stone-400: rgb(85 136 102);
-  --color-amber-500: #e2a84b;
+  --color-amber-500: #7399bd;
   --color-cyan-500: var(--cyber-cyan-dim);
 
   /* Scrollbar fallback for unclassed scroll areas — matches .game-scrollbar */
@@ -104,7 +104,7 @@
 /* ─── Amber/gold overrides (keep amber for important stuff) ─── */
 [data-cyberpunk] .text-amber-300,
 [data-cyberpunk] .text-amber-400 {
-  text-shadow: 0 0 8px rgba(226, 168, 75, 0.3);
+  text-shadow: 0 0 8px rgba(143, 182, 217, 0.3);
 }
 
 /* ─── Cyan/emerald overrides ─── */
@@ -284,7 +284,7 @@
   z-index: 0;
   background:
     radial-gradient(ellipse at 20% 80%, rgba(157, 179, 200, 0.03) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(226, 168, 75, 0.02) 0%, transparent 50%);
+    radial-gradient(ellipse at 80% 20%, rgba(143, 182, 217, 0.02) 0%, transparent 50%);
   animation: cp-fog-drift 12s ease-in-out infinite;
 }
 
@@ -383,7 +383,7 @@
 /* ─── Subtle gradient noise on all data-panel elements ─── */
 [data-cyberpunk] [data-panel] {
   background:
-    linear-gradient(135deg, rgba(157, 179, 200, 0.01) 0%, transparent 50%, rgba(226, 168, 75, 0.008) 100%),
+    linear-gradient(135deg, rgba(157, 179, 200, 0.01) 0%, transparent 50%, rgba(143, 182, 217, 0.008) 100%),
     rgba(0, 6, 10, 0.92);
  border: 1px solid rgb(var(--cyber-matrix-rgb) / 0.12);
   box-shadow:
@@ -1617,11 +1617,11 @@
 .cyber-alert-info .alert-icon-area { color: rgb(var(--cyber-cyan-rgb)); }
 
 .cyber-alert-warning {
-  border-left-color: rgba(226, 168, 75, 0.6);
-  box-shadow: 0 0 12px rgba(226, 168, 75, 0.06);
+  border-left-color: rgba(143, 182, 217, 0.6);
+  box-shadow: 0 0 12px rgba(143, 182, 217, 0.06);
 }
 
-.cyber-alert-warning .alert-icon-area { color: #e2a84b; }
+.cyber-alert-warning .alert-icon-area { color: var(--cyber-amber); }
 
 .cyber-alert-error {
   border-left-color: rgba(198, 85, 72, 0.6);
@@ -1774,9 +1774,9 @@
 }
 
 .cyber-tag-amber {
-  color: #e2a84b;
-  border-color: rgba(226, 168, 75, 0.25);
-  background: rgba(226, 168, 75, 0.06);
+  color: var(--cyber-amber);
+  border-color: rgba(143, 182, 217, 0.25);
+  background: rgba(143, 182, 217, 0.06);
 }
 
 .cyber-tag-rose {
