@@ -52,8 +52,11 @@ export const NARRATIVE_EXPANSION_TRIGGER_ZONES: TriggerZone[] = [
   {
     id: 'room_door_deep',
     sceneId: 'volodka_room',
-    position: [0, 0, 3.5],
-    size: [1.2, 2.2, 0.5],
+    // Keep the optional close inspection point inside the room, separate from
+    // the actual doorway trigger. If both zones share a center, the prompt
+    // resolver can surface "Осмотреть" where the player expects "Открыть".
+    position: [0, 0, 2.0],
+    size: [0.8, 1.4, 0.4],
     enterToast: 'Дверь — граница между тобой и остальным миром.',
     linkedStoryNodeId: 'examine_door',
     requiredFlag: 'room_free_explore_1',
