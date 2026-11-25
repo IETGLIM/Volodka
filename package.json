@@ -58,7 +58,8 @@
     "verify:deploy": "npx tsx --tsconfig tsconfig.json scripts/verify-deploy-assets.ts",
     "validate:protected": "npx tsx --tsconfig tsconfig.json scripts/validate-protected-content.ts",
     "validate:story": "vitest run src/data/story/storyRegistryContract.test.ts src/data/story/buildStoryNodes.test.ts --project unit",
-    "validate:node-logic": "npx tsx --tsconfig tsconfig.json scripts/audit-node-logic.ts"
+    "validate:node-logic": "npx tsx --tsconfig tsconfig.json scripts/audit-node-logic.ts",
+    "test:e2e:smoke": "playwright test e2e/smoke.spec.ts"
   },
   "dependencies": {
     "@dimforge/rapier3d-compat": "^0.19.3",
