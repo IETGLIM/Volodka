@@ -70,7 +70,7 @@ function AaaLuxTitle({ text, animate, visited }: { text: string; animate: boolea
       <div
         className="absolute inset-0 blur-[52px] pointer-events-none opacity-50"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(226,168,75,0.10) 0%, rgba(157,179,200,0.07) 42%, transparent 74%)',
+          background: 'radial-gradient(ellipse at center, rgba(143,182,217,0.10) 0%, rgba(157,179,200,0.07) 42%, transparent 74%)',
           transform: `translate(${parallax.x * 0.35}px, ${parallax.y * 0.35}px)`,
         }}
         aria-hidden
@@ -82,7 +82,7 @@ function AaaLuxTitle({ text, animate, visited }: { text: string; animate: boolea
         className="menu-lux-title relative font-serif text-[3.2rem] md:text-[5.6rem] lg:text-[7rem] font-medium tracking-[0.12em] leading-none select-none"
         style={{
           transform: `translate(${parallax.x}px, ${parallax.y}px)`,
-          textShadow: '0 0 46px rgba(226,168,75,0.18), 0 0 120px rgba(157,179,200,0.10), 0 2px 0 rgba(0,0,0,0.75), 0 12px 28px rgba(0,0,0,0.55)',
+          textShadow: '0 0 46px rgba(143,182,217,0.18), 0 0 120px rgba(157,179,200,0.10), 0 2px 0 rgba(0,0,0,0.75), 0 12px 28px rgba(0,0,0,0.55)',
           color: 'var(--vk-ink-hero, #f8f4eb)',
         }}
       >
@@ -229,7 +229,7 @@ function MenuScreenPanelInner() {
               transition={{ delay: d(0.8, visited), duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="mt-5 flex flex-col items-center gap-1.5 lg:items-start"
             >
-              <p className="menu-compact-hide max-w-[30rem] text-center font-serif text-[15px] md:text-base tracking-[0.22em] leading-relaxed lg:text-left" style={{ color: 'rgba(210,205,192,0.72)' }}>
+              <p className="menu-compact-hide max-w-[30rem] text-center font-serif text-[15px] md:text-base tracking-[0.22em] leading-relaxed lg:text-left" style={{ color: 'rgba(191,205,220,0.72)' }}>
                 {MENU_TAGLINE}
               </p>
               <p
@@ -247,8 +247,8 @@ function MenuScreenPanelInner() {
               transition={{ delay: d(1.1, visited), duration: 0.9 }}
               className="menu-compact-tight mt-10 flex flex-col items-center gap-2 lg:mt-20 lg:items-start"
             >
-              <div className="w-24 h-px bg-gradient-to-r from-transparent via-[rgba(226,168,75,0.35)] to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-[rgba(226,168,75,0.35)] lg:to-[rgba(226,168,75,0.1)]" />
-              <p className="font-serif text-xs sm:text-sm md:text-[15px] tracking-[0.16em] italic dedication-glow text-center max-w-[28rem] leading-relaxed lg:text-left" style={{ color: 'rgba(234,228,214,0.78)' }}>
+              <div className="w-24 h-px bg-gradient-to-r from-transparent via-[rgba(143,182,217,0.35)] to-transparent lg:bg-gradient-to-r lg:from-transparent lg:via-[rgba(143,182,217,0.35)] lg:to-[rgba(143,182,217,0.1)]" />
+              <p className="font-serif text-xs sm:text-sm md:text-[15px] tracking-[0.16em] italic dedication-glow text-center max-w-[28rem] leading-relaxed lg:text-left" style={{ color: 'rgba(232,238,245),0.78)' }}>
                 {MENU_DEDICATION}
               </p>
             </motion.div>
@@ -329,13 +329,13 @@ function MenuScreenPanelInner() {
               transition={{ duration: 0.38, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="relative overflow-hidden rounded-[16px] border border-white/10 bg-gradient-to-b from-[rgba(18,22,31,0.92)] to-[rgba(10,12,18,0.94)] backdrop-blur-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(234,228,214,0.06)] px-6 py-6 text-center">
-                <div className="absolute inset-x-[15%] top-0 h-px bg-gradient-to-r from-transparent via-[rgba(226,168,75,0.5)] to-transparent" aria-hidden />
+              <div className="relative overflow-hidden rounded-[16px] border border-white/10 bg-gradient-to-b from-[rgba(18,22,31,0.92)] to-[rgba(10,12,18,0.94)] backdrop-blur-[24px] shadow-[0_20px_60px_rgba(0,0,0,0.8),inset_0_1px_0_rgba(232,238,245),0.06)] px-6 py-6 text-center">
+                <div className="absolute inset-x-[15%] top-0 h-px bg-gradient-to-r from-transparent via-[rgba(143,182,217,0.5)] to-transparent" aria-hidden />
                 <p className="text-[11px] tracking-[0.34em] uppercase mb-3" style={{ color: 'rgba(169,166,152,0.7)' }}>Начало</p>
-                <p className="font-serif text-2xl tracking-[0.12em] mb-3" style={{ color: 'rgba(234,228,214,0.95)' }}>Новая игра</p>
+                <p className="font-serif text-2xl tracking-[0.12em] mb-3" style={{ color: 'rgba(232,238,245),0.95)' }}>Новая игра</p>
                 <p className="text-sm leading-relaxed mb-6" style={{ color: 'rgba(169,166,152,0.8)' }}>Пройти вступление с пробуждением и первыми шагами или сразу выйти в город?</p>
                 <div className="flex flex-col gap-2">
-                  <button type="button" data-testid="menu-start-prologue" onClick={handleDialogStartPrologue} className="group relative overflow-hidden rounded-[10px] border border-[rgba(226,168,75,0.35)] hover:border-[rgba(226,168,75,0.6)] hover:bg-[rgba(226,168,75,0.08)] py-3 px-4 text-[13px] font-medium tracking-[0.14em] transition-all duration-300" style={{ color: 'rgba(234,228,214,0.95)' }}>
+                  <button type="button" data-testid="menu-start-prologue" onClick={handleDialogStartPrologue} className="group relative overflow-hidden rounded-[10px] border border-[rgba(143,182,217,0.35)] hover:border-[rgba(143,182,217,0.6)] hover:bg-[rgba(143,182,217,0.08)] py-3 px-4 text-[13px] font-medium tracking-[0.14em] transition-all duration-300" style={{ color: 'rgba(232,238,245),0.95)' }}>
                     Начать с пролога
                   </button>
                   <button type="button" data-testid="menu-skip-prologue" onClick={handleDialogSkipPrologue} className="rounded-[10px] border border-white/10 hover:border-white/20 hover:bg-white/[0.04] py-3 px-4 text-[13px] tracking-[0.14em] transition-all duration-300" style={{ color: 'rgba(169,166,152,0.85)' }}>
@@ -375,7 +375,7 @@ function MenuBestScoreBadge() {
   return (
     <span
       className="font-serif text-[10px] tracking-[0.18em] tabular-nums"
-      style={{ color: 'rgba(226,168,75,0.55)' }}
+      style={{ color: 'rgba(143,182,217,0.55)' }}
       aria-label={`Рекорд: ${best}`}
     >
       ✒ рекорд {best.toLocaleString('ru-RU')}
