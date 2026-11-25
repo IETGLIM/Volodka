@@ -462,11 +462,11 @@ export const VolodkaRoomVisual = memo(function VolodkaRoomVisual({ livePlayerPos
   const useGltfFurniture = allowsGlbAssetRendering(preset.environmentRenderMode) && roomAssetsShipped;
   // FIX S13-6: desk surface height. Poly Haven paintedWoodenTable GLB has its
   // tabletop at Y=0.958 (verified from the .gltf accessor max). At scale 1.02
-  // → 0.977m. CraftedDeskShell (Low fallback) top is at 0.78. Previously all
-  // presets used surfaceY=0.75 → on GLB presets monitors/keyboard/lamp were
-  // 0.22m BELOW the tabletop → "sunk into the desk".
+  // → 0.977m. The procedural CraftedDeskShell fallback top is at 0.78. Keep
+  // the accessory mounting height tied to the resolved furniture source so
+  // keyboard/monitors/lamp never sink into the authored tabletop.
   const deskSurfaceY = useGltfFurniture ? 0.98 : 0.78;
-  // Metre-scale apartment_envelope.glb — Medium+ (hybrid/glb), not Kenney exterior.
+  // Metre-scale apartment_envelope.glb — shared by every preset when shipped, not a Kenney exterior.
   const useAuthoredShell =
     useGltfFurniture && isWalkableInteriorShellAllowed('volodkaBedroom');
   // FIX v4.48.15: usePhysicalGlass / nightWindowGlass удалены — transmission у
