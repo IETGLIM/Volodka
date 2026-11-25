@@ -79,8 +79,8 @@
 }
 
 .neon-border-amber {
-  border: 1px solid rgba(226, 168, 75, 0.3);
-  box-shadow: 0 0 10px rgba(226, 168, 75, 0.1), inset 0 0 10px rgba(226, 168, 75, 0.05);
+  border: 1px solid rgba(143, 182, 217, 0.3);
+  box-shadow: 0 0 10px rgba(143, 182, 217, 0.1), inset 0 0 10px rgba(143, 182, 217, 0.05);
 }
 
 .neon-border-rose {
