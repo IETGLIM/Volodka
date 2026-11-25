@@ -216,9 +216,9 @@ export function FirstReadingCelebrationView({
                   <span
                     className="text-[10px] font-mono tracking-widest uppercase px-2 py-0.5 rounded border"
                     style={{
-                      color: isFragment ? '#e2a84b' : '#46b96e',
+                      color: isFragment ? 'var(--cyber-amber)' : '#46b96e',
                       borderColor: isFragment
-                        ? 'rgba(226,168,75,0.35)'
+                        ? 'rgba(143,182,217,0.35)'
                         : 'rgba(70,185,110,0.35)',
                       background: isFragment
                         ? 'rgba(120,60,10,0.25)'
@@ -298,7 +298,7 @@ export function FirstReadingCelebrationView({
                   <div
                     className="mb-4 rounded-lg border px-4 py-3"
                     style={{
-                      borderColor: 'rgba(226,168,75,0.35)',
+                      borderColor: 'rgba(143,182,217,0.35)',
                       background: 'rgba(120,60,10,0.18)',
                     }}
                   >
