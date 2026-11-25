@@ -47,9 +47,9 @@ const CATEGORY_VISUAL: Record<CraftingCategory, { emoji: string; color: string; 
   },
   quest: {
     emoji: '📜',
-    color: '#e2a84b',
-    glowColor: 'rgba(226,168,75,0.25)',
-    bgGradient: 'linear-gradient(135deg, rgba(226,168,75,0.06) 0%, rgba(15,23,42,0.4) 60%)',
+    color: 'var(--cyber-amber)',
+    glowColor: 'rgba(143,182,217,0.25)',
+    bgGradient: 'linear-gradient(135deg, rgba(143,182,217,0.06) 0%, rgba(15,23,42,0.4) 60%)',
   },
 };
 
