@@ -321,6 +321,11 @@ Do not rely on heuristic emotion detection such as finding selected words and pu
 - no duplicate or stale text from shadowed node definitions.
 
 ### Playability tests
+
+**Current E2E limitation:** the Act I vertical-slice test checks that synthetic KeyW input moves the player, but the room-to-corridor hand-off is not yet a fully physical player interaction. The test bridge places the player at a known coordinate and directly calls interactTriggerZone('room_door'). The related physical-dialogue test uses the same kind of bridge call. This validates the trigger/scene transition path, but it does not yet prove that a first-time player can naturally approach the door, see the correct prompt, press the normal interaction key and transition without a developer bridge.
+
+This must become a separate acceptance test before the first slice can be called production-ready.
+
 - first-time player can understand what to do without using a developer bridge;
 - world interaction is performed through normal controls;
 - player can walk to the door, approach the NPC, trigger the interaction and regain control;
