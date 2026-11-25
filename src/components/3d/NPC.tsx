@@ -337,8 +337,8 @@ function NPCContactShadow() {
   );
 }
 
-/** NPC model renderer — procedural archetype (primary); GLB only when unique mesh on disk.
- *  Quaternius CC0 rigs on disk are not shown — same mannequin breaks narrative identity. */
+/** NPC model renderer — prefer the shipped, story-specific GLB on every preset.
+ *  Procedural archetypes are a loading/error fallback, not a quality-tier substitute. */
 function NPCModelWithErrorBoundary({
   definition,
   interactionState,
