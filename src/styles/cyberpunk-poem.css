@@ -319,14 +319,14 @@
   text-shadow: 0 0 10px rgba(157, 179, 200, 0.4);
 }
 
- .cp-theme-desperation,
+.cp-theme-desperation,
 .cp-theme-despair {
   color: #8d7fb5;
 }
- .cp-theme-desperation .cp-poem-title,
+.cp-theme-desperation .cp-poem-title,
 .cp-theme-despair .cp-poem-title {
   color: #8d7fb5;
-  text-shadow: 0 0 10px rgba(143, 182, 217, 0.4);
+  text-shadow: 0 0 10px rgba(141, 127, 181, 0.4);
 }
 
 .cp-theme-tech,
