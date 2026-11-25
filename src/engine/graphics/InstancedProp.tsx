@@ -8,11 +8,12 @@
  *   Before: 5 instances × 4 parts = 20 draw calls
  *   After:  4 InstancedMesh draw calls  = 80% reduction
  *
- * Quality gates:
- *   - low (procedural): returns null (callers already gate on this)
- *   - single instance (< minInstances): renders a single <primitive> clone
- *     to avoid InstancedMesh overhead for unique props
- *   - medium/ultra: full InstancedMesh batching
+ * Quality policy:
+ *   - All shipped presets may render the authored GLB asset.
+ *   - Per-scene visibility, distance culling and caller-selected LOD control cost.
+ *   - Single instance (< minInstances): render one <primitive> clone to avoid
+ *     InstancedMesh overhead for unique props.
+ *   - Multiple instances: batch matching geometry/material pairs into InstancedMesh.
  *
  * LOD: The caller provides the URL for the desired LOD variant.
  * All instances share the same variant (per-instance LOD not supported).
