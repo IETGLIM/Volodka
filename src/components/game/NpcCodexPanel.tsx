@@ -100,7 +100,7 @@ function getRelationLabel(value: number): { label: string; color: string } {
   if (value >= 60) return { label: 'Союзник', color: '#57a874' };
   if (value >= 20) return { label: 'Дружелюбный', color: '#9db3c8' };
   if (value >= -20) return { label: 'Нейтральный', color: '#a1a1aa' };
-  if (value >= -60) return { label: 'Холодный', color: '#e2a84b' };
+  if (value >= -60) return { label: 'Холодный', color: 'var(--cyber-amber)' };
   return { label: 'Враждебный', color: '#c65548' };
 }
 
@@ -108,7 +108,7 @@ function getRelationColor(value: number): string {
   if (value >= 60) return '#57a874';
   if (value >= 20) return '#9db3c8';
   if (value >= -20) return '#a1a1aa';
-  if (value >= -60) return '#e2a84b';
+  if (value >= -60) return 'var(--cyber-amber)';
   return '#c65548';
 }
 
