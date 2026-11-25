@@ -169,8 +169,8 @@ const QUEST_TYPE_CONFIG: Record<QuestType, {
   icon: typeof Star;
 }> = {
   main: {
-    color: '#e2a84b',
-    glow: 'rgba(226, 168, 75, 0.35)',
+    color: 'var(--cyber-amber)',
+    glow: 'rgba(143, 182, 217, 0.35)',
     label: t('hud.questCard.type.main', 'ОСНОВНОЙ'),
     icon: Swords,
   },
@@ -241,7 +241,7 @@ const RARITY_COLORS: Record<string, string> = {
   uncommon: '#9db3c8',
   rare: '#8d7fb5',
   epic: '#8d7fb5',
-  legendary: '#e2a84b',
+  legendary: 'var(--cyber-amber)',
 };
 
 /* ─── Utility Functions ─── */
@@ -803,18 +803,18 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           style={{
             background: quest.timeRemaining < 60000
               ? 'rgba(198,85,72,0.12)'
-              : 'rgba(226,168,75,0.08)',
+              : 'rgba(143,182,217,0.08)',
             border: `1px solid ${
               quest.timeRemaining < 60000
                 ? 'rgba(198,85,72,0.25)'
-                : 'rgba(226,168,75,0.2)'
+                : 'rgba(143,182,217,0.2)'
             }`,
           }}
         >
           <Clock
             size={14}
             style={{
-              color: quest.timeRemaining < 60000 ? '#c65548' : '#e2a84b',
+              color: quest.timeRemaining < 60000 ? '#c65548' : 'var(--cyber-amber)',
               ...(quest.timeRemaining < 60000 && !reducedMotion
                 ? { animation: 'pulse 1s infinite' }
                 : {}),
@@ -823,7 +823,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           <span
             className="text-xs font-mono tabular-nums flex-1"
             style={{
-              color: quest.timeRemaining < 60000 ? '#c65548' : '#e2a84b',
+              color: quest.timeRemaining < 60000 ? '#c65548' : 'var(--cyber-amber)',
             }}
           >
             {formatTimeRemaining(quest.timeRemaining)}
@@ -833,7 +833,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
               className="h-full rounded-full"
               style={{
                 width: `${(quest.timeRemaining / quest.timeLimit) * 100}%`,
-                backgroundColor: quest.timeRemaining < 60000 ? '#c65548' : '#e2a84b',
+                backgroundColor: quest.timeRemaining < 60000 ? '#c65548' : 'var(--cyber-amber)',
               }}
             />
           </div>
@@ -912,7 +912,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           }}
         >
           <div className="flex items-center gap-1.5 mb-2">
-            <Trophy size={12} style={{ color: '#e2a84b' }} />
+            <Trophy size={12} style={{ color: 'var(--cyber-amber)' }} />
             <span
               className="text-[10px] font-mono uppercase tracking-wider"
               style={{ color: 'rgba(180,160,100,0.8)' }}
@@ -941,7 +941,7 @@ export const QuestObjectiveCard = memo(function QuestObjectiveCard({
           type="button"
           className="flex items-center gap-1.5 text-[11px] font-mono px-2 py-1 rounded hover:bg-white/10 transition-colors"
           style={{
-            color: quest.isTracked ? '#e2a84b' : 'rgba(150,165,180,0.6)',
+            color: quest.isTracked ? 'var(--cyber-amber)' : 'rgba(150,165,180,0.6)',
           }}
           onClick={(e) => {
             e.stopPropagation();
