@@ -52,10 +52,10 @@ export function ChkForestZorgeVisual({
   const { preset, selectedPreset } = useGraphicsQuality();
   const coarsePointer = useIsMobileVisual();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
-  const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
+  const useAuthoredBackdrop = useGltfDressing;
   // Forest clearing GLB is backdrop_dressing only (far perimeter impostor). Prop dressing is
-  // sparse overlay (1 bench vs 5 log seats) — never sparsify the tree belt OR campfire
-  // seats/crate/guitar or the clearing reads empty on High/Ultra (same as river_pier).
+  // sparse overlay; authored identity is shared across tiers while distance and density
+  // budgets retain the procedural tree belt and campfire staging.
   const backdropSceneId: SceneId = sceneId === 'chk_campfire_night' ? 'chk_forest_zorge' : sceneId;
   const groundTexture = useCachedCanvasTexture('chk_forest_zorge:ground', createForestGroundTexture);
   const envProfile = useMemo(
