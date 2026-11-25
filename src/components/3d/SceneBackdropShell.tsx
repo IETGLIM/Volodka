@@ -24,7 +24,6 @@ export function SceneBackdropShell({ sceneId }: SceneBackdropShellProps) {
 
   if (
     !placement ||
-    preset.visualLite ||
     !allowsGlbAssetRendering(preset.environmentRenderMode)
   ) {
     return null;
