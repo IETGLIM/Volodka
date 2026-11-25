@@ -45,18 +45,30 @@ test.describe('Act I native player interaction', () => {
     const start = await e2eBridge.getPlayerPosition(page);
     const startDistance = distanceToDoor(start);
 
-    // Camera-relative movement can point either way depending on the saved
-    // orbit pose. Try the default backward key, then the opposite direction
-    // only if the first real input moved away from the door.
+    // The wake-up spawn can leave Volodka beside the bed (X ≈ 1.8), not
+    // centered in the room. Approach the doorway in depth and correct the
+    // lateral offset with native WASD input; do not teleport or fire triggers.
+    const lateralKey = start.x > 0.45 ? 'a' : start.x < -0.45 ? 'd' : null;
     await page.keyboard.down('s');
-    await page.waitForTimeout(450);
+    if (lateralKey) await page.keyboard.down(lateralKey);
+    await page.waitForTimeout(1_100);
+    if (lateralKey) await page.keyboard.up(lateralKey);
     await page.keyboard.up('s');
     await page.waitForTimeout(500);
 
     let approach = await e2eBridge.getPlayerPosition(page);
     if (distanceToDoor(approach) >= startDistance - 0.15) {
+      // Fallback for a camera orbit that faces the opposite depth direction.
       await page.keyboard.down('w');
-      await page.waitForTimeout(900);
+      if (lateralKey) {
+        const oppositeLateralKey = lateralKey === 'a' ? 'd' : 'a';
+        await page.keyboard.down(oppositeLateralKey);
+      }
+      await page.waitForTimeout(1_100);
+      if (lateralKey) {
+        const oppositeLateralKey = lateralKey === 'a' ? 'd' : 'a';
+        await page.keyboard.up(oppositeLateralKey);
+      }
       await page.keyboard.up('w');
       await page.waitForTimeout(500);
       approach = await e2eBridge.getPlayerPosition(page);
