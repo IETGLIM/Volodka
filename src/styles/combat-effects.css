@@ -45,8 +45,8 @@
 }
 
 @keyframes criticalGlow {
-  0%, 100% { text-shadow: 0 0 10px rgba(226,168,75,0.7), 0 0 20px rgba(226,168,75,0.4), 0 0 40px rgba(226,168,75,0.15), 0 2px 6px rgba(0,0,0,0.9); }
-  50%      { text-shadow: 0 0 18px rgba(226,168,75,1), 0 0 36px rgba(226,168,75,0.6), 0 0 60px rgba(226,168,75,0.3), 0 2px 6px rgba(0,0,0,0.9); }
+  0%, 100% { text-shadow: 0 0 10px rgba(143,182,217,0.7), 0 0 20px rgba(143,182,217,0.4), 0 0 40px rgba(143,182,217,0.15), 0 2px 6px rgba(0,0,0,0.9); }
+  50%      { text-shadow: 0 0 18px rgba(143,182,217,1), 0 0 36px rgba(143,182,217,0.6), 0 0 60px rgba(143,182,217,0.3), 0 2px 6px rgba(0,0,0,0.9); }
 }
 
 @keyframes healGlow {
@@ -85,7 +85,7 @@
 }
 
 .combat-dmg-number--critical {
-  color: #e2a84b;
+  color: var(--cyber-amber);
   font-size: 1.6em;
   animation: criticalFloat 1.85s cubic-bezier(0.22,1,0.36,1) both, criticalGlow 0.35s ease-in-out 3;
 }
@@ -115,8 +115,8 @@
 }
 
 .combat-dmg-number--burn {
-  color: #e2a84b;
-  text-shadow: 0 0 6px rgba(226,168,75,0.6), 0 2px 3px rgba(0,0,0,0.8);
+  color: #c65548;
+  text-shadow: 0 0 6px rgba(198,85,72,0.6), 0 2px 3px rgba(0,0,0,0.8);
 }
 
 .combat-dmg-number--freeze {
