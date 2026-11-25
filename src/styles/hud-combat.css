@@ -51,10 +51,10 @@
 
 @keyframes low-bar-pulse-amber {
   0%, 100% {
-    box-shadow: 0 0 4px rgba(226, 168, 75, 0.2), inset 0 0 2px rgba(226, 168, 75, 0.1);
+    box-shadow: 0 0 4px rgba(143, 182, 217, 0.2), inset 0 0 2px rgba(143, 182, 217, 0.1);
   }
   50% {
-    box-shadow: 0 0 12px rgba(226, 168, 75, 0.5), 0 0 24px rgba(226, 168, 75, 0.2), inset 0 0 6px rgba(226, 168, 75, 0.15);
+    box-shadow: 0 0 12px rgba(143, 182, 217, 0.5), 0 0 24px rgba(143, 182, 217, 0.2), inset 0 0 6px rgba(143, 182, 217, 0.15);
   }
 }
 
@@ -313,7 +313,7 @@
   top: 50%;
   height: 3px;
   margin-top: -1px;
-  background: linear-gradient(90deg, transparent, #c65548, #e2a84b, transparent);
+  background: linear-gradient(90deg, transparent, #c65548, var(--cyber-amber), transparent);
   box-shadow: 0 0 16px rgba(198, 85, 72, 0.8);
   animation: combat-intro-slash 0.55s ease-out 0.2s forwards;
   transform-origin: center;
