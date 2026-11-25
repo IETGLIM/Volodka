@@ -51,3 +51,7 @@ jobs:
 
       - name: Browser smoke tests
         run: npm run test:e2e:smoke
+
+      # First playable slice: start a new game, validate movement, reach the corridor door.
+      - name: First playable vertical slice
+        run: npm run test:e2e:vertical-slice
