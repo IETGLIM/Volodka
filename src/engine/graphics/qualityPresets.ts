@@ -120,8 +120,8 @@ export const QUALITY_PRESETS: Record<Exclude<QualityPresetId, 'auto'>, QualityPr
      * NPC/героя/пропсов кафе), meshopt-варианты исключены из манифеста и
      * prune-keep-set. */
     compression: 'draco',
-    npcRenderMode: 'glb',
-    environmentRenderMode: 'glb',
+    npcRenderMode: 'hybrid',
+    environmentRenderMode: 'hybrid',
     visualLite: false,
   },
 };
