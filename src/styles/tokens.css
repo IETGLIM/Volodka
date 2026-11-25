@@ -67,6 +67,18 @@ html { background: #000 !important; }
   --color-amber-800: #33495f;
   --color-amber-900: #223447;
   --color-amber-950: #142332;
+  /* Yellow UI highlights share the same cool, low-glare scale. */
+  --color-yellow-50: #f6f8fc;
+  --color-yellow-100: #edf2f8;
+  --color-yellow-200: #dce7f1;
+  --color-yellow-300: #c5d7e7;
+  --color-yellow-400: #a9c5dc;
+  --color-yellow-500: #8faecb;
+  --color-yellow-600: #708da9;
+  --color-yellow-700: #536e8a;
+  --color-yellow-800: #3b5068;
+  --color-yellow-900: #27384d;
+  --color-yellow-950: #182639;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
