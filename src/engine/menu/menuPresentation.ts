@@ -31,7 +31,7 @@ export type MenuSavePreview = {
 
 export function buildMenuItems(hasSave: boolean): MenuItemDef[] {
   /* v4.45.0 «Ночная тетрадь»: неоновый акцент на каждый пункт (emerald/cyan/
-     amber/magenta) убран — единственный герой-акцент теперь янтарная засечка
+     amber/magenta) убран — единственный герой-акцент теперь стальная засечка
      выбранного пункта (см. cinematic-menu-item в volodka-skin.css). */
   return [
     { id: 'continue', label: 'Продолжить', icon: '', disabled: !hasSave },
@@ -80,10 +80,10 @@ export function getAccentColors(accent?: string, isSelected?: boolean): MenuAcce
         text: isSelected ? 'text-amber-100' : 'text-amber-300/70',
         textHover: 'hover:text-amber-100',
         glow: isSelected
-          ? '0 0 15px rgba(226, 168, 75, 0.1), inset 0 0 10px rgba(226, 168, 75, 0.05)'
+          ? '0 0 15px rgba(143, 182, 217, 0.1), inset 0 0 10px rgba(143, 182, 217, 0.05)'
           : 'none',
-        glowHover: 'inset 0 0 20px rgba(226, 168, 75, 0.1), 0 0 15px rgba(226, 168, 75, 0.08)',
-        scanColor: 'rgba(226, 168, 75, 0.06)',
+        glowHover: 'inset 0 0 20px rgba(143, 182, 217, 0.1), 0 0 15px rgba(143, 182, 217, 0.08)',
+        scanColor: 'rgba(143, 182, 217, 0.06)',
       };
     case 'magenta':
       return {
@@ -121,7 +121,7 @@ export function getAccentBarColor(accent?: string): string {
     case 'emerald':
       return 'rgba(70, 185, 110, 0.8)';
     case 'amber':
-      return 'rgba(226, 168, 75, 0.8)';
+      return 'rgba(143, 182, 217, 0.8)';
     case 'magenta':
       return 'rgba(141, 127, 181, 0.8)';
     default:
