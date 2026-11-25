@@ -74,8 +74,8 @@ const FACTION_VISUALS: Record<FactionId, FactionVisual> = {
   },
   guild: {
     label: FACTION_LABELS_RU.guild,
-    color: '#e2a84b',
-    glow: '0 0 12px rgba(226,168,75,0.25)',
+    color: 'var(--cyber-amber)',
+    glow: '0 0 12px rgba(143,182,217,0.25)',
     icon: Scale,
     blurb: 'IT-гильдия «Кодекс». Контроль над инфраструктурой и тайной основания.',
   },
@@ -122,7 +122,7 @@ function getTierColor(value: number): string {
   if (value >= 51) return '#57a874';
   if (value >= 11) return '#9db3c8';
   if (value >= -9) return '#a1a1aa';
-  if (value >= -49) return '#e2a84b';
+  if (value >= -49) return 'var(--cyber-amber)';
   return '#c65548';
 }
 
