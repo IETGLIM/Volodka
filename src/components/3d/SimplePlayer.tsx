@@ -62,9 +62,7 @@ import {
   createIdleMovementScratch,
   syncMovementScratchFields,
 } from '@/engine/player/playerScratchSync';
-import { ProceduralPlayerModelAdaptive } from './ProceduralPlayerModel';
 import { CesiumPlayerModel } from './CesiumPlayerModel';
-import { useGraphicsQuality } from '@/engine/graphics/useGraphicsQuality';
 
 function lerpAngle(a: number, b: number, t: number): number {
   let diff = b - a;
@@ -90,9 +88,6 @@ export function SimplePlayer({
   const controls = usePlayerControls(onInteractPress, virtualControlsRef);
   const sceneId = useCurrentSceneId();
   const karma = usePlayerKarma();
-  const { preset } = useGraphicsQuality();
-  const useAuthoredHero =
-    !preset.visualLite && preset.id !== 'low';
 
   const groupRef = useRef<Group>(null);
   const velocityRef = useRef(new Vector3(0, 0, 0));
@@ -460,22 +455,15 @@ export function SimplePlayer({
       position={[initialSpawn[0], initialSpawn[1], initialSpawn[2]]}
       rotation={[0, 0, 0]}
     >
-      {/* High/medium: authored skinned Volodka GLB; low/lite keep procedural silhouette. */}
-      {useAuthoredHero ? (
-        <CesiumPlayerModel
-          modelScale={modelScale}
-          karmaGlow={karmaGlow}
-          currentAnimRef={currentAnimRef}
-          rotationRef={livePlayerRotationRef}
-        />
-      ) : (
-        <ProceduralPlayerModelAdaptive
-          modelScale={modelScale}
-          karmaGlow={karmaGlow}
-          currentAnimRef={currentAnimRef}
-          rotationRef={livePlayerRotationRef}
-        />
-      )}
+      {/* Keep the authored hero identity on every preset. CesiumPlayerModel
+          falls back to the procedural lite model only when the shipped GLB is
+          unavailable or fails to load. */}
+      <CesiumPlayerModel
+        modelScale={modelScale}
+        karmaGlow={karmaGlow}
+        currentAnimRef={currentAnimRef}
+        rotationRef={livePlayerRotationRef}
+      />
 
       <pointLight
         position={[0, 1.0, 0]}
