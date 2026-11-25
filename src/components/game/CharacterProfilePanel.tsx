@@ -44,11 +44,11 @@ const TOTAL_POEMS = POEMS.length;
    ══════════════════════════════════════════════════════════════ */
 
 const RADAR_STATS: Array<{ key: string; label: string; color: string }> = [
-  { key: 'writing', label: 'Поэзия', color: '#e2a84b' },
+  { key: 'writing', label: 'Поэзия', color: 'var(--cyber-amber)' },
   { key: 'coding', label: 'Взлом', color: '#9db3c8' },
   { key: 'empathy', label: 'Эмпатия', color: '#8d7fb5' },
   { key: 'persuasion', label: 'Улица', color: '#8d7fb5' },
-  { key: 'intuition', label: 'Храбрость', color: '#e2a84b' },
+  { key: 'intuition', label: 'Храбрость', color: 'var(--cyber-amber)' },
   { key: 'logic', label: 'Интеллект', color: '#9db3c8' },
 ];
 
@@ -275,7 +275,7 @@ function KarmaMeterWithDisposition({ karma, npcRelations }: { karma: number; npc
     ? '#9db3c8'
     : karma <= KARMA_LOW_THRESHOLD
       ? '#c65548'
-      : '#e2a84b';
+      : 'var(--cyber-amber)';
 
   // Group NPCs into factions based on ID prefixes
   const factionGroups = useMemo(() => {
@@ -284,7 +284,7 @@ function KarmaMeterWithDisposition({ karma, npcRelations }: { karma: number; npc
     const enemies = npcRelations.filter((r) => ['tolpa', 'dmitry'].some((e) => r.npcId.includes(e)));
     return [
       { name: 'Сеть', relations: network, color: '#9db3c8' },
-      { name: 'Нейтралы', relations: neutrals, color: '#e2a84b' },
+      { name: 'Нейтралы', relations: neutrals, color: 'var(--cyber-amber)' },
       { name: 'Толпа', relations: enemies, color: '#c65548' },
     ];
   }, [npcRelations]);
@@ -477,13 +477,13 @@ function karmaColor(karma: number): string {
 function karmaStroke(karma: number): string {
   if (karma >= KARMA_HIGH_THRESHOLD) return 'var(--cyber-cyan)';
   if (karma <= KARMA_LOW_THRESHOLD) return '#c65548';
-  return '#e2a84b';
+  return 'var(--cyber-amber)';
 }
 
 function karmaBg(karma: number): string {
   if (karma >= KARMA_HIGH_THRESHOLD) return 'rgb(var(--cyber-cyan-rgb) / 0.08)';
   if (karma <= KARMA_LOW_THRESHOLD) return 'rgba(198,85,72,0.08)';
-  return 'rgba(226,168,75,0.08)';
+  return 'rgba(143,182,217,0.08)';
 }
 
 function karmaLabel(karma: number): string {
@@ -589,11 +589,11 @@ const SLOT_CONFIG: Record<EquipmentSlot, { label: string; Icon: typeof HardHat }
 
 /* ── Skill display name mapping ── */
 const SKILL_DISPLAY: Record<string, { label: string; color: string }> = {
-  writing: { label: 'Поэзия', color: '#e2a84b' },      // amber-500
+  writing: { label: 'Поэзия', color: 'var(--cyber-amber)' },      // amber-500
   coding: { label: 'Взлом', color: 'var(--cyber-cyan)' },         // cyan-400
   empathy: { label: 'Эмпатия', color: '#8d7fb5' },      // pink-400
   persuasion: { label: 'Улица', color: '#8d7fb5' },     // violet-400
-  intuition: { label: 'Храбрость', color: '#e2a84b' },  // orange-400
+  intuition: { label: 'Храбрость', color: 'var(--cyber-amber)' },  // orange-400
   logic: { label: 'Интеллект', color: '#9db3c8' },      // blue-400
 };
 
@@ -839,8 +839,8 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                           value={stress}
                           color={isHighStress
                             ? 'linear-gradient(90deg, #9f1239, #c65548)'
-                            : 'linear-gradient(90deg, #b45309, #e2a84b)'}
-                          glowColor={isHighStress ? 'rgba(198,85,72,0.3)' : 'rgba(226,168,75,0.3)'}
+                            : 'linear-gradient(90deg, #33495f, var(--cyber-amber))'}
+                          glowColor={isHighStress ? 'rgba(198,85,72,0.3)' : 'rgba(143,182,217,0.3)'}
                         />
                         {isHighStress && (
                           <span className="text-[9px] text-rose-400/70 font-mono mt-0.5 block">
@@ -912,8 +912,8 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         <div
                           className="mt-2 flex items-center gap-1.5 px-2 py-1 rounded border"
                           style={{
-                            borderColor: 'rgba(226,168,75,0.3)',
-                            background: 'rgba(226,168,75,0.08)' }}
+                            borderColor: 'rgba(143,182,217,0.3)',
+                            background: 'rgba(143,182,217,0.08)' }}
                         >
                           <Sparkles className="size-3 text-amber-400" />
                           <span className="text-[10px] text-amber-300 font-mono">
@@ -974,7 +974,7 @@ export function CharacterProfilePanel({ open, onClose }: { open: boolean; onClos
                         <Brain className="size-3 text-amber-500/40" />
                         <span className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Черты</span>
                         {progression.perkPoints > 0 && (
-                          <span className="ml-auto text-[9px] text-amber-400 font-mono" style={{ textShadow: '0 0 6px rgba(226,168,75,0.3)' }}>
+                          <span className="ml-auto text-[9px] text-amber-400 font-mono" style={{ textShadow: '0 0 6px rgba(143,182,217,0.3)' }}>
                             +{progression.perkPoints} очков
                           </span>
                         )}
