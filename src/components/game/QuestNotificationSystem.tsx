@@ -57,10 +57,10 @@ interface QuestNotifStyle {
 const QUEST_NOTIF_STYLES: Record<QuestNotifType, QuestNotifStyle> = {
   available: {
     icon: '⚑',
-    borderColor: '#e2a84b',
-    glowColor: 'rgba(226, 168, 75, 0.4)',
-    textColor: '#e2a84b',
-    iconBg: 'rgba(226, 168, 75, 0.15)',
+    borderColor: 'var(--cyber-amber)',
+    glowColor: 'rgba(143, 182, 217, 0.4)',
+    textColor: 'var(--cyber-amber)',
+    iconBg: 'rgba(143, 182, 217, 0.15)',
     label: 'Новый квест доступен!',
   },
   started: {
@@ -81,10 +81,10 @@ const QUEST_NOTIF_STYLES: Record<QuestNotifType, QuestNotifStyle> = {
   },
   complete: {
     icon: '★',
-    borderColor: '#e2a84b',
-    glowColor: 'rgba(226, 168, 75, 0.4)',
-    textColor: '#e2a84b',
-    iconBg: 'rgba(226, 168, 75, 0.15)',
+    borderColor: 'var(--cyber-amber)',
+    glowColor: 'rgba(143, 182, 217, 0.4)',
+    textColor: 'var(--cyber-amber)',
+    iconBg: 'rgba(143, 182, 217, 0.15)',
     label: 'Квест выполнен!',
   },
   failed: {
@@ -547,7 +547,7 @@ export function QuestNotificationSystem() {
           rewards: formatQuestCompletionRewards(def),
         })
         // Celebration flash — brief gold vignette to mark the achievement
-        eventBus.emit('fx:flash', { color: 'rgba(226,168,75,0.12)', opacity: 1, duration: 600 });
+        eventBus.emit('fx:flash', { color: 'rgba(143,182,217,0.12)', opacity: 1, duration: 600 });
       }
 
       // Quest failed toast — covered by quest:failed event from store emit
