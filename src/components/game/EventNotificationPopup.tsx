@@ -56,8 +56,8 @@ const ACCENT_MAP: Record<NotificationType, {
     bg: 'var(--hud-filmic-plate-strong)',
   },
   achievement: {
-    primary: '#e2a84b',     // amber-400
-    border: 'rgba(226, 168, 75, 0.35)',
+    primary: 'var(--cyber-amber)',     // amber-400
+    border: 'rgba(143, 182, 217, 0.35)',
     bg: 'rgba(20, 16, 8, 0.82)',
   },
   quest: {
