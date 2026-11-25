@@ -733,7 +733,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                 className="relative px-3 py-2 font-serif text-[13px] uppercase tracking-[0.18em] transition-colors rounded-t-md"
                 style={{
                   color: isActive ? 'rgba(240, 214, 158, 0.9)' : 'rgba(168, 162, 158, 0.55)',
-                  backgroundColor: isActive ? 'rgba(226, 168, 75, 0.07)' : 'transparent',
+                  backgroundColor: isActive ? 'rgba(143, 182, 217, 0.07)' : 'transparent',
                 }}
               >
                 <span>{tab.label}</span>
@@ -742,8 +742,8 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
                     className="absolute bottom-0 left-0 right-0 h-0.5"
                     style={{
                       background:
-                        'linear-gradient(90deg, transparent, rgba(226, 168, 75, 0.6), transparent)',
-                      boxShadow: '0 0 8px rgba(226, 168, 75, 0.3)',
+                        'linear-gradient(90deg, transparent, rgba(143, 182, 217, 0.6), transparent)',
+                      boxShadow: '0 0 8px rgba(143, 182, 217, 0.3)',
                     }}
                     layoutId="settings-tab-indicator"
                     transition={{
@@ -772,7 +772,7 @@ function SettingsPanelContent({ onClose }: { onClose: () => void }) {
             onClick={resetSettings}
             whileHover={{ scale: 1.03 }}
             whileTap={{ scale: 0.97 }}
-            className="rounded-md border px-3 py-1.5 font-serif text-[11px] uppercase tracking-[0.2em] text-[rgba(240,214,158,0.85)] bg-[rgba(226,168,75,0.06)] border-[rgba(226,168,75,0.25)] transition-colors hover:border-[rgba(226,168,75,0.5)] hover:bg-[rgba(226,168,75,0.12)] hover:text-[rgba(240,214,158,1)]"
+            className="rounded-md border px-3 py-1.5 font-serif text-[11px] uppercase tracking-[0.2em] text-[rgba(215,234,255,0.85)] bg-[rgba(143,182,217,0.06)] border-[rgba(143,182,217,0.25)] transition-colors hover:border-[rgba(143,182,217,0.5)] hover:bg-[rgba(143,182,217,0.12)] hover:text-[rgba(215,234,255,1)]"
           >
             Сбросить настройки
           </motion.button>
