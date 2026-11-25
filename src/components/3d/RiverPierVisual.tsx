@@ -56,10 +56,10 @@ export function RiverPierVisual({ sceneId = 'river_pier' }: RiverPierVisualProps
   const coarsePointer = useIsMobileVisual();
   const reducedMotion = useEffectiveReducedMotion();
   const useGltfDressing = allowsGlbAssetRendering(preset.environmentRenderMode);
-  const useAuthoredBackdrop = !preset.visualLite && useGltfDressing;
+  const useAuthoredBackdrop = useGltfDressing;
   // Pier GLB is backdrop_dressing only (SceneBackdropShell far over water). Prop dressing is
   // sparse overlay — never strip railing/pilings/boat/reeds OR barrel/crate seats/wine.
-  // Guitar is the one explicit hand-off: procedural fallback on Low, authored prop otherwise.
+  // The authored guitar is shared across presets; quality gates only effects and detail budgets.
   const usePhysicalWater = allowsHeavyGfxFeature(selectedPreset, 'meshPhysicalWet', {
     coarsePointer,
   });
