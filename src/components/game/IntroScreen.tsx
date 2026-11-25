@@ -65,14 +65,14 @@ const SkipButton = memo(function SkipButton({
       <motion.button
         type="button"
         onClick={onSkip}
-        animate={{ borderColor: ['rgba(157,179,200,0.28)', 'rgba(226,168,75,0.55)', 'rgba(157,179,200,0.28)'] }}
+        animate={{ borderColor: ['rgba(157,179,200,0.28)', 'rgba(143,182,217,0.55)', 'rgba(157,179,200,0.28)'] }}
         transition={{ borderColor: { duration: 2.6, repeat: Infinity, ease: 'easeInOut' } }}
         className="flex items-center gap-3 px-5 py-3 font-mono text-xs sm:text-sm tracking-[0.2em] uppercase
                    text-[#eae4d6]/90 hover:text-white border border-[#9db3c8]/30
                    bg-[#0b0e15]/80 backdrop-blur-md rounded-sm
                    shadow-[0_10px_30px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(234,228,214,0.06)]
                    transition-colors duration-200
-                   touch-manipulation select-none active:bg-[#e2a84b]/10 active:scale-95"
+                   touch-manipulation select-none active:bg-[var(--cyber-amber)]/10 active:scale-95"
         style={{ willChange: 'opacity, transform' }}
         aria-label="Пропустить вступление"
       >
@@ -84,7 +84,7 @@ const SkipButton = memo(function SkipButton({
             cy="18"
             r={RING_R}
             fill="none"
-            stroke="rgba(226,168,75,0.85)"
+            stroke="rgba(143,182,217,0.85)"
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeDasharray={RING_C.toFixed(2)}
@@ -241,7 +241,7 @@ export function IntroScreen({ poemId = INTRO_POEM_ID }: IntroScreenProps) {
                     style={{
                       fontFamily: '"Georgia", "Times New Roman", serif',
                       color: 'rgba(234, 228, 214, 0.95)',
-                      textShadow: '0 0 18px rgba(226, 168, 75, 0.22)',
+                      textShadow: '0 0 18px rgba(143, 182, 217, 0.22)',
                     }}
                   >
                     {introPoem.title}
@@ -250,7 +250,7 @@ export function IntroScreen({ poemId = INTRO_POEM_ID }: IntroScreenProps) {
                     className="text-[10px] sm:text-xs tracking-[0.22em] uppercase"
                     style={{
                       fontFamily: '"Courier New", "Consolas", monospace',
-                      color: 'rgba(226, 168, 75, 0.62)',
+                      color: 'rgba(143, 182, 217, 0.62)',
                     }}
                   >
                     — {introPoem.author}
@@ -259,7 +259,7 @@ export function IntroScreen({ poemId = INTRO_POEM_ID }: IntroScreenProps) {
                     className="mt-3 mx-auto w-24 h-px"
                     style={{
                       background:
-                        'linear-gradient(90deg, transparent, rgba(226, 168, 75, 0.45), transparent)',
+                        'linear-gradient(90deg, transparent, rgba(143, 182, 217, 0.45), transparent)',
                     }}
                   />
                 </motion.div>
