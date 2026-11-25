@@ -18,7 +18,7 @@ import {
  * a story node through the test API after gameplay begins.
  */
 test.describe('Act I native player interaction', () => {
-  test('movement + approach room door + press E → corridor story beat', async ({ page }) => {
+  test('movement + approach room door + press E → Solnysh intro cutscene', async ({ page }) => {
     test.setTimeout(180_000);
 
     await waitForMenuReady(page);
@@ -76,8 +76,8 @@ test.describe('Act I native player interaction', () => {
     await page.keyboard.press('e');
 
     await expect(
-      page.getByText(/Ты выходишь в коридор коммуналки/i).first(),
-      'Pressing E on the nearby door should open the authored corridor beat',
+      page.getByText('Алина · Солныш').first(),
+      'Pressing E on the nearby door should launch the authored Solnysh introduction cutscene',
     ).toBeVisible({ timeout: 30_000 });
   });
 });
