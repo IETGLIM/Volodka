@@ -26,11 +26,11 @@
 /* Epic rarity — amber glow pulse with sparkle */
 @keyframes rarity-epic-pulse {
   0%, 100% {
-    box-shadow: 0 0 8px rgba(226, 168, 75, 0.25), 0 0 16px rgba(226, 168, 75, 0.12);
+    box-shadow: 0 0 8px rgba(143, 182, 217, 0.25), 0 0 16px rgba(143, 182, 217, 0.12);
     filter: brightness(1);
   }
   50% {
-    box-shadow: 0 0 16px rgba(226, 168, 75, 0.45), 0 0 32px rgba(226, 168, 75, 0.22), 0 0 4px rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 16px rgba(143, 182, 217, 0.45), 0 0 32px rgba(143, 182, 217, 0.22), 0 0 4px rgba(255, 255, 255, 0.3);
     filter: brightness(1.05);
   }
 }
