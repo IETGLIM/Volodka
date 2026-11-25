@@ -263,7 +263,7 @@ function PerfTab({
   frameProfiler: FrameProfilerSnapshot | null;
   memoryInfo: { usedJSHeapSize: number; totalJSHeapSize: number; jsHeapSizeLimit: number } | null;
 }) {
-  const fpsColor = fps > 50 ? '#46b96e' : fps > 30 ? '#e2a84b' : '#c65548';
+  const fpsColor = fps > 50 ? '#46b96e' : fps > 30 ? 'var(--cyber-amber)' : '#c65548';
   const budgetMs = 1000 / 60;
   const runtimeBudget = getRuntimeBudgetSnapshot();
   const loadTimeline = getLoadingTimelineSnapshot();
@@ -288,7 +288,7 @@ function PerfTab({
               loadTimeline.firstScenePlayableMs > PERFORMANCE_BUDGETS.firstScenePlayableMs.hardMax
                 ? '#c65548'
                 : loadTimeline.firstScenePlayableMs > PERFORMANCE_BUDGETS.firstScenePlayableMs.target
-                  ? '#e2a84b'
+                  ? 'var(--cyber-amber)'
                   : '#46b96e'
             }
           />
@@ -297,7 +297,7 @@ function PerfTab({
           <Row
             label={`Draw calls (${sceneId})`}
             value={`${frameProfiler.drawCalls} / ${drawBudget}`}
-            valueColor={frameProfiler.drawCalls > drawBudget ? '#c65548' : frameProfiler.drawCalls > drawBudget * 0.85 ? '#e2a84b' : '#888'}
+            valueColor={frameProfiler.drawCalls > drawBudget ? '#c65548' : frameProfiler.drawCalls > drawBudget * 0.85 ? 'var(--cyber-amber)' : '#888'}
           />
         )}
         {runtimeBudget && runtimeBudget.violations.length > 0 && (
@@ -347,7 +347,7 @@ function PerfTab({
             {(['interaction', 'player', 'npc', 'camera', 'weather', 'postfx', 'misc'] as const).map((id) => {
               const sys = frameProfiler.systems[id];
               const pct = sys.budgetPct;
-              const barColor = pct > 40 ? '#c65548' : pct > 20 ? '#e2a84b' : 'var(--cyber-cyan)';
+              const barColor = pct > 40 ? '#c65548' : pct > 20 ? 'var(--cyber-amber)' : 'var(--cyber-cyan)';
               return (
                 <div key={id} style={{ marginBottom: 4 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10 }}>
@@ -401,7 +401,7 @@ function PerfTab({
                 const budget = PERFORMANCE_BUDGETS.gpuMemoryEstimateMb;
                 const pct = Math.min(100, (totalMb / budget.hardMax) * 100);
                 const barColor =
-                  totalMb > budget.hardMax ? '#c65548' : totalMb > budget.target ? '#e2a84b' : 'var(--cyber-cyan)';
+                  totalMb > budget.hardMax ? '#c65548' : totalMb > budget.target ? 'var(--cyber-amber)' : 'var(--cyber-cyan)';
                 const driftMb = gpu.driftBytes / (1024 * 1024);
                 return (
                   <>
@@ -417,7 +417,7 @@ function PerfTab({
                       <Row
                         label="Drift vs baseline"
                         value={`+${driftMb.toFixed(1)} MB`}
-                        valueColor={gpu.driftSeverity === 'fail' ? '#c65548' : gpu.driftSeverity === 'warn' ? '#e2a84b' : '#888'}
+                        valueColor={gpu.driftSeverity === 'fail' ? '#c65548' : gpu.driftSeverity === 'warn' ? 'var(--cyber-amber)' : '#888'}
                       />
                     )}
                     <div style={{ marginTop: 4 }}>
@@ -625,7 +625,7 @@ function StateTab() {
       <div style={{ color: '#555', fontSize: 9, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 6, marginTop: 10 }}>
         Progress
       </div>
-      <Row label="Active Quests" value={activeQuests.length} valueColor="#e2a84b" />
+      <Row label="Active Quests" value={activeQuests.length} valueColor="var(--cyber-amber)" />
       <Row label="Completed Quests" value={completedQuests.length} />
       <Row label="Collected Poems" value={collectedPoems.length} valueColor="#f8f" />
       <Row label="Inventory Items" value={inventory.length} />
@@ -858,9 +858,9 @@ function CheatsTab() {
               padding: '2px 6px',
               fontSize: 10,
               borderRadius: 3,
-              border: '1px solid rgba(226,168,75,0.2)',
-              background: 'rgba(226,168,75,0.05)',
-              color: '#e2a84b',
+              border: '1px solid rgba(143,182,217,0.2)',
+              background: 'rgba(143,182,217,0.05)',
+              color: 'var(--cyber-amber)',
               cursor: 'pointer',
               marginRight: 3,
             }}
@@ -903,9 +903,9 @@ function CheatsTab() {
           padding: '4px 8px',
           fontSize: 10,
           borderRadius: 4,
-          border: '1px solid rgba(226,168,75,0.2)',
-          background: 'rgba(226,168,75,0.05)',
-          color: '#e2a84b',
+          border: '1px solid rgba(143,182,217,0.2)',
+          background: 'rgba(143,182,217,0.05)',
+          color: 'var(--cyber-amber)',
           cursor: 'pointer',
           width: '100%',
         }}
