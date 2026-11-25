@@ -106,10 +106,10 @@ const SYSTEM_ACCENT: Record<SystemAlertKind, { primary: string; border: string; 
     glow: 'rgba(198, 85, 72, 0.12)',
   },
   load_recovered: {
-    primary: '#e2a84b',
-    border: 'rgba(226, 168, 75, 0.35)',
+    primary: 'var(--cyber-amber)',
+    border: 'rgba(143, 182, 217, 0.35)',
     bg: 'rgba(20, 16, 8, 0.88)',
-    glow: 'rgba(226, 168, 75, 0.12)',
+    glow: 'rgba(143, 182, 217, 0.12)',
   },
 };
 
