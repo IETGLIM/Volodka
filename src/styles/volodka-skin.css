@@ -12,9 +12,9 @@
 :root {
   --hud-filmic-ink: rgba(232, 238, 245, 0.92);
   --hud-filmic-ink-muted: rgba(165, 180, 197, 0.78);
-  --hud-filmic-ink-dim: rgba(130, 128, 118, 0.62);
+  --hud-filmic-ink-dim: rgba(129, 146, 165, 0.72);
   --hud-filmic-ink-meta: rgba(165, 180, 197, 0.85);
-  --hud-filmic-ink-hero: rgba(248, 244, 235, 0.96);
+  --hud-filmic-ink-hero: rgba(232, 238, 245, 0.96);
   --hud-filmic-rule: rgba(157, 179, 200, 0.34);
   --hud-filmic-rule-soft: rgba(157, 179, 200, 0.18);
   --hud-filmic-plate: rgba(11, 14, 21, 0.66);
