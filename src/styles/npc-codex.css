@@ -176,9 +176,9 @@
   background: rgba(198, 85, 72, 0.08);
 }
 .npc-codex-faction-badge--chk_tolpa {
-  color: #e2a84b;
-  border-color: rgba(226, 168, 75, 0.3);
-  background: rgba(226, 168, 75, 0.08);
+  color: var(--cyber-amber);
+  border-color: rgba(143, 182, 217, 0.3);
+  background: rgba(143, 182, 217, 0.08);
 }
 
 /* ── Custom scrollbar for NPC codex ── */
