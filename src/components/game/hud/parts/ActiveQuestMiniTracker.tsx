@@ -60,8 +60,6 @@ export function ActiveQuestMiniTracker() {
   const currentSceneId = useCurrentSceneId();
   const [expanded, setExpanded] = useState(false);
   const [pinnedQuestId, setPinnedQuestId] = useState<string | null>(null);
-  const [cycleIndex, setCycleIndex] = useState(0);
-  const cycleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevObjectiveKeyRef = useRef<string | null>(null);
   const [objectiveFlash, setObjectiveFlash] = useState(false);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
