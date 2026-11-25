@@ -23,6 +23,7 @@ import {
 // useTutorialActive removed — guidance is now shown during tutorial too
 import { QUEST_DEFINITIONS } from '@/data/quests';
 import { GOLDEN_PATH_QUEST_SPINE } from '@/data/goldenPath';
+import { resolvePrimaryTrackedQuest } from './hud/parts/primaryQuestSelection';
 import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import {
   EXPLORATION_HUD_LAYOUT,
@@ -91,17 +92,11 @@ export function StoryGuidanceHUD() {
 
   const currentObjective = useMemo(() => {
     const activeQuests = quests.filter((q) => q.status === 'active');
-    // Priority 1: active golden-path quests (main story progression).
-    // Without this priority, optional side quests like morning_sync (activated
-    // automatically by CinematicTimelineRunner) would steal the HUD objective
-    // from the actual golden-path quest the player should be pursuing.
-    const goldenPathActive = activeQuests.find((aq) =>
-      GOLDEN_PATH_QUEST_SPINE.includes(aq.questId),
-    );
-    const questIter = goldenPathActive
-      ? [goldenPathActive]
-      : activeQuests;
-    for (const aq of questIter) {
+    // Use the same stable selection policy as the touch HUD: main-story
+    // progression first, then the first active quest when no golden-path
+    // quest is currently active.
+    const primaryActiveQuest = resolvePrimaryTrackedQuest(activeQuests, null);
+    for (const aq of primaryActiveQuest ? [primaryActiveQuest] : []) {
       const obj = getNextTrackedObjective(aq.questId);
       if (obj) {
         const questDef = QUEST_DEFINITIONS.find((d) => d.id === aq.questId);

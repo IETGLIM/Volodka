@@ -1,7 +1,7 @@
 /* ─── Volodka RPG – Active Quest Mini-Tracker (HUD persistent strip) ───
    Small, unobtrusive tracker on the HUD that shows the next objective
-   of the currently focused active quest. Auto-cycles every 10 seconds
-   through active quests. Player can pin a specific quest.
+   of the primary active quest. Main-story progress remains stable; the
+   player can explicitly pin a side quest from the journal or this strip.
 */
 
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
@@ -18,14 +18,13 @@ import { UI_LAYERS } from '@/shared/constants/uiLayers';
 import type { QuestType } from '@/shared/types/game';
 import { focusQuestOnMap } from './focusQuestOnMap';
 import { buildQuestJournalContextualHint } from '@/hooks/questJournalHint';
+import { resolvePrimaryTrackedQuest } from './primaryQuestSelection';
 import { uiTextScaledPx } from '@/engine/accessibility/uiTextScaleCss';
 import { t } from '@/i18n';
 
 /* i18n (этап 115): с волны 4 составные строки трекера — шаблоны каталога
  * с плейсхолдерами {name} и параметрами t(key, fallback, params); ключи
  * литеральные, фолбэки байт-в-байт повторяют прежние литералы — вывод не меняется. */
-
-const CYCLE_INTERVAL_MS = 10_000;
 
 const QUEST_TYPE_ICON: Record<QuestType, string> = {
   main: '◆',
@@ -61,8 +60,6 @@ export function ActiveQuestMiniTracker() {
   const currentSceneId = useCurrentSceneId();
   const [expanded, setExpanded] = useState(false);
   const [pinnedQuestId, setPinnedQuestId] = useState<string | null>(null);
-  const [cycleIndex, setCycleIndex] = useState(0);
-  const cycleTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const prevObjectiveKeyRef = useRef<string | null>(null);
   const [objectiveFlash, setObjectiveFlash] = useState(false);
   const flashTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -72,54 +69,18 @@ export function ActiveQuestMiniTracker() {
     [quests],
   );
 
-  /* ── Determine which quest to display ── */
-  const displayQuest = useMemo(() => {
-    if (pinnedQuestId) {
-      const pinned = activeQuests.find((q) => q.questId === pinnedQuestId);
-      if (pinned) return pinned;
-      // Pinned quest no longer active, unpin
+  /* ── One stable primary quest: player pin > golden path > first active ── */
+  const displayQuest = useMemo(
+    () => resolvePrimaryTrackedQuest(activeQuests, pinnedQuestId),
+    [activeQuests, pinnedQuestId],
+  );
+
+  /* Clear stale pins after a quest is completed, failed or abandoned. */
+  useEffect(() => {
+    if (pinnedQuestId && !activeQuests.some((quest) => quest.questId === pinnedQuestId)) {
       setPinnedQuestId(null);
     }
-    if (activeQuests.length === 0) return null;
-    const idx = cycleIndex % activeQuests.length;
-    return activeQuests[idx];
-  }, [pinnedQuestId, activeQuests, cycleIndex]);
-
-  /* ── Auto-cycle through active quests ── */
-  useEffect(() => {
-    if (pinnedQuestId || activeQuests.length <= 1) {
-      // No cycling when pinned or only 1 quest
-      if (cycleTimerRef.current) {
-        clearInterval(cycleTimerRef.current);
-        cycleTimerRef.current = null;
-      }
-      return;
-    }
-
-    cycleTimerRef.current = setInterval(() => {
-      setCycleIndex((prev) => prev + 1);
-    }, CYCLE_INTERVAL_MS);
-
-    return () => {
-      if (cycleTimerRef.current) {
-        clearInterval(cycleTimerRef.current);
-        cycleTimerRef.current = null;
-      }
-    };
-  }, [pinnedQuestId, activeQuests.length]);
-
-  /* ── Keep cycle index in bounds ── */
-  useEffect(() => {
-    if (activeQuests.length > 0 && cycleIndex >= activeQuests.length) {
-      setCycleIndex(0);
-    }
-  }, [activeQuests.length, cycleIndex]);
-
-  /* ── Reset when quests change significantly ── */
-  const activeQuestIdKey = activeQuests.map((q) => q.questId).join(',');
-  useEffect(() => {
-    setCycleIndex(0);
-  }, [activeQuestIdKey]);
+  }, [activeQuests, pinnedQuestId]);
 
   /* ── Listen for quest selection events from other UI ── */
   useEffect(() => {
@@ -422,11 +383,7 @@ export function ActiveQuestMiniTracker() {
                     <MapIcon className="size-3" />
                     {t('hud.questTracker.map', 'Карта')}
                   </button>
-                  {activeQuests.length > 1 && (
-                    <span className="hud-filmic-kicker ml-auto" style={{ letterSpacing: '0.08em', fontSize: uiTextScaledPx(8) }}>
-                      {activeQuests.indexOf(displayQuest) + 1}/{activeQuests.length}
-                    </span>
-                  )}
+
                 </div>
               </div>
             </motion.div>
