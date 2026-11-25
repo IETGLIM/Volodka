@@ -27,12 +27,12 @@
 }
 
 .codex-cat-history.codex-cat-active {
-  color: #e2a84b;
-  background: rgba(226, 168, 75, 0.08);
-  border-color: rgba(226, 168, 75, 0.25);
+  color: var(--cyber-amber);
+  background: rgba(143, 182, 217, 0.08);
+  border-color: rgba(143, 182, 217, 0.25);
 }
-.codex-cat-history::after { background: #e2a84b; }
-.codex-cat-history.codex-cat-active::after { box-shadow: 0 0 8px rgba(226,168,75,0.4); }
+.codex-cat-history::after { background: var(--cyber-amber); }
+.codex-cat-history.codex-cat-active::after { box-shadow: 0 0 8px rgba(143,182,217,0.4); }
 
 .codex-cat-factions.codex-cat-active {
   color: #c65548;
@@ -99,16 +99,16 @@
   );
 }
 .codex-entry-card.codex-entry-selected {
-  border-color: rgba(226, 168, 75, 0.35) !important;
-  background: rgba(226, 168, 75, 0.05) !important;
+  border-color: rgba(143, 182, 217, 0.35) !important;
+  background: rgba(143, 182, 217, 0.05) !important;
 }
 .codex-entry-card.codex-entry-selected::before {
   opacity: 1;
-  background: linear-gradient(180deg, #e2a84b, #e2a84b);
+  background: linear-gradient(180deg, var(--cyber-amber), var(--cyber-amber));
 }
 
 /* Category-specific entry left borders */
-.codex-entry-cat-history::before { background: #e2a84b; }
+.codex-entry-cat-history::before { background: var(--cyber-amber); }
 .codex-entry-cat-factions::before { background: #c65548; }
 .codex-entry-cat-technology::before { background: #9db3c8; }
 .codex-entry-cat-culture::before { background: #8d7fb5; }
@@ -128,7 +128,7 @@
   opacity: 0.04;
 }
 .codex-detail-atmosphere-history {
-  background: radial-gradient(ellipse at 30% 0%, #e2a84b, transparent 70%);
+  background: radial-gradient(ellipse at 30% 0%, var(--cyber-amber), transparent 70%);
 }
 .codex-detail-atmosphere-factions {
   background: radial-gradient(ellipse at 30% 0%, #c65548, transparent 70%);
@@ -282,12 +282,12 @@
   box-shadow: 0 0 12px rgba(157, 179, 200, 0.1), inset 0 0 8px rgba(157, 179, 200, 0.03);
 }
 .equip-slot-equipped {
-  border-color: rgba(226, 168, 75, 0.3);
-  background: rgba(226, 168, 75, 0.04);
+  border-color: rgba(143, 182, 217, 0.3);
+  background: rgba(143, 182, 217, 0.04);
 }
 .equip-slot-equipped:hover {
-  border-color: rgba(226, 168, 75, 0.5);
-  box-shadow: 0 0 12px rgba(226, 168, 75, 0.15), inset 0 0 8px rgba(226, 168, 75, 0.05);
+  border-color: rgba(143, 182, 217, 0.5);
+  box-shadow: 0 0 12px rgba(143, 182, 217, 0.15), inset 0 0 8px rgba(143, 182, 217, 0.05);
 }
 .equip-slot-label {
   font-size: 7px;
@@ -297,7 +297,7 @@
   color: rgba(148, 163, 184, 0.4);
 }
 .equip-slot-equipped .equip-slot-label {
-  color: rgba(226, 168, 75, 0.5);
+  color: rgba(143, 182, 217, 0.5);
 }
 .equip-slot-item {
   font-size: 9px;
@@ -388,7 +388,7 @@
 .karma-meter-track {
   height: 6px;
   border-radius: 3px;
-  background: linear-gradient(90deg, #c65548, #e2a84b, #9db3c8);
+  background: linear-gradient(90deg, #c65548, var(--cyber-amber), #9db3c8);
   position: relative;
 }
 .karma-meter-thumb {
@@ -449,10 +449,10 @@
   z-index: 0;
   background:
     radial-gradient(1px 1px at 10% 20%, rgba(157, 179, 200, 0.15), transparent),
-    radial-gradient(1px 1px at 30% 70%, rgba(226, 168, 75, 0.1), transparent),
+    radial-gradient(1px 1px at 30% 70%, rgba(143, 182, 217, 0.1), transparent),
     radial-gradient(1px 1px at 50% 40%, rgba(167, 139, 250, 0.08), transparent),
     radial-gradient(1px 1px at 70% 80%, rgba(157, 179, 200, 0.12), transparent),
-    radial-gradient(1px 1px at 90% 30%, rgba(226, 168, 75, 0.1), transparent),
+    radial-gradient(1px 1px at 90% 30%, rgba(143, 182, 217, 0.1), transparent),
     radial-gradient(1px 1px at 20% 90%, rgba(70, 185, 110, 0.08), transparent),
     radial-gradient(1px 1px at 80% 10%, rgba(198, 85, 72, 0.08), transparent),
     radial-gradient(1px 1px at 60% 60%, rgba(157, 179, 200, 0.1), transparent);
@@ -494,9 +494,9 @@
   --poem-text: #9db3c8;
 }
 .poem-mood-hope {
-  --poem-accent: rgba(226, 168, 75, 0.3);
-  --poem-glow: rgba(226, 168, 75, 0.1);
-  --poem-text: #e2a84b;
+  --poem-accent: rgba(143, 182, 217, 0.3);
+  --poem-glow: rgba(143, 182, 217, 0.1);
+  --poem-text: var(--cyber-amber);
 }
 .poem-mood-rage {
   --poem-accent: rgba(198, 85, 72, 0.3);
