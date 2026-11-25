@@ -58,7 +58,7 @@ function getSceneHint(sceneId: string): string {
 /* ─── Category color map ─── */
 
 const CATEGORY_COLORS: Record<string, string> = {
-  history: '#e2a84b',
+  history: 'var(--cyber-amber)',
   factions: '#c65548',
   technology: '#9db3c8',
   culture: '#8d7fb5',
@@ -592,7 +592,7 @@ export function CodexPanel({ open, onClose }: CodexPanelProps) {
               animate={{ width: `${totalCount > 0 ? (discoveredCount / totalCount) * 100 : 0}%` }}
               transition={{ duration: 0.5, ease: 'easeOut' }}
               style={{
-                boxShadow: '0 0 6px rgba(226,168,75,0.3)',
+                boxShadow: '0 0 6px rgba(143,182,217,0.3)',
               }}
             />
           </div>
